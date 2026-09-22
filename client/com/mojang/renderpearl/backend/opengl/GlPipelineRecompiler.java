@@ -3,9 +3,9 @@ package com.mojang.renderpearl.backend.opengl;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
-import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
-import com.mojang.renderpearl.backend.api.SpvModule;
+import com.mojang.renderpearl.api.pipeline.SpvModule;
 import com.mojang.renderpearl.frontend.shaders.SpvUtil;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
@@ -20,6 +20,7 @@ import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.opengl.GL33C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.spvc.Spvc;
@@ -33,21 +34,22 @@ public class GlPipelineRecompiler {
    public static final String UNIFORM_FORMAT_STRING = "_uniform_%02d_%02d";
    public static final String PUSH_CONSTANT_BLOCK_NAME = "_push_constants";
    private static final boolean SHADER_DEBUG_MODE;
+   private final GlStateManager stateManager;
    private final GlDebugLabel debugLabels;
    private final boolean drawParametersSupported;
 
-   public GlPipelineRecompiler(final GlDebugLabel debugLabels, final boolean drawParametersSupported) {
+   public GlPipelineRecompiler(final GlStateManager stateManager, final GlDebugLabel debugLabels, final boolean drawParametersSupported) {
       super();
+      this.stateManager = stateManager;
       this.debugLabels = debugLabels;
       this.drawParametersSupported = drawParametersSupported;
    }
 
-   private String decompileShader(final BackendRenderPipeline.CreateInfo.Shader shaderCreateInfo) throws ShaderCompileException {
-      SpvModule spvModule = shaderCreateInfo.module();
+   private String decompileShader(final SpvModule spvModule) throws ShaderCompileException {
       IntBuffer spirv = spvModule.spv().asIntBuffer();
       long spvcContext = 0L;
 
-      String var25;
+      String var24;
       try {
          MemoryStack stack = MemoryStack.stackPush();
 
@@ -94,7 +96,7 @@ public class GlPipelineRecompiler {
             }
 
             this.renameDescriptors(compiler, spvcResources, 9);
-            String var10001 = shaderCreateInfo.entryPoint();
+            String var10001 = spvModule.entryPoint();
             byte var10002;
             switch (spvModule.type()) {
                case VERTEX -> var10002 = 0;
@@ -105,17 +107,17 @@ public class GlPipelineRecompiler {
             Spvc.spvc_compiler_set_entry_point(compiler, var10001, var10002);
             Spvc.spvc_compiler_install_compiler_options(compiler, options);
             Spvc.spvc_compiler_compile(compiler, pointerReturnBuffer);
-            var25 = MemoryUtil.memASCII(pointerReturnBuffer.get(0));
-         } catch (Throwable var23) {
+            var24 = MemoryUtil.memASCII(pointerReturnBuffer.get(0));
+         } catch (Throwable var22) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var22) {
-                  var23.addSuppressed(var22);
+               } catch (Throwable var21) {
+                  var22.addSuppressed(var21);
                }
             }
 
-            throw var23;
+            throw var22;
          }
 
          if (stack != null) {
@@ -128,7 +130,7 @@ public class GlPipelineRecompiler {
 
       }
 
-      return var25;
+      return var24;
    }
 
    private void renameInterfaceVariables(final long compiler, final long spvcResources, final int resourceType, final String formatString) throws ShaderCompileException {
@@ -237,11 +239,11 @@ public class GlPipelineRecompiler {
    }
 
    private GlShaderModule compileShader(final String name, final ShaderType type, final String source) {
-      int shaderId = GlStateManager.glCreateShader(GlConst.toGl(type));
-      GlStateManager.glShaderSource(shaderId, source);
-      GlStateManager.glCompileShader(shaderId);
-      if (GlStateManager.glGetShaderi(shaderId, 35713) == 0) {
-         String logInfo = StringUtils.trim(GlStateManager.glGetShaderInfoLog(shaderId, 32768));
+      int shaderId = GL33C.glCreateShader(GlConst.toGl(type));
+      this.stateManager.glShaderSource(shaderId, source);
+      GL33C.glCompileShader(shaderId);
+      if (GL33C.glGetShaderi(shaderId, 35713) == 0) {
+         String logInfo = StringUtils.trim(GL33C.glGetShaderInfoLog(shaderId, 32768));
          LOGGER.error("Couldn't compile {} shader for pipeline ({}): {}", new Object[]{type.getName(), name, logInfo});
          return GlShaderModule.INVALID_SHADER;
       } else {
@@ -251,16 +253,16 @@ public class GlPipelineRecompiler {
       }
    }
 
-   public @Nullable Map<BackendRenderPipeline.CreateInfo.Shader, String> decompileShaders(final BackendRenderPipeline.CreateInfo createInfo) {
+   public @Nullable Map<SpvModule, String> decompileShaders(final CompiledRenderPipeline.CreateInfo createInfo) {
       try {
          Zone tracyZone = TracyClient.beginZone("Decompile shaders", false);
 
          Object var9;
          try {
             tracyZone.addText(createInfo.name());
-            Map<BackendRenderPipeline.CreateInfo.Shader, String> decompiledShaders = new Reference2ReferenceArrayMap();
+            Map<SpvModule, String> decompiledShaders = new Reference2ReferenceArrayMap();
 
-            for(BackendRenderPipeline.CreateInfo.Shader shader : createInfo.shaders()) {
+            for(SpvModule shader : createInfo.shaders()) {
                decompiledShaders.put(shader, this.decompileShader(shader));
             }
 
@@ -281,14 +283,14 @@ public class GlPipelineRecompiler {
             tracyZone.close();
          }
 
-         return (Map<BackendRenderPipeline.CreateInfo.Shader, String>)var9;
+         return (Map<SpvModule, String>)var9;
       } catch (ShaderCompileException e) {
          LOGGER.error("Couldn't compile program for pipeline {}", createInfo.name(), e);
          return null;
       }
    }
 
-   public @Nullable GlProgram compileProgram(final BackendRenderPipeline.CreateInfo createInfo, final Map<BackendRenderPipeline.CreateInfo.Shader, String> decompiledShaders) {
+   public @Nullable GlProgram compileProgram(final CompiledRenderPipeline.CreateInfo createInfo, final Map<SpvModule, String> decompiledShaders) {
       List<GlShaderModule> compiledShaders = new ReferenceArrayList();
 
       Object var9;
@@ -301,9 +303,9 @@ public class GlPipelineRecompiler {
             try {
                tracyZone.addText(createInfo.name());
 
-               for(BackendRenderPipeline.CreateInfo.Shader shader : createInfo.shaders()) {
+               for(SpvModule shader : createInfo.shaders()) {
                   String decompiledSource = (String)decompiledShaders.get(shader);
-                  GlShaderModule compiledShader = this.compileShader(shader.name(), shader.module().type(), decompiledSource);
+                  GlShaderModule compiledShader = this.compileShader(shader.name(), shader.type(), decompiledSource);
                   if (compiledShader == GlShaderModule.INVALID_SHADER) {
                      var9 = null;
                      break label144;
@@ -313,7 +315,7 @@ public class GlPipelineRecompiler {
                }
 
                GlProgram compiled = GlProgram.link(compiledShaders, createInfo.name());
-               compiled.setupBindGroupLayouts(createInfo.uniforms());
+               compiled.setupBindGroupLayouts(this.stateManager, createInfo.uniforms());
                this.debugLabels.applyLabel(compiled);
                var21 = compiled;
             } catch (Throwable var16) {

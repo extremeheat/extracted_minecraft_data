@@ -203,7 +203,7 @@ public class Ghast extends Mob implements Enemy {
                this.floatDuration += this.mob.getRandom().nextInt(5) + 2;
                Vec3 travel = new Vec3(this.wantedX - this.mob.getX(), this.wantedY - this.mob.getY(), this.wantedZ - this.mob.getZ());
                if (this.canReach(travel)) {
-                  this.mob.setDeltaMovement(this.mob.getDeltaMovement().add(travel.normalize().scale(this.mob.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0)));
+                  this.mob.addDeltaMovement(travel.normalize().scale(this.mob.getAttributeValue(Attributes.FLYING_SPEED) * 5.0 / 3.0));
                } else {
                   this.operation = MoveControl.Operation.WAIT;
                }

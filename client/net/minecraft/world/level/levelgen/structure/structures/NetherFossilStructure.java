@@ -4,12 +4,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.EmptyBlockGetter;
-import net.minecraft.world.level.NoiseColumn;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.NoiseColumn;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -29,16 +25,12 @@ public class NetherFossilStructure extends Structure {
       int blockX = context.chunkPos().getMinBlockX() + random.nextInt(16);
       int blockZ = context.chunkPos().getMinBlockZ() + random.nextInt(16);
       int seaLevel = context.chunkGenerator().getSeaLevel();
-      WorldGenerationContext generationContext = new WorldGenerationContext(context.chunkGenerator(), context.heightAccessor());
-      int y = this.height.sample(random, generationContext);
+      int y = this.height.sample(random, VerticalAnchor.Context.from(context.chunkGenerator(), context.heightAccessor()));
       NoiseColumn column = context.chunkGenerator().getBaseColumn(blockX, blockZ, context.heightAccessor(), context.randomState());
-      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(blockX, y, blockZ);
 
       while(y > seaLevel) {
-         BlockState current = column.getBlock(y);
          --y;
-         BlockState below = column.getBlock(y);
-         if (current.isAir() && (below.is(Blocks.SOUL_SAND) || below.isFaceSturdy(EmptyBlockGetter.INSTANCE, pos.setY(y), Direction.UP))) {
+         if (column.isEmpty(y + 1) && column.isSolid(y)) {
             break;
          }
       }

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -38,7 +37,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -427,9 +425,8 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
       RUNNING("running", 1),
       FINISHED("finished", 2);
 
-      private static final IntFunction<Status> ID_MAP = ByIdMap.<Status>continuous((s) -> s.index, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final Codec<Status> CODEC = StringRepresentable.<Status>fromEnum(Status::values);
-      public static final StreamCodec<ByteBuf, Status> STREAM_CODEC = ByteBufCodecs.idMapper(Status::byIndex, (s) -> s.index);
+      public static final StreamCodec<ByteBuf, Status> STREAM_CODEC = ByteBufCodecs.enumCodec(Status.class, (s) -> s.index);
       private final String id;
       private final int index;
 
@@ -440,10 +437,6 @@ public class TestInstanceBlockEntity extends BlockEntity implements BoundingBoxR
 
       public String getSerializedName() {
          return this.id;
-      }
-
-      public static Status byIndex(final int index) {
-         return (Status)ID_MAP.apply(index);
       }
 
       // $FF: synthetic method

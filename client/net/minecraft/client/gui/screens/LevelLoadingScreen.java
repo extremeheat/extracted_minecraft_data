@@ -40,7 +40,8 @@ public class LevelLoadingScreen extends Screen {
       map.put(ChunkStatus.EMPTY, 5526612);
       map.put(ChunkStatus.STRUCTURE_STARTS, 10066329);
       map.put(ChunkStatus.STRUCTURE_REFERENCES, 6250897);
-      map.put(ChunkStatus.BIOMES, 8434258);
+      map.put(ChunkStatus.NOISE_BIOMES, 8434258);
+      map.put(ChunkStatus.BIOMES, 2254370);
       map.put(ChunkStatus.TERRAIN, 3159410);
       map.put(ChunkStatus.FEATURES, 2213376);
       map.put(ChunkStatus.INITIALIZE_LIGHT, 13421772);

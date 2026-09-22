@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
@@ -51,6 +50,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import net.minecraft.util.LenientJsonParser;
@@ -624,11 +624,16 @@ public interface ByteBufCodecs {
       };
    }
 
-   static <T> StreamCodec<ByteBuf, T> idMapper(final IdMap<T> mapper) {
-      Objects.requireNonNull(mapper);
-      IntFunction var10000 = mapper::byIdOrThrow;
-      Objects.requireNonNull(mapper);
-      return idMapper(var10000, mapper::getIdOrThrow);
+   static <T extends Enum<T>> EnumStreamCodec<T> enumCodec(final Class<T> enumClass, final ToIntFunction<T> toId) {
+      return enumCodec(enumClass, toId, ByIdMap.OutOfBoundsStrategy.ZERO);
+   }
+
+   static <T extends Enum<T>> EnumStreamCodec<T> enumCodec(final Class<T> enumClass, final ToIntFunction<T> toId, final ByIdMap.OutOfBoundsStrategy strategy) {
+      return EnumStreamCodec.<T>continuous(enumClass, toId, strategy);
+   }
+
+   static <T extends Enum<T>> EnumStreamCodec<T> sparseEnumCodec(final Class<T> enumClass, final ToIntFunction<T> toId, final T defaultEntry) {
+      return EnumStreamCodec.<T>sparse(enumClass, toId, defaultEntry);
    }
 
    private static <T, R> StreamCodec<RegistryFriendlyByteBuf, R> registry(final ResourceKey<? extends Registry<T>> registryKey, final Function<Registry<T>, IdMap<R>> mapExtractor) {

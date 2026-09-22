@@ -52,6 +52,10 @@ public class GlSurface implements GpuSurfaceBackend {
    }
 
    public void close() {
+      if (GlGlobalState.isWindowCurrent(this.windowHandle)) {
+         this.device.makeCurrent(0L);
+      }
+
    }
 
    public Collection<GpuSurface.PresentMode> supportedPresentModes() {

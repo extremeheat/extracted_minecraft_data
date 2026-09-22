@@ -10,7 +10,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.function.Function;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class FixProjectileStoredItem extends DataFix {
@@ -38,7 +37,7 @@ public class FixProjectileStoredItem extends DataFix {
    }
 
    private static <T> Typed<T> fixArrow(final Typed<?> typed, final Type<T> outputType) {
-      return Util.writeAndReadTypedOrThrow(typed, outputType, (input) -> input.set("item", createItemStack(input, getArrowType(input))));
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(typed, outputType, (input) -> input.set("item", createItemStack(input, getArrowType(input))));
    }
 
    private static String getArrowType(final Dynamic<?> input) {
@@ -46,7 +45,7 @@ public class FixProjectileStoredItem extends DataFix {
    }
 
    private static <T> Typed<T> fixSpectralArrow(final Typed<?> typed, final Type<T> outputType) {
-      return Util.writeAndReadTypedOrThrow(typed, outputType, (input) -> input.set("item", createItemStack(input, "minecraft:spectral_arrow")));
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(typed, outputType, (input) -> input.set("item", createItemStack(input, "minecraft:spectral_arrow")));
    }
 
    private static Dynamic<?> createItemStack(final Dynamic<?> input, final String itemName) {

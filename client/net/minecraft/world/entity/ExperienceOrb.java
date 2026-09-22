@@ -161,7 +161,7 @@ public class ExperienceOrb extends Entity {
          Vec3 delta = new Vec3(this.followingPlayer.getX() - this.getX(), this.followingPlayer.getY() + (double)this.followingPlayer.getEyeHeight() / 2.0 - this.getY(), this.followingPlayer.getZ() - this.getZ());
          double length = delta.lengthSqr();
          double power = 1.0 - Math.sqrt(length) / 8.0;
-         this.setDeltaMovement(this.getDeltaMovement().add(delta.normalize().scale(power * power * 0.1)));
+         this.addDeltaMovement(delta.normalize().scale(power * power * 0.1));
       }
 
    }

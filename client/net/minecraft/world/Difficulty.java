@@ -1,10 +1,8 @@
 package net.minecraft.world;
 
-import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.Nullable;
@@ -16,8 +14,7 @@ public enum Difficulty implements StringRepresentable {
    HARD(3, "hard");
 
    public static final StringRepresentable.EnumCodec<Difficulty> CODEC = StringRepresentable.<Difficulty>fromEnum(Difficulty::values);
-   private static final IntFunction<Difficulty> BY_ID = ByIdMap.<Difficulty>continuous(Difficulty::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
-   public static final StreamCodec<ByteBuf, Difficulty> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Difficulty::getId);
+   public static final EnumStreamCodec<Difficulty> STREAM_CODEC = ByteBufCodecs.<Difficulty>enumCodec(Difficulty.class, Difficulty::getId, ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
@@ -41,7 +38,7 @@ public enum Difficulty implements StringRepresentable {
    /** @deprecated */
    @Deprecated
    public static Difficulty byId(final int id) {
-      return (Difficulty)BY_ID.apply(id);
+      return STREAM_CODEC.byId(id);
    }
 
    public static @Nullable Difficulty byName(final String name) {

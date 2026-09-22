@@ -14,31 +14,31 @@ import org.jspecify.annotations.Nullable;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = false;
+   public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 5023;
+   public static final int WORLD_VERSION = 5119;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 777;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 778;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 338;
-   public static final int SNBT_NAG_VERSION = 4997;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 339;
+   public static final int SNBT_NAG_VERSION = 5116;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 97;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 98;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 1;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 121;
+   public static final int DATA_PACK_FORMAT_MAJOR = 122;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -84,7 +84,6 @@ public class SharedConstants {
    public static final boolean DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN = debugFlag("KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN");
    public static final boolean DEBUG_DONT_SAVE_WORLD = debugFlag("DONT_SAVE_WORLD");
    public static final boolean DEBUG_LARGE_DRIPSTONE = debugFlag("LARGE_DRIPSTONE");
-   public static final boolean DEBUG_ORE_VEINS = debugFlag("ORE_VEINS");
    public static final boolean DEBUG_SCULK_CATALYST = debugFlag("SCULK_CATALYST");
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = debugFlag("BYPASS_REALMS_VERSION_CHECK");
    public static final boolean DEBUG_SOCIAL_INTERACTIONS = debugFlag("SOCIAL_INTERACTIONS");
@@ -106,7 +105,6 @@ public class SharedConstants {
    public static final boolean DEBUG_SIMULATE_LIBRARY_LOAD_FAILURE = debugFlag("SIMULATE_LIBRARY_LOAD_FAILURE");
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = debugFlag("IGNORE_LOCAL_MOB_CAP");
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = debugFlag("DISABLE_LIQUID_SPREADING");
-   public static final boolean DEBUG_AQUIFERS = debugFlag("AQUIFERS");
    public static final boolean DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING = debugFlag("JFR_PROFILING_ENABLE_LEVEL_LOADING");
    public static final boolean DEBUG_ENTITY_BLOCK_INTERSECTION = debugFlag("ENTITY_BLOCK_INTERSECTION");
    public static boolean debugGenerateSquareTerrainWithoutNoise = debugFlag("GENERATE_SQUARE_TERRAIN_WITHOUT_NOISE");
@@ -117,7 +115,6 @@ public class SharedConstants {
    public static final boolean DEBUG_DISABLE_CARVERS = debugFlag("DISABLE_CARVERS");
    public static final boolean DEBUG_DISABLE_STRUCTURES = debugFlag("DISABLE_STRUCTURES");
    public static final boolean DEBUG_DISABLE_FEATURES = debugFlag("DISABLE_FEATURES");
-   public static final boolean DEBUG_DISABLE_ORE_VEINS = debugFlag("DISABLE_ORE_VEINS");
    public static final boolean DEBUG_DISABLE_BLENDING = debugFlag("DISABLE_BLENDING");
    public static final boolean DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION = debugFlag("DISABLE_BELOW_ZERO_RETROGENERATION");
    public static final int DEFAULT_MINECRAFT_PORT = 25565;
@@ -223,7 +220,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 777;
+      return 1073742163;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

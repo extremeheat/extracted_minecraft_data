@@ -9,7 +9,6 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -28,7 +27,7 @@ public class BlockEntityCustomNameToComponentFix extends DataFix {
       Type<?> patchedInputType = ExtraDataFixUtils.patchSubType(inputType, inputType, outputType);
       return this.fixTypeEverywhereTyped("BlockEntityCustomNameToComponentFix", inputType, outputType, (input) -> {
          Optional<String> id = input.getOptional(idFinder);
-         return id.isPresent() && !NAMEABLE_BLOCK_ENTITIES.contains(id.get()) ? ExtraDataFixUtils.cast(outputType, input) : Util.writeAndReadTypedOrThrow(ExtraDataFixUtils.cast(patchedInputType, input), outputType, BlockEntityCustomNameToComponentFix::fixTagCustomName);
+         return id.isPresent() && !NAMEABLE_BLOCK_ENTITIES.contains(id.get()) ? ExtraDataFixUtils.cast(outputType, input) : ExtraDataFixUtils.writeAndReadTypedOrThrow(ExtraDataFixUtils.cast(patchedInputType, input), outputType, BlockEntityCustomNameToComponentFix::fixTagCustomName);
       });
    }
 

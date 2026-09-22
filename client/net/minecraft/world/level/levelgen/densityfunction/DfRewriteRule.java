@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.densityfunction;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
-import net.minecraft.world.level.levelgen.densityfunction.generator.GradientFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.SliceFunction;
 
 @FunctionalInterface
@@ -87,7 +86,7 @@ public interface DfRewriteRule {
       }
 
       private static boolean shouldSkip(final DensityFunction function) {
-         return function instanceof ConstantFunction || function instanceof GradientFunction;
+         return function instanceof ConstantFunction;
       }
    }
 }

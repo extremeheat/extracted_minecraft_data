@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class UniformHeight extends HeightProvider {
@@ -28,9 +27,9 @@ public class UniformHeight extends HeightProvider {
       return new UniformHeight(minInclusive, maxInclusive);
    }
 
-   public int sample(final RandomSource random, final WorldGenerationContext context) {
-      int min = this.minInclusive.resolveY(context);
-      int max = this.maxInclusive.resolveY(context);
+   public int sample(final RandomSource random, final VerticalAnchor.Context anchorContext) {
+      int min = this.minInclusive.resolveY(anchorContext);
+      int max = this.maxInclusive.resolveY(anchorContext);
       if (min > max) {
          if (this.warnedFor.add((long)min << 32 | (long)max)) {
             LOGGER.warn("Empty height range: {}", this);

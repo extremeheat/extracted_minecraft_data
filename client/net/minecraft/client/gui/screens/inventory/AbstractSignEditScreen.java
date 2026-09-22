@@ -54,7 +54,7 @@ public abstract class AbstractSignEditScreen extends Screen {
       List<Component> currentLines = currentText.getMessages(shouldFilter);
       this.slot = slot;
       this.woodType = SignBlock.getWoodType(sign.getBlockState().getBlock());
-      this.textColor = currentText.hasGlowingText() ? currentText.getColor().getTextColor() : AbstractSignRenderer.getDarkColor(currentText);
+      this.textColor = (Integer)(currentText.hasGlowingText() ? AbstractSignRenderer.BRIGHT_TEXT_COLORS : AbstractSignRenderer.DARK_TEXT_COLORS).pick(currentText.getColor());
       this.text.setColor(currentText.getColor()).setTextGlowing(currentText.hasGlowingText());
 
       for(int i = 0; i < 4; ++i) {

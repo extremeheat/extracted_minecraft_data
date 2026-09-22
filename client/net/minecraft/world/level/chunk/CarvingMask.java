@@ -1,6 +1,7 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.BitSet;
+import java.util.Objects;
 
 public class CarvingMask implements CarverOutput {
    private final int minY;
@@ -17,7 +18,11 @@ public class CarvingMask implements CarverOutput {
    }
 
    private int getIndex(final int x, final int y, final int z) {
-      return y - this.minY + (z + (x << 4)) * this.height;
+      return y - this.minY + this.getIndexXz(x, z);
+   }
+
+   private int getIndexXz(final int x, final int z) {
+      return (z + (x << 4)) * this.height;
    }
 
    public int minY() {
@@ -32,41 +37,54 @@ public class CarvingMask implements CarverOutput {
       this.mask.set(this.getIndex(x, y, z));
    }
 
-   public void visit(final Visitor visitor) {
-      int endIndex;
-      for(int startIndex = this.mask.nextSetBit(0); startIndex != -1; startIndex = this.mask.nextSetBit(endIndex + 1)) {
-         endIndex = this.mask.nextClearBit(startIndex) - 1;
-         this.visitSegment(visitor, startIndex, endIndex);
-      }
+   public void applyFilter(final Filter filter) {
+      if (!this.mask.isEmpty()) {
+         int index = 0;
 
+         for(int x = 0; x < 16; ++x) {
+            for(int z = 0; z < 16; ++z) {
+               for(int y = 0; y < this.height; ++y) {
+                  if (this.mask.get(index) && !filter.test(x, y + this.minY, z)) {
+                     this.mask.clear(index);
+                  }
+
+                  ++index;
+               }
+            }
+         }
+
+      }
    }
 
-   private void visitSegment(final Visitor visitor, final int startIndex, final int endIndex) {
-      int startColumn = startIndex / this.height;
-      int endColumn = endIndex / this.height;
-
-      for(int column = startColumn; column <= endColumn; ++column) {
-         int columnX = column >> 4 & 15;
-         int columnZ = column & 15;
-         int columnBaseIndex = column * this.height;
-         int bottomY = Math.max(startIndex - columnBaseIndex, 0) + this.minY;
-         int topY = Math.min(endIndex - columnBaseIndex, this.height - 1) + this.minY;
-         visitor.visitColumn(columnX, columnZ, bottomY, topY);
+   public Column getColumn(final int x, final int z) {
+      if (x >= 0 && z >= 0 && x < 16 && z < 16) {
+         return new Column(this.getIndexXz(x, z));
+      } else {
+         throw new IllegalArgumentException("[" + x + "; " + z + "] is out of bounds");
       }
-
    }
 
    public boolean isEmpty() {
       return this.mask.isEmpty();
    }
 
-   @FunctionalInterface
-   public interface Filter {
-      boolean test(int x, int y, int z);
+   public class Column {
+      private final int baseIndex;
+
+      private Column(final int baseIndex) {
+         Objects.requireNonNull(CarvingMask.this);
+         super();
+         this.baseIndex = baseIndex;
+      }
+
+      public boolean isCarved(final int y) {
+         int indexY = y - CarvingMask.this.minY;
+         return indexY >= 0 && indexY < CarvingMask.this.height ? CarvingMask.this.mask.get(this.baseIndex + indexY) : false;
+      }
    }
 
    @FunctionalInterface
-   public interface Visitor {
-      void visitColumn(int x, int z, int bottomY, int topY);
+   public interface Filter {
+      boolean test(int x, int y, int z);
    }
 }

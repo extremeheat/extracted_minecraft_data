@@ -1,13 +1,14 @@
 package net.minecraft.network.protocol.handshake;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientIntentionPacket(int protocolVersion, String hostName, int port, ClientIntent intention) implements Packet<ServerHandshakePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientIntentionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientIntentionPacket>codec(ClientIntentionPacket::write, ClientIntentionPacket::new);
-   private static final int MAX_HOST_LENGTH = 255;
+   private static final int MAX_HOST_LENGTH = 1024;
+   public static final StreamCodec<FriendlyByteBuf, ClientIntentionPacket> STREAM_CODEC;
 
    /** @deprecated */
    @Deprecated
@@ -17,17 +18,6 @@ public record ClientIntentionPacket(int protocolVersion, String hostName, int po
       this.hostName = hostName;
       this.port = port;
       this.intention = intention;
-   }
-
-   private ClientIntentionPacket(final FriendlyByteBuf input) {
-      this(input.readVarInt(), input.readUtf(255), input.readUnsignedShort(), ClientIntent.byId(input.readVarInt()));
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeVarInt(this.protocolVersion);
-      output.writeUtf(this.hostName);
-      output.writeShort(this.port);
-      output.writeVarInt(this.intention.id());
    }
 
    public PacketType<ClientIntentionPacket> type() {
@@ -40,5 +30,9 @@ public record ClientIntentionPacket(int protocolVersion, String hostName, int po
 
    public boolean isTerminal() {
       return true;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientIntentionPacket::protocolVersion, ByteBufCodecs.stringUtf8(1024), ClientIntentionPacket::hostName, ByteBufCodecs.UNSIGNED_SHORT, ClientIntentionPacket::port, ClientIntent.STREAM_CODEC, ClientIntentionPacket::intention, ClientIntentionPacket::new);
    }
 }

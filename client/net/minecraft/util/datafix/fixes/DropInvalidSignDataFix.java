@@ -11,7 +11,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class DropInvalidSignDataFix extends DataFix {
@@ -54,7 +54,7 @@ public class DropInvalidSignDataFix extends DataFix {
       OpticFinder<?> entityF = DSL.namedChoice(this.entityName, entityChoiceType);
       return this.fixTypeEverywhereTyped("DropInvalidSignDataFix for " + this.entityName, entityType, (input) -> input.updateTyped(entityF, entityChoiceType, (entity) -> {
             boolean filteredCorrect = ((Dynamic)entity.get(DSL.remainderFinder())).get("_filtered_correct").asBoolean(false);
-            return filteredCorrect ? entity.update(DSL.remainderFinder(), (remainder) -> remainder.remove("_filtered_correct")) : Util.writeAndReadTypedOrThrow(entity, entityChoiceType, this::fix);
+            return filteredCorrect ? entity.update(DSL.remainderFinder(), (remainder) -> remainder.remove("_filtered_correct")) : ExtraDataFixUtils.writeAndReadTypedOrThrow(entity, entityChoiceType, this::fix);
          }));
    }
 }

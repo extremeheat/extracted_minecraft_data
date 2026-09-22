@@ -24,7 +24,6 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.ClosedChannelException;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.RejectedExecutionException;
@@ -64,8 +63,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static final Marker PACKET_SENT_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_SENT"), (m) -> m.add(PACKET_MARKER));
    private static final ProtocolInfo<ServerHandshakePacketListener> INITIAL_PROTOCOL;
    private final PacketFlow receiving;
-   private volatile boolean sendLoginDisconnect = true;
-   private final Queue<Consumer<Connection>> pendingActions = Queues.newConcurrentLinkedQueue();
+   private volatile ClientboundDisconnectPacketType disconnectPacketType;
+   private final Queue<Consumer<Connection>> pendingActions;
    private Channel channel;
    private SocketAddress address;
    private volatile @Nullable PacketListener disconnectListener;
@@ -83,6 +82,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public Connection(final PacketFlow receiving) {
       super();
+      this.disconnectPacketType = Connection.ClientboundDisconnectPacketType.NONE;
+      this.pendingActions = Queues.newConcurrentLinkedQueue();
       this.receiving = receiving;
    }
 
@@ -122,9 +123,21 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
                if (isFirstFault) {
                   LOGGER.debug("Failed to sent packet", cause);
+                  Packet<?> disconnectPacket = null;
                   if (this.getSending() == PacketFlow.CLIENTBOUND) {
-                     Packet<?> packet = (Packet<?>)(this.sendLoginDisconnect ? new ClientboundLoginDisconnectPacket(reason) : new ClientboundDisconnectPacket(reason));
-                     this.send(packet, PacketSendListener.thenRun(() -> this.disconnect(details)));
+                     Object var10000;
+                     switch (this.disconnectPacketType.ordinal()) {
+                        case 0 -> var10000 = null;
+                        case 1 -> var10000 = new ClientboundLoginDisconnectPacket(reason);
+                        case 2 -> var10000 = new ClientboundDisconnectPacket(reason);
+                        default -> throw new MatchException((String)null, (Throwable)null);
+                     }
+
+                     disconnectPacket = (Packet<?>)var10000;
+                  }
+
+                  if (disconnectPacket != null) {
+                     this.send(disconnectPacket, PacketSendListener.thenRun(() -> this.disconnect(details)));
                   } else {
                      this.disconnect(details);
                   }
@@ -183,18 +196,6 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   private static void syncAfterConfigurationChange(final ChannelFuture future) {
-      try {
-         future.syncUninterruptibly();
-      } catch (Exception e) {
-         if (e instanceof ClosedChannelException) {
-            LOGGER.info("Connection closed during protocol change");
-         } else {
-            throw e;
-         }
-      }
-   }
-
    public <T extends PacketListener> void setupInboundProtocol(final ProtocolInfo<T> protocol, final T packetListener) {
       this.validateListener(protocol, packetListener);
       if (protocol.flow() != this.getReceiving()) {
@@ -209,7 +210,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             configMessage = configMessage.andThen((ctx) -> ctx.pipeline().addAfter("decoder", "bundler", newBundler));
          }
 
-         syncAfterConfigurationChange(this.channel.writeAndFlush(configMessage));
+         this.channel.writeAndFlush(configMessage);
       }
    }
 
@@ -224,8 +225,25 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             configMessage = configMessage.andThen((ctx) -> ctx.pipeline().addAfter("encoder", "unbundler", newUnbundler));
          }
 
-         boolean isLoginProtocol = protocol.id() == ConnectionProtocol.LOGIN;
-         syncAfterConfigurationChange(this.channel.writeAndFlush(configMessage.andThen((ctx) -> this.sendLoginDisconnect = isLoginProtocol)));
+         ClientboundDisconnectPacketType var10000;
+         switch (protocol.id()) {
+            case HANDSHAKING:
+            case STATUS:
+               var10000 = Connection.ClientboundDisconnectPacketType.NONE;
+               break;
+            case LOGIN:
+               var10000 = Connection.ClientboundDisconnectPacketType.LOGIN;
+               break;
+            case PLAY:
+            case CONFIGURATION:
+               var10000 = Connection.ClientboundDisconnectPacketType.STRICT;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         ClientboundDisconnectPacketType pendingDisconnectPacketType = var10000;
+         this.channel.writeAndFlush(configMessage.andThen((ctx) -> this.disconnectPacketType = pendingDisconnectPacketType));
       }
    }
 
@@ -239,26 +257,26 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   public void initiateServerboundStatusConnection(final String hostName, final int port, final ClientStatusPacketListener listener) {
-      this.initiateServerboundConnection(hostName, port, StatusProtocols.SERVERBOUND, StatusProtocols.CLIENTBOUND, listener, ClientIntent.STATUS);
+   public void initiateServerboundStatusConnection(final ServerConnectionDetails hostInfo, final ClientStatusPacketListener listener) {
+      this.initiateServerboundConnection(hostInfo, StatusProtocols.SERVERBOUND, StatusProtocols.CLIENTBOUND, listener, ClientIntent.STATUS);
    }
 
-   public void initiateServerboundPlayConnection(final String hostName, final int port, final ClientLoginPacketListener listener) {
-      this.initiateServerboundConnection(hostName, port, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, listener, ClientIntent.LOGIN);
+   public void initiateServerboundPlayConnection(final ServerConnectionDetails hostInfo, final ClientLoginPacketListener listener) {
+      this.initiateServerboundConnection(hostInfo, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, listener, ClientIntent.LOGIN);
    }
 
-   public <S extends ServerboundPacketListener, C extends ClientboundPacketListener> void initiateServerboundPlayConnection(final String hostName, final int port, final ProtocolInfo<S> outbound, final ProtocolInfo<C> inbound, final C listener, final boolean transfer) {
-      this.initiateServerboundConnection(hostName, port, outbound, inbound, listener, transfer ? ClientIntent.TRANSFER : ClientIntent.LOGIN);
+   public <S extends ServerboundPacketListener, C extends ClientboundPacketListener> void initiateServerboundPlayConnection(final ServerConnectionDetails hostInfo, final ProtocolInfo<S> outbound, final ProtocolInfo<C> inbound, final C listener, final boolean transfer) {
+      this.initiateServerboundConnection(hostInfo, outbound, inbound, listener, transfer ? ClientIntent.TRANSFER : ClientIntent.LOGIN);
    }
 
-   private <S extends ServerboundPacketListener, C extends ClientboundPacketListener> void initiateServerboundConnection(final String hostName, final int port, final ProtocolInfo<S> outbound, final ProtocolInfo<C> inbound, final C listener, final ClientIntent intent) {
+   private <S extends ServerboundPacketListener, C extends ClientboundPacketListener> void initiateServerboundConnection(final ServerConnectionDetails hostInfo, final ProtocolInfo<S> outbound, final ProtocolInfo<C> inbound, final C listener, final ClientIntent intent) {
       if (outbound.id() != inbound.id()) {
          throw new IllegalStateException("Mismatched initial protocols");
       } else {
          this.disconnectListener = listener;
          this.runOnceConnected((connection) -> {
             this.setupInboundProtocol(inbound, listener);
-            connection.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().protocolVersion(), hostName, port, intent), (ChannelFutureListener)null, true);
+            connection.sendPacket(new ClientIntentionPacket(SharedConstants.getCurrentVersion().protocolVersion(), hostInfo.hostForIntentPacket(), hostInfo.port(), intent), (ChannelFutureListener)null, true);
             this.setupOutboundProtocol(outbound);
          });
       }
@@ -598,5 +616,19 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    static {
       INITIAL_PROTOCOL = HandshakeProtocols.SERVERBOUND;
+   }
+
+   public static enum ClientboundDisconnectPacketType {
+      NONE,
+      LOGIN,
+      STRICT;
+
+      private ClientboundDisconnectPacketType() {
+      }
+
+      // $FF: synthetic method
+      private static ClientboundDisconnectPacketType[] $values() {
+         return new ClientboundDisconnectPacketType[]{NONE, LOGIN, STRICT};
+      }
    }
 }

@@ -29,12 +29,10 @@ import org.jspecify.annotations.Nullable;
 
 public class ImposterProtoChunk extends ProtoChunk {
    private final LevelChunk wrapped;
-   private final boolean allowWrites;
 
-   public ImposterProtoChunk(final LevelChunk wrapped, final boolean allowWrites) {
+   public ImposterProtoChunk(final LevelChunk wrapped) {
       super(wrapped.getPos(), UpgradeData.EMPTY, wrapped.levelHeightAccessor, wrapped.getLevel().palettedContainerFactory(), wrapped.getBlendingData());
       this.wrapped = wrapped;
-      this.allowWrites = allowWrites;
    }
 
    public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
@@ -50,32 +48,20 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    public LevelChunkSection getSection(final int sectionIndex) {
-      return this.allowWrites ? this.wrapped.getSection(sectionIndex) : super.getSection(sectionIndex);
+      return super.getSection(sectionIndex);
    }
 
    public @Nullable BlockState setBlockState(final BlockPos pos, final BlockState state, final @Block.UpdateFlags int flags) {
-      return this.allowWrites ? this.wrapped.setBlockState(pos, state, flags) : null;
+      return null;
    }
 
    public void setBlockEntity(final BlockEntity blockEntity) {
-      if (this.allowWrites) {
-         this.wrapped.setBlockEntity(blockEntity);
-      }
-
    }
 
    public void addEntity(final Entity entity) {
-      if (this.allowWrites) {
-         this.wrapped.addEntity(entity);
-      }
-
    }
 
    public void setPersistedStatus(final ChunkStatus status) {
-      if (this.allowWrites) {
-         super.setPersistedStatus(status);
-      }
-
    }
 
    public LevelChunkSection[] getSections() {
@@ -101,8 +87,8 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getHeight(this.fixType(type), x, z);
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
-      return this.wrapped.getNoiseBiome(quartX, quartY, quartZ);
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
+      return this.wrapped.getBiome(x, y, z);
    }
 
    public ChunkPos getPos() {
@@ -179,11 +165,11 @@ public class ImposterProtoChunk extends ProtoChunk {
    }
 
    public TickContainerAccess<Block> getBlockTicks() {
-      return this.allowWrites ? this.wrapped.getBlockTicks() : BlackholeTickAccess.emptyContainer();
+      return BlackholeTickAccess.<Block>emptyContainer();
    }
 
    public TickContainerAccess<Fluid> getFluidTicks() {
-      return this.allowWrites ? this.wrapped.getFluidTicks() : BlackholeTickAccess.emptyContainer();
+      return BlackholeTickAccess.<Fluid>emptyContainer();
    }
 
    public ChunkAccess.PackedTicks getTicksForSerialization(final long currentTick) {
@@ -206,11 +192,7 @@ public class ImposterProtoChunk extends ProtoChunk {
       this.wrapped.setLightCorrect(isLightCorrect);
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver) {
-      if (this.allowWrites) {
-         this.wrapped.fillBiomesFromNoise(biomeResolver);
-      }
-
+   public void fillBiomes(final BiomeResolver biomeResolver) {
    }
 
    public void initializeLightSources() {

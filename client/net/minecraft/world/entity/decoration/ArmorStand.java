@@ -8,6 +8,7 @@ import net.minecraft.core.Rotations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -402,14 +403,22 @@ public class ArmorStand extends LivingEntity {
       }
    }
 
+   private void snapToYRot(final float yRot) {
+      this.yBodyRotO = this.yBodyRot = yRot;
+      this.yHeadRotO = this.yHeadRot = yRot;
+   }
+
    public void setYBodyRot(final float yBodyRot) {
-      this.yBodyRotO = this.yRotO = yBodyRot;
-      this.yHeadRotO = this.yHeadRot = yBodyRot;
+      this.snapToYRot(yBodyRot);
    }
 
    public void setYHeadRot(final float yHeadRot) {
-      this.yBodyRotO = this.yRotO = yHeadRot;
-      this.yHeadRotO = this.yHeadRot = yHeadRot;
+      this.snapToYRot(yHeadRot);
+   }
+
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      this.snapToYRot(this.getYRot());
    }
 
    protected void updateInvisibilityStatus() {

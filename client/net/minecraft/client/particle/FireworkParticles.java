@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.component.FireworkExplosion;
 
 public class FireworkParticles {
@@ -90,7 +89,7 @@ public class FireworkParticles {
             IntList colors = explosion.colors();
             IntList fadeColors = explosion.fadeColors();
             if (colors.isEmpty()) {
-               colors = IntList.of(DyeColor.BLACK.getFireworkColor());
+               colors = IntList.of((Integer)FireworkExplosion.DEFAULT_COLOR_TINTS.black());
             }
 
             switch (explosion.shape()) {

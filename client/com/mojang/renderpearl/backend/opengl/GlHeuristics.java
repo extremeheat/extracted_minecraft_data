@@ -63,11 +63,11 @@ public class GlHeuristics {
    }
 
    private static int getMaxSupportedTextureSize() {
-      int maxReported = GlStateManager._getInteger(3379);
+      int maxReported = GL33C.glGetInteger(3379);
 
       for(int texSize = Math.max(32768, maxReported); texSize >= 1024; texSize >>= 1) {
-         GlStateManager._texImage2D(32868, 0, 6408, texSize, texSize, 0, 6408, 5121, (ByteBuffer)null);
-         int width = GlStateManager._getTexLevelParameter(32868, 0, 4096);
+         GL33C.glTexImage2D(32868, 0, 6408, texSize, texSize, 0, 6408, 5121, (ByteBuffer)null);
+         int width = GL33C.glGetTexLevelParameteri(32868, 0, 4096);
          if (width != 0) {
             return texSize;
          }
@@ -79,12 +79,12 @@ public class GlHeuristics {
    }
 
    public DeviceInfo createDeviceInfo(final GLCapabilities capabilities, final int maxSupportedAnisotropy, final Set<String> enabledExtensions) {
-      String renderer = GlStateManager._getString(7937);
-      String vendor = GlStateManager._getString(7936);
+      String renderer = GL33C.glGetString(7937);
+      String vendor = GL33C.glGetString(7936);
       String rendererLowerCase = renderer.toLowerCase(Locale.ROOT);
       String vendorLowerCase = vendor.toLowerCase(Locale.ROOT);
       int drawIndirectCount = enabledExtensions.contains("GL_ARB_multi_draw_indirect") ? 2147483647 : (enabledExtensions.contains("GL_ARB_draw_indirect") ? 1 : 0);
-      return new DeviceInfo(renderer, vendor, GlStateManager._getString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852), drawIndirectCount), new DeviceFeatures(true, enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd(), Util.isAppleSiliconMac(renderer), vendorLowerCase.contains("intel") && !rendererLowerCase.contains("arc")), this.guessDeviceType(rendererLowerCase, vendorLowerCase));
+      return new DeviceInfo(renderer, vendor, GL33C.glGetString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852), drawIndirectCount), new DeviceFeatures(true, enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd(), Util.isAppleSiliconMac(renderer), vendorLowerCase.contains("intel") && !rendererLowerCase.contains("arc")), this.guessDeviceType(rendererLowerCase, vendorLowerCase));
    }
 
    private static boolean couldBeIntelGen7(final String renderer, final String vendor) {

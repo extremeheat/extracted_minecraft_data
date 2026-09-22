@@ -9,7 +9,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
@@ -32,7 +31,7 @@ public class UnfilledBuriedTreasureMapFix extends DataFix {
    }
 
    private static <T> Typed<T> fix(final Typed<T> typed) {
-      return Util.writeAndReadTypedOrThrow(typed, typed.getType(), (value) -> {
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(typed, typed.getType(), (value) -> {
          boolean holdsLegacyName = value.get("minecraft:item_name").result().flatMap(ExtraDataFixUtils::getPlainTranslationKey).filter((nameKey) -> nameKey.equals("filled_map.buried_treasure")).isPresent();
          return holdsLegacyName ? value.update("minecraft:item_name", (itemName) -> itemName.set("translate", itemName.createString("item.minecraft.buried_treasure_map"))) : value;
       });

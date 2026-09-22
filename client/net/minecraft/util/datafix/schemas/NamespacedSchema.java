@@ -7,7 +7,6 @@ import com.mojang.datafixers.types.templates.Const;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import net.minecraft.resources.Identifier;
 
 public class NamespacedSchema extends Schema {
    public static final PrimitiveCodec<String> NAMESPACED_STRING_CODEC = new PrimitiveCodec<String>() {
@@ -30,8 +29,16 @@ public class NamespacedSchema extends Schema {
    }
 
    public static String ensureNamespaced(final String input) {
-      Identifier identifier = Identifier.tryParse(input);
-      return identifier != null ? identifier.toString() : input;
+      if (input.equals("DUMMY")) {
+         return input;
+      } else {
+         int separatorIndex = input.indexOf(":");
+         if (separatorIndex == 0) {
+            return "minecraft" + input;
+         } else {
+            return separatorIndex > 0 ? input : "minecraft:" + input;
+         }
+      }
    }
 
    public static Type<String> namespacedString() {

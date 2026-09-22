@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -18,7 +17,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.TimeUtil;
@@ -400,8 +398,7 @@ public class Armadillo extends Animal {
       };
 
       private static final Codec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
-      private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.<ArmadilloState>continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ArmadilloState::id);
+      public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.enumCodec(ArmadilloState.class, ArmadilloState::id);
       private final String name;
       private final boolean isThreatened;
       private final int animationDuration;

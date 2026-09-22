@@ -1,5 +1,7 @@
 package net.minecraft.world.level.levelgen.densityfunction.op;
 
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.ExtraCodecs;
@@ -52,7 +54,26 @@ public record InterpolatedFunction(DensityFunction input, int cellSizeXz, int ce
          } else if (volume.stepBlockX() == 1 && volume.stepBlockY() == 1 && volume.stepBlockZ() == 1) {
             this.sampleWithBlockStep(context, outputBuffer, volume);
          } else {
-            this.sampleWithNonBlockStep(context, outputBuffer, volume);
+            Zone var4 = TracyClient.beginZone("linearUpscaleWithNonBlockStep", false);
+
+            try {
+               this.sampleWithNonBlockStep(context, outputBuffer, volume);
+            } catch (Throwable var8) {
+               if (var4 != null) {
+                  try {
+                     var4.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
+            }
+
+            if (var4 != null) {
+               var4.close();
+            }
+
          }
       }
 
@@ -88,30 +109,47 @@ public record InterpolatedFunction(DensityFunction input, int cellSizeXz, int ce
 
          try (ScopedDensityBuffer cellBuffer = context.acquireBuffer(cellVolume)) {
             this.input.sampleVolume(context, cellBuffer, cellVolume);
+            Zone var15 = TracyClient.beginZone("linearUpscale", false);
 
-            for(int cellZ = 0; cellZ < cellCountZ; ++cellZ) {
-               int nextCellZ = Math.min(cellZ + 1, cellVolume.sizeZ() - 1);
+            try {
+               for(int cellZ = 0; cellZ < cellCountZ; ++cellZ) {
+                  int nextCellZ = Math.min(cellZ + 1, cellVolume.sizeZ() - 1);
 
-               for(int cellX = 0; cellX < cellCountX; ++cellX) {
-                  int nextCellX = Math.min(cellX + 1, cellVolume.sizeX() - 1);
-                  float v000 = cellBuffer.get(cellVolume.indexUnchecked(cellX, 0, cellZ));
-                  float v100 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, 0, cellZ));
-                  float v001 = cellBuffer.get(cellVolume.indexUnchecked(cellX, 0, nextCellZ));
-                  float v101 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, 0, nextCellZ));
+                  for(int cellX = 0; cellX < cellCountX; ++cellX) {
+                     int nextCellX = Math.min(cellX + 1, cellVolume.sizeX() - 1);
+                     float v000 = cellBuffer.get(cellVolume.indexUnchecked(cellX, 0, cellZ));
+                     float v100 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, 0, cellZ));
+                     float v001 = cellBuffer.get(cellVolume.indexUnchecked(cellX, 0, nextCellZ));
+                     float v101 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, 0, nextCellZ));
 
-                  for(int cellY = 0; cellY < cellCountY; ++cellY) {
-                     int nextCellY = Math.min(cellY + 1, cellVolume.sizeY() - 1);
-                     float v010 = cellBuffer.get(cellVolume.indexUnchecked(cellX, nextCellY, cellZ));
-                     float v110 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, nextCellY, cellZ));
-                     float v011 = cellBuffer.get(cellVolume.indexUnchecked(cellX, nextCellY, nextCellZ));
-                     float v111 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, nextCellY, nextCellZ));
-                     this.fillCell(outputBuffer, volume, cellVolume, cellX, cellY, cellZ, v000, v100, v010, v110, v001, v101, v011, v111);
-                     v000 = v010;
-                     v100 = v110;
-                     v001 = v011;
-                     v101 = v111;
+                     for(int cellY = 0; cellY < cellCountY; ++cellY) {
+                        int nextCellY = Math.min(cellY + 1, cellVolume.sizeY() - 1);
+                        float v010 = cellBuffer.get(cellVolume.indexUnchecked(cellX, nextCellY, cellZ));
+                        float v110 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, nextCellY, cellZ));
+                        float v011 = cellBuffer.get(cellVolume.indexUnchecked(cellX, nextCellY, nextCellZ));
+                        float v111 = cellBuffer.get(cellVolume.indexUnchecked(nextCellX, nextCellY, nextCellZ));
+                        this.fillCell(outputBuffer, volume, cellVolume, cellX, cellY, cellZ, v000, v100, v010, v110, v001, v101, v011, v111);
+                        v000 = v010;
+                        v100 = v110;
+                        v001 = v011;
+                        v101 = v111;
+                     }
                   }
                }
+            } catch (Throwable var32) {
+               if (var15 != null) {
+                  try {
+                     var15.close();
+                  } catch (Throwable var31) {
+                     var32.addSuppressed(var31);
+                  }
+               }
+
+               throw var32;
+            }
+
+            if (var15 != null) {
+               var15.close();
             }
          }
 

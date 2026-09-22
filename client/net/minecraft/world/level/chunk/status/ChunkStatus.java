@@ -5,10 +5,13 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
 
@@ -19,6 +22,7 @@ public class ChunkStatus {
    public static final ChunkStatus EMPTY;
    public static final ChunkStatus STRUCTURE_STARTS;
    public static final ChunkStatus STRUCTURE_REFERENCES;
+   public static final ChunkStatus NOISE_BIOMES;
    public static final ChunkStatus BIOMES;
    public static final ChunkStatus TERRAIN;
    public static final ChunkStatus FEATURES;
@@ -27,6 +31,7 @@ public class ChunkStatus {
    public static final ChunkStatus SPAWN;
    public static final ChunkStatus FULL;
    public static final Codec<ChunkStatus> CODEC;
+   private static final Map<ChunkStatus, ChunkStatus> NEXT_STATUS;
    private final int index;
    private final ChunkStatus parent;
    private final ChunkType chunkType;
@@ -106,13 +111,18 @@ public class ChunkStatus {
       return BuiltInRegistries.CHUNK_STATUS.getKey(this).toString();
    }
 
+   public @Nullable ChunkStatus getNext() {
+      return (ChunkStatus)NEXT_STATUS.get(this);
+   }
+
    static {
       WORLDGEN_HEIGHTMAPS = EnumSet.of(Heightmap.Types.OCEAN_FLOOR_WG, Heightmap.Types.WORLD_SURFACE_WG);
       FINAL_HEIGHTMAPS = EnumSet.of(Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE, Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
       EMPTY = register("empty", (ChunkStatus)null, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       STRUCTURE_STARTS = register("structure_starts", EMPTY, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       STRUCTURE_REFERENCES = register("structure_references", STRUCTURE_STARTS, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
-      BIOMES = register("biomes", STRUCTURE_REFERENCES, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
+      NOISE_BIOMES = register("noise_biomes", STRUCTURE_REFERENCES, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
+      BIOMES = register("biomes", NOISE_BIOMES, WORLDGEN_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       TERRAIN = register("terrain", BIOMES, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       FEATURES = register("features", TERRAIN, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       INITIALIZE_LIGHT = register("initialize_light", FEATURES, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
@@ -120,5 +130,18 @@ public class ChunkStatus {
       SPAWN = register("spawn", LIGHT, FINAL_HEIGHTMAPS, ChunkType.PROTOCHUNK);
       FULL = register("full", SPAWN, FINAL_HEIGHTMAPS, ChunkType.LEVELCHUNK);
       CODEC = BuiltInRegistries.CHUNK_STATUS.byNameCodec();
+      NEXT_STATUS = (Map)Util.make(new HashMap(), (map) -> {
+         ChunkStatus status = FULL;
+
+         while(true) {
+            ChunkStatus parent = status.getParent();
+            if (status == parent) {
+               return;
+            }
+
+            map.put(parent, status);
+            status = parent;
+         }
+      });
    }
 }

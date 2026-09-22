@@ -5,9 +5,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -31,15 +30,15 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
-public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+public class SculkShriekerBlock extends DropExperienceEntityBlock implements SimpleWaterloggedBlock {
    public static final BooleanProperty SHRIEKING;
    public static final BooleanProperty WATERLOGGED;
    public static final BooleanProperty CAN_SUMMON;
    private static final VoxelShape SHAPE_COLLISION;
    public static final double TOP_Y;
 
-   public SculkShriekerBlock(final BlockBehaviour.Properties properties) {
-      super(properties);
+   public SculkShriekerBlock(final IntProvider xpRange, final BlockBehaviour.Properties properties) {
+      super(xpRange, properties);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(SHRIEKING, false)).setValue(WATERLOGGED, false)).setValue(CAN_SUMMON, false));
    }
 
@@ -98,14 +97,6 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
 
    protected FluidState getFluidState(final BlockState state) {
       return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
-   }
-
-   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
-      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
-      if (dropExperience) {
-         this.tryDropExperience(level, pos, tool, ConstantInt.of(5));
-      }
-
    }
 
    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(final Level level, final BlockState blockState, final BlockEntityType<T> type) {

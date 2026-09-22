@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,8 +28,8 @@ public class SpawnerBlock extends BaseEntityBlock {
       return createTickerHelper(type, BlockEntityTypes.MOB_SPAWNER, level.isClientSide() ? SpawnerBlockEntity::clientTick : SpawnerBlockEntity::serverTick);
    }
 
-   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
-      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
+   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience, final @Nullable Entity breaker) {
+      super.spawnAfterBreak(state, level, pos, tool, dropExperience, breaker);
       if (dropExperience) {
          RandomSource random = level.getRandom();
          int magicCount = 15 + random.nextInt(15) + random.nextInt(15);

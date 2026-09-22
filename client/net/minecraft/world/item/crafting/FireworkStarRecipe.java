@@ -120,7 +120,7 @@ public class FireworkStarRecipe extends CustomRecipe {
                hasTrail = true;
             } else if (this.dye.test(itemStack)) {
                DyeColor dye = (DyeColor)itemStack.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
-               colors.add(dye.getFireworkColor());
+               colors.add(FireworkExplosion.defaultFireworkTint(dye));
             }
          }
       }

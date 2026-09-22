@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -25,7 +24,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -436,8 +434,7 @@ public class Sniffer extends Animal {
       DIGGING(5),
       RISING(6);
 
-      public static final IntFunction<State> BY_ID = ByIdMap.<State>continuous(State::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, State> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, State::id);
+      public static final StreamCodec<ByteBuf, State> STREAM_CODEC = ByteBufCodecs.enumCodec(State.class, State::id);
       private final int id;
 
       private State(final int id) {

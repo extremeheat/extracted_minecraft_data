@@ -66,7 +66,7 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
          ItemStack itemStack = input.getItem(slot);
          if (this.dye.test(itemStack)) {
             DyeColor dye = (DyeColor)itemStack.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
-            colors.add(dye.getFireworkColor());
+            colors.add(FireworkExplosion.defaultFireworkTint(dye));
          } else if (this.target.test(itemStack)) {
             targetStack = itemStack;
          }

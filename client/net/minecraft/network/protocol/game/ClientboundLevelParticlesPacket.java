@@ -1,7 +1,6 @@
 package net.minecraft.network.protocol.game;
 
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -9,7 +8,6 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.util.ByIdMap;
 
 public record ClientboundLevelParticlesPacket(ParticleOptions particle, boolean overrideLimiter, boolean alwaysShow, double x, double y, double z, float xDist, float yDist, float zDist, float xMaxSpeed, float yMaxSpeed, float zMaxSpeed, int count, RandomizationType randomizationType) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC;
@@ -39,8 +37,7 @@ public record ClientboundLevelParticlesPacket(ParticleOptions particle, boolean 
       ALTERNATIVE(1),
       ALTERNATIVE_WITH_SPEED(2);
 
-      private static final IntFunction<RandomizationType> BY_ID = ByIdMap.<RandomizationType>continuous((h) -> h.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, RandomizationType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (h) -> h.id);
+      public static final StreamCodec<ByteBuf, RandomizationType> STREAM_CODEC = ByteBufCodecs.enumCodec(RandomizationType.class, (h) -> h.id);
       private final int id;
 
       private RandomizationType(final int id) {

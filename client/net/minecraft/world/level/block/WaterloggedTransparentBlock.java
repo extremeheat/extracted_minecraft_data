@@ -38,7 +38,7 @@ public class WaterloggedTransparentBlock extends TransparentBlock implements Sim
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(true) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

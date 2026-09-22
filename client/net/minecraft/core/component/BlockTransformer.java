@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +21,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
@@ -228,8 +226,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       private final String name;
       private final @LevelEvent.Value int levelEvent;
       public static final Codec<TransformParticle> CODEC = StringRepresentable.<TransformParticle>fromValues(TransformParticle::values);
-      private static final IntFunction<TransformParticle> BY_ID = ByIdMap.<TransformParticle>continuous(TransformParticle::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, TransformParticle> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, TransformParticle::getId);
+      public static final StreamCodec<ByteBuf, TransformParticle> STREAM_CODEC = ByteBufCodecs.enumCodec(TransformParticle.class, TransformParticle::getId);
 
       private TransformParticle(final @LevelEvent.Value int id, final String name, final int levelEvent) {
          this.id = id;
@@ -270,8 +267,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       private final String name;
       private final ResourcePopper resourcePopper;
       public static final Codec<DropStrategy> CODEC = StringRepresentable.<DropStrategy>fromValues(DropStrategy::values);
-      private static final IntFunction<DropStrategy> BY_ID = ByIdMap.<DropStrategy>continuous(DropStrategy::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, DropStrategy> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DropStrategy::getId);
+      public static final StreamCodec<ByteBuf, DropStrategy> STREAM_CODEC = ByteBufCodecs.enumCodec(DropStrategy.class, DropStrategy::getId);
 
       private DropStrategy(final int id, final String name, final ResourcePopper resourcePopper) {
          this.id = id;
@@ -312,8 +308,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
       private final int id;
       private final String name;
       public static final Codec<TransformType> CODEC = StringRepresentable.<TransformType>fromValues(TransformType::values);
-      private static final IntFunction<TransformType> BY_ID = ByIdMap.<TransformType>continuous(TransformType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, TransformType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, TransformType::getId);
+      public static final StreamCodec<ByteBuf, TransformType> STREAM_CODEC = ByteBufCodecs.enumCodec(TransformType.class, TransformType::getId);
 
       private TransformType(final int id, final String name) {
          this.id = id;

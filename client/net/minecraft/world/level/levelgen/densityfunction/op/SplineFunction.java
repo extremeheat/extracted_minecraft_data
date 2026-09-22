@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.util.BoundedFloatFunction;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.Interval;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
+import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +31,28 @@ public record SplineFunction(CubicSpline<Coordinate> spline) implements DensityF
    }
 
    public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
-      return new Sampler(context, this.spline);
+      CubicSpline var10000 = this.spline;
+      Objects.requireNonNull(var10000);
+      CubicSpline var2 = var10000;
+      byte var3 = 0;
+      Object var6;
+      //$FF: var3->value
+      //0->net/minecraft/util/CubicSpline$Constant
+      //1->net/minecraft/util/CubicSpline$Multipoint
+      switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
+         case 0:
+            CubicSpline.Constant<Coordinate> constant = (CubicSpline.Constant)var2;
+            var6 = new ConstantFunction.Sampler(constant.value());
+            break;
+         case 1:
+            CubicSpline.Multipoint<Coordinate> multipoint = (CubicSpline.Multipoint)var2;
+            var6 = new Sampler(context, multipoint);
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return (DensitySampler)var6;
    }
 
    public Interval range() {
@@ -91,32 +114,32 @@ public record SplineFunction(CubicSpline<Coordinate> spline) implements DensityF
    }
 
    private static class Sampler implements DensitySampler {
-      private final BoundedFloatFunction<SplineInput> sampler;
+      private final CubicSpline.Multipoint<SamplerCoordinate> spline;
       private final int coordinateCount;
 
-      public Sampler(final DensityFunction.CompileContext context, final CubicSpline<Coordinate> spline) {
+      public Sampler(final DensityFunction.CompileContext context, final CubicSpline.Multipoint<Coordinate> spline) {
          super();
          Map<DensityFunction, SamplerCoordinate> coordinates = new HashMap();
-         this.sampler = CubicSpline.asSampler(spline.mapCoordinates((coordinate) -> (SamplerCoordinate)coordinates.computeIfAbsent(coordinate.function(), (function) -> {
+         this.spline = spline.mapCoordinates((coordinate) -> (SamplerCoordinate)coordinates.computeIfAbsent(coordinate.function(), (function) -> {
                int index = coordinates.size();
                DensitySampler sampler = function.compileSampler(context);
                return new SamplerCoordinate(sampler, index, function.range());
-            })));
+            }));
          this.coordinateCount = coordinates.size();
       }
 
       public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
-         try (BufferSplineInput input = new BufferSplineInput(context, volume, this.coordinateCount)) {
+         try (BufferSplineInput input = new BufferSplineInput(context, volume, this.coordinateCount, outputBuffer)) {
             for(int i = 0; i < outputBuffer.size(); ++i) {
                input.index = i;
-               outputBuffer.set(i, this.sampler.apply(input));
+               outputBuffer.set(i, CubicSpline.Multipoint.sample(this.spline, input));
             }
          }
 
       }
 
       public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
-         return this.sampler.apply(new PointSplineInput(context, blockX, blockY, blockZ, this.coordinateCount));
+         return CubicSpline.Multipoint.sample(this.spline, new PointSplineInput(context, blockX, blockY, blockZ, this.coordinateCount));
       }
    }
 
@@ -133,20 +156,29 @@ public record SplineFunction(CubicSpline<Coordinate> spline) implements DensityF
    private static class BufferSplineInput implements SplineInput, AutoCloseable {
       private final SamplerContext context;
       private final DensityVolume volume;
-      private final @Nullable ScopedDensityBuffer[] buffers;
+      private final @Nullable DensityBuffer[] buffers;
+      private final DensityBuffer outputBuffer;
+      private boolean usedOutputBuffer;
       private int index;
 
-      private BufferSplineInput(final SamplerContext context, final DensityVolume volume, final int coordinateCount) {
+      private BufferSplineInput(final SamplerContext context, final DensityVolume volume, final int coordinateCount, final DensityBuffer outputBuffer) {
          super();
          this.context = context;
          this.volume = volume;
-         this.buffers = new ScopedDensityBuffer[coordinateCount];
+         this.buffers = new DensityBuffer[coordinateCount];
+         this.outputBuffer = outputBuffer;
       }
 
       public float sampleCoordinate(final DensitySampler coordinateSampler, final int coordinateIndex) {
-         ScopedDensityBuffer buffer = this.buffers[coordinateIndex];
+         DensityBuffer buffer = this.buffers[coordinateIndex];
          if (buffer == null) {
-            buffer = this.context.acquireBuffer(this.volume);
+            if (!this.usedOutputBuffer) {
+               buffer = this.outputBuffer;
+               this.usedOutputBuffer = true;
+            } else {
+               buffer = this.context.acquireBuffer(this.volume);
+            }
+
             coordinateSampler.sampleVolume(this.context, buffer, this.volume);
             this.buffers[coordinateIndex] = buffer;
          }
@@ -155,9 +187,11 @@ public record SplineFunction(CubicSpline<Coordinate> spline) implements DensityF
       }
 
       public void close() {
-         for(ScopedDensityBuffer buffer : this.buffers) {
-            if (buffer != null) {
-               buffer.close();
+         for(DensityBuffer buffer : this.buffers) {
+            if (buffer instanceof ScopedDensityBuffer scoped) {
+               if (buffer != this.outputBuffer) {
+                  scoped.close();
+               }
             }
          }
 

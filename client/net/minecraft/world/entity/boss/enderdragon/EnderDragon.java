@@ -210,7 +210,7 @@ public class EnderDragon extends Mob implements Enemy {
                      ydd = Mth.clamp(ydd / horizontalDist, (double)(-max), (double)max);
                   }
 
-                  this.setDeltaMovement(this.getDeltaMovement().add(0.0, ydd * 0.01, 0.0));
+                  this.addDeltaMovement(0.0, ydd * 0.01, 0.0);
                   this.setYRot(Mth.wrapDegrees(this.getYRot()));
                   Vec3 aim = targetLocation.subtract(this.getX(), this.getY(), this.getZ()).normalize();
                   Vec3 dir = (new Vec3((double)Mth.sin((double)(this.getYRot() * 0.017453292F)), this.getDeltaMovement().y, (double)(-Mth.cos((double)(this.getYRot() * 0.017453292F))))).normalize();

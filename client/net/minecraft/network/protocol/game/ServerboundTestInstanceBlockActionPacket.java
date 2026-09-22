@@ -2,7 +2,6 @@ package net.minecraft.network.protocol.game;
 
 import io.netty.buffer.ByteBuf;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.gametest.framework.GameTestInstance;
@@ -12,7 +11,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 
@@ -48,8 +46,7 @@ public record ServerboundTestInstanceBlockActionPacket(BlockPos pos, Action acti
       EXPORT(5),
       RUN(6);
 
-      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((e) -> e.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (e) -> e.id);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.enumCodec(Action.class, (e) -> e.id);
       private final int id;
 
       private Action(final int id) {

@@ -26,7 +26,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Continuation;
@@ -45,8 +44,8 @@ import net.minecraft.world.level.blockscan.BlockScanUtils;
 import net.minecraft.world.level.blockscan.BlockStateConsumer;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
-import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.RetroGen;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
@@ -271,9 +270,9 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
 
    public ChunkStatus getHighestGeneratedStatus() {
       ChunkStatus status = this.getPersistedStatus();
-      BelowZeroRetrogen belowZeroRetrogen = this.getBelowZeroRetrogen();
-      if (belowZeroRetrogen != null) {
-         ChunkStatus targetStatus = belowZeroRetrogen.targetStatus();
+      RetroGen retroGen = this.getRetroGen();
+      if (retroGen != null) {
+         ChunkStatus targetStatus = retroGen.targetStatus();
          return ChunkStatus.max(targetStatus, status);
       } else {
          return status;
@@ -333,13 +332,14 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
 
    public abstract TickContainerAccess<Fluid> getFluidTicks();
 
-   public void collectBiomesInPalette(final Set<Holder<Biome>> output) {
+   public Set<Holder<Biome>> collectBiomesInPalette(final Set<Holder<Biome>> output) {
       for(LevelChunkSection section : this.sections) {
          PalettedContainerRO var10000 = section.getBiomes();
          Objects.requireNonNull(output);
          var10000.forEachInPalette(output::add);
       }
 
+      return output;
    }
 
    public boolean canBeSerialized() {
@@ -409,41 +409,39 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
       return this.carverBiomeSettings;
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
       try {
-         int quartMinY = QuartPos.fromBlock(this.getMinY());
-         int quartMaxY = quartMinY + QuartPos.fromBlock(this.getHeight()) - 1;
-         int clampedQuartY = Mth.clamp(quartY, quartMinY, quartMaxY);
-         int sectionIndex = this.getSectionIndex(QuartPos.toBlock(clampedQuartY));
-         return this.sections[sectionIndex].getNoiseBiome(quartX & 3, clampedQuartY & 3, quartZ & 3);
+         int clampedY = Mth.clamp(y, this.getMinY(), this.getMaxY());
+         int sectionIndex = this.getSectionIndex(clampedY);
+         return this.sections[sectionIndex].getBiome(SectionPos.sectionRelative(x), SectionPos.sectionRelative(clampedY), SectionPos.sectionRelative(z));
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Getting biome");
          CrashReportCategory category = report.addCategory("Biome being got");
-         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, quartX, quartY, quartZ)));
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
          throw new ReportedException(report);
       }
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver) {
+   public void fillBiomes(final BiomeResolver biomeResolver) {
       ChunkPos pos = this.getPos();
-      int quartMinX = QuartPos.fromBlock(pos.getMinBlockX());
-      int quartMinZ = QuartPos.fromBlock(pos.getMinBlockZ());
-      LevelHeightAccessor heightAccessor = this.getHeightAccessorForGeneration();
+      int minX = pos.getMinBlockX();
+      int minZ = pos.getMinBlockZ();
+      LevelHeightAccessor heightAccessor = this;
 
-      for(int sectionY = heightAccessor.getMinSectionY(); sectionY <= heightAccessor.getMaxSectionY(); ++sectionY) {
+      for(int sectionY = this.getMinSectionY(); sectionY <= heightAccessor.getMaxSectionY(); ++sectionY) {
          LevelChunkSection section = this.getSection(this.getSectionIndexFromSectionY(sectionY));
-         int quartMinY = QuartPos.fromSection(sectionY);
-         section.fillBiomesFromNoise(biomeResolver, quartMinX, quartMinY, quartMinZ);
+         int minY = SectionPos.sectionToBlockCoord(sectionY);
+         section.fillBiome(biomeResolver, minX, minY, minZ);
       }
 
    }
 
-   public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {
+   public @Nullable RetroGen getRetroGen() {
       return null;
    }
 
    public boolean isUpgrading() {
-      return this.getBelowZeroRetrogen() != null;
+      return this.getRetroGen() != null;
    }
 
    public LevelHeightAccessor getHeightAccessorForGeneration() {

@@ -2,12 +2,10 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.netty.buffer.ByteBuf;
 import java.util.Objects;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.util.ByIdMap;
 
 public enum ChatVisiblity {
@@ -15,9 +13,8 @@ public enum ChatVisiblity {
    SYSTEM(1, "options.chat.visibility.system"),
    HIDDEN(2, "options.chat.visibility.hidden");
 
-   private static final IntFunction<ChatVisiblity> BY_ID = ByIdMap.<ChatVisiblity>continuous((v) -> v.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final EnumStreamCodec<ChatVisiblity> STREAM_CODEC = ByteBufCodecs.<ChatVisiblity>enumCodec(ChatVisiblity.class, (v) -> v.id, ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<ChatVisiblity> LEGACY_CODEC;
-   public static final StreamCodec<ByteBuf, ChatVisiblity> STREAM_CODEC;
    private final int id;
    private final Component caption;
 
@@ -37,9 +34,8 @@ public enum ChatVisiblity {
 
    static {
       PrimitiveCodec var10000 = Codec.INT;
-      IntFunction var10001 = BY_ID;
+      EnumStreamCodec var10001 = STREAM_CODEC;
       Objects.requireNonNull(var10001);
-      LEGACY_CODEC = var10000.xmap(var10001::apply, (v) -> v.id);
-      STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (v) -> v.id);
+      LEGACY_CODEC = var10000.xmap(var10001::byId, (v) -> v.id);
    }
 }

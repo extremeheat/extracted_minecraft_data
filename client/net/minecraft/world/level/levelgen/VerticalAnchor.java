@@ -1,138 +1,121 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import java.util.function.Function;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.Util;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.DimensionType;
 
-public interface VerticalAnchor {
-   Codec<VerticalAnchor> CODEC = Codec.xor(VerticalAnchor.Absolute.CODEC, Codec.xor(VerticalAnchor.AboveBottom.CODEC, Codec.xor(VerticalAnchor.BelowTop.CODEC, VerticalAnchor.RelativeToSeaLevel.CODEC))).xmap(VerticalAnchor::merge, VerticalAnchor::split);
-   VerticalAnchor BOTTOM = aboveBottom(0);
-   VerticalAnchor TOP = belowTop(0);
+public record VerticalAnchor(Type type, int offset) {
+   private static final Codec<Integer> OFFSET_CODEC;
+   public static final Codec<VerticalAnchor> CODEC;
+   private static final VerticalAnchor BOTTOM;
+   private static final VerticalAnchor TOP;
 
-   static VerticalAnchor absolute(final int value) {
-      return new Absolute(value);
+   public VerticalAnchor {
+      super();
    }
 
-   static VerticalAnchor aboveBottom(final int offset) {
-      return new AboveBottom(offset);
+   public static VerticalAnchor absolute(final int value) {
+      return new VerticalAnchor(VerticalAnchor.Type.ABSOLUTE, value);
    }
 
-   static VerticalAnchor belowTop(final int offset) {
-      return new BelowTop(offset);
+   public static VerticalAnchor aboveBottom(final int offset) {
+      return new VerticalAnchor(VerticalAnchor.Type.ABOVE_BOTTOM, offset);
    }
 
-   static VerticalAnchor bottom() {
+   public static VerticalAnchor belowTop(final int offset) {
+      return new VerticalAnchor(VerticalAnchor.Type.BELOW_TOP, offset);
+   }
+
+   public static VerticalAnchor bottom() {
       return BOTTOM;
    }
 
-   static VerticalAnchor top() {
+   public static VerticalAnchor top() {
       return TOP;
    }
 
-   static VerticalAnchor relativeToSeaLevel(final int offset) {
-      return new RelativeToSeaLevel(offset);
+   public static VerticalAnchor relativeToSeaLevel(final int offset) {
+      return new VerticalAnchor(VerticalAnchor.Type.RELATIVE_TO_SEA_LEVEL, offset);
    }
 
-   static VerticalAnchor seaLevel() {
+   public static VerticalAnchor seaLevel() {
       return relativeToSeaLevel(0);
    }
 
-   private static VerticalAnchor merge(final Either<Absolute, Either<AboveBottom, Either<BelowTop, RelativeToSeaLevel>>> either) {
-      return (VerticalAnchor)either.map(Function.identity(), (e) -> (Record)e.map(Function.identity(), Either::unwrap));
+   public int resolveY(final Context context) {
+      int var10000;
+      switch (this.type.ordinal()) {
+         case 0 -> var10000 = this.offset;
+         case 1 -> var10000 = context.minY() + this.offset;
+         case 2 -> var10000 = context.maxY() - this.offset;
+         case 3 -> var10000 = context.seaLevel() + this.offset;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
    }
 
-   private static Either<Absolute, Either<AboveBottom, Either<BelowTop, RelativeToSeaLevel>>> split(final VerticalAnchor anchor) {
-      if (anchor instanceof Absolute absolute) {
-         return Either.left(absolute);
-      } else if (anchor instanceof AboveBottom aboveBottom) {
-         return Either.right(Either.left(aboveBottom));
-      } else if (anchor instanceof BelowTop belowTop) {
-         return Either.right(Either.right(Either.left(belowTop)));
-      } else {
-         return Either.right(Either.right(Either.right((RelativeToSeaLevel)anchor)));
+   public String toString() {
+      int var10000 = this.offset;
+      return var10000 + " " + this.type.getSerializedName();
+   }
+
+   static {
+      OFFSET_CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y);
+      CODEC = ExtraCodecs.singleKeyDispatch(VerticalAnchor.Type.CODEC, VerticalAnchor::type, Util.memoize((Function)((type) -> OFFSET_CODEC.xmap((offset) -> new VerticalAnchor(type, offset), VerticalAnchor::offset))));
+      BOTTOM = aboveBottom(0);
+      TOP = belowTop(0);
+   }
+
+   public static enum Type implements StringRepresentable {
+      ABSOLUTE("absolute"),
+      ABOVE_BOTTOM("above_bottom"),
+      BELOW_TOP("below_top"),
+      RELATIVE_TO_SEA_LEVEL("relative_to_sea_level");
+
+      public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      private final String name;
+
+      private Type(final String name) {
+         this.name = name;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{ABSOLUTE, ABOVE_BOTTOM, BELOW_TOP, RELATIVE_TO_SEA_LEVEL};
       }
    }
 
-   int resolveY(final WorldGenerationContext heightAccessor);
-
-   public static record Absolute(int y) implements VerticalAnchor {
-      public static final Codec<Absolute> CODEC;
-
-      public Absolute {
+   public static record Context(int minY, int height, int seaLevel) {
+      public Context {
          super();
       }
 
-      public int resolveY(final WorldGenerationContext heightAccessor) {
-         return this.y;
+      public static Context from(final LevelAccessor level) {
+         if (level instanceof WorldGenLevel worldGenLevel) {
+            return from(worldGenLevel.getLevel().getChunkSource().getGenerator(), level);
+         } else {
+            return new Context(level.getMinY(), level.getHeight(), level.getSeaLevel());
+         }
       }
 
-      public String toString() {
-         return this.y + " absolute";
+      public static Context from(final ChunkGenerator generator, final LevelHeightAccessor heightAccessor) {
+         return new Context(Math.max(heightAccessor.getMinY(), generator.getMinY()), Math.min(heightAccessor.getHeight(), generator.getGenDepth()), generator.getSeaLevel());
       }
 
-      static {
-         CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("absolute").xmap(Absolute::new, Absolute::y).codec();
-      }
-   }
-
-   public static record AboveBottom(int offset) implements VerticalAnchor {
-      public static final Codec<AboveBottom> CODEC;
-
-      public AboveBottom {
-         super();
-      }
-
-      public int resolveY(final WorldGenerationContext heightAccessor) {
-         return heightAccessor.getMinGenY() + this.offset;
-      }
-
-      public String toString() {
-         return this.offset + " above bottom";
-      }
-
-      static {
-         CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("above_bottom").xmap(AboveBottom::new, AboveBottom::offset).codec();
-      }
-   }
-
-   public static record BelowTop(int offset) implements VerticalAnchor {
-      public static final Codec<BelowTop> CODEC;
-
-      public BelowTop {
-         super();
-      }
-
-      public int resolveY(final WorldGenerationContext heightAccessor) {
-         return heightAccessor.getGenDepth() - 1 + heightAccessor.getMinGenY() - this.offset;
-      }
-
-      public String toString() {
-         return this.offset + " below top";
-      }
-
-      static {
-         CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("below_top").xmap(BelowTop::new, BelowTop::offset).codec();
-      }
-   }
-
-   public static record RelativeToSeaLevel(int offset) implements VerticalAnchor {
-      public static final Codec<RelativeToSeaLevel> CODEC;
-
-      public RelativeToSeaLevel {
-         super();
-      }
-
-      public int resolveY(final WorldGenerationContext heightAccessor) {
-         return heightAccessor.seaLevel() + this.offset;
-      }
-
-      public String toString() {
-         return this.offset + " relative to sea level";
-      }
-
-      static {
-         CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("relative_to_sea_level").xmap(RelativeToSeaLevel::new, RelativeToSeaLevel::offset).codec();
+      public int maxY() {
+         return this.minY + this.height - 1;
       }
    }
 }

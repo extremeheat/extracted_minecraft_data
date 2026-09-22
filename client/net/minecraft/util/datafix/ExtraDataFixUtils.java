@@ -8,6 +8,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.View;
 import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -17,7 +18,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.IntStream;
-import net.minecraft.util.Util;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 
 public class ExtraDataFixUtils {
    public ExtraDataFixUtils() {
@@ -109,6 +112,29 @@ public class ExtraDataFixUtils {
    }
 
    public static <T> Typed<?> readAndSet(final Typed<?> target, final OpticFinder<T> optic, final Dynamic<?> value) {
-      return target.set(optic, Util.readTypedOrThrow(optic.type(), value, true));
+      return target.set(optic, readTypedOrThrow(optic.type(), value, true));
+   }
+
+   public static <A, B> Typed<B> writeAndReadTypedOrThrow(final Typed<A> typed, final Type<B> newType, final UnaryOperator<Dynamic<?>> function) {
+      Dynamic<?> dynamic = (Dynamic)typed.write().getOrThrow();
+      return readTypedOrThrow(newType, (Dynamic)function.apply(dynamic), true);
+   }
+
+   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic) {
+      return readTypedOrThrow(type, dynamic, false);
+   }
+
+   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic, final boolean acceptPartial) {
+      DataResult<Typed<T>> result = type.readTyped(dynamic).map(Pair::getFirst);
+
+      try {
+         return acceptPartial ? (Typed)result.getPartialOrThrow(IllegalStateException::new) : (Typed)result.getOrThrow(IllegalStateException::new);
+      } catch (IllegalStateException e) {
+         CrashReport report = CrashReport.forThrowable(e, "Reading type");
+         CrashReportCategory category = report.addCategory("Info");
+         category.setDetail("Data", dynamic);
+         category.setDetail("Type", type);
+         throw new ReportedException(report);
+      }
    }
 }

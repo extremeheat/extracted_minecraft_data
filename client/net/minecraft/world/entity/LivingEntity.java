@@ -2315,11 +2315,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected void goDownInWater() {
-      this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03999999910593033, 0.0));
+      this.addDeltaMovement(0.0, -0.03999999910593033, 0.0);
    }
 
    protected void jumpInLiquid(final TagKey<Fluid> type) {
-      this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.03999999910593033, 0.0));
+      this.addDeltaMovement(0.0, 0.03999999910593033, 0.0);
    }
 
    protected float getWaterSlowDown() {
@@ -2471,23 +2471,25 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
 
       if (baseGravity != 0.0) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -baseGravity / 4.0, 0.0));
+         this.addDeltaMovement(0.0, -baseGravity / 4.0, 0.0);
       }
 
       this.jumpOutOfFluid(oldY);
    }
 
-   private void jumpOutOfFluid(final double oldY) {
-      Vec3 movement = this.getDeltaMovement();
-      if (this.horizontalCollision && this.isFree(movement.x, movement.y + 0.6000000238418579 - this.getY() + oldY, movement.z)) {
-         this.setDeltaMovement(movement.x, 0.30000001192092896, movement.z);
+   protected void jumpOutOfFluid(final double oldY) {
+      if (this.isJumping() || this.isSwimming()) {
+         Vec3 movement = this.getDeltaMovement();
+         if (this.horizontalCollision && this.isFree(movement.x, movement.y + 0.6000000238418579 - this.getY() + oldY, movement.z)) {
+            this.setDeltaMovement(movement.x, 0.30000001192092896, movement.z);
+         }
       }
 
    }
 
    private void floatInLiquidWhileRidden(final TagKey<Fluid> fluidTag) {
       if (this.isVehicle() && this.is(EntityTypeTags.CAN_FLOAT_WHILE_RIDDEN) && this.isInFluidDeeperThan(this.getFluidJumpThreshold(), fluidTag)) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.03999999910593033, 0.0));
+         this.addDeltaMovement(0.0, 0.03999999910593033, 0.0);
       }
 
    }

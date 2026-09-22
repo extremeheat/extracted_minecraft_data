@@ -4,6 +4,7 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.ShaderSource;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.MessageBox;
@@ -19,8 +20,6 @@ import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
-import com.mojang.renderpearl.api.device.GpuDevice;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
@@ -248,7 +247,6 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
    }
 
    public static void preloadUiShader(final ResourceManager resourceManager) {
-      GpuDevice device = RenderSystem.getDevice();
       final Map<Identifier, ShaderSource.CachedIncludeSource> includes = ShaderManager.listAllIncludes(resourceManager);
       ShaderSource shaderSource = new ShaderSource() {
          public @Nullable String getShader(final Identifier id, final ShaderType type) {
@@ -270,7 +268,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
             includes.values().forEach(ShaderSource.CachedIncludeSource::close);
          }
       };
-      RenderSystem.setFallbackPipelineCache(new PipelineCache(device, shaderSource));
+      RenderSystem.setFallbackPipelineCache(new PipelineCache(RenderSystem.getPipelineBuilder(), shaderSource));
       RenderSystem.getCompiledPipeline(RenderPipelines.GUI);
       RenderSystem.getCompiledPipeline(RenderPipelines.GUI_TEXTURED);
       if (TracyClient.isAvailable()) {

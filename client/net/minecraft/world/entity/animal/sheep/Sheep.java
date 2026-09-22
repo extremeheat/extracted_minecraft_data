@@ -164,7 +164,7 @@ public class Sheep extends Animal implements Shearable {
          for(int i = 0; i < drop.getCount(); ++i) {
             ItemEntity entity = this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F);
             if (entity != null) {
-               entity.setDeltaMovement(entity.getDeltaMovement().add((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(this.random.nextFloat() * 0.05F), (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F)));
+               entity.addDeltaMovement((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(this.random.nextFloat() * 0.05F), (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.1F));
             }
          }
 

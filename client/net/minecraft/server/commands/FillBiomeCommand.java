@@ -22,7 +22,6 @@ import net.minecraft.commands.arguments.ResourceOrTagArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -48,20 +47,9 @@ public class FillBiomeCommand {
       dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fillbiome").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("biome", ResourceArgument.resource(context, Registries.BIOME)).executes((c) -> fill((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to"), ResourceArgument.getResource(c, "biome", Registries.BIOME), (b) -> true))).then(Commands.literal("replace").then(Commands.argument("filter", ResourceOrTagArgument.resourceOrTag(context, Registries.BIOME)).executes((c) -> fill((CommandSourceStack)c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "from"), BlockPosArgument.getLoadedBlockPos(c, "to"), ResourceArgument.getResource(c, "biome", Registries.BIOME), ResourceOrTagArgument.getResourceOrTag(c, "filter", Registries.BIOME)))))))));
    }
 
-   private static int quantize(final int blockCoord) {
-      return QuartPos.toBlock(QuartPos.fromBlock(blockCoord));
-   }
-
-   private static BlockPos quantize(final BlockPos block) {
-      return new BlockPos(quantize(block.getX()), quantize(block.getY()), quantize(block.getZ()));
-   }
-
    private static BiomeResolver makeResolver(final MutableInt count, final ChunkAccess chunk, final BoundingBox region, final Holder<Biome> toFill, final Predicate<Holder<Biome>> filter) {
-      return (quartX, quartY, quartZ) -> {
-         int blockX = QuartPos.toBlock(quartX);
-         int blockY = QuartPos.toBlock(quartY);
-         int blockZ = QuartPos.toBlock(quartZ);
-         Holder<Biome> currentBiome = chunk.getNoiseBiome(quartX, quartY, quartZ);
+      return (blockX, blockY, blockZ) -> {
+         Holder<Biome> currentBiome = chunk.getBiome(blockX, blockY, blockZ);
          if (region.isInside(blockX, blockY, blockZ) && filter.test(currentBiome)) {
             if (!currentBiome.is(toFill)) {
                count.increment();
@@ -74,14 +62,12 @@ public class FillBiomeCommand {
       };
    }
 
-   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos rawFrom, final BlockPos rawTo, final Holder<Biome> biome) {
-      return fill(level, rawFrom, rawTo, biome, (var0) -> true, (var0) -> {
+   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos from, final BlockPos to, final Holder<Biome> biome) {
+      return fill(level, from, to, biome, (var0) -> true, (var0) -> {
       });
    }
 
-   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos rawFrom, final BlockPos rawTo, final Holder<Biome> biome, final Predicate<Holder<Biome>> filter, final Consumer<Supplier<Component>> successMessageConsumer) {
-      BlockPos from = quantize(rawFrom);
-      BlockPos to = quantize(rawTo);
+   public static Either<Integer, CommandSyntaxException> fill(final ServerLevel level, final BlockPos from, final BlockPos to, final Holder<Biome> biome, final Predicate<Holder<Biome>> filter, final Consumer<Supplier<Component>> successMessageConsumer) {
       BoundingBox region = BoundingBox.fromCorners(from, to);
       long volume = (long)region.getXSpan() * (long)region.getYSpan() * (long)region.getZSpan();
       int limit = (Integer)level.getGameRules().get(GameRules.MAX_BLOCK_MODIFICATIONS);
@@ -107,7 +93,7 @@ public class FillBiomeCommand {
          while(iterator.hasNext()) {
             ChunkAccess chunk = (ChunkAccess)iterator.next();
             int previousChangedCount = changedCount.intValue();
-            chunk.fillBiomesFromNoise(makeResolver(changedCount, chunk, region, biome, filter));
+            chunk.fillBiomes(makeResolver(changedCount, chunk, region, biome, filter));
             if (previousChangedCount != changedCount.intValue()) {
                chunk.markUnsaved();
             } else {

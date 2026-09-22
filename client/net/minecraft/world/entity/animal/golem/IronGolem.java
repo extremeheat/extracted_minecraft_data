@@ -182,7 +182,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
          double knockbackResistance = var10000;
          double scale = Math.max(0.0, 1.0 - knockbackResistance);
-         target.setDeltaMovement(target.getDeltaMovement().add(0.0, 0.4000000059604645 * scale, 0.0));
+         target.addDeltaMovement(0.0, 0.4000000059604645 * scale, 0.0);
          EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
       }
 

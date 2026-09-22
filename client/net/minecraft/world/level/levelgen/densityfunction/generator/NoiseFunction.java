@@ -73,6 +73,10 @@ public record NoiseFunction(Holder<NormalNoise> noise, double xzScale, double yS
       return CODEC;
    }
 
+   public String getDebugName() {
+      return "noise(" + DensityFunction.idShortString(this.noise) + ")";
+   }
+
    /** @deprecated */
    @Deprecated
    public double xzScale() {

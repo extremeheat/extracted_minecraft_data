@@ -275,7 +275,34 @@ public class Climate {
       private final RTree<T> index;
 
       public static <T> Codec<ParameterList<T>> codec(final MapCodec<T> valueCodec) {
-         return ExtraCodecs.nonEmptyList(RecordCodecBuilder.create((i) -> i.group(Climate.ParameterPoint.CODEC.fieldOf("parameters").forGetter(Pair::getFirst), valueCodec.forGetter(Pair::getSecond)).apply(i, Pair::of)).listOf()).xmap(ParameterList::new, ParameterList::values);
+         return ExtraCodecs.nonEmptyList(RecordCodecBuilder.create((i) -> i.group(Climate.ParameterPoint.CODEC.fieldOf("parameters").forGetter(Pair::getFirst), valueCodec.forGetter(Pair::getSecond)).apply(i, Pair::of)).listOf()).validate(ParameterList::validate).xmap(ParameterList::new, ParameterList::values);
+      }
+
+      private static <T> DataResult<List<Pair<ParameterPoint, T>>> validate(final List<Pair<ParameterPoint, T>> values) {
+         for(int firstIndex = 0; firstIndex < values.size(); ++firstIndex) {
+            Pair<ParameterPoint, T> first = (Pair)values.get(firstIndex);
+            ParameterPoint firstParameters = (ParameterPoint)first.getFirst();
+            T firstValue = (T)first.getSecond();
+
+            for(int secondIndex = firstIndex + 1; secondIndex < values.size(); ++secondIndex) {
+               Pair<ParameterPoint, T> second = (Pair)values.get(secondIndex);
+               ParameterPoint secondParameters = (ParameterPoint)second.getFirst();
+               T secondValue = (T)second.getSecond();
+               if (!firstValue.equals(secondValue) && firstParameters.offset() == secondParameters.offset() && allNoiseParametersOverlap(firstParameters, secondParameters)) {
+                  return DataResult.error(() -> "Entries " + firstIndex + " and " + secondIndex + " overlap in all noise parameters");
+               }
+            }
+         }
+
+         return DataResult.success(values);
+      }
+
+      private static boolean allNoiseParametersOverlap(final ParameterPoint first, final ParameterPoint second) {
+         return parametersOverlap(first.temperature(), second.temperature()) && parametersOverlap(first.humidity(), second.humidity()) && parametersOverlap(first.continentalness(), second.continentalness()) && parametersOverlap(first.erosion(), second.erosion()) && parametersOverlap(first.depth(), second.depth()) && parametersOverlap(first.weirdness(), second.weirdness());
+      }
+
+      private static boolean parametersOverlap(final Parameter first, final Parameter second) {
+         return first.equals(second) || Math.max(first.min(), second.min()) < Math.min(first.max(), second.max());
       }
 
       public ParameterList(final List<Pair<ParameterPoint, T>> values) {
@@ -389,7 +416,7 @@ public class Climate {
       }
 
       public long distance(final long target) {
-         long above = target - this.max;
+         long above = target - this.max + 1L;
          long below = this.min - target;
          return above > 0L ? above : Math.max(below, 0L);
       }

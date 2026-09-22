@@ -6,12 +6,10 @@ import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.BitSet;
 import java.util.Objects;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import org.apache.commons.lang3.StringUtils;
@@ -157,8 +155,7 @@ public class FilterMask {
       FULLY_FILTERED(1, "fully_filtered", () -> MapCodec.unit(FilterMask.FULLY_FILTERED), () -> StreamCodec.unit(FilterMask.FULLY_FILTERED)),
       PARTIALLY_FILTERED(2, "partially_filtered", () -> ExtraCodecs.BIT_SET.xmap(FilterMask::new, FilterMask::mask).fieldOf("value"), () -> ByteBufCodecs.BIT_SET.map(FilterMask::new, FilterMask::mask));
 
-      private static final IntFunction<Type> ID_MAP = ByIdMap.<Type>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.idMapper(ID_MAP, (t) -> t.id);
+      public static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.enumCodec(Type.class, (t) -> t.id);
       private final int id;
       private final String serializedName;
       private final Supplier<MapCodec<FilterMask>> codec;

@@ -27,8 +27,11 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,11 +83,8 @@ public class Block extends BlockBehaviour implements ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<Block> builtInRegistryHolder;
    public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<BlockState>();
-   private static final LoadingCache<VoxelShape, Boolean> SHAPE_FULL_BLOCK_CACHE = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<VoxelShape, Boolean>() {
-      public Boolean load(final VoxelShape shape) {
-         return !Shapes.joinIsNotEmpty(Shapes.block(), shape, BooleanOp.NOT_SAME);
-      }
-   });
+   public static final StreamCodec<RegistryFriendlyByteBuf, BlockState> BLOCK_STATE_REGISTRY_STREAM_CODEC;
+   private static final LoadingCache<VoxelShape, Boolean> SHAPE_FULL_BLOCK_CACHE;
    public static final int UPDATE_NEIGHBORS = 1;
    public static final int UPDATE_CLIENTS = 2;
    public static final int UPDATE_INVISIBLE = 4;
@@ -106,14 +106,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    private BlockState defaultBlockState;
    private @Nullable Item item;
    private static final int CACHE_SIZE = 256;
-   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<ShapePairKey>> OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
-      Object2ByteLinkedOpenHashMap<ShapePairKey> map = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
-         protected void rehash(final int newN) {
-         }
-      };
-      map.defaultReturnValue((byte)127);
-      return map;
-   });
+   private static final ThreadLocal<Object2ByteLinkedOpenHashMap<ShapePairKey>> OCCLUSION_CACHE;
 
    public static int getId(final @Nullable BlockState blockState) {
       if (blockState == null) {
@@ -312,28 +305,18 @@ public class Block extends BlockBehaviour implements ItemLike {
    public void destroy(final LevelAccessor level, final BlockPos pos, final BlockState state) {
    }
 
-   public static List<ItemStack> getDrops(final BlockState state, final ServerLevel level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
-      LootParams.Builder params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
-      return state.getDrops(params);
-   }
-
    public static List<ItemStack> getDrops(final BlockState state, final ServerLevel level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemInstance tool) {
       LootParams.Builder params = (new LootParams.Builder(level)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, tool).withOptionalParameter(LootContextParams.THIS_ENTITY, breaker).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity);
       return state.getDrops(params);
    }
 
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos) {
-      if (level instanceof ServerLevel serverLevel) {
-         getDrops(state, serverLevel, pos, (BlockEntity)null).forEach((stack) -> popResource(level, pos, stack));
-         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
-      }
-
+      dropResources(state, level, pos, (BlockEntity)null, (Entity)null, ItemStack.EMPTY);
    }
 
    public static void dropResources(final BlockState state, final LevelAccessor level, final BlockPos pos, final @Nullable BlockEntity blockEntity) {
       if (level instanceof ServerLevel serverLevel) {
-         getDrops(state, serverLevel, pos, blockEntity).forEach((stack) -> popResource(serverLevel, pos, stack));
-         state.spawnAfterBreak(serverLevel, pos, ItemStack.EMPTY, true);
+         dropResources(state, serverLevel, pos, blockEntity, (Entity)null, ItemStack.EMPTY);
       }
 
    }
@@ -341,7 +324,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static void dropResources(final BlockState state, final Level level, final BlockPos pos, final @Nullable BlockEntity blockEntity, final @Nullable Entity breaker, final ItemStack tool) {
       if (level instanceof ServerLevel serverLevel) {
          getDrops(state, serverLevel, pos, blockEntity, breaker, tool).forEach((stack) -> popResource(level, pos, stack));
-         state.spawnAfterBreak(serverLevel, pos, tool, true);
+         state.spawnAfterBreak(serverLevel, pos, tool, true, breaker);
       }
 
    }
@@ -553,6 +536,28 @@ public class Block extends BlockBehaviour implements ItemLike {
          this.popExperience(level, pos, experience);
       }
 
+   }
+
+   static {
+      IdMapper var10000 = BLOCK_STATE_REGISTRY;
+      Objects.requireNonNull(var10000);
+      IntFunction var0 = var10000::byIdOrThrow;
+      IdMapper var10001 = BLOCK_STATE_REGISTRY;
+      Objects.requireNonNull(var10001);
+      BLOCK_STATE_REGISTRY_STREAM_CODEC = ByteBufCodecs.idMapper(var0, var10001::getIdOrThrow).cast();
+      SHAPE_FULL_BLOCK_CACHE = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<VoxelShape, Boolean>() {
+         public Boolean load(final VoxelShape shape) {
+            return !Shapes.joinIsNotEmpty(Shapes.block(), shape, BooleanOp.NOT_SAME);
+         }
+      });
+      OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
+         Object2ByteLinkedOpenHashMap<ShapePairKey> map = new Object2ByteLinkedOpenHashMap<ShapePairKey>(256, 0.25F) {
+            protected void rehash(final int newN) {
+            }
+         };
+         map.defaultReturnValue((byte)127);
+         return map;
+      });
    }
 
    private static record ShapePairKey(VoxelShape first, VoxelShape second) {

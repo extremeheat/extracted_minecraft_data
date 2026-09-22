@@ -7,14 +7,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.BitStorage;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraft.util.StringRepresentable;
@@ -37,6 +35,11 @@ public class Heightmap {
       this.chunk = chunk;
       int heightBits = Mth.ceillog2(chunk.getHeight() + 1);
       this.data = new SimpleBitStorage(heightBits, 256);
+   }
+
+   public static void copyHeightmap(final ChunkAccess chunk, final Types fromType, final Types toType) {
+      Heightmap from = chunk.getOrCreateHeightmapUnprimed(fromType);
+      chunk.setHeightmap(toType, from.getRawData());
    }
 
    public static void primeHeightmaps(final ChunkAccess chunk, final Set<Types> types) {
@@ -167,8 +170,7 @@ public class Heightmap {
       MOTION_BLOCKING_NO_LEAVES(5, "MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (input) -> input.is(BlockTags.BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES) || !input.getFluidState().isEmpty());
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
-      private static final IntFunction<Types> BY_ID = ByIdMap.<Types>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Types> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (t) -> t.id);
+      public static final StreamCodec<ByteBuf, Types> STREAM_CODEC = ByteBufCodecs.enumCodec(Types.class, (t) -> t.id);
       private final int id;
       private final String serializationKey;
       private final Usage usage;

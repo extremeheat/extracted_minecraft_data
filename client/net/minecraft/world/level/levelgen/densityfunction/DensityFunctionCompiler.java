@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.densityfunction;
 
+import com.mojang.jtracy.TracyClient;
 import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.CacheFunction;
 
 public class DensityFunctionCompiler {
@@ -44,18 +46,31 @@ public class DensityFunctionCompiler {
       return (DensitySampler)this.samplers.computeIfAbsent(function, this.optimizeAndCompile);
    }
 
+   private DensityFunction preprocessFunction(final DensityFunction function) {
+      return TracyClient.isAvailable() ? (new DfRewriteRule() {
+         {
+            Objects.requireNonNull(DensityFunctionCompiler.this);
+         }
+
+         public DensityFunction rewrite(final DensityFunction function) {
+            return (DensityFunction)(function instanceof ConstantFunction ? function : new TracyProfiledFunction(function.getDebugName(), function.rewriteChildren(this)));
+         }
+      }).rewrite(function) : function;
+   }
+
    private DensitySampler optimizeAndCompile(final DensityFunction function) {
+      DensityFunction preprocessedFunction = this.preprocessFunction(function);
       this.compileLock.lock();
 
-      DensitySampler var3;
+      DensitySampler var4;
       try {
-         DensityFunction optimizedFunction = this.optimizerRule.rewrite(function);
-         var3 = optimizedFunction.compileSampler(this.context);
+         DensityFunction optimizedFunction = this.optimizerRule.rewrite(preprocessedFunction);
+         var4 = optimizedFunction.compileSampler(this.context);
       } finally {
          this.compileLock.unlock();
       }
 
-      return var3;
+      return var4;
    }
 
    private DensityFunction reuseOrPrepareCache(final CacheFunction cache) {
@@ -90,6 +105,10 @@ public class DensityFunctionCompiler {
 
       public MapCodec<PreparedCache> codec() {
          throw new UnsupportedOperationException("PreparedCache should never be encoded");
+      }
+
+      public String getDebugName() {
+         return "cache";
       }
    }
 }

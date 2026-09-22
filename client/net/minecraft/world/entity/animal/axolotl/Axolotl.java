@@ -3,20 +3,17 @@ package net.minecraft.world.entity.animal.axolotl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -26,7 +23,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.BinaryAnimator;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.EasingType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -548,12 +544,11 @@ public class Axolotl extends Animal implements Bucketable {
       BLUE(4, "blue", false);
 
       public static final Variant DEFAULT = LUCY;
-      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
+      public static final EnumStreamCodec<Variant> STREAM_CODEC = ByteBufCodecs.<Variant>enumCodec(Variant.class, Variant::getId);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       /** @deprecated */
       @Deprecated
-      public static final Codec<Variant> LEGACY_CODEC;
+      public static final Codec<Variant> LEGACY_CODEC = Codec.INT.xmap(Variant::byId, Variant::getId);
       private final int id;
       private final String name;
       private final boolean common;
@@ -577,7 +572,7 @@ public class Axolotl extends Animal implements Bucketable {
       }
 
       public static Variant byId(final int id) {
-         return (Variant)BY_ID.apply(id);
+         return STREAM_CODEC.byId(id);
       }
 
       public static Variant getCommonSpawnVariant(final RandomSource random) {
@@ -596,13 +591,6 @@ public class Axolotl extends Animal implements Bucketable {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{LUCY, WILD, GOLD, CYAN, BLUE};
-      }
-
-      static {
-         PrimitiveCodec var10000 = Codec.INT;
-         IntFunction var10001 = BY_ID;
-         Objects.requireNonNull(var10001);
-         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
       }
    }
 

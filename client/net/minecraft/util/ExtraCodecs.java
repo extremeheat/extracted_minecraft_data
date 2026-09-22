@@ -531,6 +531,39 @@ public class ExtraCodecs {
       return optionalAlwaysPresentFieldOf(elementCodec, name, defaultValue, false);
    }
 
+   public static <K, V> Codec<V> singleKeyDispatch(final Codec<K> keyCodec, final Function<V, K> keyGetter, final Function<K, Codec<V>> valueCodecGetter) {
+      return new Codec<V>() {
+         public <T> DataResult<Pair<V, T>> decode(final DynamicOps<T> ops, final T input) {
+            return ops.getMap(input).flatMap((map) -> {
+               List<Pair<T, T>> entries = map.entries().toList();
+               if (entries.size() != 1) {
+                  return DataResult.error(() -> {
+                     int var10000 = entries.size();
+                     return "Expected one field, got " + var10000 + " in " + String.valueOf(input);
+                  });
+               } else {
+                  Pair<T, T> entry = (Pair)entries.getFirst();
+                  return keyCodec.parse(ops, entry.getFirst()).flatMap((key) -> {
+                     Codec<V> valueCodec = (Codec)valueCodecGetter.apply(key);
+                     return valueCodec.parse(ops, entry.getSecond()).map((value) -> Pair.of(value, input));
+                  });
+               }
+            });
+         }
+
+         public <T> DataResult<T> encode(final V input, final DynamicOps<T> ops, final T prefix) {
+            if (!Objects.equals(prefix, ops.empty())) {
+               return DataResult.error(() -> "Cannot merge single-key dispatched value with " + String.valueOf(prefix));
+            } else {
+               K key = (K)keyGetter.apply(input);
+               DataResult<T> keyResult = keyCodec.encodeStart(ops, key);
+               DataResult<T> valueResult = ((Codec)valueCodecGetter.apply(key)).encodeStart(ops, input);
+               return keyResult.apply2stable((encodedKey, encodedValue) -> ops.createMap(Map.of(encodedKey, encodedValue)), valueResult);
+            }
+         }
+      };
+   }
+
    static {
       JSON = converter(JsonOps.INSTANCE);
       JAVA = converter(JavaOps.INSTANCE);

@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.placement;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -49,6 +50,10 @@ public record CountOnEveryLayerPlacement(IntProvider count) implements Placement
          ++layer;
       } while(foundAny);
 
+   }
+
+   public InclusiveRange<Integer> modifyXzDomain(final InclusiveRange<Integer> inputDomain) {
+      return new InclusiveRange<Integer>(inputDomain.minInclusive(), (Integer)inputDomain.maxInclusive() + 16 - 1);
    }
 
    public MapCodec<CountOnEveryLayerPlacement> codec() {

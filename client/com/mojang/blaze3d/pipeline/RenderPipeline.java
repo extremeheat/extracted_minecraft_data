@@ -1,6 +1,14 @@
-package com.mojang.renderpearl.api.pipeline;
+package com.mojang.blaze3d.pipeline;
 
-import com.mojang.renderpearl.api.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.BindGroupLayout;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PolygonMode;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLists;
@@ -24,6 +32,7 @@ public class RenderPipeline {
    private final ShaderDefines shaderDefines;
    private final List<BindGroupLayout> bindGroupLayouts;
    private final @Nullable DepthStencilState depthStencilState;
+   private final GpuFormat depthStencilFormat;
    private final PolygonMode polygonMode;
    private final boolean cull;
    private final List<@Nullable ColorTargetState> colorTargetStates;
@@ -33,13 +42,14 @@ public class RenderPipeline {
    private final int sortKey;
    private static int sortKeySeed;
 
-   protected RenderPipeline(final Identifier location, final Map<ShaderType, Identifier> shaders, final ShaderDefines shaderDefines, final Collection<BindGroupLayout> bindGroupLayouts, final @Nullable ColorTargetState[] colorTargetStates, final @Nullable DepthStencilState depthStencilState, final PolygonMode polygonMode, final boolean cull, final @Nullable VertexFormat[] vertexFormatPerBuffer, final PrimitiveTopology primitiveTopology, final int pushConstantSize, final int sortKey) {
+   protected RenderPipeline(final Identifier location, final Map<ShaderType, Identifier> shaders, final ShaderDefines shaderDefines, final Collection<BindGroupLayout> bindGroupLayouts, final @Nullable ColorTargetState[] colorTargetStates, final @Nullable DepthStencilState depthStencilState, final GpuFormat depthStencilFormat, final PolygonMode polygonMode, final boolean cull, final @Nullable VertexFormat[] vertexFormatPerBuffer, final PrimitiveTopology primitiveTopology, final int pushConstantSize, final int sortKey) {
       super();
       this.location = location;
       this.shaders = Collections.unmodifiableMap(new EnumMap(shaders));
       this.shaderDefines = shaderDefines;
       this.bindGroupLayouts = List.copyOf(bindGroupLayouts);
       this.depthStencilState = depthStencilState;
+      this.depthStencilFormat = depthStencilFormat;
       this.polygonMode = polygonMode;
       this.cull = cull;
       this.colorTargetStates = ReferenceLists.unmodifiable(new ReferenceArrayList(colorTargetStates));
@@ -75,6 +85,10 @@ public class RenderPipeline {
 
    public @Nullable DepthStencilState getDepthStencilState() {
       return this.depthStencilState;
+   }
+
+   public GpuFormat getDepthStencilFormat() {
+      return this.depthStencilFormat;
    }
 
    public Identifier getLocation() {
@@ -130,16 +144,20 @@ public class RenderPipeline {
       private Optional<ShaderDefines.Builder> definesBuilder = Optional.empty();
       private Optional<Set<BindGroupLayout>> bindGroupLayouts = Optional.empty();
       private Optional<DepthStencilState> depthStencilState = Optional.empty();
+      private Optional<GpuFormat> depthStencilFormat = Optional.empty();
       private Optional<PolygonMode> polygonMode = Optional.empty();
       private Optional<Boolean> cull = Optional.empty();
       private final @Nullable ColorTargetState[] colorTargetStates = new ColorTargetState[8];
       private int activeColorTargetStateCount;
-      private final @Nullable VertexFormat[] vertexFormatPerBuffer = new VertexFormat[16];
-      private Optional<PrimitiveTopology> primitiveTopology = Optional.empty();
-      private int pushConstantSize = 0;
+      private final @Nullable VertexFormat[] vertexFormatPerBuffer;
+      private Optional<PrimitiveTopology> primitiveTopology;
+      private int pushConstantSize;
 
       private Builder() {
          super();
+         this.vertexFormatPerBuffer = new VertexFormat[CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS];
+         this.primitiveTopology = Optional.empty();
+         this.pushConstantSize = 0;
       }
 
       public Builder withLocation(final String location) {
@@ -251,6 +269,15 @@ public class RenderPipeline {
          return this;
       }
 
+      public Builder withDepthStencilFormat(final GpuFormat depthStencilFormat) {
+         if (!depthStencilFormat.hasDepthAspect()) {
+            throw new IllegalArgumentException("Depth/stencil format must have a depth aspect");
+         } else {
+            this.depthStencilFormat = Optional.of(depthStencilFormat);
+            return this;
+         }
+      }
+
       public Builder withVertexBinding(final int bindingIndex, final VertexFormat vertexFormat) {
          this.vertexFormatPerBuffer[bindingIndex] = vertexFormat;
          return this;
@@ -296,6 +323,10 @@ public class RenderPipeline {
             this.depthStencilState = snippet.depthStencilState;
          }
 
+         if (snippet.depthStencilFormat.isPresent()) {
+            this.depthStencilFormat = snippet.depthStencilFormat;
+         }
+
          if (snippet.cull.isPresent()) {
             this.cull = snippet.cull;
          }
@@ -328,7 +359,7 @@ public class RenderPipeline {
       }
 
       public Snippet buildSnippet() {
-         return new Snippet(Collections.unmodifiableMap(new EnumMap(this.shaders)), this.definesBuilder.map(ShaderDefines.Builder::build), this.bindGroupLayouts.map(List::copyOf), this.colorTargetStates, this.activeColorTargetStateCount, this.depthStencilState, this.polygonMode, this.cull, this.vertexFormatPerBuffer, this.primitiveTopology, this.pushConstantSize);
+         return new Snippet(Collections.unmodifiableMap(new EnumMap(this.shaders)), this.definesBuilder.map(ShaderDefines.Builder::build), this.bindGroupLayouts.map(List::copyOf), this.colorTargetStates, this.activeColorTargetStateCount, this.depthStencilState, this.depthStencilFormat, this.polygonMode, this.cull, this.vertexFormatPerBuffer, this.primitiveTopology, this.pushConstantSize);
       }
 
       public RenderPipeline build() {
@@ -346,42 +377,14 @@ public class RenderPipeline {
                activeColorTargetStates = new ColorTargetState[0];
             } else {
                activeColorTargetStates = (ColorTargetState[])Arrays.copyOf(this.colorTargetStates, this.activeColorTargetStateCount);
-               Optional<BlendFunction> lastBlend = Optional.empty();
-
-               for(ColorTargetState activeColorTargetState : activeColorTargetStates) {
-                  if (activeColorTargetState != null) {
-                     Optional<BlendFunction> currentBlend = activeColorTargetState.blendFunction();
-                     if (currentBlend.isPresent()) {
-                        if (lastBlend.isEmpty()) {
-                           lastBlend = currentBlend;
-                        } else if (!currentBlend.equals(lastBlend)) {
-                           throw new IllegalStateException("Blend functions must currently be the same for all color targets");
-                        }
-                     }
-                  }
-               }
             }
 
-            int boundVertexAttribCount = 0;
-
-            for(VertexFormat bindings : this.vertexFormatPerBuffer) {
-               if (bindings != null) {
-                  boundVertexAttribCount += bindings.getElements().size();
-               }
-            }
-
-            if (boundVertexAttribCount > 16) {
-               throw new IllegalStateException("Binding more than 16 vertex attributes is not supported");
-            } else if (this.pushConstantSize > 128) {
-               throw new IllegalStateException("Maximum push constant size is 128 bytes");
-            } else {
-               return new RenderPipeline((Identifier)this.location.get(), this.shaders, ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), (Collection)this.bindGroupLayouts.orElse(Collections.emptySet()), activeColorTargetStates, (DepthStencilState)this.depthStencilState.orElse((Object)null), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), this.vertexFormatPerBuffer, (PrimitiveTopology)this.primitiveTopology.get(), this.pushConstantSize, nextPipelineSortKey++);
-            }
+            return new RenderPipeline((Identifier)this.location.get(), this.shaders, ((ShaderDefines.Builder)this.definesBuilder.orElse(ShaderDefines.builder())).build(), (Collection)this.bindGroupLayouts.orElse(Collections.emptySet()), activeColorTargetStates, (DepthStencilState)this.depthStencilState.orElse((Object)null), (GpuFormat)this.depthStencilFormat.orElse(GpuFormat.D32_FLOAT), (PolygonMode)this.polygonMode.orElse(PolygonMode.FILL), (Boolean)this.cull.orElse(true), this.vertexFormatPerBuffer, (PrimitiveTopology)this.primitiveTopology.get(), this.pushConstantSize, nextPipelineSortKey++);
          }
       }
    }
 
-   public static record Snippet(Map<ShaderType, Identifier> shaders, Optional<ShaderDefines> shaderDefines, Optional<List<BindGroupLayout>> bindGroupLayouts, @Nullable ColorTargetState[] colorTargetStates, int activeColorTargetStateCount, Optional<DepthStencilState> depthStencilState, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, @Nullable VertexFormat[] vertexFormatPerBuffer, Optional<PrimitiveTopology> vertexFormatMode, int pushConstantSize) {
+   public static record Snippet(Map<ShaderType, Identifier> shaders, Optional<ShaderDefines> shaderDefines, Optional<List<BindGroupLayout>> bindGroupLayouts, @Nullable ColorTargetState[] colorTargetStates, int activeColorTargetStateCount, Optional<DepthStencilState> depthStencilState, Optional<GpuFormat> depthStencilFormat, Optional<PolygonMode> polygonMode, Optional<Boolean> cull, @Nullable VertexFormat[] vertexFormatPerBuffer, Optional<PrimitiveTopology> vertexFormatMode, int pushConstantSize) {
       public Snippet {
          super();
       }

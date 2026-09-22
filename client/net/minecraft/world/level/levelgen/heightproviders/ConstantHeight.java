@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.heightproviders;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
 public class ConstantHeight extends HeightProvider {
    public static final ConstantHeight ZERO = new ConstantHeight(VerticalAnchor.absolute(0));
@@ -23,8 +22,8 @@ public class ConstantHeight extends HeightProvider {
       return this.value;
    }
 
-   public int sample(final RandomSource random, final WorldGenerationContext context) {
-      return this.value.resolveY(context);
+   public int sample(final RandomSource random, final VerticalAnchor.Context anchorContext) {
+      return this.value.resolveY(anchorContext);
    }
 
    public HeightProviderType<?> getType() {

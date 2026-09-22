@@ -2,7 +2,6 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -23,12 +22,12 @@ public class ClientboundAddTransientBlockPacket implements Packet<ClientGamePack
    public ClientboundAddTransientBlockPacket(final RegistryFriendlyByteBuf input) {
       super();
       this.pos = input.readBlockPos();
-      this.blockState = (BlockState)ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).decode(input);
+      this.blockState = (BlockState)Block.BLOCK_STATE_REGISTRY_STREAM_CODEC.decode(input);
    }
 
    private void write(final RegistryFriendlyByteBuf output) {
       output.writeBlockPos(this.pos);
-      ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).encode(output, this.blockState);
+      Block.BLOCK_STATE_REGISTRY_STREAM_CODEC.encode(output, this.blockState);
    }
 
    public PacketType<ClientboundAddTransientBlockPacket> type() {

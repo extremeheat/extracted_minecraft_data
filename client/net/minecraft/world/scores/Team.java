@@ -4,12 +4,10 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.Nullable;
 
@@ -51,8 +49,7 @@ public abstract class Team {
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
       public static final Codec<Visibility> CODEC = StringRepresentable.<Visibility>fromEnum(Visibility::values);
-      private static final IntFunction<Visibility> BY_ID = ByIdMap.<Visibility>continuous((v) -> v.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Visibility> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (v) -> v.id);
+      public static final StreamCodec<ByteBuf, Visibility> STREAM_CODEC = ByteBufCodecs.enumCodec(Visibility.class, (v) -> v.id);
       public final String name;
       public final int id;
 
@@ -82,8 +79,7 @@ public abstract class Team {
       PUSH_OWN_TEAM("pushOwnTeam", 3);
 
       public static final Codec<CollisionRule> CODEC = StringRepresentable.<CollisionRule>fromEnum(CollisionRule::values);
-      private static final IntFunction<CollisionRule> BY_ID = ByIdMap.<CollisionRule>continuous((r) -> r.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, CollisionRule> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (r) -> r.id);
+      public static final StreamCodec<ByteBuf, CollisionRule> STREAM_CODEC = ByteBufCodecs.enumCodec(CollisionRule.class, (r) -> r.id);
       public final String name;
       public final int id;
 

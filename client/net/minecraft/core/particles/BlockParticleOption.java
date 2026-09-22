@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -19,7 +18,7 @@ public class BlockParticleOption implements ParticleOptions {
    }
 
    public static StreamCodec<? super RegistryFriendlyByteBuf, BlockParticleOption> streamCodec(final ParticleType<BlockParticleOption> type) {
-      return ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).map((state) -> new BlockParticleOption(type, state), (o) -> o.state);
+      return Block.BLOCK_STATE_REGISTRY_STREAM_CODEC.map((state) -> new BlockParticleOption(type, state), (o) -> o.state);
    }
 
    public BlockParticleOption(final ParticleType<BlockParticleOption> type, final BlockState state) {

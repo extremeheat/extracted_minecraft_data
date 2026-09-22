@@ -5,6 +5,8 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 
 public class WorldBorderWarningTimeFix extends DataFix {
+   private static final int TICKS_PER_SECOND = 20;
+
    public WorldBorderWarningTimeFix(final Schema outputSchema) {
       super(outputSchema, false);
    }

@@ -41,6 +41,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.PacketProcessor;
+import net.minecraft.network.QueryProperties;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -114,6 +115,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void onPacketError(final Packet packet, final Exception cause) {
       LOGGER.error("Failed to handle packet {}, disconnecting", packet, cause);
+      ClientCommonPacketListener.super.onPacketError(packet, cause);
       Optional<Path> report = this.storeDisconnectionReport(packet, cause);
       Optional<URI> bugReportLink = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT).map(ServerLinks.Entry::link);
       this.connection.disconnect(new DisconnectionDetails(Component.translatable("disconnect.packetError"), report, bugReportLink));
@@ -327,7 +329,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          this.connection.disconnect((Component)Component.translatable("disconnect.transfer"));
          this.connection.setReadOnly();
          this.connection.handleDisconnection();
-         ServerAddress address = new ServerAddress(packet.host(), packet.port());
+         ServerAddress address = new ServerAddress(packet.host(), packet.port(), QueryProperties.fromMap(packet.properties()));
          ConnectScreen.startConnecting((Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new), this.minecraft, address, this.serverData, false, new TransferState(this.serverCookies, this.seenPlayers, this.seenInsecureChatWarning));
       }
    }

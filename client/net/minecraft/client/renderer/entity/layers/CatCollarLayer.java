@@ -10,11 +10,14 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.CatRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.ColorCollection;
 
 public class CatCollarLayer extends RenderLayer<CatRenderState, AbstractFelineModel<CatRenderState>> {
    private static final Identifier CAT_COLLAR_LOCATION = Identifier.withDefaultNamespace("textures/entity/cat/cat_collar.png");
    private static final Identifier CAT_BABY_COLLAR_LOCATION = Identifier.withDefaultNamespace("textures/entity/cat/cat_collar_baby.png");
+   private static final ColorCollection<Integer> COLLAR_COLORS;
    private final AdultCatModel adultModel;
    private final BabyCatModel babyModel;
 
@@ -27,10 +30,14 @@ public class CatCollarLayer extends RenderLayer<CatRenderState, AbstractFelineMo
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final CatRenderState state, final float yRot, final float xRot) {
       DyeColor collarColor = state.collarColor;
       if (collarColor != null) {
-         int color = collarColor.getTextureDiffuseColor();
+         int color = (Integer)COLLAR_COLORS.pick(collarColor);
          AbstractFelineModel<CatRenderState> model = (AbstractFelineModel<CatRenderState>)(state.isBaby ? this.babyModel : this.adultModel);
          Identifier texture = state.isBaby ? CAT_BABY_COLLAR_LOCATION : CAT_COLLAR_LOCATION;
          coloredCutoutModelCopyLayerRender(model, texture, poseStack, submitNodeCollector, lightCoords, state, color, 1);
       }
+   }
+
+   static {
+      COLLAR_COLORS = CommonColors.TEXTURE_TINT_COLORS;
    }
 }

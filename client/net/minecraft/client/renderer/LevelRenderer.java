@@ -10,6 +10,7 @@ import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
@@ -25,7 +26,6 @@ import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import com.mojang.renderpearl.api.vertex.VertexFormat;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -110,14 +110,13 @@ import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
 public class LevelRenderer implements AutoCloseable {
-   public static final int OIT_WAVELET_RANK = 2;
-   public static final int OIT_COEFFICIENT_COUNT = Math.powExact(2, 3);
-   public static final int OIT_TRANSMITTANCE_TARGET_COUNT;
-   private static final Identifier ENTITY_OUTLINE_POST_CHAIN_ID;
+   public static final int OIT_NUMBER_OF_DEPTH_BINS = 8;
+   public static final int OIT_TRANSMITTANCE_TARGET_COUNT = 2;
+   private static final Identifier ENTITY_OUTLINE_POST_CHAIN_ID = Identifier.withDefaultNamespace("entity_outline");
    private static final int MINIMUM_TRANSPARENT_SORT_COUNT = 15;
    private static final float CHUNK_VISIBILITY_THRESHOLD = 0.3F;
-   private static final Vector4fc DEPTH_BOUNDS_CLEAR_COLOR;
-   private static final Vector4fc ZERO_CLEAR_COLOR;
+   private static final Vector4fc DEPTH_BOUNDS_CLEAR_COLOR = new Vector4f(-3.4028235E38F, 0.0F, 0.0F, 0.0F);
+   private static final Vector4fc ZERO_CLEAR_COLOR = new Vector4f(0.0F);
    private final GameRenderer gameRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
@@ -202,7 +201,7 @@ public class LevelRenderer implements AutoCloseable {
          this.targets.depthBoundsCulled = frame.<RenderTarget>createInternal("depth_bounds_culled", depthBoundsCulledTargetDescriptor);
          RenderTargetDescriptor transmittanceTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(ZERO_CLEAR_COLOR, GpuFormat.RGBA16_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
 
-         for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+         for(int i = 0; i < 2; ++i) {
             this.targets.transmittance.set(i, frame.createInternal("transmittance", transmittanceTargetDescriptor));
          }
 
@@ -359,7 +358,7 @@ public class LevelRenderer implements AutoCloseable {
          this.targets.depthBounds = pass.<RenderTarget>readsAndWrites(this.targets.depthBounds);
          this.targets.depthBoundsCulled = pass.<RenderTarget>readsAndWrites(this.targets.depthBoundsCulled);
 
-         for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+         for(int i = 0; i < 2; ++i) {
             this.targets.transmittance.set(i, pass.readsAndWrites((ResourceHandle)this.targets.transmittance.get(i)));
          }
 
@@ -495,9 +494,9 @@ public class LevelRenderer implements AutoCloseable {
       GpuTextureView depthBoundsTargetView = ((RenderTarget)this.targets.depthBounds.get()).getColorTextureView();
       GpuTextureView depthBoundsCulledTargetView = ((RenderTarget)this.targets.depthBoundsCulled.get()).getColorTextureView();
       GpuTextureView accumulateTargetView = ((RenderTarget)this.targets.accumulate.get()).getColorTextureView();
-      GpuTextureView[] transmittanceTargetViews = new GpuTextureView[OIT_TRANSMITTANCE_TARGET_COUNT];
+      GpuTextureView[] transmittanceTargetViews = new GpuTextureView[2];
 
-      for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+      for(int i = 0; i < 2; ++i) {
          transmittanceTargetViews[i] = ((RenderTarget)((ResourceHandle)this.targets.transmittance.get(i)).get()).getColorTextureView();
       }
 
@@ -551,8 +550,8 @@ public class LevelRenderer implements AutoCloseable {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("Sampler0", accumulateTargetView, nearestSampler);
 
-         for(int i = 0; i < OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-            renderPass.setUniform("Coeff" + i, ((RenderTarget)((ResourceHandle)this.targets.transmittance.get(i)).get()).getColorTextureView(), nearestSampler);
+         for(int i = 0; i < 2; ++i) {
+            renderPass.setUniform("Bins" + i, ((RenderTarget)((ResourceHandle)this.targets.transmittance.get(i)).get()).getColorTextureView(), nearestSampler);
          }
 
          renderPass.setUniform("DepthBoundsSampler", depthBoundsTargetView, nearestSampler);
@@ -1200,13 +1199,6 @@ public class LevelRenderer implements AutoCloseable {
 
    public void addMainThreadGizmos(final List<SimpleGizmoCollector.GizmoInstance> mainThreadGizmos) {
       this.renderThreadGizmos.addTemporaryGizmos(mainThreadGizmos);
-   }
-
-   static {
-      OIT_TRANSMITTANCE_TARGET_COUNT = OIT_COEFFICIENT_COUNT / 4;
-      ENTITY_OUTLINE_POST_CHAIN_ID = Identifier.withDefaultNamespace("entity_outline");
-      DEPTH_BOUNDS_CLEAR_COLOR = new Vector4f(-3.4028235E38F, 0.0F, 0.0F, 0.0F);
-      ZERO_CLEAR_COLOR = new Vector4f(0.0F);
    }
 
    private static record ChunkDrawGroup(GpuBufferSlice vertexBuffer, @Nullable GpuBufferSlice indexBuffer, @Nullable IndexType indexType, List<DynamicGpuData.IndexedDraw> draws) {

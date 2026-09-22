@@ -19,6 +19,7 @@ import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
 import net.minecraft.world.level.levelgen.densityfunction.DensitySamplerSet;
 import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
+import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.ScopedDensityBuffer;
 import org.apache.commons.lang3.mutable.MutableDouble;
 import org.jspecify.annotations.Nullable;
@@ -27,7 +28,7 @@ public interface Aquifer {
    static Aquifer createDisabled(final FluidPicker fluidRule) {
       return new Aquifer() {
          public @Nullable BlockState computeSubstance(final int blockX, final int blockY, final int blockZ, final double density) {
-            return density > 0.0 ? null : fluidRule.computeFluid(blockX, blockY, blockZ).at(blockY);
+            return density > 0.0 ? NoiseColumn.SOLID : fluidRule.computeFluid(blockX, blockY, blockZ).at(blockY);
          }
 
          public boolean shouldScheduleFluidUpdate() {
@@ -49,6 +50,10 @@ public interface Aquifer {
 
       public Aquifer create(final DensitySamplerSet cachingSamplers, final PositionalRandomFactory positionalRandomFactory, final DensityVolume volume, final FluidPicker fluidRule) {
          return new NoiseBasedAquifer(cachingSamplers, this, positionalRandomFactory, volume, fluidRule);
+      }
+
+      public Config rewrite(final DfRewriteRule rule) {
+         return new Config(rule.rewrite(this.barrierNoise), rule.rewrite(this.fluidLevelFloodednessNoise), rule.rewrite(this.fluidLevelSpreadNoise), rule.rewrite(this.lavaNoise), rule.rewrite(this.exclusion), rule.rewrite(this.surfaceLevel));
       }
    }
 
@@ -163,7 +168,7 @@ public interface Aquifer {
       public @Nullable BlockState computeSubstance(final int blockX, final int blockY, final int blockZ, final double density) {
          if (density > 0.0) {
             this.shouldScheduleFluidUpdate = false;
-            return null;
+            return NoiseColumn.SOLID;
          } else {
             FluidStatus globalFluid = this.globalFluidPicker.computeFluid(blockX, blockY, blockZ);
             if (blockY > this.skipSamplingAboveY) {
@@ -257,7 +262,7 @@ public interface Aquifer {
                   double barrier12 = similarity12 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus1, closestStatus2);
                   if (density + barrier12 > 0.0) {
                      this.shouldScheduleFluidUpdate = false;
-                     return null;
+                     return NoiseColumn.SOLID;
                   } else {
                      FluidStatus closestStatus3 = this.getAquiferStatus(closestIndex3);
                      double similarity13 = similarity(distanceSqr1, distanceSqr3);
@@ -265,7 +270,7 @@ public interface Aquifer {
                         double barrier13 = similarity12 * similarity13 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus1, closestStatus3);
                         if (density + barrier13 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
-                           return null;
+                           return NoiseColumn.SOLID;
                         }
                      }
 
@@ -274,7 +279,7 @@ public interface Aquifer {
                         double barrier23 = similarity12 * similarity23 * this.calculatePressure(blockX, blockY, blockZ, barrierNoiseValue, closestStatus2, closestStatus3);
                         if (density + barrier23 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
-                           return null;
+                           return NoiseColumn.SOLID;
                         }
                      }
 
@@ -505,7 +510,7 @@ public interface Aquifer {
       }
 
       public BlockState at(final int blockY) {
-         return blockY < this.fluidLevel ? this.fluidType : Blocks.AIR.defaultBlockState();
+         return blockY < this.fluidLevel ? this.fluidType : NoiseColumn.AIR;
       }
    }
 

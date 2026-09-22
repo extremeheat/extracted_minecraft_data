@@ -77,7 +77,10 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
          float xRot;
          Set<Relative> relatives;
          if (!fromEnd) {
-            EndPlatformFeature.createEndPlatform(newLevel, BlockPos.containing(spawnPos).below(), true);
+            if (!entity.isSpectator()) {
+               EndPlatformFeature.createEndPlatform(newLevel, BlockPos.containing(spawnPos).below(), true);
+            }
+
             yRot = Direction.WEST.toYRot();
             xRot = 0.0F;
             relatives = Relative.union(Relative.DELTA, Set.of(Relative.X_ROT));

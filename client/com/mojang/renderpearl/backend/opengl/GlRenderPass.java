@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.GpuQueryPool;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import com.mojang.renderpearl.backend.api.RenderPassBackend;
@@ -22,14 +23,14 @@ class GlRenderPass implements RenderPassBackend {
    private final GlDevice device;
    private final ScissorState defaultScissorState;
    protected @Nullable GlRenderPipeline pipeline;
-   protected final @Nullable GpuBufferSlice[] vertexBuffers = new GpuBufferSlice[16];
-   protected boolean vertexBufferDirty = true;
+   protected final @Nullable GpuBufferSlice[] vertexBuffers;
+   protected boolean vertexBufferDirty;
    protected @Nullable GpuBuffer indexBuffer;
    protected IndexType indexType;
    protected boolean indexBufferDirty;
    private final ScissorState scissorState;
    protected boolean scissorStateDirty;
-   protected final ReferenceList<Object> uniforms;
+   protected final ReferenceList<@Nullable Object> uniforms;
    protected final BooleanList dirtyUniforms;
    protected boolean anyUniformDirty;
    protected @Nullable GpuBufferSlice pushConstants;
@@ -38,6 +39,8 @@ class GlRenderPass implements RenderPassBackend {
 
    public GlRenderPass(final GlCommandEncoder encoder, final GlDevice device, final int colorAttachmentCount, final ScissorState defaultScissorState) {
       super();
+      this.vertexBuffers = new GpuBufferSlice[CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS];
+      this.vertexBufferDirty = true;
       this.indexType = IndexType.INT;
       this.indexBufferDirty = false;
       this.scissorState = new ScissorState();
@@ -54,10 +57,12 @@ class GlRenderPass implements RenderPassBackend {
    }
 
    public void pushDebugGroup(final Supplier<String> label) {
+      this.device.ensureCurrent();
       this.device.debugLabels().pushDebugGroup(label);
    }
 
    public void popDebugGroup() {
+      this.device.ensureCurrent();
       this.device.debugLabels().popDebugGroup();
    }
 
@@ -67,9 +72,9 @@ class GlRenderPass implements RenderPassBackend {
       } else {
          if (this.pipeline == null || this.pipeline != pipeline) {
             this.uniforms.clear();
-            this.uniforms.size(glRenderPipeline.program().uniformCount());
+            this.uniforms.size(glRenderPipeline.program().maxUniformBinding() + 1);
             this.dirtyUniforms.clear();
-            this.dirtyUniforms.size(glRenderPipeline.program().uniformCount());
+            this.dirtyUniforms.size(glRenderPipeline.program().maxUniformBinding() + 1);
 
             for(int i = 0; i < this.dirtyUniforms.size(); ++i) {
                this.dirtyUniforms.set(i, true);

@@ -759,7 +759,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
       if (input.z > 0.0) {
          float sin = Mth.sin((double)(this.getYRot() * 0.017453292F));
          float cos = Mth.cos((double)(this.getYRot() * 0.017453292F));
-         this.setDeltaMovement(this.getDeltaMovement().add((double)(-0.4F * sin * amount), 0.0, (double)(0.4F * cos * amount)));
+         this.addDeltaMovement((double)(-0.4F * sin * amount), 0.0, (double)(0.4F * cos * amount));
       }
 
    }

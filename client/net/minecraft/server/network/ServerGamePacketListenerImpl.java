@@ -49,6 +49,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import net.minecraft.network.HashedStack;
+import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -1159,11 +1160,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             }
 
             boolean playerStandsOnSomething = this.player.verticalCollisionBelow;
+            this.player.move(MoverType.PLAYER, new Vec3(xDist, yDist, zDist));
             if (isOnGround && !playerStandsOnSomething) {
                this.forceSendPlayerSupportBlocks();
             }
 
-            this.player.move(MoverType.PLAYER, new Vec3(xDist, yDist, zDist));
             double oyDist = yDist;
             xDist = targetX - this.player.getX();
             yDist = targetY - this.player.getY();
@@ -2201,6 +2202,8 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    public void handleCustomPayload(final ServerboundCustomPayloadPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
+      super.handleCustomPayload(packet);
    }
 
    public void handleClientTickEnd(final ServerboundClientTickEndPacket packet) {

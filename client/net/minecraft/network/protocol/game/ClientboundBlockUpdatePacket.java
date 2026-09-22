@@ -2,7 +2,6 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
@@ -42,6 +41,6 @@ public class ClientboundBlockUpdatePacket implements Packet<ClientGamePacketList
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ClientboundBlockUpdatePacket::getPos, ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY), ClientboundBlockUpdatePacket::getBlockState, ClientboundBlockUpdatePacket::new);
+      STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ClientboundBlockUpdatePacket::getPos, Block.BLOCK_STATE_REGISTRY_STREAM_CODEC, ClientboundBlockUpdatePacket::getBlockState, ClientboundBlockUpdatePacket::new);
    }
 }

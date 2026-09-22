@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -26,6 +27,10 @@ public record HeightmapPlacement(Heightmap.Types heightmap) implements Placement
          output.accept(new BlockPos(x, height, z));
       }
 
+   }
+
+   public InclusiveRange<Integer> modifyXzDomain(final InclusiveRange<Integer> inputDomain) {
+      return inputDomain;
    }
 
    public MapCodec<HeightmapPlacement> codec() {

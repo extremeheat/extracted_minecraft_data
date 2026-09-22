@@ -11,7 +11,7 @@ import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.util.LenientJsonParser;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.slf4j.Logger;
 
 public class UnflattenTextComponentFix extends DataFix {
@@ -28,7 +28,7 @@ public class UnflattenTextComponentFix extends DataFix {
    }
 
    private <T> TypeRewriteRule createFixer(final Type<Pair<String, String>> textComponentType, final Type<T> newTextComponentType) {
-      return this.fixTypeEverywhere("UnflattenTextComponentFix", textComponentType, newTextComponentType, (ops) -> (input) -> Util.readTypedOrThrow(newTextComponentType, unflattenJson(ops, (String)input.getSecond()), true).getValue());
+      return this.fixTypeEverywhere("UnflattenTextComponentFix", textComponentType, newTextComponentType, (ops) -> (input) -> ExtraDataFixUtils.readTypedOrThrow(newTextComponentType, unflattenJson(ops, (String)input.getSecond()), true).getValue());
    }
 
    private static <T> Dynamic<T> unflattenJson(final DynamicOps<T> ops, final String jsonString) {

@@ -5,7 +5,6 @@ import com.mojang.renderpearl.backend.vulkan.init.VulkanFeature;
 import com.mojang.renderpearl.backend.vulkan.init.VulkanPNextStruct;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Set;
-import org.lwjgl.vulkan.VkPhysicalDeviceDynamicRenderingFeatures;
 import org.lwjgl.vulkan.VkPhysicalDeviceFeatures2;
 import org.lwjgl.vulkan.VkPhysicalDeviceMultiDrawFeaturesEXT;
 import org.lwjgl.vulkan.VkPhysicalDevicePortabilitySubsetFeaturesKHR;
@@ -19,7 +18,6 @@ public class VulkanFeatureSets {
    public static final VulkanPNextStruct VK11_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceVulkan11Features.class);
    public static final VulkanPNextStruct VK12_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceVulkan12Features.class);
    public static final VulkanPNextStruct SYNC2_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceSynchronization2Features.class);
-   public static final VulkanPNextStruct DYNAMIC_RENDERING_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceDynamicRenderingFeatures.class);
    public static final VulkanPNextStruct VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceVertexAttributeDivisorFeaturesEXT.class);
    public static final FeatureSet REQUIRED_FEATURESET;
    public static final VulkanPNextStruct PORTABILITY_SUBSET_FEATURES_STRUCT;
@@ -51,7 +49,7 @@ public class VulkanFeatureSets {
    }
 
    static {
-      REQUIRED_FEATURESET = new FeatureSet("Minecraft base required", Set.of("VK_KHR_dynamic_rendering", "VK_KHR_push_descriptor", "VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain"), Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect"), new VulkanFeature(VK10_FEATURES_STRUCT, "drawIndirectFirstInstance"), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy"), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters"), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore"), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset"), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2"), new VulkanFeature(DYNAMIC_RENDERING_FEATURES_STRUCT, "dynamicRendering"), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT, "vertexAttributeInstanceRateDivisor")));
+      REQUIRED_FEATURESET = new FeatureSet("Minecraft base required", Set.of("VK_KHR_synchronization2", "VK_EXT_vertex_attribute_divisor", "VK_KHR_swapchain"), Set.of(new VulkanFeature(VK10_FEATURES_STRUCT, "multiDrawIndirect"), new VulkanFeature(VK10_FEATURES_STRUCT, "drawIndirectFirstInstance"), new VulkanFeature(VK10_FEATURES_STRUCT, "samplerAnisotropy"), new VulkanFeature(VK11_FEATURES_STRUCT, "shaderDrawParameters"), new VulkanFeature(VK12_FEATURES_STRUCT, "timelineSemaphore"), new VulkanFeature(VK12_FEATURES_STRUCT, "hostQueryReset"), new VulkanFeature(SYNC2_FEATURES_STRUCT, "synchronization2"), new VulkanFeature(VERTEX_ATTRIB_DIVISOR_FEATURES_STRUCT, "vertexAttributeInstanceRateDivisor")));
       PORTABILITY_SUBSET_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDevicePortabilitySubsetFeaturesKHR.class);
       PORTABILITY_SUBSET_FEATURESET = new FeatureSet("Vulkan Portability Subset", Set.of("VK_KHR_portability_subset"), Set.of(new VulkanFeature(PORTABILITY_SUBSET_FEATURES_STRUCT, "triangleFans")));
       MULTI_DRAW_FEATURES_STRUCT = new VulkanPNextStruct(VkPhysicalDeviceMultiDrawFeaturesEXT.class);

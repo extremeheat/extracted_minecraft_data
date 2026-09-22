@@ -17,7 +17,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class TooltipDisplayComponentFix extends DataFix {
    private static final List<String> CONVERTED_ADDITIONAL_TOOLTIP_TYPES = List.of("minecraft:banner_patterns", "minecraft:bees", "minecraft:block_entity_data", "minecraft:block_state", "minecraft:bundle_contents", "minecraft:charged_projectiles", "minecraft:container", "minecraft:container_loot", "minecraft:firework_explosion", "minecraft:fireworks", "minecraft:instrument", "minecraft:map_id", "minecraft:painting/variant", "minecraft:pot_decorations", "minecraft:potion_contents", "minecraft:tropical_fish/pattern", "minecraft:written_book_content");
@@ -93,7 +93,7 @@ public class TooltipDisplayComponentFix extends DataFix {
    }
 
    private static Typed<?> fixAdventureModePredicate(final Typed<?> typedComponents, final OpticFinder<?> componentFinder, final Type<?> newType, final String componentId, final Set<String> hiddenTooltips) {
-      return typedComponents.updateTyped(componentFinder, newType, (typedComponent) -> Util.writeAndReadTypedOrThrow(typedComponent, newType, (component) -> {
+      return typedComponents.updateTyped(componentFinder, newType, (typedComponent) -> ExtraDataFixUtils.writeAndReadTypedOrThrow(typedComponent, newType, (component) -> {
             OptionalDynamic<?> predicates = component.get("predicates");
             if (predicates.result().isEmpty()) {
                return component;

@@ -173,9 +173,7 @@ public class LevelChunkSection {
       this.nonEmptyBlockCount = buffer.readShort();
       this.fluidCount = buffer.readShort();
       this.states.read(buffer);
-      PalettedContainer<Holder<Biome>> biomes = this.biomes.recreate();
-      biomes.read(buffer);
-      this.biomes = biomes;
+      this.readBiomes(buffer);
    }
 
    public void readBiomes(final FriendlyByteBuf buffer) {
@@ -199,23 +197,12 @@ public class LevelChunkSection {
       return this.states.maybeHas(predicate);
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
-      return this.biomes.get(quartX, quartY, quartZ);
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
+      return this.biomes.get(x, y, z);
    }
 
-   public void fillBiomesFromNoise(final BiomeResolver biomeResolver, final int quartMinX, final int quartMinY, final int quartMinZ) {
-      PalettedContainer<Holder<Biome>> newBiomes = this.biomes.recreate();
-      int size = 4;
-
-      for(int x = 0; x < 4; ++x) {
-         for(int y = 0; y < 4; ++y) {
-            for(int z = 0; z < 4; ++z) {
-               newBiomes.getAndSetUnchecked(x, y, z, biomeResolver.getNoiseBiome(quartMinX + x, quartMinY + y, quartMinZ + z));
-            }
-         }
-      }
-
-      this.biomes = newBiomes;
+   public void fillBiome(final BiomeResolver biomeResolver, final int minX, final int minY, final int minZ) {
+      this.biomes = biomeResolver.fillSection(this.biomes, minX, minY, minZ);
    }
 
    public LevelChunkSection copy() {

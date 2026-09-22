@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 
-public class CheckerboardColumnBiomeSource extends BiomeSource implements BiomeResolver {
+public class CheckerboardColumnBiomeSource extends BiomeSource implements NoiseBiomeResolver {
    public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Biome.LIST_CODEC.fieldOf("biomes").forGetter((s) -> s.allowedBiomes), Codec.intRange(0, 62).optionalFieldOf("scale", 2).forGetter((s) -> s.size)).apply(i, CheckerboardColumnBiomeSource::new));
    private final HolderSet<Biome> allowedBiomes;
    private final int bitShift;
@@ -24,7 +24,7 @@ public class CheckerboardColumnBiomeSource extends BiomeSource implements BiomeR
       return this.allowedBiomes.stream();
    }
 
-   public BiomeResolver createResolver(final Climate.Sampler sampler) {
+   public NoiseBiomeResolver createResolver(final Climate.Sampler sampler) {
       return this;
    }
 

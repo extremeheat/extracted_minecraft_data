@@ -25,6 +25,7 @@ import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.client.resources.server.ServerPackManager;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ProtocolInfo;
+import net.minecraft.network.ServerConnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
@@ -131,17 +132,16 @@ public class ConnectScreen extends Screen {
                }
 
                Connection var10000 = ConnectScreen.this.connection;
-               String var10001 = address.getHostName();
-               int var10002 = address.getPort();
-               ProtocolInfo var10003 = LoginProtocols.SERVERBOUND;
-               ProtocolInfo var10004 = LoginProtocols.CLIENTBOUND;
-               Connection var10007 = ConnectScreen.this.connection;
-               Minecraft var10008 = minecraft;
-               ServerData var10009 = server;
-               Screen var10010 = ConnectScreen.this.parent;
-               ConnectScreen var10013 = ConnectScreen.this;
-               Objects.requireNonNull(var10013);
-               var10000.initiateServerboundPlayConnection(var10001, var10002, var10003, var10004, new ClientHandshakePacketListenerImpl(var10007, var10008, var10009, var10010, false, (Duration)null, var10013::updateStatus, new LevelLoadTracker(), transferState), transferState != null);
+               ServerConnectionDetails var10001 = hostAndPort.createConnectionDetails(address);
+               ProtocolInfo var10002 = LoginProtocols.SERVERBOUND;
+               ProtocolInfo var10003 = LoginProtocols.CLIENTBOUND;
+               Connection var10006 = ConnectScreen.this.connection;
+               Minecraft var10007 = minecraft;
+               ServerData var10008 = server;
+               Screen var10009 = ConnectScreen.this.parent;
+               ConnectScreen var10012 = ConnectScreen.this;
+               Objects.requireNonNull(var10012);
+               var10000.initiateServerboundPlayConnection(var10001, var10002, var10003, new ClientHandshakePacketListenerImpl(var10006, var10007, var10008, var10009, false, (Duration)null, var10012::updateStatus, new LevelLoadTracker(), transferState), transferState != null);
                ConnectScreen.this.connection.send(new ServerboundHelloPacket(minecraft.getUser().getName(), minecraft.getUser().getProfileId()));
             } catch (Exception var9) {
                if (ConnectScreen.this.aborted) {

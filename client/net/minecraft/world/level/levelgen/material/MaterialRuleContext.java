@@ -1,22 +1,22 @@
 package net.minecraft.world.level.levelgen.material;
 
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.PositionalRandomFactory;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
@@ -33,10 +33,11 @@ public final class MaterialRuleContext {
    private final RandomState randomState;
    private final DensityVolume expectedVolume;
    private final DensitySamplerSet densitySamplers;
-   private final Function<BlockPos, Holder<Biome>> biomeGetter;
-   private final WorldGenerationContext context;
+   private final Map<DensityFunction, PrefillableDensityGetter> densityGetterCache = new HashMap();
+   private final BiomeResolver biomeGetter;
+   private final VerticalAnchor.Context verticalAnchorContext;
    private final @Nullable Set<Holder<Biome>> possibleBiomes;
-   private final DensityVolume preliminarySurfaceVolume;
+   private final DensityVolume expectedVolume2d;
    private @Nullable DensityBuffer preliminarySurfaceBuffer;
    private final Map<ResourceKey<NormalNoise>, DoubleSupplier> noiseSamplers2d = new IdentityHashMap();
    private final Map<ResourceKey<NormalNoise>, DoubleSupplier> noiseSamplers3d = new IdentityHashMap();
@@ -58,7 +59,7 @@ public final class MaterialRuleContext {
    private int stoneDepthBelow;
    private int stoneDepthAbove;
 
-   MaterialRuleContext(final MaterialSystem system, final RandomState randomState, final DensityVolume expectedVolume, final DensitySamplerSet densitySamplers, final Function<BlockPos, Holder<Biome>> biomeGetter, final WorldGenerationContext context, final @Nullable Set<Holder<Biome>> possibleBiomes) {
+   public MaterialRuleContext(final MaterialSystem system, final RandomState randomState, final DensityVolume expectedVolume, final DensitySamplerSet densitySamplers, final BiomeResolver biomeGetter, final VerticalAnchor.Context verticalAnchorContext, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       super();
       this.lastSurfaceDepth2Update = this.lastUpdateXZ - 1L;
       this.lastMinSurfaceLevelUpdate = this.lastUpdateXZ - 1L;
@@ -69,12 +70,12 @@ public final class MaterialRuleContext {
       this.expectedVolume = expectedVolume;
       this.densitySamplers = densitySamplers;
       this.biomeGetter = biomeGetter;
-      this.context = context;
+      this.verticalAnchorContext = verticalAnchorContext;
       this.possibleBiomes = possibleBiomes;
-      this.preliminarySurfaceVolume = new DensityVolume(expectedVolume.sizeX(), 1, expectedVolume.sizeZ(), expectedVolume.minBlockX(), 0, expectedVolume.minBlockZ());
+      this.expectedVolume2d = new DensityVolume(expectedVolume.sizeX(), 1, expectedVolume.sizeZ(), expectedVolume.minBlockX(), 0, expectedVolume.minBlockZ(), expectedVolume.stepBlockX(), 1, expectedVolume.stepBlockZ());
    }
 
-   void updateXZ(final int blockX, final int blockZ, final int surfaceGradientX, final int surfaceGradientZ) {
+   public void updateXZ(final int blockX, final int blockZ, final int surfaceGradientX, final int surfaceGradientZ) {
       ++this.lastUpdateXZ;
       ++this.lastUpdateY;
       this.blockX = blockX;
@@ -84,7 +85,7 @@ public final class MaterialRuleContext {
       this.surfaceDepth = this.system.getSurfaceDepth(blockX, blockZ);
    }
 
-   void updateY(final int stoneDepthAbove, final int stoneDepthBelow, final int waterHeight, final int blockY) {
+   public void updateY(final int stoneDepthAbove, final int stoneDepthBelow, final int waterHeight, final int blockY) {
       ++this.lastUpdateY;
       this.biome = null;
       this.blockY = blockY;
@@ -104,7 +105,7 @@ public final class MaterialRuleContext {
 
    public Holder<Biome> getBiome() {
       if (this.biome == null) {
-         this.biome = (Holder)this.biomeGetter.apply(this.pos.set(this.blockX, this.blockY, this.blockZ));
+         this.biome = this.biomeGetter.getBiome(this.blockX, this.blockY, this.blockZ);
       }
 
       return this.biome;
@@ -117,12 +118,12 @@ public final class MaterialRuleContext {
    public int getMinSurfaceLevel() {
       if (this.lastMinSurfaceLevelUpdate != this.lastUpdateXZ) {
          this.lastMinSurfaceLevelUpdate = this.lastUpdateXZ;
-         int index = this.preliminarySurfaceVolume.indexOfBlock(this.blockX, 0, this.blockZ);
+         int index = this.expectedVolume2d.indexOfBlock(this.blockX, 0, this.blockZ);
          float preliminarySurfaceLevel;
          if (index != -1) {
             if (this.preliminarySurfaceBuffer == null) {
-               this.preliminarySurfaceBuffer = DensityBuffer.createUnpooled(this.preliminarySurfaceVolume.size());
-               this.densitySamplers.get(this.system.preliminarySurfaceFunction()).sampleVolume(this.preliminarySurfaceBuffer, this.preliminarySurfaceVolume);
+               this.preliminarySurfaceBuffer = DensityBuffer.createUnpooled(this.expectedVolume2d.size());
+               this.densitySamplers.get(this.system.preliminarySurfaceFunction()).sampleVolume(this.preliminarySurfaceBuffer, this.expectedVolume2d);
             }
 
             preliminarySurfaceLevel = this.preliminarySurfaceBuffer.get(index);
@@ -189,17 +190,16 @@ public final class MaterialRuleContext {
    }
 
    public MaterialRules.DensityGetter getDensitiesInChunk(final DensityFunction function, final boolean prefill) {
-      DensitySampler.Bound sampler = this.densitySamplers.get(function);
+      PrefillableDensityGetter densities = (PrefillableDensityGetter)this.densityGetterCache.computeIfAbsent(function, (f) -> {
+         boolean is2d = (f.domainAxes() & 2) == 0;
+         DensitySampler.Bound sampler = this.densitySamplers.get(f);
+         return new PrefillableDensityGetter(sampler, is2d, is2d ? this.expectedVolume2d : this.expectedVolume);
+      });
       if (prefill) {
-         DensityBuffer buffer = DensityBuffer.createUnpooled(this.expectedVolume.size());
-         sampler.sampleVolume(buffer, this.expectedVolume);
-         return () -> {
-            int index = this.expectedVolume.indexOfBlock(this.blockX, this.blockY, this.blockZ);
-            return index == -1 ? sampler.sampleValue(this.blockX, this.blockY, this.blockZ) : buffer.get(index);
-         };
-      } else {
-         return () -> sampler.sampleValue(this.blockX, this.blockY, this.blockZ);
+         densities.prefillIfNeeded();
       }
+
+      return densities;
    }
 
    public @Nullable Set<Holder<Biome>> possibleBiomes() {
@@ -247,7 +247,7 @@ public final class MaterialRuleContext {
    }
 
    public int resolveAnchorY(final VerticalAnchor anchor) {
-      return anchor.resolveY(this.context);
+      return anchor.resolveY(this.verticalAnchorContext);
    }
 
    public BlockState getBand(final int x, final int y, final int z) {
@@ -310,5 +310,49 @@ public final class MaterialRuleContext {
       }
 
       protected abstract boolean compute();
+   }
+
+   private class PrefillableDensityGetter implements MaterialRules.DensityGetter {
+      private final DensitySampler.Bound sampler;
+      private final boolean is2d;
+      private final DensityVolume prefillVolume;
+      private @Nullable DensityBuffer prefillBuffer;
+      private long lastUpdate;
+      private float lastValue;
+
+      private PrefillableDensityGetter(final DensitySampler.Bound sampler, final boolean is2d, final DensityVolume prefillVolume) {
+         Objects.requireNonNull(MaterialRuleContext.this);
+         super();
+         this.sampler = sampler;
+         this.is2d = is2d;
+         this.prefillVolume = prefillVolume;
+         this.lastUpdate = is2d ? MaterialRuleContext.this.lastUpdateXZ : MaterialRuleContext.this.lastUpdateY;
+      }
+
+      public void prefillIfNeeded() {
+         if (this.prefillBuffer == null) {
+            this.prefillBuffer = DensityBuffer.createUnpooled(this.prefillVolume.size());
+            this.sampler.sampleVolume(this.prefillBuffer, this.prefillVolume);
+         }
+
+      }
+
+      public float get() {
+         if (this.prefillBuffer != null) {
+            int blockY = this.is2d ? 0 : MaterialRuleContext.this.blockY;
+            int index = this.prefillVolume.indexOfBlock(MaterialRuleContext.this.blockX, blockY, MaterialRuleContext.this.blockZ);
+            if (index != -1) {
+               return this.prefillBuffer.get(index);
+            }
+         }
+
+         long newUpdate = this.is2d ? MaterialRuleContext.this.lastUpdateXZ : MaterialRuleContext.this.lastUpdateY;
+         if (newUpdate != this.lastUpdate) {
+            this.lastUpdate = newUpdate;
+            this.lastValue = this.sampler.sampleValue(MaterialRuleContext.this.blockX, MaterialRuleContext.this.blockY, MaterialRuleContext.this.blockZ);
+         }
+
+         return this.lastValue;
+      }
    }
 }

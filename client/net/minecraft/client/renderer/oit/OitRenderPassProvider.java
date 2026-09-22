@@ -9,7 +9,6 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Supplier;
-import net.minecraft.client.renderer.LevelRenderer;
 
 public class OitRenderPassProvider {
    public OitRenderPassProvider() {
@@ -38,7 +37,7 @@ public class OitRenderPassProvider {
    private static RenderPass createTransmittancePass(final Supplier<String> label, final Parameters params) {
       RenderPassDescriptor.Builder descriptor = RenderPassDescriptor.builder(() -> "OIT Transmittance for " + (String)label.get()).withDepthAttachment(params.depthTextureView, OptionalDouble.empty());
 
-      for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
+      for(int i = 0; i < 2; ++i) {
          descriptor.withColorAttachment(params.transmittanceTargetViews[i], Optional.empty());
       }
 
@@ -55,8 +54,8 @@ public class OitRenderPassProvider {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       RenderSystem.bindDefaultUniforms(renderPass);
 
-      for(int i = 0; i < LevelRenderer.OIT_TRANSMITTANCE_TARGET_COUNT; ++i) {
-         renderPass.setUniform("Coeff" + i, params.transmittanceTargetViews[i], nearestSampler);
+      for(int i = 0; i < 2; ++i) {
+         renderPass.setUniform("Bins" + i, params.transmittanceTargetViews[i], nearestSampler);
       }
 
       renderPass.setUniform("DepthBoundsSampler", params.depthBoundsTargetView, nearestSampler);

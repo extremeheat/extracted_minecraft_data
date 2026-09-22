@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 import net.minecraft.util.Util;
 import org.joml.Vector4fc;
-import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.system.MemoryStack;
@@ -22,126 +21,102 @@ public class GlStateManager {
    private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
    private static int numBuffers = 0;
    private static final boolean IS_MACOS;
-   private static final BlendState BLEND;
-   private static final boolean[] BLEND_ENABLE;
-   private static final DepthState DEPTH;
-   private static final CullState CULL;
-   private static final PolygonOffsetState POLY_OFFSET;
-   private static final ColorLogicState COLOR_LOGIC;
-   private static final ScissorState SCISSOR;
-   private static int activeTexture;
+   private final BlendState blend = new BlendState();
+   private final boolean[] blendEnable = new boolean[8];
+   private final DepthState depth = new DepthState();
+   private final CullState cull = new CullState();
+   private final PolygonOffsetState polyOffset = new PolygonOffsetState();
+   private final ScissorState scissor = new ScissorState();
+   private int activeTexture;
    private static final int TEXTURE_COUNT = 12;
-   private static final TextureState[] TEXTURES;
-   private static final @ColorTargetState.WriteMask int[] COLOR_MASK;
-   private static int readFbo;
-   private static int writeFbo;
+   private final TextureState[] TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
+   private final @ColorTargetState.WriteMask int[] COLOR_MASK = new int[8];
+   private int readFbo;
+   private int writeFbo;
 
    public GlStateManager() {
       super();
+      Arrays.setAll(this.COLOR_MASK, (var0) -> 15);
+      Arrays.fill(this.blendEnable, false);
    }
 
-   public static void _disableScissorTest() {
+   public void _disableScissorTest() {
       RenderSystem.assertOnRenderThread();
-      SCISSOR.mode.disable();
+      this.scissor.mode.disable();
    }
 
-   public static void _enableScissorTest() {
+   public void _enableScissorTest() {
       RenderSystem.assertOnRenderThread();
-      SCISSOR.mode.enable();
+      this.scissor.mode.enable();
    }
 
-   public static void _scissorBox(final int x, final int y, final int width, final int height) {
+   public void _disableDepthTest() {
       RenderSystem.assertOnRenderThread();
-      GL33C.glScissor(x, y, width, height);
+      this.depth.mode.disable();
    }
 
-   public static void _disableDepthTest() {
+   public void _enableDepthTest() {
       RenderSystem.assertOnRenderThread();
-      DEPTH.mode.disable();
+      this.depth.mode.enable();
    }
 
-   public static void _enableDepthTest() {
+   public void _depthFunc(final int func) {
       RenderSystem.assertOnRenderThread();
-      DEPTH.mode.enable();
-   }
-
-   public static void _depthFunc(final int func) {
-      RenderSystem.assertOnRenderThread();
-      if (func != DEPTH.func) {
-         DEPTH.func = func;
+      if (func != this.depth.func) {
+         this.depth.func = func;
          GL33C.glDepthFunc(func);
       }
 
    }
 
-   public static void _depthMask(final boolean mask) {
+   public void _depthMask(final boolean mask) {
       RenderSystem.assertOnRenderThread();
-      if (mask != DEPTH.mask) {
-         DEPTH.mask = mask;
+      if (mask != this.depth.mask) {
+         this.depth.mask = mask;
          GL33C.glDepthMask(mask);
       }
 
    }
 
-   public static void _disableBlend(final int index) {
+   public void _disableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
-      if (BLEND_ENABLE[index]) {
-         BLEND_ENABLE[index] = false;
+      if (this.blendEnable[index]) {
+         this.blendEnable[index] = false;
          GL33C.glDisablei(3042, index);
       }
    }
 
-   public static void _enableBlend(final int index) {
+   public void _enableBlend(final int index) {
       RenderSystem.assertOnRenderThread();
-      if (!BLEND_ENABLE[index]) {
-         BLEND_ENABLE[index] = true;
+      if (!this.blendEnable[index]) {
+         this.blendEnable[index] = true;
          GL33C.glEnablei(3042, index);
       }
    }
 
-   public static void _blendFuncSeparate(final int srcRgb, final int dstRgb, final int srcAlpha, final int dstAlpha) {
+   public void _blendFuncSeparate(final int srcRgb, final int dstRgb, final int srcAlpha, final int dstAlpha) {
       RenderSystem.assertOnRenderThread();
-      if (srcRgb != BLEND.srcRgb || dstRgb != BLEND.dstRgb || srcAlpha != BLEND.srcAlpha || dstAlpha != BLEND.dstAlpha) {
-         BLEND.srcRgb = srcRgb;
-         BLEND.dstRgb = dstRgb;
-         BLEND.srcAlpha = srcAlpha;
-         BLEND.dstAlpha = dstAlpha;
-         glBlendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
+      if (srcRgb != this.blend.srcRgb || dstRgb != this.blend.dstRgb || srcAlpha != this.blend.srcAlpha || dstAlpha != this.blend.dstAlpha) {
+         this.blend.srcRgb = srcRgb;
+         this.blend.dstRgb = dstRgb;
+         this.blend.srcAlpha = srcAlpha;
+         this.blend.dstAlpha = dstAlpha;
+         GL33C.glBlendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
       }
 
    }
 
-   public static void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
+   public void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
       RenderSystem.assertOnRenderThread();
-      if (modeRgb != BLEND.modeRgb || modeAlpha != BLEND.modeAlpha) {
-         BLEND.modeRgb = modeRgb;
-         BLEND.modeAlpha = modeAlpha;
-         glBlendEquationSeparate(modeRgb, modeAlpha);
+      if (modeRgb != this.blend.modeRgb || modeAlpha != this.blend.modeAlpha) {
+         this.blend.modeRgb = modeRgb;
+         this.blend.modeAlpha = modeAlpha;
+         GL33C.glBlendEquationSeparate(modeRgb, modeAlpha);
       }
 
    }
 
-   public static int glGetProgrami(final int program, final int pname) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetProgrami(program, pname);
-   }
-
-   public static void glAttachShader(final int program, final int shader) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glAttachShader(program, shader);
-   }
-
-   public static void glDeleteShader(final int shader) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glDeleteShader(shader);
-   }
-
-   public static int glCreateShader(final int type) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glCreateShader(type);
-   }
-
-   public static void glShaderSource(final int shader, final String source) {
+   public void glShaderSource(final int shader, final String source) {
       RenderSystem.assertOnRenderThread();
       byte[] encoded = source.getBytes(StandardCharsets.UTF_8);
       ByteBuffer buffer = MemoryUtil.memAlloc(encoded.length + 1);
@@ -156,16 +131,16 @@ public class GlStateManager {
             PointerBuffer pointers = stack.mallocPointer(1);
             pointers.put(buffer);
             GL33C.nglShaderSource(shader, 1, pointers.address0(), 0L);
-         } catch (Throwable var12) {
+         } catch (Throwable var13) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var11) {
-                  var12.addSuppressed(var11);
+               } catch (Throwable var12) {
+                  var13.addSuppressed(var12);
                }
             }
 
-            throw var12;
+            throw var13;
          }
 
          if (stack != null) {
@@ -175,51 +150,6 @@ public class GlStateManager {
          MemoryUtil.memFree(buffer);
       }
 
-   }
-
-   public static void glCompileShader(final int shader) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glCompileShader(shader);
-   }
-
-   public static int glGetShaderi(final int shader, final int pname) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetShaderi(shader, pname);
-   }
-
-   public static void _glUseProgram(final int program) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glUseProgram(program);
-   }
-
-   public static int glCreateProgram() {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glCreateProgram();
-   }
-
-   public static void glDeleteProgram(final int program) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glDeleteProgram(program);
-   }
-
-   public static void glLinkProgram(final int program) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glLinkProgram(program);
-   }
-
-   public static int _glGetUniformLocation(final int program, final CharSequence name) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetUniformLocation(program, name);
-   }
-
-   public static void _glUniform1i(final int location, final int v0) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glUniform1i(location, v0);
-   }
-
-   public static void _glBindAttribLocation(final int program, final int location, final CharSequence name) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBindAttribLocation(program, location, name);
    }
 
    static void incrementTrackedBuffers() {
@@ -233,46 +163,6 @@ public class GlStateManager {
       return GL33C.glGenBuffers();
    }
 
-   public static int _glGenVertexArrays() {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGenVertexArrays();
-   }
-
-   public static void _glBindBuffer(final int target, final int buffer) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBindBuffer(target, buffer);
-   }
-
-   public static void _glBindVertexArray(final int arrayId) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBindVertexArray(arrayId);
-   }
-
-   public static void _glBufferData(final int target, final ByteBuffer data, final int usage) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBufferData(target, data, usage);
-   }
-
-   public static void _glBufferSubData(final int target, final long offset, final ByteBuffer data) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBufferSubData(target, offset, data);
-   }
-
-   public static void _glBufferData(final int target, final long size, final int usage) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBufferData(target, size, usage);
-   }
-
-   public static @Nullable ByteBuffer _glMapBufferRange(final int target, final long offset, final long length, final int access) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glMapBufferRange(target, offset, length, access);
-   }
-
-   public static void _glUnmapBuffer(final int target) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glUnmapBuffer(target);
-   }
-
    public static void _glDeleteBuffers(final int buffer) {
       RenderSystem.assertOnRenderThread();
       --numBuffers;
@@ -280,164 +170,91 @@ public class GlStateManager {
       GL33C.glDeleteBuffers(buffer);
    }
 
-   public static void _glBindFramebuffer(final int target, final int framebuffer) {
-      if ((target == 36008 || target == 36160) && readFbo != framebuffer) {
+   public void _glBindFramebuffer(final int target, final int framebuffer) {
+      if ((target == 36008 || target == 36160) && this.readFbo != framebuffer) {
          GL33C.glBindFramebuffer(36008, framebuffer);
-         readFbo = framebuffer;
+         this.readFbo = framebuffer;
       }
 
-      if ((target == 36009 || target == 36160) && writeFbo != framebuffer) {
+      if ((target == 36009 || target == 36160) && this.writeFbo != framebuffer) {
          GL33C.glBindFramebuffer(36009, framebuffer);
-         writeFbo = framebuffer;
+         this.writeFbo = framebuffer;
       }
 
    }
 
-   public static int getFrameBuffer(final int target) {
+   public int getFrameBuffer(final int target) {
       if (target == 36008) {
-         return readFbo;
+         return this.readFbo;
       } else {
-         return target == 36009 ? writeFbo : 0;
+         return target == 36009 ? this.writeFbo : 0;
       }
    }
 
-   public static void _glBlitFrameBuffer(final int srcX0, final int srcY0, final int srcX1, final int srcY1, final int dstX0, final int dstY0, final int dstX1, final int dstY1, final int mask, final int filter) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-   }
-
-   public static void _glDeleteFramebuffers(final int framebuffer) {
+   public void _glDeleteFramebuffers(final int framebuffer) {
       RenderSystem.assertOnRenderThread();
       GL33C.glDeleteFramebuffers(framebuffer);
-      if (readFbo == framebuffer) {
-         readFbo = 0;
+      if (this.readFbo == framebuffer) {
+         this.readFbo = 0;
       }
 
-      if (writeFbo == framebuffer) {
-         writeFbo = 0;
+      if (this.writeFbo == framebuffer) {
+         this.writeFbo = 0;
       }
 
    }
 
-   public static int glGenFramebuffers() {
+   public void _enableCull() {
       RenderSystem.assertOnRenderThread();
-      return GL33C.glGenFramebuffers();
+      this.cull.enable.enable();
    }
 
-   public static void _glFramebufferTexture2D(final int target, final int attachment, final int textarget, final int texture, final int level) {
+   public void _disableCull() {
       RenderSystem.assertOnRenderThread();
-      GL33C.glFramebufferTexture2D(target, attachment, textarget, texture, level);
+      this.cull.enable.disable();
    }
 
-   public static void _glReadBuffer(final int mode) {
+   public void _enablePolygonOffset() {
       RenderSystem.assertOnRenderThread();
-      GL33C.glReadBuffer(mode);
+      this.polyOffset.fill.enable();
    }
 
-   public static void glBlendFuncSeparate(final int srcColor, final int dstColor, final int srcAlpha, final int dstAlpha) {
+   public void _disablePolygonOffset() {
       RenderSystem.assertOnRenderThread();
-      GL33C.glBlendFuncSeparate(srcColor, dstColor, srcAlpha, dstAlpha);
+      this.polyOffset.fill.disable();
    }
 
-   public static void glBlendEquationSeparate(final int modeRgb, final int modeAlpha) {
+   public void _polygonOffset(final float factor, final float units) {
       RenderSystem.assertOnRenderThread();
-      GL33C.glBlendEquationSeparate(modeRgb, modeAlpha);
-   }
-
-   public static String glGetShaderInfoLog(final int shader, final int maxLength) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetShaderInfoLog(shader, maxLength);
-   }
-
-   public static String glGetProgramInfoLog(final int program, final int maxLength) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetProgramInfoLog(program, maxLength);
-   }
-
-   public static void _enableCull() {
-      RenderSystem.assertOnRenderThread();
-      CULL.enable.enable();
-   }
-
-   public static void _disableCull() {
-      RenderSystem.assertOnRenderThread();
-      CULL.enable.disable();
-   }
-
-   public static void _polygonMode(final int face, final int mode) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glPolygonMode(face, mode);
-   }
-
-   public static void _enablePolygonOffset() {
-      RenderSystem.assertOnRenderThread();
-      POLY_OFFSET.fill.enable();
-   }
-
-   public static void _disablePolygonOffset() {
-      RenderSystem.assertOnRenderThread();
-      POLY_OFFSET.fill.disable();
-   }
-
-   public static void _polygonOffset(final float factor, final float units) {
-      RenderSystem.assertOnRenderThread();
-      if (factor != POLY_OFFSET.factor || units != POLY_OFFSET.units) {
-         POLY_OFFSET.factor = factor;
-         POLY_OFFSET.units = units;
+      if (factor != this.polyOffset.factor || units != this.polyOffset.units) {
+         this.polyOffset.factor = factor;
+         this.polyOffset.units = units;
          GL33C.glPolygonOffset(factor, units);
       }
 
    }
 
-   public static void _enableColorLogicOp() {
+   public void _activeTexture(final int texture) {
       RenderSystem.assertOnRenderThread();
-      COLOR_LOGIC.enable.enable();
-   }
-
-   public static void _disableColorLogicOp() {
-      RenderSystem.assertOnRenderThread();
-      COLOR_LOGIC.enable.disable();
-   }
-
-   public static void _logicOp(final int op) {
-      RenderSystem.assertOnRenderThread();
-      if (op != COLOR_LOGIC.op) {
-         COLOR_LOGIC.op = op;
-         GL33C.glLogicOp(op);
-      }
-
-   }
-
-   public static void _activeTexture(final int texture) {
-      RenderSystem.assertOnRenderThread();
-      if (activeTexture != texture - '\u84c0') {
-         activeTexture = texture - '\u84c0';
+      if (this.activeTexture != texture - '\u84c0') {
+         this.activeTexture = texture - '\u84c0';
          GL33C.glActiveTexture(texture);
       }
 
    }
 
-   public static void _texParameter(final int target, final int name, final int value) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glTexParameteri(target, name, value);
-   }
-
-   public static int _getTexLevelParameter(final int target, final int level, final int name) {
-      return GL33C.glGetTexLevelParameteri(target, level, name);
-   }
-
-   public static int _genTexture() {
+   public int _genTexture() {
       RenderSystem.assertOnRenderThread();
       ++numTextures;
       PLOT_TEXTURES.setValue((double)numTextures);
       return GL33C.glGenTextures();
    }
 
-   public static void _deleteTexture(final int id) {
+   public void _deleteTexture(final int id) {
       RenderSystem.assertOnRenderThread();
       GL33C.glDeleteTextures(id);
 
-      for(TextureState state : TEXTURES) {
+      for(TextureState state : this.TEXTURES) {
          if (state.binding == id) {
             state.binding = -1;
          }
@@ -447,50 +264,31 @@ public class GlStateManager {
       PLOT_TEXTURES.setValue((double)numTextures);
    }
 
-   public static void _bindTexture(final int id) {
+   public void _bindTexture(final int id) {
       RenderSystem.assertOnRenderThread();
-      if (id != TEXTURES[activeTexture].binding) {
-         TEXTURES[activeTexture].binding = id;
+      if (id != this.TEXTURES[this.activeTexture].binding) {
+         this.TEXTURES[this.activeTexture].binding = id;
          GL33C.glBindTexture(3553, id);
       }
 
    }
 
-   public static void _texImage2D(final int target, final int level, final int internalformat, final int width, final int height, final int border, final int format, final int type, final @Nullable ByteBuffer pixels) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
-   }
-
-   public static void _texSubImage2D(final int target, final int level, final int xoffset, final int yoffset, final int width, final int height, final int format, final int type, final long pixels) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-   }
-
-   public static void _texSubImage2D(final int target, final int level, final int xoffset, final int yoffset, final int width, final int height, final int format, final int type, final ByteBuffer pixels) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, pixels);
-   }
-
-   public static void _viewport(final int x, final int y, final int width, final int height) {
-      GL33C.glViewport(x, y, width, height);
-   }
-
-   public static void _colorMask(final @ColorTargetState.WriteMask int writeMask) {
+   public void _colorMask(final @ColorTargetState.WriteMask int writeMask) {
       RenderSystem.assertOnRenderThread();
 
-      for(int i = 0; i < COLOR_MASK.length; ++i) {
-         if (writeMask != COLOR_MASK[i]) {
-            COLOR_MASK[i] = writeMask;
+      for(int i = 0; i < this.COLOR_MASK.length; ++i) {
+         if (writeMask != this.COLOR_MASK[i]) {
+            this.COLOR_MASK[i] = writeMask;
             GL33C.glColorMaski(i, (writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
          }
       }
 
    }
 
-   public static void _colorMask(final int index, final @ColorTargetState.WriteMask int writeMask) {
+   public void _colorMask(final int index, final @ColorTargetState.WriteMask int writeMask) {
       RenderSystem.assertOnRenderThread();
-      if (writeMask != COLOR_MASK[index]) {
-         COLOR_MASK[index] = writeMask;
+      if (writeMask != this.COLOR_MASK[index]) {
+         this.COLOR_MASK[index] = writeMask;
          GL33C.glColorMaski(index, (writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
       }
 
@@ -500,7 +298,7 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThread();
       GL33C.glClear(mask);
       if (IS_MACOS) {
-         _getError();
+         GL33C.glGetError();
       }
 
    }
@@ -509,7 +307,7 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6144, index, new float[]{clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w()});
       if (IS_MACOS) {
-         _getError();
+         GL33C.glGetError();
       }
 
    }
@@ -518,49 +316,9 @@ public class GlStateManager {
       RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6145, 0, new float[]{(float)clearDepth});
       if (IS_MACOS) {
-         _getError();
+         GL33C.glGetError();
       }
 
-   }
-
-   public static void _vertexAttribPointer(final int index, final int size, final int type, final boolean normalized, final int stride, final long value) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glVertexAttribPointer(index, size, type, normalized, stride, value);
-   }
-
-   public static void _vertexAttribIPointer(final int index, final int size, final int type, final int stride, final long value) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glVertexAttribIPointer(index, size, type, stride, value);
-   }
-
-   public static void _enableVertexAttribArray(final int index) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glEnableVertexAttribArray(index);
-   }
-
-   public static void _drawElements(final int mode, final int count, final int type, final long indices) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glDrawElements(mode, count, type, indices);
-   }
-
-   public static void _drawArrays(final int mode, final int first, final int count) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glDrawArrays(mode, first, count);
-   }
-
-   public static void _pixelStore(final int name, final int value) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glPixelStorei(name, value);
-   }
-
-   public static void _readPixels(final int x, final int y, final int width, final int height, final int format, final int type, final long pixels) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glReadPixels(x, y, width, height, format, type, pixels);
-   }
-
-   public static int _getError() {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetError();
    }
 
    public static void clearGlErrors() {
@@ -571,44 +329,8 @@ public class GlStateManager {
 
    }
 
-   public static String _getString(final int id) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetString(id);
-   }
-
-   public static int _getInteger(final int name) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glGetInteger(name);
-   }
-
-   public static long _glFenceSync(final int condition, final int flags) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glFenceSync(condition, flags);
-   }
-
-   public static int _glClientWaitSync(final long sync, final int flags, final long timeout) {
-      RenderSystem.assertOnRenderThread();
-      return GL33C.glClientWaitSync(sync, flags, timeout);
-   }
-
-   public static void _glDeleteSync(final long sync) {
-      RenderSystem.assertOnRenderThread();
-      GL33C.glDeleteSync(sync);
-   }
-
    static {
       IS_MACOS = Util.getPlatform() == Util.OS.OSX;
-      BLEND = new BlendState();
-      BLEND_ENABLE = new boolean[8];
-      DEPTH = new DepthState();
-      CULL = new CullState();
-      POLY_OFFSET = new PolygonOffsetState();
-      COLOR_LOGIC = new ColorLogicState();
-      SCISSOR = new ScissorState();
-      TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((i) -> new TextureState()).toArray((x$0) -> new TextureState[x$0]);
-      COLOR_MASK = new int[8];
-      Arrays.setAll(COLOR_MASK, (var0) -> 15);
-      Arrays.fill(BLEND_ENABLE, false);
    }
 
    private static class TextureState {
@@ -656,15 +378,6 @@ public class GlStateManager {
       public float units;
 
       private PolygonOffsetState() {
-         super();
-      }
-   }
-
-   private static class ColorLogicState {
-      public final BooleanState enable = new BooleanState(3058);
-      public int op = 5379;
-
-      private ColorLogicState() {
          super();
       }
    }

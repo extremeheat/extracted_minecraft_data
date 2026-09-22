@@ -40,14 +40,16 @@ public class EquipmentLayerRenderer {
       this.trimTextureLookup = Util.memoize((Function)((key) -> key.getOrPrepareTexture(palettedTextures)));
    }
 
-   public <S> void renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int outlineColor) {
-      this.renderLayers(layerType, equipmentAssetId, model, state, itemStack, poseStack, submitNodeCollector, lightCoords, (Identifier)null, outlineColor, 1);
+   public <S> int renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final int outlineColor) {
+      return this.renderLayers(layerType, equipmentAssetId, model, state, itemStack, poseStack, submitNodeCollector, lightCoords, (Identifier)null, outlineColor, 1);
    }
 
-   public <S> void renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final @Nullable Identifier playerTextureOverride, final int outlineColor, final int order) {
+   public <S> int renderLayers(final EquipmentClientInfo.LayerType layerType, final ResourceKey<EquipmentAsset> equipmentAssetId, final Model<? super S> model, final S state, final ItemStack itemStack, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final @Nullable Identifier playerTextureOverride, final int outlineColor, final int order) {
       EquipmentClientInfo equipmentInfo = this.equipmentAssets.get(equipmentAssetId);
       List<EquipmentClientInfo.Layer> layers = equipmentInfo.getLayers(layerType);
-      if (!layers.isEmpty()) {
+      if (layers.isEmpty()) {
+         return order;
+      } else {
          int dyeColor = DyedItemColor.getOrDefault(itemStack, 0);
          boolean hasFoil = itemStack.hasFoil();
          ArmorTrim trim = (ArmorTrim)itemStack.get(DataComponents.TRIM);
@@ -74,6 +76,7 @@ public class EquipmentLayerRenderer {
             }
          }
 
+         return nextOrder;
       }
    }
 

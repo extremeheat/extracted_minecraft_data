@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -20,11 +20,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
-public class RedStoneOreBlock extends Block {
+public class RedStoneOreBlock extends DropExperienceBlock {
    public static final BooleanProperty LIT;
 
-   public RedStoneOreBlock(final BlockBehaviour.Properties properties) {
-      super(properties);
+   public RedStoneOreBlock(final IntProvider xpRange, final BlockBehaviour.Properties properties) {
+      super(xpRange, properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(LIT, false));
    }
 
@@ -66,14 +66,6 @@ public class RedStoneOreBlock extends Block {
    protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Boolean)state.getValue(LIT)) {
          level.setBlockAndUpdate(pos, (BlockState)state.setValue(LIT, false));
-      }
-
-   }
-
-   protected void spawnAfterBreak(final BlockState state, final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience) {
-      super.spawnAfterBreak(state, level, pos, tool, dropExperience);
-      if (dropExperience) {
-         this.tryDropExperience(level, pos, tool, UniformInt.of(1, 5));
       }
 
    }

@@ -7,12 +7,14 @@ import java.util.List;
 public class GlTextureView extends BaseGpuTextureView implements FrameBufferAttachment {
    private static final int EMPTY = -1;
    private boolean closed;
+   private final GlDevice device;
    private final FrameBufferCache frameBufferCache;
    private final List<FrameBufferCache.CacheKey> fboKeys = new ArrayList();
 
-   protected GlTextureView(final GlTexture texture, final int baseMipLevel, final int mipLevels, final FrameBufferCache frameBufferCache) {
+   protected GlTextureView(final GlDevice device, final GlTexture texture, final int baseMipLevel, final int mipLevels, final FrameBufferCache frameBufferCache) {
       super(texture, baseMipLevel, mipLevels);
       texture.addViews();
+      this.device = device;
       this.frameBufferCache = frameBufferCache;
    }
 
@@ -23,6 +25,7 @@ public class GlTextureView extends BaseGpuTextureView implements FrameBufferAtta
    public void close() {
       if (!this.closed) {
          this.closed = true;
+         this.device.ensureCurrent();
          this.texture().removeViews();
 
          while(!this.fboKeys.isEmpty()) {

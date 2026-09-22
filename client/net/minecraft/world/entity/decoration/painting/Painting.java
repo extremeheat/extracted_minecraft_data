@@ -11,13 +11,9 @@ import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.PaintingVariantTags;
@@ -55,6 +51,7 @@ public class Painting extends HangingEntity {
       super.onSyncedDataUpdated(accessor);
       if (DATA_PAINTING_VARIANT_ID.equals(accessor)) {
          this.recalculateBoundingBox();
+         this.setOldPos();
       }
 
    }
@@ -184,19 +181,6 @@ public class Painting extends HangingEntity {
 
    public void snapTo(final double x, final double y, final double z, final float yRot, final float xRot) {
       this.setPos(x, y, z);
-   }
-
-   public Vec3 trackingPosition() {
-      return Vec3.atLowerCornerOf(this.pos);
-   }
-
-   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
-      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
-   }
-
-   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
-      super.recreateFromPacket(packet);
-      this.setDirection(Direction.from3DDataValue(packet.getData()));
    }
 
    public ItemStack getPickResult() {

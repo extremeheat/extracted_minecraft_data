@@ -4,15 +4,13 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.mojang.serialization.Codec;
-import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,18 +62,23 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatherState> {
    }
 
    public static enum WeatherState implements StringRepresentable {
-      UNAFFECTED("unaffected"),
-      EXPOSED("exposed"),
-      WEATHERED("weathered"),
-      OXIDIZED("oxidized");
+      UNAFFECTED(0, "unaffected"),
+      EXPOSED(1, "exposed"),
+      WEATHERED(2, "weathered"),
+      OXIDIZED(3, "oxidized");
 
-      public static final IntFunction<WeatherState> BY_ID = ByIdMap.<WeatherState>continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final Codec<WeatherState> CODEC = StringRepresentable.<WeatherState>fromEnum(WeatherState::values);
-      public static final StreamCodec<ByteBuf, WeatherState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Enum::ordinal);
+      public static final EnumStreamCodec<WeatherState> STREAM_CODEC = ByteBufCodecs.<WeatherState>enumCodec(WeatherState.class, WeatherState::getId, ByIdMap.OutOfBoundsStrategy.CLAMP);
+      private final int id;
       private final String name;
 
-      private WeatherState(final String name) {
+      private WeatherState(final int id, final String name) {
+         this.id = id;
          this.name = name;
+      }
+
+      public int getId() {
+         return this.id;
       }
 
       public String getSerializedName() {
@@ -90,11 +93,11 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatherState> {
       }
 
       public WeatherState next() {
-         return (WeatherState)BY_ID.apply(this.ordinal() + 1);
+         return STREAM_CODEC.byId(this.getId() + 1);
       }
 
       public WeatherState previous() {
-         return (WeatherState)BY_ID.apply(this.ordinal() - 1);
+         return STREAM_CODEC.byId(this.getId() - 1);
       }
 
       // $FF: synthetic method

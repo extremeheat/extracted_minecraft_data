@@ -27,7 +27,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    private static final int MIN_PALETTE_BITS = 0;
    private volatile Data<T> data;
    private final Strategy<T> strategy;
-   private final ThreadingDetector threadingDetector = new ThreadingDetector("PalettedContainer");
+   private final ThreadingDetector threadingDetector;
 
    public void acquire() {
       this.threadingDetector.checkAndLock();
@@ -53,21 +53,50 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
    private PalettedContainer(final Strategy<T> strategy, final Configuration dataConfiguration, final BitStorage storage, final Palette<T> palette) {
       super();
+      this.threadingDetector = new ThreadingDetector("PalettedContainer");
       this.strategy = strategy;
       this.data = new Data<T>(dataConfiguration, storage, palette);
    }
 
    private PalettedContainer(final PalettedContainer<T> source) {
       super();
+      this.threadingDetector = new ThreadingDetector("PalettedContainer");
       this.strategy = source.strategy;
       this.data = source.data.copy();
    }
 
    public PalettedContainer(final T initialValue, final Strategy<T> strategy) {
+      this(initialValue, strategy, 0);
+   }
+
+   public PalettedContainer(final T initialValue, final Strategy<T> strategy, final int dataBits) {
       super();
+      this.threadingDetector = new ThreadingDetector("PalettedContainer");
       this.strategy = strategy;
-      this.data = this.createOrReuseData((Data)null, 0);
+      this.data = this.createOrReuseData((Data)null, dataBits);
       this.data.palette.idFor(initialValue, this);
+   }
+
+   private PalettedContainer(final Strategy<T> strategy, final int dataBits) {
+      super();
+      this.threadingDetector = new ThreadingDetector("PalettedContainer");
+      this.strategy = strategy;
+      this.data = this.createOrReuseData((Data)null, dataBits);
+   }
+
+   public static <T> PalettedContainer<T> fromInitializer(final Strategy<T> strategy, final Initializer<T> initializer) {
+      PalettedContainer<T> result = new PalettedContainer<T>(strategy, 0);
+      int size = strategy.countPerAxis();
+
+      for(int x = 0; x < size; ++x) {
+         for(int y = 0; y < size; ++y) {
+            for(int z = 0; z < size; ++z) {
+               result.setUnchecked(x, y, z, initializer.get(x, y, z));
+            }
+         }
+      }
+
+      return result;
    }
 
    private Data<T> createOrReuseData(final @Nullable Data<T> oldData, final int targetBits) {
@@ -123,9 +152,26 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
    }
 
+   public void setUnchecked(final int x, final int y, final int z, final T value) {
+      this.set(this.strategy.getIndex(x, y, z), value);
+   }
+
    private void set(final int index, final T value) {
       int id = this.data.palette.idFor(value, this);
       this.data.storage.set(index, id);
+   }
+
+   public void fillUnchecked(final int fromX, final int fromY, final int fromZ, final int toX, final int toY, final int toZ, final T value) {
+      int id = this.data.palette.idFor(value, this);
+
+      for(int z = fromZ; z <= toZ; ++z) {
+         for(int y = fromY; y <= toY; ++y) {
+            for(int x = fromX; x <= toX; ++x) {
+               this.data.storage.set(this.strategy.getIndex(x, y, z), id);
+            }
+         }
+      }
+
    }
 
    public T get(final int x, final int y, final int z) {
@@ -276,8 +322,12 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    }
 
    public void forEachInPalette(final Consumer<T> consumer) {
-      for(int i = 0; i < this.data.palette.getSize(); ++i) {
-         consumer.accept(this.data.palette.valueFor(i));
+      if (this.data.palette instanceof GlobalPalette) {
+         this.count((entry, var2) -> consumer.accept(entry));
+      } else {
+         for(int i = 0; i < this.data.palette.getSize(); ++i) {
+            consumer.accept(this.data.palette.valueFor(i));
+         }
       }
 
    }
@@ -288,6 +338,10 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
 
    public PalettedContainer<T> recreate() {
       return new PalettedContainer<T>(this.data.palette.valueFor(0), this.strategy);
+   }
+
+   public PalettedContainer<T> recreate(final T initialValue, final int dataBits) {
+      return new PalettedContainer<T>(initialValue, this.strategy, dataBits);
    }
 
    public void count(final CountConsumer<T> output) {
@@ -346,5 +400,9 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
    @FunctionalInterface
    public interface CountConsumer<T> {
       void accept(final T entry, final int count);
+   }
+
+   public interface Initializer<T> {
+      T get(int x, int y, int z);
    }
 }

@@ -33,7 +33,6 @@ import net.minecraft.client.main.GameConfig;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
-import net.minecraft.server.packs.DownloadQueue;
 import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;

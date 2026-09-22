@@ -24,6 +24,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -33,6 +34,7 @@ import org.jspecify.annotations.Nullable;
 public class TabNavigationBar extends AbstractContainerWidget {
    private static final int NO_TAB = -1;
    private static final Component USAGE_NARRATION = Component.translatable("narration.tab_navigation.usage");
+   private static final Component USAGE_NARRATION_MAC = Component.translatable("narration.tab_navigation.mac.usage");
    protected final FrameLayout layout;
    private final TabManager tabManager;
    protected final ImmutableList<Tab> tabs;
@@ -128,7 +130,7 @@ public class TabNavigationBar extends AbstractContainerWidget {
          button.updateNarration(output);
       });
       if (this.isFocused()) {
-         output.add(NarratedElementType.USAGE, USAGE_NARRATION);
+         output.add(NarratedElementType.USAGE, InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? USAGE_NARRATION_MAC : USAGE_NARRATION);
       }
 
    }

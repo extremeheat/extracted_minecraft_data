@@ -13,7 +13,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.CarverOutput;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 
 public record CaveWorldCarver(float probability, HeightProvider y, IntProvider count, FloatProvider thickness, boolean weirdThicknessBias, FloatProvider roomVerticalRadiusMultiplier, FloatProvider horizontalRadiusMultiplier, FloatProvider verticalRadiusMultiplier, FloatProvider startVerticalRadiusMultiplier, FloatProvider floorLevel) implements WorldCarver {
@@ -27,13 +27,13 @@ public record CaveWorldCarver(float probability, HeightProvider y, IntProvider c
       return random.nextFloat() <= this.probability;
    }
 
-   public boolean carve(final WorldGenerationContext context, final RandomSource random, final ChunkPos chunkPos, final ChunkPos sourceChunkPos, final CarverOutput output) {
+   public boolean carve(final VerticalAnchor.Context verticalAnchorContext, final RandomSource random, final ChunkPos chunkPos, final ChunkPos sourceChunkPos, final CarverOutput output) {
       int maxDistance = SectionPos.sectionToBlockCoord(this.getRange() * 2 - 1);
       int caveCount = this.count.sample(random);
 
       for(int cave = 0; cave < caveCount; ++cave) {
          double x = (double)sourceChunkPos.getBlockX(random.nextInt(16));
-         double y = (double)this.y.sample(random, context);
+         double y = (double)this.y.sample(random, verticalAnchorContext);
          double z = (double)sourceChunkPos.getBlockZ(random.nextInt(16));
          double horizontalRadiusMultiplier = (double)this.horizontalRadiusMultiplier.sample(random);
          double verticalRadiusMultiplier = (double)this.verticalRadiusMultiplier.sample(random);

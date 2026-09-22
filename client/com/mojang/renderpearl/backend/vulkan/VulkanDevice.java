@@ -9,6 +9,7 @@ import com.mojang.renderpearl.api.device.DeviceFeatures;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.DeviceLimits;
 import com.mojang.renderpearl.api.device.HintsAndWorkarounds;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
@@ -57,6 +58,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final FeatureSet enabledFeatures;
    private final VulkanCommandEncoder commandEncoder;
    private final CheckpointExtension checkpointExtension;
+   private final RenderPassCache renderPassCache;
 
    public VulkanDevice(final VulkanInstance instance, final VulkanPhysicalDevice physicalDevice, final FeatureSet enabledFeatureSet, final VkDevice vkDevice, final long vma, final CheckpointExtension checkpointExtension) {
       super();
@@ -65,6 +67,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       this.vma = vma;
       this.enabledFeatures = enabledFeatureSet;
       this.checkpointExtension = checkpointExtension;
+      this.renderPassCache = new RenderPassCache(this);
       Set<String> extensionNames = new HashSet();
 
       for(String name : instance.getEnabledExtensions()) {
@@ -104,6 +107,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    }
 
    public void close() {
+      this.renderPassCache.destroy();
       this.checkpointExtension.close();
       this.commandEncoder.destroy();
       Vma.vmaDestroyAllocator(this.vma);
@@ -198,7 +202,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       return this.instance.debug().enabled();
    }
 
-   public BackendRenderPipeline.Pending compilePipeline(final BackendRenderPipeline.CreateInfo pipelineCreateInfo) {
+   public BackendRenderPipeline.Pending compilePipeline(final CompiledRenderPipeline.CreateInfo pipelineCreateInfo) {
       VulkanRenderPipeline pipeline = VulkanRenderPipeline.compile(this, pipelineCreateInfo);
       return () -> pipeline;
    }
@@ -251,5 +255,9 @@ public class VulkanDevice implements GpuDeviceBackend {
 
    public CheckpointExtension checkpointExtension() {
       return this.checkpointExtension;
+   }
+
+   public RenderPassCache renderpassCache() {
+      return this.renderPassCache;
    }
 }

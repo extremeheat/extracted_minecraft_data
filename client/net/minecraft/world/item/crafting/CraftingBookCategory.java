@@ -2,10 +2,8 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public enum CraftingBookCategory implements StringRepresentable {
@@ -15,8 +13,7 @@ public enum CraftingBookCategory implements StringRepresentable {
    MISC("misc", 3);
 
    public static final Codec<CraftingBookCategory> CODEC = StringRepresentable.<CraftingBookCategory>fromEnum(CraftingBookCategory::values);
-   public static final IntFunction<CraftingBookCategory> BY_ID = ByIdMap.<CraftingBookCategory>continuous(CraftingBookCategory::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, CraftingBookCategory> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, CraftingBookCategory::id);
+   public static final StreamCodec<ByteBuf, CraftingBookCategory> STREAM_CODEC = ByteBufCodecs.enumCodec(CraftingBookCategory.class, CraftingBookCategory::id);
    private final String name;
    private final int id;
 

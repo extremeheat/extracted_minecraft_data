@@ -16,6 +16,7 @@ public class BiomeTags {
    public static final TagKey<Biome> IS_JUNGLE = create("is_jungle");
    public static final TagKey<Biome> IS_FOREST = create("is_forest");
    public static final TagKey<Biome> IS_SAVANNA = create("is_savanna");
+   public static final TagKey<Biome> IS_CAVE = create("is_cave");
    public static final TagKey<Biome> IS_OVERWORLD = create("is_overworld");
    public static final TagKey<Biome> IS_NETHER = create("is_nether");
    public static final TagKey<Biome> IS_END = create("is_end");
@@ -76,6 +77,7 @@ public class BiomeTags {
    public static final TagKey<Biome> MINESHAFT_BLOCKING = create("mineshaft_blocking");
    public static final TagKey<Biome> WATER_ON_MAP_OUTLINES = create("water_on_map_outlines");
    public static final TagKey<Biome> PRODUCES_CORALS_FROM_BONEMEAL = create("produces_corals_from_bonemeal");
+   public static final TagKey<Biome> GENERATED_IN_BELOW_ZERO_RETROGEN = create("generated_in_below_zero_retrogen");
    public static final TagKey<Biome> WITHOUT_ZOMBIE_SIEGES = create("without_zombie_sieges");
    public static final TagKey<Biome> WITHOUT_WANDERING_TRADER_SPAWNS = create("without_wandering_trader_spawns");
    public static final TagKey<Biome> SPAWNS_COLD_VARIANT_FROGS = create("spawns_cold_variant_frogs");

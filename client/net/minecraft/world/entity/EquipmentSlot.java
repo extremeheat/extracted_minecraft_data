@@ -2,10 +2,8 @@ package net.minecraft.world.entity;
 
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,9 +19,8 @@ public enum EquipmentSlot implements StringRepresentable {
 
    public static final int NO_COUNT_LIMIT = 0;
    public static final List<EquipmentSlot> VALUES = List.of(values());
-   public static final IntFunction<EquipmentSlot> BY_ID = ByIdMap.<EquipmentSlot>continuous((s) -> s.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.<EquipmentSlot>fromEnum(EquipmentSlot::values);
-   public static final StreamCodec<ByteBuf, EquipmentSlot> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (s) -> s.id);
+   public static final StreamCodec<ByteBuf, EquipmentSlot> STREAM_CODEC = ByteBufCodecs.enumCodec(EquipmentSlot.class, (s) -> s.id);
    private final Type type;
    private final int index;
    private final int countLimit;

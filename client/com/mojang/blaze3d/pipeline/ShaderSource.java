@@ -1,5 +1,6 @@
-package com.mojang.renderpearl.api.pipeline;
+package com.mojang.blaze3d.pipeline;
 
+import com.mojang.renderpearl.api.pipeline.ShaderType;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;

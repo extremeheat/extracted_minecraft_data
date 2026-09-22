@@ -1,31 +1,29 @@
 package net.minecraft.world.level.biome;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.Set;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.QuartPos;
+import net.minecraft.world.level.chunk.PalettedContainer;
+import net.minecraft.world.level.chunk.PalettedContainerRO;
 
 @FunctionalInterface
 public interface BiomeResolver {
-   Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ);
+   Holder<Biome> getBiome(int x, int y, int z);
 
-   default Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int radius) {
-      int x0 = QuartPos.fromBlock(x - radius);
-      int y0 = QuartPos.fromBlock(y - radius);
-      int z0 = QuartPos.fromBlock(z - radius);
-      int x1 = QuartPos.fromBlock(x + radius);
-      int y1 = QuartPos.fromBlock(y + radius);
-      int z1 = QuartPos.fromBlock(z + radius);
-      Set<Holder<Biome>> biomeSet = new ObjectOpenHashSet();
+   default Holder<Biome> getBiome(final BlockPos pos) {
+      return this.getBiome(pos.getX(), pos.getY(), pos.getZ());
+   }
 
-      for(int noiseZ = z0; noiseZ <= z1; ++noiseZ) {
-         for(int noiseX = x0; noiseX <= x1; ++noiseX) {
-            for(int noiseY = y0; noiseY <= y1; ++noiseY) {
-               biomeSet.add(this.getNoiseBiome(noiseX, noiseY, noiseZ));
+   default PalettedContainer<Holder<Biome>> fillSection(final PalettedContainerRO<Holder<Biome>> biomes, final int minX, final int minY, final int minZ) {
+      PalettedContainer<Holder<Biome>> newBiomes = biomes.recreate();
+
+      for(int y = 0; y < 16; ++y) {
+         for(int z = 0; z < 16; ++z) {
+            for(int x = 0; x < 16; ++x) {
+               newBiomes.setUnchecked(x, y, z, this.getBiome(minX + x, minY + y, minZ + z));
             }
          }
       }
 
-      return biomeSet;
+      return newBiomes;
    }
 }

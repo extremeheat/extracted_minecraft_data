@@ -5,12 +5,10 @@ import io.netty.buffer.ByteBuf;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 
 public record ServerLinks(List<Entry> entries) {
    public static final ServerLinks EMPTY = new ServerLinks(List.of());
@@ -80,8 +78,7 @@ public record ServerLinks(List<Entry> entries) {
       NEWS(8, "news"),
       ANNOUNCEMENTS(9, "announcements");
 
-      private static final IntFunction<KnownLinkType> BY_ID = ByIdMap.<KnownLinkType>continuous((e) -> e.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (e) -> e.id);
+      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.enumCodec(KnownLinkType.class, (e) -> e.id);
       private final int id;
       private final String name;
 

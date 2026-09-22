@@ -1,4 +1,4 @@
-package net.minecraft.server.packs;
+package net.minecraft.client.resources.server;
 
 import com.google.common.hash.HashCode;
 import com.google.common.hash.HashFunction;

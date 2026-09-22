@@ -4,7 +4,6 @@ import com.mojang.math.OctahedralGroup;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.function.IntFunction;
 import net.minecraft.core.Direction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,9 +19,8 @@ public enum Rotation implements StringRepresentable {
    CLOCKWISE_180(2, "180", OctahedralGroup.ROT_180_FACE_XZ),
    COUNTERCLOCKWISE_90(3, "counterclockwise_90", OctahedralGroup.ROT_90_Y_POS);
 
-   public static final IntFunction<Rotation> BY_ID = ByIdMap.<Rotation>continuous(Rotation::getIndex, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<Rotation> CODEC = StringRepresentable.<Rotation>fromEnum(Rotation::values);
-   public static final StreamCodec<ByteBuf, Rotation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Rotation::getIndex);
+   public static final StreamCodec<ByteBuf, Rotation> STREAM_CODEC = ByteBufCodecs.enumCodec(Rotation.class, Rotation::getIndex, ByIdMap.OutOfBoundsStrategy.WRAP);
    /** @deprecated */
    @Deprecated
    public static final Codec<Rotation> LEGACY_CODEC = ExtraCodecs.<Rotation>legacyEnum(Rotation::valueOf);

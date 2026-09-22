@@ -4,11 +4,9 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public enum EquipmentSlotGroup implements StringRepresentable, Iterable<EquipmentSlot> {
@@ -24,9 +22,8 @@ public enum EquipmentSlotGroup implements StringRepresentable, Iterable<Equipmen
    BODY(9, "body", EquipmentSlot.BODY),
    SADDLE(10, "saddle", EquipmentSlot.SADDLE);
 
-   public static final IntFunction<EquipmentSlotGroup> BY_ID = ByIdMap.<EquipmentSlotGroup>continuous((s) -> s.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<EquipmentSlotGroup> CODEC = StringRepresentable.<EquipmentSlotGroup>fromEnum(EquipmentSlotGroup::values);
-   public static final StreamCodec<ByteBuf, EquipmentSlotGroup> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (s) -> s.id);
+   public static final StreamCodec<ByteBuf, EquipmentSlotGroup> STREAM_CODEC = ByteBufCodecs.enumCodec(EquipmentSlotGroup.class, (s) -> s.id);
    private final int id;
    private final String key;
    private final Predicate<EquipmentSlot> predicate;

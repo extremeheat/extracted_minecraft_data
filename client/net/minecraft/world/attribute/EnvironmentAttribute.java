@@ -13,9 +13,8 @@ public class EnvironmentAttribute<Value> {
    private final boolean isSyncable;
    private final boolean isPositional;
    private final boolean isSpatiallyInterpolated;
-   private final boolean fullResolutionBiomes;
 
-   private EnvironmentAttribute(final AttributeType<Value> type, final Value defaultValue, final AttributeRange<Value> valueRange, final boolean isSyncable, final boolean isPositional, final boolean isSpatiallyInterpolated, final boolean fullResolutionBiomes) {
+   private EnvironmentAttribute(final AttributeType<Value> type, final Value defaultValue, final AttributeRange<Value> valueRange, final boolean isSyncable, final boolean isPositional, final boolean isSpatiallyInterpolated) {
       super();
       this.type = type;
       this.defaultValue = defaultValue;
@@ -23,7 +22,6 @@ public class EnvironmentAttribute<Value> {
       this.isSyncable = isSyncable;
       this.isPositional = isPositional;
       this.isSpatiallyInterpolated = isSpatiallyInterpolated;
-      this.fullResolutionBiomes = fullResolutionBiomes;
    }
 
    public static <Value> Builder<Value> builder(final AttributeType<Value> type) {
@@ -61,10 +59,6 @@ public class EnvironmentAttribute<Value> {
       return this.isSpatiallyInterpolated;
    }
 
-   public boolean isFullResolutionBiomes() {
-      return this.fullResolutionBiomes;
-   }
-
    public String toString() {
       return Util.getRegisteredName(BuiltInRegistries.ENVIRONMENT_ATTRIBUTE, this);
    }
@@ -76,7 +70,6 @@ public class EnvironmentAttribute<Value> {
       private boolean isSyncable = false;
       private boolean isPositional = true;
       private boolean isSpatiallyInterpolated = false;
-      private boolean fullResolutionBiomes = false;
 
       public Builder(final AttributeType<Value> type) {
          super();
@@ -108,15 +101,8 @@ public class EnvironmentAttribute<Value> {
          return this;
       }
 
-      /** @deprecated */
-      @Deprecated
-      public Builder<Value> fullResolutionBiomes() {
-         this.fullResolutionBiomes = true;
-         return this;
-      }
-
       public EnvironmentAttribute<Value> build() {
-         return new EnvironmentAttribute<Value>(this.type, Objects.requireNonNull(this.defaultValue, "Missing default value"), this.valueRange, this.isSyncable, this.isPositional, this.isSpatiallyInterpolated, this.fullResolutionBiomes);
+         return new EnvironmentAttribute<Value>(this.type, Objects.requireNonNull(this.defaultValue, "Missing default value"), this.valueRange, this.isSyncable, this.isPositional, this.isSpatiallyInterpolated);
       }
    }
 }

@@ -95,49 +95,73 @@ public record IntervalSelectFunction(DensityFunction input, FloatList thresholds
       }
 
       public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
-         this.input.sampleVolume(context, outputBuffer, volume);
-         ScopedDensityBuffer[] buffers = new ScopedDensityBuffer[this.samplers.length];
-         boolean var15 = false;
+         try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(volume)) {
+            this.input.sampleVolume(context, inputBuffer, volume);
+            int firstSamplerIndex = this.selectSamplerIndex(inputBuffer.get(0));
+            this.samplers[firstSamplerIndex].sampleVolume(context, outputBuffer, volume);
 
-         try {
-            var15 = true;
-
-            for(int i = 0; i < this.samplers.length; ++i) {
-               ScopedDensityBuffer buffer = context.acquireBuffer(volume);
-               buffers[i] = buffer;
-               this.samplers[i].sampleVolume(context, buffer, volume);
+            int i;
+            for(i = 1; i < inputBuffer.size(); ++i) {
+               int samplerIndex = this.selectSamplerIndex(inputBuffer.get(i));
+               if (samplerIndex != firstSamplerIndex) {
+                  break;
+               }
             }
 
-            for(int i = 0; i < outputBuffer.size(); ++i) {
-               int samplerIndex = this.selectSamplerIndex(outputBuffer.get(i));
-               outputBuffer.set(i, buffers[samplerIndex].get(i));
+            if (i == inputBuffer.size()) {
+               return;
             }
 
-            var15 = false;
-         } finally {
-            if (var15) {
-               ScopedDensityBuffer[] var10 = buffers;
-               int var11 = buffers.length;
-               int var12 = 0;
+            DensityBuffer[] buffers = new DensityBuffer[this.samplers.length];
+            buffers[firstSamplerIndex] = outputBuffer;
 
-               while(true) {
-                  if (var12 >= var11) {
-                     ;
-                  } else {
-                     ScopedDensityBuffer buffer = var10[var12];
-                     if (buffer != null) {
-                        buffer.close();
+            while(true) {
+               boolean var22 = false;
+
+               try {
+                  var22 = true;
+                  if (i >= inputBuffer.size()) {
+                     var22 = false;
+                     break;
+                  }
+
+                  int samplerIndex = this.selectSamplerIndex(inputBuffer.get(i));
+                  DensityBuffer buffer = buffers[samplerIndex];
+                  if (buffer == null) {
+                     buffer = context.acquireBuffer(volume);
+                     buffers[samplerIndex] = buffer;
+                     this.samplers[samplerIndex].sampleVolume(context, buffer, volume);
+                  }
+
+                  outputBuffer.set(i, buffer.get(i));
+                  ++i;
+               } finally {
+                  if (var22) {
+                     DensityBuffer[] var14 = buffers;
+                     int var15 = buffers.length;
+                     int var16 = 0;
+
+                     while(true) {
+                        if (var16 >= var15) {
+                           ;
+                        } else {
+                           DensityBuffer buffer = var14[var16];
+                           if (buffer != outputBuffer && buffer instanceof ScopedDensityBuffer) {
+                              ScopedDensityBuffer scoped = (ScopedDensityBuffer)buffer;
+                              scoped.close();
+                           }
+
+                           ++var16;
+                        }
                      }
-
-                     ++var12;
                   }
                }
             }
-         }
 
-         for(ScopedDensityBuffer buffer : buffers) {
-            if (buffer != null) {
-               buffer.close();
+            for(DensityBuffer buffer : buffers) {
+               if (buffer != outputBuffer && buffer instanceof ScopedDensityBuffer scoped) {
+                  scoped.close();
+               }
             }
          }
 
@@ -164,18 +188,35 @@ public record IntervalSelectFunction(DensityFunction input, FloatList thresholds
          super();
       }
 
+      private boolean isBelow(final float input) {
+         return input < this.threshold;
+      }
+
+      private DensitySampler selectSampler(final boolean firstBelow) {
+         return firstBelow ? this.ifBelow : this.ifAbove;
+      }
+
       public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
-         this.input.sampleVolume(context, outputBuffer, volume);
+         try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(volume)) {
+            this.input.sampleVolume(context, inputBuffer, volume);
+            boolean firstBelow = this.isBelow(inputBuffer.get(0));
+            this.selectSampler(firstBelow).sampleVolume(context, outputBuffer, volume);
 
-         try (ScopedDensityBuffer ifBelowBuffer = context.acquireBuffer(volume)) {
-            this.ifBelow.sampleVolume(context, ifBelowBuffer, volume);
+            int i;
+            for(i = 1; i < inputBuffer.size() && firstBelow == this.isBelow(inputBuffer.get(i)); ++i) {
+            }
 
-            try (ScopedDensityBuffer ifAboveBuffer = context.acquireBuffer(volume)) {
-               this.ifAbove.sampleVolume(context, ifAboveBuffer, volume);
+            if (i == inputBuffer.size()) {
+               return;
+            }
 
-               for(int i = 0; i < outputBuffer.size(); ++i) {
-                  float input = outputBuffer.get(i);
-                  outputBuffer.set(i, input < this.threshold ? ifBelowBuffer.get(i) : ifAboveBuffer.get(i));
+            try (ScopedDensityBuffer otherBuffer = context.acquireBuffer(volume)) {
+               this.selectSampler(!firstBelow).sampleVolume(context, otherBuffer, volume);
+
+               for(; i < inputBuffer.size(); ++i) {
+                  if (firstBelow != this.isBelow(inputBuffer.get(i))) {
+                     outputBuffer.set(i, otherBuffer.get(i));
+                  }
                }
             }
          }
@@ -184,7 +225,7 @@ public record IntervalSelectFunction(DensityFunction input, FloatList thresholds
 
       public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
          float input = this.input.sampleValue(context, blockX, blockY, blockZ);
-         return input < this.threshold ? this.ifBelow.sampleValue(context, blockX, blockY, blockZ) : this.ifAbove.sampleValue(context, blockX, blockY, blockZ);
+         return this.isBelow(input) ? this.ifBelow.sampleValue(context, blockX, blockY, blockZ) : this.ifAbove.sampleValue(context, blockX, blockY, blockZ);
       }
    }
 }

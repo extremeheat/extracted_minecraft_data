@@ -1,11 +1,9 @@
-package com.mojang.renderpearl.frontend.shaders;
+package com.mojang.blaze3d.pipeline;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.jtracy.Zone;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
+import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
-import com.mojang.renderpearl.backend.api.SpvModule;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -19,20 +17,13 @@ import org.lwjgl.util.shaderc.ShadercIncludeResolve;
 import org.lwjgl.util.shaderc.ShadercIncludeResultRelease;
 
 public class GlslCompiler implements UncheckedAutoCloseable {
-   private final boolean isZeroToOne;
-   private final boolean shaderDrawParameters;
-   private final ShadercIncludeResultRelease includeResultRelease;
-   private final ShaderSource.CachedIncludeSource missingIncludeResult;
-   private final ShaderSource.CachedIncludeSource malformedIdResult;
+   private final ShadercIncludeResultRelease includeResultRelease = ShadercIncludeResultRelease.create(GlslCompiler::releaseIncludeResult);
+   private final ShaderSource.CachedIncludeSource missingIncludeResult = ShaderSource.CachedIncludeSource.createError("not found");
+   private final ShaderSource.CachedIncludeSource malformedIdResult = ShaderSource.CachedIncludeSource.createError("malformed id");
    private final LongArrayList compilers = new LongArrayList();
 
-   public GlslCompiler(final boolean isZeroToOne, final boolean shaderDrawParameters) {
+   public GlslCompiler() {
       super();
-      this.isZeroToOne = isZeroToOne;
-      this.shaderDrawParameters = shaderDrawParameters;
-      this.includeResultRelease = ShadercIncludeResultRelease.create(GlslCompiler::releaseIncludeResult);
-      this.missingIncludeResult = ShaderSource.CachedIncludeSource.createError("not found");
-      this.malformedIdResult = ShaderSource.CachedIncludeSource.createError("malformed id");
    }
 
    private ShaderSource.CachedIncludeSource processInclude(final ShaderSource shaderSource, final String requestedShader) {
@@ -71,34 +62,34 @@ public class GlslCompiler implements UncheckedAutoCloseable {
       this.compilers.add(compiler);
    }
 
-   private long createBaseShaderOptions() {
+   private long createBaseShaderOptions(final DeviceInfo deviceInfo) {
       long shaderOptions = Shaderc.shaderc_compile_options_initialize();
       Shaderc.shaderc_compile_options_set_target_env(shaderOptions, 0, 4202496);
       Shaderc.shaderc_compile_options_set_auto_bind_uniforms(shaderOptions, true);
       Shaderc.shaderc_compile_options_set_preserve_bindings(shaderOptions, false);
       Shaderc.shaderc_compile_options_set_generate_debug_info(shaderOptions);
       Shaderc.shaderc_compile_options_set_optimization_level(shaderOptions, 0);
-      if (this.isZeroToOne) {
+      if (deviceInfo.isZZeroToOne()) {
          Shaderc.shaderc_compile_options_add_macro_definition(shaderOptions, "RENDERPEARL_DEPTH_IS_ZERO_TO_ONE", "");
       }
 
-      if (RenderSystem.getDevice().getDeviceInfo().hintsAndWorkarounds().isExplicitDepthRequired()) {
+      if (deviceInfo.hintsAndWorkarounds().isExplicitDepthRequired()) {
          Shaderc.shaderc_compile_options_add_macro_definition(shaderOptions, "RENDERPEARL_EXPLICIT_DEPTH_INVARIANCE", "");
       }
 
-      if (this.shaderDrawParameters) {
+      if (deviceInfo.features().shaderDrawParameters()) {
          Shaderc.shaderc_compile_options_add_macro_definition(shaderOptions, "RENDERPEARL_INSTANCE_INDEX_INCLUDES_BASE_INSTANCE", "");
       }
 
       return shaderOptions;
    }
 
-   public SpvModule compileToSpv(final String name, final String source, final ShaderType type, final ShaderDefines shaderDefines, final ShaderSource shaderSource) throws ShaderCompileException {
+   public ByteBuffer compileToSpv(final String name, final String source, final ShaderType type, final ShaderDefines shaderDefines, final ShaderSource shaderSource, final DeviceInfo deviceInfo) throws ShaderCompileException {
       int shaderType = type == ShaderType.FRAGMENT ? 1 : 0;
       ByteBuffer sourceBuffer = MemoryUtil.memUTF8(source, false);
       ByteBuffer filenameBuffer = MemoryUtil.memUTF8(name);
       ByteBuffer entrypointBuffer = MemoryUtil.memUTF8("main");
-      long shaderOptions = this.createBaseShaderOptions();
+      long shaderOptions = this.createBaseShaderOptions(deviceInfo);
 
       for(Map.Entry<String, String> macro : shaderDefines.values().entrySet()) {
          Shaderc.shaderc_compile_options_add_macro_definition(shaderOptions, (CharSequence)macro.getKey(), (CharSequence)macro.getValue());
@@ -110,7 +101,7 @@ public class GlslCompiler implements UncheckedAutoCloseable {
 
       ShadercIncludeResolve includeResolver = this.createIncludeResolver(shaderSource);
 
-      SPIRVModule var20;
+      ByteBuffer var21;
       try {
          Shaderc.shaderc_compile_options_set_include_callbacks(shaderOptions, includeResolver, this.includeResultRelease, 0L);
          long compiler = this.acquireCompiler();
@@ -122,16 +113,16 @@ public class GlslCompiler implements UncheckedAutoCloseable {
             try {
                tracyZone.addText(name);
                result = Shaderc.shaderc_compile_into_spv(compiler, sourceBuffer, shaderType, filenameBuffer, entrypointBuffer, shaderOptions);
-            } catch (Throwable var36) {
+            } catch (Throwable var37) {
                if (tracyZone != null) {
                   try {
                      tracyZone.close();
-                  } catch (Throwable var35) {
-                     var36.addSuppressed(var35);
+                  } catch (Throwable var36) {
+                     var37.addSuppressed(var36);
                   }
                }
 
-               throw var36;
+               throw var37;
             }
 
             if (tracyZone != null) {
@@ -150,7 +141,7 @@ public class GlslCompiler implements UncheckedAutoCloseable {
             ByteBuffer spirv = Shaderc.shaderc_result_get_bytes(result);
             ByteBuffer copy = MemoryUtil.memCalloc(spirv.remaining());
             MemoryUtil.memCopy(spirv, copy);
-            var20 = new SPIRVModule(copy, type);
+            var21 = copy;
          } finally {
             Shaderc.shaderc_result_release(result);
             Shaderc.shaderc_compile_options_release(shaderOptions);
@@ -158,22 +149,22 @@ public class GlslCompiler implements UncheckedAutoCloseable {
             MemoryUtil.memFree(filenameBuffer);
             MemoryUtil.memFree(sourceBuffer);
          }
-      } catch (Throwable var39) {
+      } catch (Throwable var40) {
          if (includeResolver != null) {
             try {
                includeResolver.close();
-            } catch (Throwable var34) {
-               var39.addSuppressed(var34);
+            } catch (Throwable var35) {
+               var40.addSuppressed(var35);
             }
          }
 
-         throw var39;
+         throw var40;
       }
 
       if (includeResolver != null) {
          includeResolver.close();
       }
 
-      return var20;
+      return var21;
    }
 }

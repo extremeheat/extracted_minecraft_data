@@ -406,5 +406,9 @@ public final class DensityFunctions {
       public MapCodec<HolderHolder> codec() {
          throw new UnsupportedOperationException("Calling .codec() on HolderHolder");
       }
+
+      public String getDebugName() {
+         return DensityFunction.idShortString(this.function);
+      }
    }
 }

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.V1451_6;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
@@ -98,7 +98,7 @@ public class StatsCounterFix extends DataFix {
             }
          }
 
-         return Util.readTypedOrThrow(outputType, tag.emptyMap().set("stats", tag.createMap(stats)));
+         return ExtraDataFixUtils.readTypedOrThrow(outputType, tag.emptyMap().set("stats", tag.createMap(stats)));
       });
    }
 
@@ -124,7 +124,7 @@ public class StatsCounterFix extends DataFix {
             Objects.requireNonNull(name);
             return (Dynamic)DataFixUtils.orElse(var10000.map(name::createString), name);
          });
-         return Util.readTypedOrThrow(outputType, updatedTag);
+         return ExtraDataFixUtils.readTypedOrThrow(outputType, updatedTag);
       });
    }
 

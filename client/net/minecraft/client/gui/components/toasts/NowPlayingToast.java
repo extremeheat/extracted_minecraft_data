@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.DyeColor;
 import org.jspecify.annotations.Nullable;
 
 public class NowPlayingToast implements Toast {
@@ -21,11 +20,11 @@ public class NowPlayingToast implements Toast {
    private static final int HEIGHT = 30;
    private static final int MUSIC_NOTES_SPACE = 30;
    private static final int VISIBILITY_DURATION = 5000;
-   private static final int TEXT_COLOR;
+   private static final int TEXT_COLOR = -2894893;
    private static final long MUSIC_COLOR_CHANGE_FREQUENCY_MS = 25L;
    private static int musicNoteColorTick;
    private static long lastMusicNoteColorChange;
-   private static int musicNoteColor;
+   private static int musicNoteColor = -1;
    private boolean updateToast;
    private double notificationDisplayTimeMultiplier;
    private final Minecraft minecraft;
@@ -45,7 +44,7 @@ public class NowPlayingToast implements Toast {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
          Component var10002 = getNowPlayingString(currentSong);
          Objects.requireNonNull(font);
-         graphics.text(font, (Component)var10002, 30, 15 - 9 / 2, TEXT_COLOR);
+         graphics.text(font, (Component)var10002, 30, 15 - 9 / 2, -2894893);
       }
 
    }
@@ -118,10 +117,5 @@ public class NowPlayingToast implements Toast {
 
    public void setWantedVisibility(final Toast.Visibility visibility) {
       this.wantedVisibility = visibility;
-   }
-
-   static {
-      TEXT_COLOR = DyeColor.LIGHT_GRAY.getTextColor();
-      musicNoteColor = -1;
    }
 }

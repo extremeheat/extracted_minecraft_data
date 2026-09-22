@@ -1567,7 +1567,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    protected void applyGravity() {
       double gravity = this.getGravity();
       if (gravity != 0.0) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -gravity, 0.0));
+         this.addDeltaMovement(0.0, -gravity, 0.0);
       }
 
    }
@@ -1782,7 +1782,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void moveRelative(final float speed, final Vec3 input) {
       Vec3 delta = getInputVector(input, speed, this.getYRot());
-      this.setDeltaMovement(this.getDeltaMovement().add(delta));
+      this.addDeltaMovement(delta);
    }
 
    protected static Vec3 getInputVector(final Vec3 input, final float speed, final float yRot) {
@@ -1954,7 +1954,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void push(final double xa, final double ya, final double za) {
       if (Double.isFinite(xa) && Double.isFinite(ya) && Double.isFinite(za)) {
-         this.setDeltaMovement(this.getDeltaMovement().add(xa, ya, za));
+         this.addDeltaMovement(xa, ya, za);
          this.needsSync = true;
       }
 
@@ -3868,6 +3868,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void setDeltaMovement(final double xd, final double yd, final double zd) {
       this.setDeltaMovement(new Vec3(xd, yd, zd));
+   }
+
+   public void addDeltaMovement(final double xd, final double yd, final double zd) {
+      this.addDeltaMovement(new Vec3(xd, yd, zd));
    }
 
    public final int getBlockX() {

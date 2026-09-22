@@ -1,5 +1,7 @@
 package net.minecraft.util;
 
+import net.minecraft.world.level.block.ColorCollection;
+
 public class CommonColors {
    public static final int WHITE = -1;
    public static final int BLACK = -16777216;
@@ -17,6 +19,7 @@ public class CommonColors {
    public static final int HIGH_CONTRAST_DIAMOND = -11010079;
    public static final int COSMOS_PINK = -13108;
    public static final int TEXT_GRAY = -2039584;
+   public static final ColorCollection<Integer> TEXTURE_TINT_COLORS = new ColorCollection<Integer>(-393218, -425955, -3715395, -12930086, -75715, -8337633, -816214, -12103854, -6447721, -15295332, -7785800, -12827478, -8170446, -10585066, -5231066, -14869215);
 
    public CommonColors() {
       super();

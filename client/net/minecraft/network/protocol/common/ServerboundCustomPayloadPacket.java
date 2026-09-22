@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+import net.minecraft.network.protocol.common.custom.ModListPayload;
 import net.minecraft.util.Util;
 
 public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implements Packet<ServerCommonPacketListener> {
@@ -28,7 +29,7 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
    }
 
    static {
-      STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((id) -> DiscardedPayload.codec(id, 32767)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (types) -> {
+      STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((id) -> DiscardedPayload.codec(id, 32767)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC), new CustomPacketPayload.TypeAndCodec(ModListPayload.TYPE, ModListPayload.STREAM_CODEC)}), (types) -> {
       })).map(ServerboundCustomPayloadPacket::new, ServerboundCustomPayloadPacket::payload);
    }
 }

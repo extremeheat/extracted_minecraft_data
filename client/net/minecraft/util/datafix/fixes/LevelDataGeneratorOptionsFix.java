@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.jspecify.annotations.Nullable;
 
 public class LevelDataGeneratorOptionsFix extends DataFix {
@@ -108,7 +109,7 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type<?> resultType = this.getOutputSchema().getType(References.LEVEL);
-      return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), resultType, (input) -> Util.writeAndReadTypedOrThrow(input, resultType, (tag) -> {
+      return this.fixTypeEverywhereTyped("LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), resultType, (input) -> ExtraDataFixUtils.writeAndReadTypedOrThrow(input, resultType, (tag) -> {
             Optional<String> generatorOptions = tag.get("generatorOptions").asString().result();
             if ("flat".equalsIgnoreCase(tag.get("generatorName").asString(""))) {
                String flatOptionString = (String)generatorOptions.orElse("");

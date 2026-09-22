@@ -2,7 +2,7 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class FilteredBooksFix extends ItemStackTagFix {
    public FilteredBooksFix(final Schema outputSchema) {
@@ -10,6 +10,6 @@ public class FilteredBooksFix extends ItemStackTagFix {
    }
 
    protected Typed<?> fixItemStackTag(final Typed<?> tag) {
-      return Util.writeAndReadTypedOrThrow(tag, tag.getType(), (dynamic) -> dynamic.remove("filtered_title").remove("filtered_pages"));
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(tag, tag.getType(), (dynamic) -> dynamic.remove("filtered_title").remove("filtered_pages"));
    }
 }

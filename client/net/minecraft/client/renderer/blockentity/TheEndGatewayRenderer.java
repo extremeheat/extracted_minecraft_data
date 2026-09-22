@@ -7,15 +7,17 @@ import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 import net.minecraft.util.Mth;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatewayBlockEntity, EndGatewayRenderState> {
    private static final Identifier BEAM_LOCATION = Identifier.withDefaultNamespace("textures/entity/end_portal/end_gateway_beam.png");
+   private static final ColorCollection<Integer> BEAM_TINTS;
 
    public TheEndGatewayRenderer() {
       super();
@@ -33,7 +35,7 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
          double beamDistance = blockEntity.isSpawning() ? (double)blockEntity.getLevel().getMaxY() : 50.0;
          state.scale = Mth.sin((double)(state.scale * 3.1415927F));
          state.height = Mth.floor((double)state.scale * beamDistance);
-         state.color = blockEntity.isSpawning() ? DyeColor.MAGENTA.getTextureDiffuseColor() : DyeColor.PURPLE.getTextureDiffuseColor();
+         state.color = blockEntity.isSpawning() ? (Integer)BEAM_TINTS.magenta() : (Integer)BEAM_TINTS.purple();
          state.animationTime = blockEntity.getLevel() != null ? (float)Math.floorMod(blockEntity.getLevel().getGameTime(), 40) + partialTicks : 0.0F;
       } else {
          state.height = 0;
@@ -51,5 +53,9 @@ public class TheEndGatewayRenderer extends AbstractEndPortalRenderer<TheEndGatew
 
    public int getViewDistance() {
       return 256;
+   }
+
+   static {
+      BEAM_TINTS = CommonColors.TEXTURE_TINT_COLORS;
    }
 }

@@ -24,7 +24,7 @@ public class SmoothSwimmingMoveControl<T extends Mob> extends MoveControl<T> {
 
    public void tick() {
       if (this.applyGravity && this.mob.isInWater()) {
-         this.mob.setDeltaMovement(this.mob.getDeltaMovement().add(0.0, 0.005, 0.0));
+         this.mob.addDeltaMovement(0.0, 0.005, 0.0);
       }
 
       if (this.operation == MoveControl.Operation.MOVE_TO && !this.mob.getNavigation().isDone()) {

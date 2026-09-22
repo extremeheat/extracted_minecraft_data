@@ -2,10 +2,8 @@ package net.minecraft.world.item;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public enum ItemUseAnimation implements StringRepresentable {
@@ -22,9 +20,8 @@ public enum ItemUseAnimation implements StringRepresentable {
    BUNDLE(10, "bundle"),
    SPEAR(11, "spear", true);
 
-   private static final IntFunction<ItemUseAnimation> BY_ID = ByIdMap.<ItemUseAnimation>continuous(ItemUseAnimation::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<ItemUseAnimation> CODEC = StringRepresentable.<ItemUseAnimation>fromEnum(ItemUseAnimation::values);
-   public static final StreamCodec<ByteBuf, ItemUseAnimation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ItemUseAnimation::getId);
+   public static final StreamCodec<ByteBuf, ItemUseAnimation> STREAM_CODEC = ByteBufCodecs.enumCodec(ItemUseAnimation.class, ItemUseAnimation::getId);
    private final int id;
    private final String name;
    private final boolean customArmTransform;

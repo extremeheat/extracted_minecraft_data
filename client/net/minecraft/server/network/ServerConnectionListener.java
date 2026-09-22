@@ -73,13 +73,13 @@ public class ServerConnectionListener {
                }
 
                ChannelPipeline pipeline = channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
-               if (ServerConnectionListener.this.server.repliesToStatus()) {
-                  pipeline.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));
+               int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
+               Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
+               if (ServerConnectionListener.this.server.repliesToStatus() && ServerConnectionListener.this.server.enableLegacyStatus()) {
+                  pipeline.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer(), connection));
                }
 
                Connection.configureSerialization(pipeline, PacketFlow.SERVERBOUND, false, (BandwidthDebugMonitor)null);
-               int rateLimitPacketsPerSecond = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
-               Connection connection = (Connection)(rateLimitPacketsPerSecond > 0 ? new RateKickingConnection(rateLimitPacketsPerSecond) : new Connection(PacketFlow.SERVERBOUND));
                ServerConnectionListener.this.pendingConnections.add(connection);
                connection.configurePacketHandler(pipeline);
                connection.setListenerForServerboundHandshake(new ServerHandshakePacketListenerImpl(ServerConnectionListener.this.server, connection));

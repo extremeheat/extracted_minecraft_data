@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
@@ -50,7 +50,7 @@ public class ItemStackCustomNameToOverrideComponentFix extends DataFix {
    }
 
    private static <T> Typed<T> fixCustomName(final Typed<T> typed, final Predicate<String> expectedTranslationKey) {
-      return Util.writeAndReadTypedOrThrow(typed, typed.getType(), (value) -> {
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(typed, typed.getType(), (value) -> {
          OptionalDynamic<?> customNameTag = value.get("minecraft:custom_name");
          Optional<String> hasCorrectTranslationKey = customNameTag.asString().result().flatMap(LegacyComponentDataFixUtils::extractTranslationString).filter(expectedTranslationKey);
          return hasCorrectTranslationKey.isPresent() ? value.renameField("minecraft:custom_name", "minecraft:item_name") : value;

@@ -5,13 +5,13 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.blaze3d.pipeline.PipelineBuilder;
 import com.mojang.blaze3d.pipeline.PipelineCache;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.pipeline.ShaderSource;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.serialization.JsonOps;
 import java.io.IOException;
@@ -41,7 +41,6 @@ import org.slf4j.Logger;
 
 public class ShaderManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int MAX_LOG_LENGTH = 32768;
    public static final String SHADER_PATH = "shaders";
    public static final String SHADER_INCLUDE_PATH = "shaders/include/";
    public static final String SHADER_INCLUDE_EXTENSION = ".glsl";
@@ -65,18 +64,18 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
 
    public final CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
       ResourceManager manager = currentReload.resourceManager();
-      GpuDevice device = RenderSystem.getDevice();
+      PipelineBuilder pipelineBuilder = RenderSystem.getPipelineBuilder();
       CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> loadConfigs(manager), taskExecutor).thenComposeAsync((configs) -> {
          List<RenderPipeline> requiredPipelines = RenderPipelines.requiredPipelines();
          List<RenderPipeline> optionalPipelines = RenderPipelines.optionalPipelines();
-         return compilePipelines(device, configs, requiredPipelines, taskExecutor, reloadExecutor).thenCombine(compilePipelines(device, configs, optionalPipelines, taskExecutor, reloadExecutor), (compiledRequiredPipelines, compiledOptionalPipelines) -> new PendingResults(configs, requiredPipelines, optionalPipelines, compiledRequiredPipelines, compiledOptionalPipelines));
+         return compilePipelines(pipelineBuilder, configs, requiredPipelines, taskExecutor, reloadExecutor).thenCombine(compilePipelines(pipelineBuilder, configs, optionalPipelines, taskExecutor, reloadExecutor), (compiledRequiredPipelines, compiledOptionalPipelines) -> new PendingResults(configs, requiredPipelines, optionalPipelines, compiledRequiredPipelines, compiledOptionalPipelines));
       }, reloadExecutor);
       Objects.requireNonNull(preparationBarrier);
-      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((compilations) -> this.apply(device, compilations), reloadExecutor);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((compilations) -> this.apply(pipelineBuilder, compilations), reloadExecutor);
    }
 
-   private static CompletableFuture<List<@Nullable CompiledRenderPipeline>> compilePipelines(final GpuDevice device, final ShaderSource shaderSource, final List<RenderPipeline> pipelines, final Executor taskExecutor, final Executor reloadExecutor) {
-      return Util.sequence(pipelines.stream().map((pipeline) -> device.compilePipeline(pipeline, shaderSource, taskExecutor).thenApplyAsync(CompiledRenderPipeline.Pending::finishCompile, reloadExecutor)).toList());
+   private static CompletableFuture<List<@Nullable CompiledRenderPipeline>> compilePipelines(final PipelineBuilder pipelineBuilder, final ShaderSource shaderSource, final List<RenderPipeline> pipelines, final Executor taskExecutor, final Executor reloadExecutor) {
+      return Util.sequence(pipelines.stream().map((pipeline) -> pipelineBuilder.compilePipeline(pipeline, shaderSource, taskExecutor).thenApplyAsync(CompiledRenderPipeline.Pending::finishCompile, reloadExecutor)).toList());
    }
 
    private static Configs loadConfigs(final ResourceManager manager) {
@@ -174,10 +173,10 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
       return SHADER_INCLUDE_CONVERTER.fileToId(location).withSuffix(".glsl");
    }
 
-   private void apply(final GpuDevice device, final PendingResults compilations) {
+   private void apply(final PipelineBuilder pipelineBuilder, final PendingResults compilations) {
       PostChainCache newPostChains = new PostChainCache(compilations.configs);
       List<Identifier> failedLoads = new ArrayList();
-      PipelineCache pipelineCache = new PipelineCache(device, compilations.configs);
+      PipelineCache pipelineCache = new PipelineCache(pipelineBuilder, compilations.configs);
       pipelineCache.clear();
 
       for(int i = 0; i < compilations.requiredPipelines.size(); ++i) {

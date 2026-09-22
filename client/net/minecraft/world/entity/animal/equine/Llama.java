@@ -1,17 +1,13 @@
 package net.minecraft.world.entity.animal.equine;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.netty.buffer.ByteBuf;
-import java.util.Objects;
-import java.util.function.IntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -425,12 +421,11 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       GRAY(3, "gray");
 
       public static final Variant DEFAULT = CREAMY;
-      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final EnumStreamCodec<Variant> STREAM_CODEC = ByteBufCodecs.<Variant>enumCodec(Variant.class, Variant::getId, ByIdMap.OutOfBoundsStrategy.CLAMP);
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       /** @deprecated */
       @Deprecated
-      public static final Codec<Variant> LEGACY_CODEC;
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC;
+      public static final Codec<Variant> LEGACY_CODEC = Codec.INT.xmap(Variant::byId, Variant::getId);
       private final int id;
       private final String name;
 
@@ -444,7 +439,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       }
 
       public static Variant byId(final int id) {
-         return (Variant)BY_ID.apply(id);
+         return STREAM_CODEC.byId(id);
       }
 
       public String getSerializedName() {
@@ -454,14 +449,6 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{CREAMY, WHITE, BROWN, GRAY};
-      }
-
-      static {
-         PrimitiveCodec var10000 = Codec.INT;
-         IntFunction var10001 = BY_ID;
-         Objects.requireNonNull(var10001);
-         LEGACY_CODEC = var10000.xmap(var10001::apply, Variant::getId);
-         STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::getId);
       }
    }
 

@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
@@ -30,7 +31,11 @@ public record HeightRangePlacement(HeightProvider height) implements PlacementMo
    }
 
    public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
-      output.accept(origin.atY(this.height.sample(random, context)));
+      output.accept(origin.atY(this.height.sample(random, context.verticalAnchorContext())));
+   }
+
+   public InclusiveRange<Integer> modifyXzDomain(final InclusiveRange<Integer> inputDomain) {
+      return inputDomain;
    }
 
    public MapCodec<HeightRangePlacement> codec() {

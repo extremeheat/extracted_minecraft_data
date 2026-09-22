@@ -263,9 +263,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                ItemStack oldItemStack = slot == null ? ItemStack.EMPTY : ((ItemPickerMenu)this.menu).getSlot(slot.index).getItem();
                ((ItemPickerMenu)this.menu).clicked(slot == null ? slotId : slot.index, buttonNum, containerInput, this.minecraft.player);
                if (AbstractContainerMenu.getQuickcraftHeader(buttonNum) == 2) {
-                  for(int i = 0; i < 9; ++i) {
-                     this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + i).getItem(), 36 + i);
-                  }
+                  this.minecraft.player.inventoryMenu.broadcastChanges();
                } else if (slot != null && Inventory.isHotbarSlot(slot.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
                   if (containerInput == ContainerInput.THROW && !oldItemStack.isEmpty() && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
                      int numToDrop = buttonNum == 0 ? 1 : oldItemStack.getCount();

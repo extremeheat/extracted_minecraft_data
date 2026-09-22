@@ -2,8 +2,6 @@ package com.mojang.blaze3d.vertex;
 
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.vertex.VertexFormat;
-import com.mojang.renderpearl.api.vertex.VertexFormatElement;
 import java.nio.ByteOrder;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

@@ -20,8 +20,8 @@ import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFlo
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 
 public class ComputeCommand {
-   private static final Dynamic2CommandExceptionType INVALID_NAMED_VALUE = new Dynamic2CommandExceptionType((provider, value) -> Component.translatableEscape("command.compute.result.named.invalid", provider, value));
-   private static final DynamicCommandExceptionType INVALID_UNNAMED_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("command.compute.result.unnamed.invalid", value));
+   private static final Dynamic2CommandExceptionType INVALID_NAMED_VALUE = new Dynamic2CommandExceptionType((provider, value) -> Component.translatableEscape("commands.compute.result.named.invalid", provider, value));
+   private static final DynamicCommandExceptionType INVALID_UNNAMED_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("commands.compute.result.unnamed.invalid", value));
 
    public ComputeCommand() {
       super();
@@ -35,11 +35,11 @@ public class ComputeCommand {
    }
 
    private static void printExactOutput(final CommandSourceStack source, final Holder<?> provider, final int result) {
-      source.sendSuccess(() -> (Component)provider.unwrapKey().map((key) -> Component.translatable("command.compute.result.named.exact", Component.translationArg(key.identifier()), result)).orElseGet(() -> Component.translatable("command.compute.result.unnamed.exact", result)), false);
+      source.sendSuccess(() -> (Component)provider.unwrapKey().map((key) -> Component.translatable("commands.compute.result.named.exact", Component.translationArg(key.identifier()), result)).orElseGet(() -> Component.translatable("commands.compute.result.unnamed.exact", result)), false);
    }
 
    private static void printRoundedOutput(final CommandSourceStack source, final Holder<?> provider, final int result, final float original) {
-      source.sendSuccess(() -> (Component)provider.unwrapKey().map((key) -> Component.translatable("command.compute.result.named.rounded", Component.translationArg(key.identifier()), original, result)).orElseGet(() -> Component.translatable("command.compute.result.unnamed.rounded", original, result)), false);
+      source.sendSuccess(() -> (Component)provider.unwrapKey().map((key) -> Component.translatable("commands.compute.result.named.rounded", Component.translationArg(key.identifier()), original, result)).orElseGet(() -> Component.translatable("commands.compute.result.unnamed.rounded", original, result)), false);
    }
 
    private static int computeAsInt(final CommandContext<CommandSourceStack> context, final LootContextSources.ContextDecorator decorator, final Holder<ContextIntProvider> provider) throws CommandSyntaxException {

@@ -4,9 +4,13 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
@@ -74,6 +78,20 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    }
 
    protected abstract AABB calculateBoundingBox(BlockPos pos, Direction direction);
+
+   public Vec3 trackingPosition() {
+      return Vec3.atLowerCornerOf(this.pos);
+   }
+
+   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
+      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
+   }
+
+   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
+      super.recreateFromPacket(packet);
+      this.setDirection(Direction.from3DDataValue(packet.getData()));
+      this.setOldPosAndRot();
+   }
 
    public boolean survives() {
       if (this.hasLevelCollision(this.getPopBox())) {

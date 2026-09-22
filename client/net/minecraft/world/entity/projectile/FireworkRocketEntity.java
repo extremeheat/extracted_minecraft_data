@@ -125,7 +125,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
                double power = 1.5;
                double powerAdd = 0.1;
                Vec3 movement = this.attachedToEntity.getDeltaMovement();
-               this.attachedToEntity.setDeltaMovement(movement.add(lookAngle.x * 0.1 + (lookAngle.x * 1.5 - movement.x) * 0.5, lookAngle.y * 0.1 + (lookAngle.y * 1.5 - movement.y) * 0.5, lookAngle.z * 0.1 + (lookAngle.z * 1.5 - movement.z) * 0.5));
+               this.attachedToEntity.addDeltaMovement(lookAngle.x * 0.1 + (lookAngle.x * 1.5 - movement.x) * 0.5, lookAngle.y * 0.1 + (lookAngle.y * 1.5 - movement.y) * 0.5, lookAngle.z * 0.1 + (lookAngle.z * 1.5 - movement.z) * 0.5);
                handAngle = this.attachedToEntity.getHandHoldingItemAngle(Items.FIREWORK_ROCKET);
             } else {
                handAngle = Vec3.ZERO;

@@ -4,13 +4,9 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -95,11 +91,6 @@ public class ItemFrame extends HangingEntity {
       this.xRotO = this.getXRot();
       this.yRotO = this.getYRot();
       this.recalculateBoundingBox();
-   }
-
-   protected final void recalculateBoundingBox() {
-      super.recalculateBoundingBox();
-      this.syncPacketPositionCodec(this.getX(), this.getY(), this.getZ());
    }
 
    protected AABB calculateBoundingBox(final BlockPos blockPos, final Direction direction) {
@@ -230,15 +221,16 @@ public class ItemFrame extends HangingEntity {
                }
             }
 
+            float yItemOffset = this.getDirection() == Direction.DOWN ? -0.25F : 0.0F;
             if (withFrame) {
-               this.spawnAtLocation(level, this.getFrameItemStackWithData());
+               this.spawnAtLocation(level, this.getFrameItemStackWithData(), yItemOffset);
             }
 
             if (!itemStack.isEmpty()) {
                itemStack = itemStack.copy();
                this.removeFramedMap(itemStack);
                if (this.random.nextFloat() < this.dropChance) {
-                  this.spawnAtLocation(level, itemStack);
+                  this.spawnAtLocation(level, itemStack, yItemOffset);
                }
             }
 
@@ -394,15 +386,6 @@ public class ItemFrame extends HangingEntity {
 
    public int getAnalogOutput() {
       return this.getItem().isEmpty() ? 0 : this.getRotation() % 8 + 1;
-   }
-
-   public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {
-      return new ClientboundAddEntityPacket(this, this.getDirection().get3DDataValue(), this.getPos());
-   }
-
-   public void recreateFromPacket(final ClientboundAddEntityPacket packet) {
-      super.recreateFromPacket(packet);
-      this.setDirection(Direction.from3DDataValue(packet.getData()));
    }
 
    public ItemStack getPickResult() {

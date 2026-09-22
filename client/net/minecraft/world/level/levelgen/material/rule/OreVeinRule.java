@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.material.rule;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.SharedConstants;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
@@ -30,34 +29,28 @@ public record OreVeinRule(BlockState oreBlock, BlockState rawOreBlock, BlockStat
    }
 
    public RuleEvaluator compile(final MaterialRuleContext context) {
-      if (SharedConstants.DEBUG_DISABLE_ORE_VEINS) {
-         return (var0, var1, var2) -> null;
-      } else {
-         BlockState defaultState = SharedConstants.DEBUG_ORE_VEINS ? Blocks.AIR.defaultBlockState() : null;
-         MaterialRules.DensityGetter densitySampler = context.getDensitiesInChunk(this.density, true);
-         MaterialRules.DensityGetter richnessSampler = context.getDensitiesInChunk(this.richness, true);
-         MaterialRules.DensityGetter fillerGapSampler = context.getDensitiesInChunk(this.fillerGap, false);
-         PositionalRandomFactory randomFactory = context.getOrCreateRandomFactory(Identifier.withDefaultNamespace("ore"));
-         BlockState fillerBlock = SharedConstants.DEBUG_ORE_VEINS ? Blocks.OAK_BUTTON.defaultBlockState() : this.fillerBlock;
-         return (blockX, blockY, blockZ) -> {
-            float density = densitySampler.get();
-            if (density <= 0.0F) {
-               return defaultState;
+      MaterialRules.DensityGetter densitySampler = context.getDensitiesInChunk(this.density, true);
+      MaterialRules.DensityGetter richnessSampler = context.getDensitiesInChunk(this.richness, true);
+      MaterialRules.DensityGetter fillerGapSampler = context.getDensitiesInChunk(this.fillerGap, false);
+      PositionalRandomFactory randomFactory = context.getOrCreateRandomFactory(Identifier.withDefaultNamespace("ore"));
+      return (blockX, blockY, blockZ) -> {
+         float density = densitySampler.get();
+         if (density <= 0.0F) {
+            return null;
+         } else {
+            RandomSource random = randomFactory.at(blockX, blockY, blockZ);
+            if (random.nextFloat() > density) {
+               return null;
             } else {
-               RandomSource random = randomFactory.at(blockX, blockY, blockZ);
-               if (random.nextFloat() > density) {
-                  return defaultState;
+               float richness = richnessSampler.get();
+               if (random.nextFloat() < richness && fillerGapSampler.get() < 0.0F) {
+                  return random.nextFloat() < this.rawOreChance ? this.rawOreBlock : this.oreBlock;
                } else {
-                  float richness = richnessSampler.get();
-                  if (random.nextFloat() < richness && fillerGapSampler.get() < 0.0F) {
-                     return random.nextFloat() < this.rawOreChance ? this.rawOreBlock : this.oreBlock;
-                  } else {
-                     return fillerBlock;
-                  }
+                  return this.fillerBlock;
                }
             }
-         };
-      }
+         }
+      };
    }
 
    public MapCodec<OreVeinRule> codec() {

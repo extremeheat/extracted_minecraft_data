@@ -2,6 +2,7 @@ package net.minecraft.world.level.material;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.level.block.ColorCollection;
 import org.jspecify.annotations.Nullable;
 
 public class MapColor {
@@ -68,6 +69,8 @@ public class MapColor {
    public static final MapColor DEEPSLATE = new MapColor(59, 6579300);
    public static final MapColor RAW_IRON = new MapColor(60, 14200723);
    public static final MapColor GLOW_LICHEN = new MapColor(61, 8365974);
+   public static final ColorCollection<MapColor> DYE_TO_DEFAULT_COLOR;
+   public static final ColorCollection<MapColor> DYE_TO_TERRACOTTA_COLOR;
    public final int col;
    public final int id;
 
@@ -103,6 +106,11 @@ public class MapColor {
 
    public byte getPackedId(final Brightness brightness) {
       return (byte)(this.id << 2 | brightness.id & 3);
+   }
+
+   static {
+      DYE_TO_DEFAULT_COLOR = new ColorCollection<MapColor>(SNOW, COLOR_ORANGE, COLOR_MAGENTA, COLOR_LIGHT_BLUE, COLOR_YELLOW, COLOR_LIGHT_GREEN, COLOR_PINK, COLOR_GRAY, COLOR_LIGHT_GRAY, COLOR_CYAN, COLOR_PURPLE, COLOR_BLUE, COLOR_BROWN, COLOR_GREEN, COLOR_RED, COLOR_BLACK);
+      DYE_TO_TERRACOTTA_COLOR = new ColorCollection<MapColor>(TERRACOTTA_WHITE, TERRACOTTA_ORANGE, TERRACOTTA_MAGENTA, TERRACOTTA_LIGHT_BLUE, TERRACOTTA_YELLOW, TERRACOTTA_LIGHT_GREEN, TERRACOTTA_PINK, TERRACOTTA_GRAY, TERRACOTTA_LIGHT_GRAY, TERRACOTTA_CYAN, TERRACOTTA_PURPLE, TERRACOTTA_BLUE, TERRACOTTA_BROWN, TERRACOTTA_GREEN, TERRACOTTA_RED, TERRACOTTA_BLACK);
    }
 
    public static enum Brightness {

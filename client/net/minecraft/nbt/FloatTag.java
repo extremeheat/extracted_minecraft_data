@@ -1,9 +1,10 @@
 package net.minecraft.nbt;
 
+import com.google.common.primitives.Shorts;
+import com.google.common.primitives.SignedBytes;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import net.minecraft.util.Mth;
 
 public record FloatTag(float value) implements NumericTag {
    private static final int SELF_SIZE_IN_BYTES = 12;
@@ -73,19 +74,19 @@ public record FloatTag(float value) implements NumericTag {
    }
 
    public long longValue() {
-      return (long)this.value;
+      return (long)Math.floor((double)this.value);
    }
 
    public int intValue() {
-      return Mth.floor(this.value);
+      return (int)Math.floor((double)this.value);
    }
 
    public short shortValue() {
-      return (short)(Mth.floor(this.value) & '\uffff');
+      return Shorts.saturatedCast((long)Math.floor((double)this.value));
    }
 
    public byte byteValue() {
-      return (byte)(Mth.floor(this.value) & 255);
+      return SignedBytes.saturatedCast((long)Math.floor((double)this.value));
    }
 
    public double doubleValue() {

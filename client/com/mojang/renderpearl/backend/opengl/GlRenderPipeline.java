@@ -2,9 +2,11 @@ package com.mojang.renderpearl.backend.opengl;
 
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import java.util.Objects;
 import java.util.Optional;
+import org.lwjgl.opengl.GL33C;
 
 public final class GlRenderPipeline implements BackendRenderPipeline {
    private final GlDevice device;
@@ -28,7 +30,7 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
    private final int modeAlpha;
    private boolean closed = false;
 
-   GlRenderPipeline(final GlDevice device, final BackendRenderPipeline.CreateInfo createInfo, final GlProgram program, final VertexArray vertexArray) {
+   GlRenderPipeline(final GlDevice device, final CompiledRenderPipeline.CreateInfo createInfo, final GlProgram program, final VertexArray vertexArray) {
       super();
       this.device = device;
       this.program = program;
@@ -90,6 +92,7 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
    public void close() {
       if (!this.closed) {
          this.closed = true;
+         this.device.ensureCurrent();
          this.program.close();
          this.vertexArray.close();
          this.device.markAmdShaderCompilerAngry();
@@ -105,49 +108,50 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
    }
 
    public void bind() {
-      GlStateManager._glUseProgram(this.program.getProgramId());
+      GL33C.glUseProgram(this.program.getProgramId());
+      GlStateManager stateManager = this.device.stateManager();
       if (this.depthEnabled) {
-         GlStateManager._enableDepthTest();
-         GlStateManager._depthFunc(this.depthFunc);
-         GlStateManager._depthMask(this.writeDepth);
+         stateManager._enableDepthTest();
+         stateManager._depthFunc(this.depthFunc);
+         stateManager._depthMask(this.writeDepth);
          if (this.depthBiasConstant == 0.0F && this.depthBiasScaleFactor == 0.0F) {
-            GlStateManager._disablePolygonOffset();
+            stateManager._disablePolygonOffset();
          } else {
-            GlStateManager._polygonOffset(this.depthBiasScaleFactor, this.depthBiasConstant);
-            GlStateManager._enablePolygonOffset();
+            stateManager._polygonOffset(this.depthBiasScaleFactor, this.depthBiasConstant);
+            stateManager._enablePolygonOffset();
          }
       } else {
-         GlStateManager._disableDepthTest();
-         GlStateManager._depthMask(false);
-         GlStateManager._disablePolygonOffset();
+         stateManager._disableDepthTest();
+         stateManager._depthMask(false);
+         stateManager._disablePolygonOffset();
       }
 
       if (this.cull) {
-         GlStateManager._enableCull();
+         stateManager._enableCull();
       } else {
-         GlStateManager._disableCull();
+         stateManager._disableCull();
       }
 
       for(int i = 0; i < this.writeMasks.length; ++i) {
          if (this.writeMasks[i] != -1) {
-            GlStateManager._colorMask(i, this.writeMasks[i]);
+            stateManager._colorMask(i, this.writeMasks[i]);
          } else {
-            GlStateManager._colorMask(i, 0);
+            stateManager._colorMask(i, 0);
          }
 
          if (this.blendEnabled[i]) {
-            GlStateManager._enableBlend(i);
+            stateManager._enableBlend(i);
          } else {
-            GlStateManager._disableBlend(i);
+            stateManager._disableBlend(i);
          }
       }
 
       if (this.srcRgb != 1280) {
-         GlStateManager._blendFuncSeparate(this.srcRgb, this.dstRgb, this.srcAlpha, this.dstAlpha);
-         GlStateManager._blendEquationSeparate(this.modeRgb, this.modeAlpha);
+         stateManager._blendFuncSeparate(this.srcRgb, this.dstRgb, this.srcAlpha, this.dstAlpha);
+         stateManager._blendEquationSeparate(this.modeRgb, this.modeAlpha);
       }
 
-      GlStateManager._polygonMode(1032, this.polygonMode);
+      GL33C.glPolygonMode(1032, this.polygonMode);
    }
 
    public int primitiveTopology() {

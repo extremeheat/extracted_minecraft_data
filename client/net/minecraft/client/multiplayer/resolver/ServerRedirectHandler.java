@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface ServerRedirectHandler {
    Logger LOGGER = LogUtils.getLogger();
-   ServerRedirectHandler EMPTY = (originalAddress) -> Optional.empty();
+   ServerRedirectHandler EMPTY = (var0) -> Optional.empty();
 
    Optional<ServerAddress> lookupRedirect(ServerAddress originalAddress);
 
@@ -38,7 +38,7 @@ public interface ServerRedirectHandler {
                Attribute srvAttribute = attributes.get("srv");
                if (srvAttribute != null) {
                   String[] arguments = srvAttribute.get().toString().split(" ", 4);
-                  return Optional.of(new ServerAddress(arguments[3], ServerAddress.parsePort(arguments[2])));
+                  return Optional.of(originalAddress.withHostAndPort(arguments[3], ServerAddress.parsePort(arguments[2])));
                }
             } catch (Throwable var5) {
             }

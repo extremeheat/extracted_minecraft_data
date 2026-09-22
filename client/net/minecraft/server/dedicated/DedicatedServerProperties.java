@@ -52,6 +52,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Pattern SHA1 = Pattern.compile("^[a-fA-F0-9]{40}$");
    private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults();
+   private static final Splitter COMMA_SPLITTER_NO_EMPTY;
    public static final String MANAGEMENT_SERVER_TLS_ENABLED_KEY = "management-server-tls-enabled";
    public static final String MANAGEMENT_SERVER_TLS_KEYSTORE_KEY = "management-server-tls-keystore";
    public static final String MANAGEMENT_SERVER_TLS_KEYSTORE_PASSWORD_KEY = "management-server-tls-keystore-password";
@@ -60,6 +61,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final String serverIp = this.get("server-ip", "");
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> allowFlight = this.getMutable("allow-flight", false);
    public final Settings<DedicatedServerProperties>.MutableValue<String> motd = this.getMutable("motd", "A Minecraft Server");
+   public final String statusContactDetails = this.get("status-contact-details", "");
    public final boolean codeOfConduct = this.get("enable-code-of-conduct", false);
    public final String bugReportLink = this.get("bug-report-link", "");
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> forceGameMode = this.getMutable("force-gamemode", false);
@@ -103,6 +105,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final String regionFileComression;
    public final boolean enableJmxMonitoring;
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> enableStatus;
+   public final boolean enableLegacyStatus;
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> hideOnlinePlayers;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> entityBroadcastRangePercentage;
    public final String textFilteringConfig;
@@ -115,6 +118,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean enforceSecureProfile;
    public final boolean logIPs;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> pauseWhenEmptySeconds;
+   public final String allowedConnectionIds;
    private final WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> acceptsTransfers;
@@ -160,6 +164,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.regionFileComression = this.get("region-file-compression", "deflate");
       this.enableJmxMonitoring = this.get("enable-jmx-monitoring", false);
       this.enableStatus = this.getMutable("enable-status", true);
+      this.enableLegacyStatus = this.get("enable-legacy-status", true);
       this.hideOnlinePlayers = this.getMutable("hide-online-players", false);
       this.entityBroadcastRangePercentage = this.getMutable("entity-broadcast-range-percentage", (v) -> Mth.clamp(Integer.parseInt(v), 10, 1000), 100);
       this.textFilteringConfig = this.get("text-filtering-config", "");
@@ -170,6 +175,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.enforceSecureProfile = this.get("enforce-secure-profile", true);
       this.logIPs = this.get("log-ips", true);
       this.pauseWhenEmptySeconds = this.getMutable("pause-when-empty-seconds", 60);
+      this.allowedConnectionIds = this.get("allowed-connection-ids", "");
       this.acceptsTransfers = this.getMutable("accepts-transfers", false);
       String levelSeed = this.get("level-seed", "");
       boolean generateStructures = this.get("generate-structures", true);
@@ -263,6 +269,20 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
 
    public WorldDimensions createDimensions(final HolderLookup.Provider registries) {
       return this.worldDimensionData.create(registries);
+   }
+
+   public boolean acceptsConnectionId(final @Nullable String id) {
+      for(String s : COMMA_SPLITTER_NO_EMPTY.split(this.allowedConnectionIds)) {
+         if (s.equals(id)) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   static {
+      COMMA_SPLITTER_NO_EMPTY = COMMA_SPLITTER.omitEmptyStrings();
    }
 
    private static record WorldDimensionData(JsonObject generatorSettings, String levelType) {

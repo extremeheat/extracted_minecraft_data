@@ -50,7 +50,7 @@ public abstract class BiomeSource {
       if (candidateBiomes.isEmpty()) {
          return null;
       } else {
-         BiomeResolver resolver = this.createCachingResolver(randomState);
+         NoiseBiomeResolver resolver = this.createCachingResolver(randomState);
          int sampleRadius = Math.floorDiv(searchRadius, sampleResolutionHorizontal);
          int[] sampleYs = Mth.outFromOrigin(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1, sampleResolutionVertical).toArray();
 
@@ -78,7 +78,7 @@ public abstract class BiomeSource {
       int noiseCenterZ = QuartPos.fromBlock(originZ);
       int noiseRadius = QuartPos.fromBlock(searchRadius);
       int noiseY = QuartPos.fromBlock(originY);
-      BiomeResolver resolver = this.createCachingResolver(randomState);
+      NoiseBiomeResolver resolver = this.createCachingResolver(randomState);
       Pair<BlockPos, Holder<Biome>> result = null;
       int found = 0;
       int startRadius = findClosest ? 0 : noiseRadius;
@@ -117,18 +117,18 @@ public abstract class BiomeSource {
       return result;
    }
 
-   public final BiomeResolver createUncachedResolver(final RandomState randomState) {
+   public final NoiseBiomeResolver createUncachedResolver(final RandomState randomState) {
       return this.createResolver(randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED));
    }
 
-   public final BiomeResolver createCachingResolver(final RandomState randomState) {
+   public final NoiseBiomeResolver createCachingResolver(final RandomState randomState) {
       SamplerContext context = SamplerContext.builder().enableCaches().build();
       return this.createResolver(randomState.createClimateSampler(context));
    }
 
-   public abstract BiomeResolver createResolver(Climate.Sampler sampler);
+   public abstract NoiseBiomeResolver createResolver(Climate.Sampler sampler);
 
-   public BiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
+   public NoiseBiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
       return this.createResolver(sampler);
    }
 

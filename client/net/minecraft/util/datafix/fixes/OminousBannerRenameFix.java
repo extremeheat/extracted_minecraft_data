@@ -4,7 +4,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class OminousBannerRenameFix extends ItemStackTagFix {
    public OminousBannerRenameFix(final Schema outputSchema) {
@@ -19,6 +19,6 @@ public class OminousBannerRenameFix extends ItemStackTagFix {
    }
 
    protected Typed<?> fixItemStackTag(final Typed<?> tag) {
-      return Util.writeAndReadTypedOrThrow(tag, tag.getType(), this::fixItemStackTag);
+      return ExtraDataFixUtils.writeAndReadTypedOrThrow(tag, tag.getType(), this::fixItemStackTag);
    }
 }

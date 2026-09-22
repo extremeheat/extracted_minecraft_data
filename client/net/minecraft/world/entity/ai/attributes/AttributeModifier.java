@@ -4,11 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public record AttributeModifier(Identifier id, double amount, Operation operation) {
@@ -34,8 +32,7 @@ public record AttributeModifier(Identifier id, double amount, Operation operatio
       ADD_MULTIPLIED_BASE("add_multiplied_base", 1),
       ADD_MULTIPLIED_TOTAL("add_multiplied_total", 2);
 
-      public static final IntFunction<Operation> BY_ID = ByIdMap.<Operation>continuous(Operation::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Operation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Operation::id);
+      public static final StreamCodec<ByteBuf, Operation> STREAM_CODEC = ByteBufCodecs.enumCodec(Operation.class, Operation::id);
       public static final Codec<Operation> CODEC = StringRepresentable.<Operation>fromEnum(Operation::values);
       private final String name;
       private final int id;

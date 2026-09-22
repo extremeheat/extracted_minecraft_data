@@ -17,13 +17,15 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.NoiseBiomeChunk;
+import net.minecraft.world.level.biome.NoiseBiomeResolver;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.RetroGen;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
@@ -45,7 +47,8 @@ public class ProtoChunk extends ChunkAccess {
    private volatile @Nullable LevelLightEngine lightEngine;
    private volatile ChunkStatus status;
    private final List<CompoundTag> entities;
-   private @Nullable BelowZeroRetrogen belowZeroRetrogen;
+   private @Nullable RetroGen retroGen;
+   private @Nullable NoiseBiomeChunk noiseBiomeChunk;
    private final ProtoChunkTicks<Block> blockTicks;
    private final ProtoChunkTicks<Fluid> fluidTicks;
 
@@ -176,8 +179,8 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    public void setStartForStructure(final Structure structure, final StructureStart structureStart) {
-      BelowZeroRetrogen belowZeroRetrogen = this.getBelowZeroRetrogen();
-      if (belowZeroRetrogen != null && structureStart.isValid()) {
+      RetroGen retroGen = this.getRetroGen();
+      if (retroGen != null && structureStart.isValid()) {
          BoundingBox boundingBox = structureStart.getBoundingBox();
          LevelHeightAccessor heightAccessor = this.getHeightAccessorForGeneration();
          if (boundingBox.minY() < heightAccessor.getMinY() || boundingBox.maxY() > heightAccessor.getMaxY()) {
@@ -198,16 +201,26 @@ public class ProtoChunk extends ChunkAccess {
 
    public void setPersistedStatus(final ChunkStatus status) {
       this.status = status;
-      if (this.belowZeroRetrogen != null && status.isOrAfter(this.belowZeroRetrogen.targetStatus())) {
-         this.setBelowZeroRetrogen((BelowZeroRetrogen)null);
-      }
-
       this.markUnsaved();
    }
 
-   public Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+   public ChunkStatus updateRetroGenStatus(final ChunkStatus status) {
+      if (this.retroGen != null) {
+         ChunkStatus nextStatus = this.retroGen.getNextStatus(status);
+         if (nextStatus.isOrAfter(this.retroGen.targetStatus())) {
+            this.setRetroGen((RetroGen)null);
+            this.markUnsaved();
+         }
+
+         return nextStatus;
+      } else {
+         return status;
+      }
+   }
+
+   public Holder<Biome> getBiome(final int x, final int y, final int z) {
       if (this.getHighestGeneratedStatus().isOrAfter(ChunkStatus.BIOMES)) {
-         return super.getNoiseBiome(quartX, quartY, quartZ);
+         return super.getBiome(x, y, z);
       } else {
          throw new IllegalStateException("Asking for biomes before we have biomes");
       }
@@ -259,12 +272,12 @@ public class ProtoChunk extends ChunkAccess {
       this.lightEngine = lightEngine;
    }
 
-   public void setBelowZeroRetrogen(final @Nullable BelowZeroRetrogen belowZeroRetrogen) {
-      this.belowZeroRetrogen = belowZeroRetrogen;
+   public void setRetroGen(final @Nullable RetroGen retroGen) {
+      this.retroGen = retroGen;
    }
 
-   public @Nullable BelowZeroRetrogen getBelowZeroRetrogen() {
-      return this.belowZeroRetrogen;
+   public @Nullable RetroGen getRetroGen() {
+      return this.retroGen;
    }
 
    private static <T> LevelChunkTicks<T> unpackTicks(final ProtoChunkTicks<T> ticks) {
@@ -280,6 +293,22 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    public LevelHeightAccessor getHeightAccessorForGeneration() {
-      return (LevelHeightAccessor)(this.isUpgrading() ? BelowZeroRetrogen.UPGRADE_HEIGHT_ACCESSOR : this);
+      return (LevelHeightAccessor)(this.isUpgrading() ? RetroGen.UPGRADE_HEIGHT_ACCESSOR : this);
+   }
+
+   public @Nullable NoiseBiomeChunk getNoiseBiomeChunk() {
+      return this.noiseBiomeChunk;
+   }
+
+   public void setNoiseBiomeChunk(final @Nullable NoiseBiomeChunk noiseBiomeChunk) {
+      this.noiseBiomeChunk = noiseBiomeChunk;
+   }
+
+   public void fillNoiseBiomesFromNoise(final PalettedContainerFactory containerFactory, final NoiseBiomeResolver noiseBiomeResolver) {
+      if (this.noiseBiomeChunk == null) {
+         this.noiseBiomeChunk = new NoiseBiomeChunk(this, this.getPos(), containerFactory);
+      }
+
+      this.noiseBiomeChunk.fillSections(containerFactory, noiseBiomeResolver, this.getHeightAccessorForGeneration());
    }
 }

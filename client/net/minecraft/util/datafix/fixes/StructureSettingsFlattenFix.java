@@ -8,7 +8,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class StructureSettingsFlattenFix extends DataFix {
    public StructureSettingsFlattenFix(final Schema outputSchema) {
@@ -18,7 +18,7 @@ public class StructureSettingsFlattenFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type<?> worldGenSettingsType = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
       OpticFinder<?> dimensions = worldGenSettingsType.findField("dimensions");
-      return this.fixTypeEverywhereTyped("StructureSettingsFlatten", worldGenSettingsType, (input) -> input.updateTyped(dimensions, (typed) -> Util.writeAndReadTypedOrThrow(typed, dimensions.type(), (serialized) -> serialized.updateMapValues(StructureSettingsFlattenFix::fixDimension))));
+      return this.fixTypeEverywhereTyped("StructureSettingsFlatten", worldGenSettingsType, (input) -> input.updateTyped(dimensions, (typed) -> ExtraDataFixUtils.writeAndReadTypedOrThrow(typed, dimensions.type(), (serialized) -> serialized.updateMapValues(StructureSettingsFlattenFix::fixDimension))));
    }
 
    private static Pair<Dynamic<?>, Dynamic<?>> fixDimension(final Pair<Dynamic<?>, Dynamic<?>> entry) {

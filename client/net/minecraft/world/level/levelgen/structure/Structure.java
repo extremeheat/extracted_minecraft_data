@@ -30,9 +30,9 @@ import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.biome.NoiseBiomeResolver;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.GenerationStep;
@@ -228,7 +228,7 @@ public abstract class Structure {
       }
    }
 
-   public static record GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, Climate.Sampler climateSampler, BiomeResolver biomeResolver, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
+   public static record GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, Climate.Sampler climateSampler, NoiseBiomeResolver noiseBiomeResolver, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
       public GenerationContext(final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
          this(registryAccess, chunkGenerator, biomeSource, climateSampler, biomeSource.createResolver(climateSampler), randomState, structureTemplateManager, makeRandom(seed, chunkPos), seed, chunkPos, heightAccessor, validBiome);
       }
@@ -245,7 +245,7 @@ public abstract class Structure {
 
       public boolean isValidBiome(final GenerationStub stub) {
          BlockPos startPos = stub.position();
-         return this.validBiome.test(this.biomeResolver.getNoiseBiome(QuartPos.fromBlock(startPos.getX()), QuartPos.fromBlock(startPos.getY()), QuartPos.fromBlock(startPos.getZ())));
+         return this.validBiome.test(this.noiseBiomeResolver.getNoiseBiome(QuartPos.fromBlock(startPos.getX()), QuartPos.fromBlock(startPos.getY()), QuartPos.fromBlock(startPos.getZ())));
       }
 
       public boolean couldStructureExistInColumn(final int blockX, final int blockZ, final int minBlockY, final int maxBlockY) {
@@ -253,7 +253,7 @@ public abstract class Structure {
          int quartZ = QuartPos.fromBlock(blockZ);
          int minQuartY = QuartPos.fromBlock(minBlockY);
          int maxQuartY = QuartPos.fromBlock(maxBlockY);
-         BiomeResolver columnResolver = this.biomeSource.createResolverForChunk(this.climateSampler, quartX, minQuartY, quartZ, 1, maxQuartY - minQuartY + 1, 1);
+         NoiseBiomeResolver columnResolver = this.biomeSource.createResolverForChunk(this.climateSampler, quartX, minQuartY, quartZ, 1, maxQuartY - minQuartY + 1, 1);
 
          for(int quartY = minQuartY; quartY <= maxQuartY; ++quartY) {
             if (this.validBiome.test(columnResolver.getNoiseBiome(quartX, quartY, quartZ))) {

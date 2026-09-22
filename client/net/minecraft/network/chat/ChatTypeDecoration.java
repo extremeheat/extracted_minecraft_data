@@ -4,12 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public record ChatTypeDecoration(String translationKey, List<Parameter> parameters, Style style) {
@@ -63,9 +61,8 @@ public record ChatTypeDecoration(String translationKey, List<Parameter> paramete
       TARGET(1, "target", (content, chatType) -> (Component)chatType.targetName().orElse(CommonComponents.EMPTY)),
       CONTENT(2, "content", (content, chatType) -> content);
 
-      private static final IntFunction<Parameter> BY_ID = ByIdMap.<Parameter>continuous((p) -> p.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final Codec<Parameter> CODEC = StringRepresentable.<Parameter>fromEnum(Parameter::values);
-      public static final StreamCodec<ByteBuf, Parameter> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (p) -> p.id);
+      public static final StreamCodec<ByteBuf, Parameter> STREAM_CODEC = ByteBufCodecs.enumCodec(Parameter.class, (p) -> p.id);
       private final int id;
       private final String name;
       private final Selector selector;

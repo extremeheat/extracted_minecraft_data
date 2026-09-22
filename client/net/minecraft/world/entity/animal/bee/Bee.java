@@ -627,7 +627,7 @@ public class Bee extends Animal implements NeutralMob {
    }
 
    protected void jumpInLiquid(final TagKey<Fluid> type) {
-      this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.01, 0.0));
+      this.addDeltaMovement(0.0, 0.01, 0.0);
    }
 
    public Vec3 getLeashOffset() {

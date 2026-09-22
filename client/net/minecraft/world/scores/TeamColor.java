@@ -2,11 +2,9 @@ package net.minecraft.world.scores;
 
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import org.jspecify.annotations.Nullable;
 
@@ -30,8 +28,7 @@ public enum TeamColor implements StringRepresentable {
 
    public static final List<TeamColor> VALUES = List.of(values());
    public static final StringRepresentable.EnumCodec<TeamColor> CODEC = StringRepresentable.<TeamColor>fromEnum(TeamColor::values);
-   private static final IntFunction<TeamColor> BY_ID = ByIdMap.<TeamColor>continuous((v) -> v.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, TeamColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (v) -> v.id);
+   public static final StreamCodec<ByteBuf, TeamColor> STREAM_CODEC = ByteBufCodecs.enumCodec(TeamColor.class, (v) -> v.id);
    private final int id;
    private final String name;
    private final TextColor format;

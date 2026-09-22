@@ -2,7 +2,6 @@ package net.minecraft.nbt;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Collections;
@@ -13,14 +12,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import net.minecraft.util.Util;
 
 public class SnbtPrinterTagVisitor implements TagVisitor {
-   private static final Map<String, List<String>> KEY_ORDER = (Map)Util.make(Maps.newHashMap(), (map) -> {
-      map.put("{}", Lists.newArrayList(new String[]{"DataVersion", "author", "size", "data", "entities", "palette", "palettes"}));
-      map.put("{}.data.[].{}", Lists.newArrayList(new String[]{"pos", "state", "nbt"}));
-      map.put("{}.entities.[].{}", Lists.newArrayList(new String[]{"blockPos", "pos"}));
-   });
+   private static final Map<String, List<String>> KEY_ORDER = Map.of("{}", List.of("DataVersion", "author", "size", "data", "entities", "palette", "palettes"), "{}.data.[].{}", List.of("pos", "state", "nbt"), "{}.entities.[].{}", List.of("blockPos", "pos"));
    private static final Set<String> NO_INDENTATION = Sets.newHashSet(new String[]{"{}.size.[]", "{}.data.[].{}", "{}.palette.[].{}", "{}.entities.[].{}"});
    private static final Pattern SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
    private static final String NAME_VALUE_SEPARATOR = String.valueOf(':');

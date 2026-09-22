@@ -1,6 +1,7 @@
 package com.mojang.renderpearl.frontend;
 
 import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
@@ -10,20 +11,27 @@ import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.device.GpuSurface;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
+import com.mojang.renderpearl.api.pipeline.ShaderType;
+import com.mojang.renderpearl.api.pipeline.SpvModule;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import com.mojang.renderpearl.backend.api.GpuDeviceBackend;
-import com.mojang.renderpearl.frontend.shaders.PipelineBuilder;
+import com.mojang.renderpearl.frontend.shaders.PipelineValidator;
+import com.mojang.renderpearl.frontend.shaders.SPIRVModule;
+import com.mojang.renderpearl.util.ShaderCompileException;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceLists;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
@@ -37,7 +45,6 @@ public class FrontendGpuDevice implements GpuDevice {
    private final GpuDeviceBackend backend;
    private final @Nullable TracyGpuProfiler profiler;
    private final CommandEncoder encoder;
-   private final PipelineBuilder pipelineBuilder;
 
    public FrontendGpuDevice(final GpuDeviceBackend backend) {
       super();
@@ -49,7 +56,6 @@ public class FrontendGpuDevice implements GpuDevice {
       }
 
       this.encoder = new FrontendCommandEncoder(this.profiler, backend, backend.createCommandEncoder());
-      this.pipelineBuilder = new PipelineBuilder(backend);
    }
 
    public GpuSurface createSurface(final long windowHandle, final BooleanSupplier isIconified) {
@@ -151,12 +157,80 @@ public class FrontendGpuDevice implements GpuDevice {
       return this.backend.isDebuggingEnabled();
    }
 
-   public CompletableFuture<CompiledRenderPipeline.Pending> compilePipeline(final RenderPipeline pipeline, final ShaderSource shaderSource, final Executor executor) {
-      return this.pipelineBuilder.compilePipeline(pipeline, shaderSource, executor);
+   public SpvModule createSpvModule(final String name, final ByteBuffer spv, final ShaderType type, final String entryPoint) {
+      return new SPIRVModule(name, spv, type, entryPoint);
+   }
+
+   public CompiledRenderPipeline.Pending compilePipeline(final CompiledRenderPipeline.CreateInfo createInfo) {
+      try {
+         PipelineValidator.validatePipelineCreateInfo(this.getDeviceInfo(), createInfo);
+      } catch (ShaderCompileException e) {
+         LOGGER.error("Couldn't compile pipeline ({}): ", createInfo.name(), e);
+         return CompiledRenderPipeline.Pending.NULL;
+      }
+
+      Zone tracyZone = TracyClient.beginZone("Backend Compile", false);
+
+      BackendRenderPipeline.Pending backendPendingPipeline;
+      try {
+         tracyZone.addText(createInfo.name());
+         backendPendingPipeline = this.backend.compilePipeline(createInfo);
+      } catch (Throwable var9) {
+         if (tracyZone != null) {
+            try {
+               tracyZone.close();
+            } catch (Throwable var7) {
+               var9.addSuppressed(var7);
+            }
+         }
+
+         throw var9;
+      }
+
+      if (tracyZone != null) {
+         tracyZone.close();
+      }
+
+      IntList usedVertexBufferSlots = new IntArrayList();
+
+      for(CompiledRenderPipeline.CreateInfo.VertexBuffer vertexBuffer : createInfo.vertexBuffers()) {
+         usedVertexBufferSlots.add(vertexBuffer.bufferSlot());
+      }
+
+      Object2IntOpenHashMap<String> uniformBindings = new Object2IntOpenHashMap();
+
+      for(CompiledRenderPipeline.CreateInfo.Uniform uniform : createInfo.uniforms()) {
+         uniformBindings.put(uniform.name(), uniform.binding());
+      }
+
+      return () -> {
+         Zone tracyZone = TracyClient.beginZone("Complete Compile", false);
+
+         BackendRenderPipeline backendPipeline;
+         try {
+            tracyZone.addText(createInfo.name());
+            backendPipeline = backendPendingPipeline.finishCompile();
+         } catch (Throwable var9) {
+            if (tracyZone != null) {
+               try {
+                  tracyZone.close();
+               } catch (Throwable x2) {
+                  var9.addSuppressed(x2);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (tracyZone != null) {
+            tracyZone.close();
+         }
+
+         return backendPipeline == null ? null : new FrontendRenderPipeline(createInfo.name(), backendPipeline, usedVertexBufferSlots, Object2IntMaps.unmodifiable(uniformBindings), createInfo.uniforms(), ReferenceLists.unmodifiable(new ReferenceArrayList(createInfo.colorTargetStates())), createInfo.depthStencilState() != null, createInfo.depthStencilFormat(), createInfo.pushConstantsSize());
+      };
    }
 
    public void close() {
-      this.pipelineBuilder.close();
       this.backend.close();
    }
 

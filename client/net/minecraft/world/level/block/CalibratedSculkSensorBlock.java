@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -21,8 +22,8 @@ import org.jspecify.annotations.Nullable;
 public class CalibratedSculkSensorBlock extends SculkSensorBlock {
    public static final EnumProperty<Direction> FACING;
 
-   public CalibratedSculkSensorBlock(final BlockBehaviour.Properties properties) {
-      super(properties);
+   public CalibratedSculkSensorBlock(final IntProvider xpRange, final BlockBehaviour.Properties properties) {
+      super(xpRange, properties);
       this.registerDefaultState((BlockState)this.defaultBlockState().setValue(FACING, Direction.NORTH));
    }
 

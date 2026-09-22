@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -26,18 +27,25 @@ public record CuboidPlacement(IntProvider xzSize, IntProvider ySize, boolean inc
       int height = this.ySize.sample(random);
       int width = this.xzSize.sample(random);
       int length = this.xzSize.sample(random);
-      BlockPos.MutableBlockPos mutPos = origin.mutable();
 
-      for(int x = 0; x <= width; ++x) {
-         for(int y = 0; y <= height; ++y) {
-            for(int z = 0; z <= length; ++z) {
-               mutPos.set(x + origin.getX(), y + origin.getY(), z + origin.getZ());
-               if ((this.includeEdges || x != 0 && x != width || y != 0 && y != height) && (this.includeEdges || z != 0 && z != length || y != 0 && y != height) && (this.includeEdges || x != 0 && x != width || z != 0 && z != length) && (this.includeInterior || x == 0 || x == width || y == 0 || y == height || z == 0 || z == length)) {
-                  output.accept(mutPos.immutable());
+      for(int x = 0; x < width; ++x) {
+         boolean xFace = x == 0 || x == width - 1;
+
+         for(int y = 0; y < height; ++y) {
+            boolean yFace = y == 0 || y == height - 1;
+
+            for(int z = 0; z < length; ++z) {
+               boolean zFace = z == 0 || z == length - 1;
+               if ((this.includeEdges || (!xFace || !yFace) && (!zFace || !yFace) && (!xFace || !zFace)) && (this.includeInterior || xFace || yFace || zFace)) {
+                  output.accept(origin.offset(x, y, z));
                }
             }
          }
       }
 
+   }
+
+   public InclusiveRange<Integer> modifyXzDomain(final InclusiveRange<Integer> inputDomain) {
+      return new InclusiveRange<Integer>(inputDomain.minInclusive(), (Integer)inputDomain.maxInclusive() + this.xzSize.maxInclusive() - 1);
    }
 }

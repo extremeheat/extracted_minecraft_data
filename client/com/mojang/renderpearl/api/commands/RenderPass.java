@@ -16,7 +16,6 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 
 public interface RenderPass extends UncheckedAutoCloseable {
-   int MAX_VERTEX_BUFFERS = 16;
    int INDIRECT_DRAW_SIZE = 16;
    int INDIRECT_INDEXED_DRAW_SIZE = 20;
 

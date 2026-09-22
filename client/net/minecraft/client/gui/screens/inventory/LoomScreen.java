@@ -11,6 +11,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.Sheets;
+import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -179,7 +180,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       float patternV1 = patternV0 + patternVSpan * 40.0F / 64.0F;
       int bannerWidth = 5;
       int bannerHeight = 10;
-      graphics.fill(0, 0, 5, 10, DyeColor.GRAY.getTextureDiffuseColor());
+      graphics.fill(0, 0, 5, 10, (Integer)BannerRenderer.DYED_PATTERN_COLOR.gray());
       graphics.blit(bannerPatternSprite.atlasLocation(), 0, 0, 5, 10, patternU0, patternU1, patternV0, patternV1);
       graphics.pose().popMatrix();
    }

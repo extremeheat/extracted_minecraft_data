@@ -238,8 +238,8 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       }
    }
 
-   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelExtractor levelExtractor, final boolean isDebug, final long biomeZoomSeed, final int seaLevel) {
-      super(levelData, dimension, connection.registryAccess(), dimensionType, true, isDebug, biomeZoomSeed, 1000000);
+   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelExtractor levelExtractor, final boolean isDebug, final int seaLevel) {
+      super(levelData, dimension, connection.registryAccess(), dimensionType, true, isDebug, 1000000);
       this.connection = connection;
       this.chunkSource = new ClientChunkCache(this, serverChunkRadius);
       this.tickRateManager = new TickRateManager();
@@ -845,7 +845,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       return this.dragonParts;
    }
 
-   public Holder<Biome> getUncachedNoiseBiome(final int quartX, final int quartY, final int quartZ) {
+   public Holder<Biome> getUncachedBiome(final int x, final int y, final int z) {
       return this.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
    }
 

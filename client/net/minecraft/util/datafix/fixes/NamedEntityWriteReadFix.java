@@ -8,7 +8,6 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class NamedEntityWriteReadFix extends DataFix {
@@ -38,7 +37,7 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
             return ExtraDataFixUtils.cast(outputEntityType, typed);
          } else {
             Typed<?> fakeTyped = ExtraDataFixUtils.cast(patchedEntityType, typed);
-            return Util.writeAndReadTypedOrThrow(fakeTyped, outputEntityType, this::fix);
+            return ExtraDataFixUtils.writeAndReadTypedOrThrow(fakeTyped, outputEntityType, this::fix);
          }
       });
    }

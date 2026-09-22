@@ -18,7 +18,7 @@ import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.timeline.Timeline;
@@ -57,9 +57,8 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
 
    private static void addStaticLayers(final Builder builder, final LevelAccessor level) {
       RegistryAccess registries = level.registryAccess();
-      BiomeManager biomeManager = level.getBiomeManager();
       addDimensionLayer(builder, level.dimensionType());
-      addBiomeLayer(builder, registries.lookupOrThrow(Registries.BIOME), biomeManager);
+      addBiomeLayer(builder, registries.lookupOrThrow(Registries.BIOME), level);
    }
 
    private static void addDynamicLayers(final Builder builder, final Level level) {
@@ -75,17 +74,17 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
       builder.addConstantLayer(dimensionType.attributes());
    }
 
-   private static void addBiomeLayer(final Builder builder, final HolderLookup<Biome> biomes, final BiomeManager biomeManager) {
+   private static void addBiomeLayer(final Builder builder, final HolderLookup<Biome> biomes, final BiomeResolver biomeResolver) {
       Stream<EnvironmentAttribute<?>> attributesProvidedByBiomes = biomes.listElements().flatMap((biome) -> ((Biome)biome.value()).getAttributes().keySet().stream()).distinct();
-      attributesProvidedByBiomes.forEach((attribute) -> addBiomeLayerForAttribute(builder, attribute, biomeManager));
+      attributesProvidedByBiomes.forEach((attribute) -> addBiomeLayerForAttribute(builder, attribute, biomeResolver));
    }
 
-   private static <Value> void addBiomeLayerForAttribute(final Builder builder, final EnvironmentAttribute<Value> attribute, final BiomeManager biomeManager) {
+   private static <Value> void addBiomeLayerForAttribute(final Builder builder, final EnvironmentAttribute<Value> attribute, final BiomeResolver biomeResolver) {
       builder.addPositionalLayer(attribute, (baseValue, pos, biomeWeights) -> {
          if (biomeWeights != null && attribute.isSpatiallyInterpolated()) {
             return biomeWeights.applyAttributeLayer(attribute, baseValue);
          } else {
-            Holder<Biome> biome = attribute.isFullResolutionBiomes() ? biomeManager.getBiome(Mth.floor(pos.x), Mth.floor(pos.y), Mth.floor(pos.z)) : biomeManager.getNoiseBiomeAtPosition(pos.x, pos.y, pos.z);
+            Holder<Biome> biome = biomeResolver.getBiome(Mth.floor(pos.x), Mth.floor(pos.y), Mth.floor(pos.z));
             return ((Biome)biome.value()).getAttributes().applyModifier(attribute, baseValue);
          }
       });

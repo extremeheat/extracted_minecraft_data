@@ -1,17 +1,19 @@
-package com.mojang.renderpearl.backend.api;
+package com.mojang.renderpearl.api.pipeline;
 
-import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.util.ShaderCompileException;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
-public interface SpvModule extends AutoCloseable {
-   void close();
+public interface SpvModule extends UncheckedAutoCloseable {
+   String name();
 
    ByteBuffer spv();
 
    ShaderType type();
+
+   String entryPoint();
 
    Reflection reflect() throws ShaderCompileException;
 

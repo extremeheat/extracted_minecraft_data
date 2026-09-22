@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -14,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.blockscan.BlockMatcher;
@@ -42,12 +40,6 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
 
    int getSkyDarken();
 
-   BiomeManager getBiomeManager();
-
-   default Holder<Biome> getBiome(final BlockPos pos) {
-      return this.getBiomeManager().getBiome(pos);
-   }
-
    default Stream<BlockState> getBlockStatesIfLoaded(final AABB box) {
       int x0 = Mth.floor(box.minX);
       int x1 = Mth.floor(box.maxX);
@@ -58,12 +50,12 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
       return this.hasChunksAt(x0, y0, z0, x1, y1, z1) ? this.getBlockStates(box) : Stream.empty();
    }
 
-   default Holder<Biome> getNoiseBiome(final int quartX, final int quartY, final int quartZ) {
-      ChunkAccess chunk = this.getChunk(QuartPos.toSection(quartX), QuartPos.toSection(quartZ), ChunkStatus.BIOMES, false);
-      return chunk != null ? chunk.getNoiseBiome(quartX, quartY, quartZ) : this.getUncachedNoiseBiome(quartX, quartY, quartZ);
+   default Holder<Biome> getBiome(final int x, final int y, final int z) {
+      ChunkAccess chunk = this.getChunk(SectionPos.blockToSectionCoord(x), SectionPos.blockToSectionCoord(z), ChunkStatus.BIOMES, false);
+      return chunk != null ? chunk.getBiome(x, y, z) : this.getUncachedBiome(x, y, z);
    }
 
-   Holder<Biome> getUncachedNoiseBiome(int quartX, int quartY, int quartZ);
+   Holder<Biome> getUncachedBiome(int x, int y, int z);
 
    boolean isClientSide();
 

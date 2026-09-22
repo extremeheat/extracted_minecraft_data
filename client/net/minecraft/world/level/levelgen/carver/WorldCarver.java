@@ -12,7 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.CarverOutput;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 
 public interface WorldCarver {
    Codec<WorldCarver> DIRECT_CODEC = BuiltInRegistries.CARVER_TYPE.byNameCodec().dispatch(WorldCarver::codec, Function.identity());
@@ -58,7 +58,7 @@ public interface WorldCarver {
       }
    }
 
-   boolean carve(WorldGenerationContext context, RandomSource random, ChunkPos chunkPos, ChunkPos sourceChunkPos, CarverOutput output);
+   boolean carve(VerticalAnchor.Context verticalAnchorContext, RandomSource random, ChunkPos chunkPos, ChunkPos sourceChunkPos, CarverOutput output);
 
    boolean isStartChunk(RandomSource random);
 

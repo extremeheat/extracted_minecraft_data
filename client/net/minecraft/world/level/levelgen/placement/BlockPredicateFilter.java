@@ -18,7 +18,7 @@ public record BlockPredicateFilter(BlockPredicate predicate) implements Placemen
    }
 
    public boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
-      return this.predicate.test(context.getLevel(), origin);
+      return this.predicate.test(context.level(), origin);
    }
 
    public MapCodec<BlockPredicateFilter> codec() {

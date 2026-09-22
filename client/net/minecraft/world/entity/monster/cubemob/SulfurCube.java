@@ -178,7 +178,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          float vibeAmount = 0.2F * Mth.sin((double)((float)this.tickCount * 0.4F));
          double immersion = this.getFluidHeight(this.isInWater() ? FluidTags.WATER : FluidTags.LAVA) - this.getFluidJumpThreshold() + (double)vibeAmount;
          if (immersion > 0.0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, Math.min(1.0, immersion) * 0.03999999910593033, 0.0));
+            this.addDeltaMovement(0.0, Math.min(1.0, immersion) * 0.03999999910593033, 0.0);
          }
 
       }
@@ -802,12 +802,11 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          horizontalPower *= (float)(1.0 - knockBackResistance);
          verticalPower *= (float)(1.0 - knockBackResistance);
          this.needsSync = true;
-         Vec3 deltaMovement = this.getDeltaMovement();
          horizontalPower *= 0.4F;
          horizontalPower = Mth.clamp(horizontalPower, -128.0F, 128.0F);
          verticalPower = Mth.clamp(verticalPower, -128.0F, 128.0F);
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
-         this.setDeltaMovement(deltaMovement.x - horizontalKnockback.x, deltaMovement.y + (double)verticalPower * 1.2, deltaMovement.z - horizontalKnockback.z);
+         this.addDeltaMovement(-horizontalKnockback.x, (double)verticalPower * 1.2, -horizontalKnockback.z);
          this.playSound(hitSound.value());
       } else {
          super.knockback(power, xd, zd, source, damage, comesFromEffect);

@@ -1,10 +1,8 @@
 package net.minecraft.world.entity.animal.fish;
 
 import com.mojang.serialization.Codec;
-import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -13,7 +11,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,7 +19,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
@@ -278,8 +275,7 @@ public class TropicalFish extends AbstractSchoolingFish {
       CLAYFISH("clayfish", TropicalFish.Base.LARGE, 5);
 
       public static final Codec<Pattern> CODEC = StringRepresentable.<Pattern>fromEnum(Pattern::values);
-      private static final IntFunction<Pattern> BY_ID = ByIdMap.<Pattern>sparse(Pattern::getPackedId, values(), KOB);
-      public static final StreamCodec<ByteBuf, Pattern> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Pattern::getPackedId);
+      public static final EnumStreamCodec<Pattern> STREAM_CODEC = ByteBufCodecs.<Pattern>sparseEnumCodec(Pattern.class, Pattern::getPackedId, KOB);
       private final String name;
       private final Component displayName;
       private final Base base;
@@ -293,7 +289,7 @@ public class TropicalFish extends AbstractSchoolingFish {
       }
 
       public static Pattern byId(final int packedId) {
-         return (Pattern)BY_ID.apply(packedId);
+         return STREAM_CODEC.byId(packedId);
       }
 
       public Base base() {

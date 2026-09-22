@@ -2,12 +2,10 @@ package net.minecraft.network.protocol.game;
 
 import io.netty.buffer.ByteBuf;
 import java.util.List;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.util.ByIdMap;
 
 public record ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<ByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC;
@@ -33,8 +31,7 @@ public record ClientboundCustomChatCompletionsPacket(Action action, List<String>
       REMOVE(1),
       SET(2);
 
-      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((a) -> a.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (a) -> a.id);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.enumCodec(Action.class, (a) -> a.id);
       private final int id;
 
       private Action(final int id) {

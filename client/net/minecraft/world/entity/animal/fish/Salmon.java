@@ -1,13 +1,11 @@
 package net.minecraft.world.entity.animal.fish;
 
 import com.mojang.serialization.Codec;
-import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -98,7 +96,7 @@ public class Salmon extends AbstractSchoolingFish {
    }
 
    public Variant getVariant() {
-      return (Variant)Salmon.Variant.BY_ID.apply((Integer)this.entityData.get(DATA_TYPE));
+      return Salmon.Variant.byId((Integer)this.entityData.get(DATA_TYPE));
    }
 
    public <T> @Nullable T get(final DataComponentType<? extends T> type) {
@@ -147,8 +145,7 @@ public class Salmon extends AbstractSchoolingFish {
 
       public static final Variant DEFAULT = MEDIUM;
       public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
-      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
-      public static final StreamCodec<ByteBuf, Variant> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Variant::id);
+      public static final EnumStreamCodec<Variant> STREAM_CODEC = ByteBufCodecs.<Variant>enumCodec(Variant.class, Variant::id, ByIdMap.OutOfBoundsStrategy.CLAMP);
       private final String name;
       private final int id;
       private final float boundingBoxScale;
@@ -165,6 +162,10 @@ public class Salmon extends AbstractSchoolingFish {
 
       private int id() {
          return this.id;
+      }
+
+      public static Variant byId(final int id) {
+         return STREAM_CODEC.byId(id);
       }
 
       // $FF: synthetic method

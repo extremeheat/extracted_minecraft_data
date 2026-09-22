@@ -20,7 +20,7 @@ public class BiomeFilter implements PlacementFilter {
 
    public boolean shouldPlace(final PlacementContext context, final RandomSource random, final BlockPos origin) {
       PlacedFeature feature = (PlacedFeature)context.topFeature().orElseThrow(() -> new IllegalStateException("Tried to biome check an unregistered feature, or a feature that should not restrict the biome"));
-      Holder<Biome> biome = context.getLevel().getBiome(origin);
+      Holder<Biome> biome = context.level().getBiome(origin);
       return context.generator().getBiomeGenerationSettings(biome).hasFeature(feature);
    }
 

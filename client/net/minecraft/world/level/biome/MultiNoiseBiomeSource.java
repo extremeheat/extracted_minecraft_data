@@ -54,11 +54,11 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return preset.isPresent() && ((Holder)preset.get()).is(expected);
    }
 
-   public BiomeResolver createResolver(final Climate.Sampler sampler) {
+   public NoiseBiomeResolver createResolver(final Climate.Sampler sampler) {
       return (quartX, quartY, quartZ) -> this.getNoiseBiome(sampler.sample(quartX, quartY, quartZ));
    }
 
-   public BiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
+   public NoiseBiomeResolver createResolverForChunk(final Climate.Sampler sampler, final int minQuartX, final int minQuartY, final int minQuartZ, final int quartSizeX, final int quartSizeY, final int quartSizeZ) {
       DensityVolume volume = new DensityVolume(quartSizeX, quartSizeY, quartSizeZ, QuartPos.toBlock(minQuartX), QuartPos.toBlock(minQuartY), QuartPos.toBlock(minQuartZ), 4, 4, 4);
       DensityBuffer temperature = DensityBuffer.createUnpooled(volume.size());
       DensityBuffer vegetation = DensityBuffer.createUnpooled(volume.size());

@@ -181,7 +181,6 @@ import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.AbstractBedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -1845,6 +1844,10 @@ public class ServerPlayer extends Player {
       return new ClientInformation(this.language, this.requestedViewDistance, this.chatVisibility, this.canChatColor, modelCustomization, this.getMainArm(), this.textFilteringEnabled, this.allowsListing, this.particleStatus);
    }
 
+   public String debugInfo(final boolean includeLevelName) {
+      return this.debugInfoBuilder(includeLevelName).add("debug", this.connection.debugInfo().print()).toString();
+   }
+
    public boolean canChatInColor() {
       return this.canChatColor;
    }
@@ -2129,7 +2132,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommonPlayerSpawnInfo createCommonSpawnInfo(final ServerLevel level) {
-      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
+      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
    }
 
    public void setRaidOmenPosition(final BlockPos raidOmenPosition) {

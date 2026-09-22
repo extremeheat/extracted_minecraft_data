@@ -36,16 +36,16 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
       ItemStack armorItem = state.bodyArmorItem;
       Equippable equippable = (Equippable)armorItem.get(DataComponents.EQUIPPABLE);
       if (equippable != null && !equippable.assetId().isEmpty() && !state.isBaby) {
-         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)equippable.assetId().get(), this.adultModel, state, armorItem, poseStack, submitNodeCollector, lightCoords, state.outlineColor);
-         this.maybeRenderCracks(poseStack, submitNodeCollector, lightCoords, armorItem, this.adultModel, state);
+         int nextOrder = this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)equippable.assetId().get(), this.adultModel, state, armorItem, poseStack, submitNodeCollector, lightCoords, state.outlineColor);
+         this.maybeRenderCracks(poseStack, submitNodeCollector, lightCoords, armorItem, this.adultModel, state, nextOrder);
       }
    }
 
-   private void maybeRenderCracks(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack armorItem, final Model<WolfRenderState> model, final WolfRenderState state) {
+   private void maybeRenderCracks(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack armorItem, final Model<WolfRenderState> model, final WolfRenderState state, final int nextOrder) {
       Crackiness.Level crackiness = Crackiness.WOLF_ARMOR.byDamage(armorItem);
       if (crackiness != Crackiness.Level.NONE) {
          Identifier damageTexture = (Identifier)ARMOR_CRACK_LOCATIONS.get(crackiness);
-         submitNodeCollector.order(1).submitModel(model, state, poseStack, (RenderType)RenderTypes.wolfArmorCracks(damageTexture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+         submitNodeCollector.order(nextOrder).submitModel(model, state, poseStack, (RenderType)RenderTypes.wolfArmorCracks(damageTexture), lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
       }
    }
 

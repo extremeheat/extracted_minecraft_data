@@ -22,9 +22,11 @@ import net.minecraft.client.resources.model.sprite.SpriteGetter;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.CommonColors;
 import net.minecraft.util.Unit;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.BannerBlock;
+import net.minecraft.world.level.block.ColorCollection;
 import net.minecraft.world.level.block.WallBannerBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -42,6 +44,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
    private static final Vector3fc MODEL_SCALE = new Vector3f(0.6666667F, -0.6666667F, -0.6666667F);
    private static final Vector3fc MODEL_TRANSLATION = new Vector3f(0.5F, 0.0F, 0.5F);
    public static final WallAndGroundTransformations<Transformation> TRANSFORMATIONS = new WallAndGroundTransformations<Transformation>(BannerRenderer::createWallTransformation, BannerRenderer::createGroundTransformation, 16);
+   public static final ColorCollection<Integer> DYED_PATTERN_COLOR;
    private final SpriteGetter sprites;
    private final BannerModel standingModel;
    private final BannerModel wallModel;
@@ -145,7 +148,7 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
    }
 
    private static <S> void submitPatternLayer(final SpriteGetter sprites, final PoseStack poseStack, final OrderedSubmitNodeCollector submitNodeCollector, final int lightCoords, final int overlayCoords, final Model<S> model, final S state, final SpriteId sprite, final DyeColor color) {
-      int diffuseColor = color.getTextureDiffuseColor();
+      int diffuseColor = (Integer)DYED_PATTERN_COLOR.pick(color);
       submitNodeCollector.submitModel(model, state, poseStack, sprite.renderType(RenderTypes::bannerPattern), lightCoords, overlayCoords, diffuseColor, sprites.get(sprite), 0);
    }
 
@@ -166,5 +169,9 @@ public class BannerRenderer implements BlockEntityRenderer<BannerBlockEntity, Ba
 
    private static Transformation createWallTransformation(final Direction direction) {
       return modelTransformation(direction.toYRot());
+   }
+
+   static {
+      DYED_PATTERN_COLOR = CommonColors.TEXTURE_TINT_COLORS;
    }
 }

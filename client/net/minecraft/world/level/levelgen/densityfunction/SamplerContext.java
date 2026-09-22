@@ -1,5 +1,7 @@
 package net.minecraft.world.level.levelgen.densityfunction;
 
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import java.util.Arrays;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -62,13 +64,39 @@ public class SamplerContext {
          input.sampleVolume(this, outputBuffer, volume);
       } else {
          if (cell.buffer == null || !volume.equals(cell.volume)) {
-            if (cell.buffer != null) {
-               cell.buffer.close();
+            Zone zone = TracyClient.isAvailable() ? TracyClient.beginZone("cacheMiss", false) : null;
+
+            try {
+               if (zone != null) {
+                  if (cell.buffer != null) {
+                     zone.addText("Old volume: " + String.valueOf(cell.volume));
+                  }
+
+                  zone.addText("Volume: " + String.valueOf(volume));
+               }
+
+               if (cell.buffer != null) {
+                  cell.buffer.close();
+               }
+
+               cell.volume = volume;
+               cell.buffer = this.acquireBuffer(volume);
+               input.sampleVolume(this, cell.buffer, volume);
+            } catch (Throwable var10) {
+               if (zone != null) {
+                  try {
+                     zone.close();
+                  } catch (Throwable var9) {
+                     var10.addSuppressed(var9);
+                  }
+               }
+
+               throw var10;
             }
 
-            cell.volume = volume;
-            cell.buffer = this.acquireBuffer(volume);
-            input.sampleVolume(this, cell.buffer, volume);
+            if (zone != null) {
+               zone.close();
+            }
          }
 
          outputBuffer.copyFrom(cell.buffer);
@@ -99,6 +127,15 @@ public class SamplerContext {
       }
    }
 
+   public void clearCaches() {
+      if (this.cacheCells != null) {
+         for(CacheCell cell : this.cacheCells) {
+            cell.clear();
+         }
+      }
+
+   }
+
    static {
       EMPTY_UNCACHED = new SamplerContext(ContextMap.EMPTY, DensityBufferArena.GLOBAL, false);
    }
@@ -111,6 +148,15 @@ public class SamplerContext {
 
       private CacheCell() {
          super();
+      }
+
+      public void clear() {
+         if (this.buffer != null) {
+            this.buffer.close();
+            this.buffer = null;
+         }
+
+         this.value = 0.0F / 0.0F;
       }
    }
 

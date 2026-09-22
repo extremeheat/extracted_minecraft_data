@@ -11,7 +11,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
@@ -30,7 +29,7 @@ public class EntitySpawnerItemVariantComponentFix extends DataFix {
             case "minecraft:salmon_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixSalmonBucket);
             case "minecraft:axolotl_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixAxolotlBucket);
             case "minecraft:tropical_fish_bucket" -> var10000 = input.updateTyped(componentsFinder, EntitySpawnerItemVariantComponentFix::fixTropicalFishBucket);
-            case "minecraft:painting" -> var10000 = input.updateTyped(componentsFinder, (components) -> Util.writeAndReadTypedOrThrow(components, components.getType(), EntitySpawnerItemVariantComponentFix::fixPainting));
+            case "minecraft:painting" -> var10000 = input.updateTyped(componentsFinder, (components) -> ExtraDataFixUtils.writeAndReadTypedOrThrow(components, components.getType(), EntitySpawnerItemVariantComponentFix::fixPainting));
             default -> var10000 = input;
          }
 

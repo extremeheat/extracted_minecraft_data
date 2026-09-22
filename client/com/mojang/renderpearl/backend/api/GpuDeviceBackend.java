@@ -4,6 +4,7 @@ import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.commands.GpuQueryPool;
 import com.mojang.renderpearl.api.device.DeviceInfo;
+import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
@@ -35,7 +36,7 @@ public interface GpuDeviceBackend {
 
    boolean isDebuggingEnabled();
 
-   BackendRenderPipeline.Pending compilePipeline(BackendRenderPipeline.CreateInfo pipelineCreateInfo);
+   BackendRenderPipeline.Pending compilePipeline(CompiledRenderPipeline.CreateInfo pipelineCreateInfo);
 
    void close();
 

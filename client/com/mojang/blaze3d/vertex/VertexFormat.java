@@ -1,4 +1,4 @@
-package com.mojang.renderpearl.api.vertex;
+package com.mojang.blaze3d.vertex;
 
 import com.mojang.renderpearl.api.GpuFormat;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;

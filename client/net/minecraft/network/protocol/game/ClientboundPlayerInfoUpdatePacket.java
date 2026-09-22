@@ -9,7 +9,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.IntFunction;
 import net.minecraft.Optionull;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -21,7 +20,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
 import org.jspecify.annotations.Nullable;
@@ -113,7 +111,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(output, profile.properties());
       }),
       INITIALIZE_CHAT(1, (entry, input) -> entry.chatSession = (RemoteChatSession.Data)input.readNullable(RemoteChatSession.Data.STREAM_CODEC), (output, entry) -> output.writeNullable(entry.chatSession, RemoteChatSession.Data.STREAM_CODEC)),
-      UPDATE_GAME_MODE(2, (entry, input) -> entry.gameMode = (GameType)GameType.STREAM_CODEC.decode(input), (output, entry) -> GameType.STREAM_CODEC.encode(output, entry.gameMode)),
+      UPDATE_GAME_MODE(2, (entry, input) -> entry.gameMode = (GameType)GameType.STREAM_CODEC.decode((ByteBuf)input), (output, entry) -> GameType.STREAM_CODEC.encode((ByteBuf)output, entry.gameMode)),
       UPDATE_LISTED(3, (entry, input) -> entry.listed = input.readBoolean(), (output, entry) -> output.writeBoolean(entry.listed())),
       UPDATE_LATENCY(4, (entry, input) -> entry.latency = input.readVarInt(), (output, entry) -> output.writeVarInt(entry.latency())),
       UPDATE_DISPLAY_NAME(5, (entry, input) -> entry.displayName = (Component)FriendlyByteBuf.readNullable(input, ComponentSerialization.TRUSTED_STREAM_CODEC), (output, entry) -> FriendlyByteBuf.writeNullable(output, entry.displayName(), ComponentSerialization.TRUSTED_STREAM_CODEC)),
@@ -123,8 +121,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       private final int id;
       private final Reader reader;
       private final Writer writer;
-      private static final IntFunction<Action> BY_ID = ByIdMap.<Action>continuous((a) -> a.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (a) -> a.id);
+      public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = ByteBufCodecs.enumCodec(Action.class, (a) -> a.id);
 
       private Action(final int id, final Reader reader, final Writer writer) {
          this.id = id;

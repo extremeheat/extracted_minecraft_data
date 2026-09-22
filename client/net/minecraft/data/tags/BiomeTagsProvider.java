@@ -28,6 +28,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.IS_JUNGLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.JUNGLE).add(Biomes.SPARSE_JUNGLE);
       this.tag(BiomeTags.IS_FOREST).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.DAPPLED_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.GROVE);
       this.tag(BiomeTags.IS_SAVANNA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_SAVANNA);
+      this.tag(BiomeTags.IS_CAVE).add(Biomes.LUSH_CAVES).add(Biomes.DEEP_DARK).add(Biomes.DRIPSTONE_CAVES).add(Biomes.SULFUR_CAVES);
       this.tag(BiomeTags.IS_NETHER).addAll(MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes());
       List<ResourceKey<Biome>> overworldBiomes = MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes().toList();
       this.tag(BiomeTags.IS_OVERWORLD).addAll(overworldBiomes);
@@ -88,6 +89,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.HAS_RUINED_PORTAL_NETHER).addTag(BiomeTags.IS_NETHER);
       this.tag(BiomeTags.HAS_END_CITY).add(Biomes.END_HIGHLANDS).add(Biomes.END_MIDLANDS);
       this.tag(BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL).add(Biomes.WARM_OCEAN);
+      this.tag(BiomeTags.GENERATED_IN_BELOW_ZERO_RETROGEN).addTag(BiomeTags.IS_CAVE);
       this.tag(BiomeTags.WATER_ON_MAP_OUTLINES).addTag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_RIVER).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.WITHOUT_ZOMBIE_SIEGES).add(Biomes.MUSHROOM_FIELDS);
       this.tag(BiomeTags.WITHOUT_WANDERING_TRADER_SPAWNS).add(Biomes.THE_VOID);

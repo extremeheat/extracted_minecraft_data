@@ -6,7 +6,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class EntityMinecartIdentifiersFix extends EntityRenameFix {
    public EntityMinecartIdentifiersFix(final Schema outputSchema) {
@@ -27,7 +27,7 @@ public class EntityMinecartIdentifiersFix extends EntityRenameFix {
 
          String newName = var10000;
          Type<?> newType = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(newName);
-         return Pair.of(newName, Util.writeAndReadTypedOrThrow(entity, newType, (dynamic) -> dynamic.remove("Type")));
+         return Pair.of(newName, ExtraDataFixUtils.writeAndReadTypedOrThrow(entity, newType, (dynamic) -> dynamic.remove("Type")));
       }
    }
 }

@@ -16,6 +16,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.client.resources.server.ServerPackManager;
 import net.minecraft.network.Connection;
+import net.minecraft.network.ServerConnectionDetails;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
@@ -69,7 +70,7 @@ public class RealmsConnect {
                   return;
                }
 
-               RealmsConnect.this.connection.initiateServerboundPlayConnection(hostname, port, clientHandshakePacketListener);
+               RealmsConnect.this.connection.initiateServerboundPlayConnection(ServerConnectionDetails.plain(address), clientHandshakePacketListener);
                if (RealmsConnect.this.aborted) {
                   return;
                }

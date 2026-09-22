@@ -10,7 +10,7 @@ import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.util.valueproviders.FloatProviders;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.CarverOutput;
-import net.minecraft.world.level.levelgen.WorldGenerationContext;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 
 public record CanyonWorldCarver(float probability, HeightProvider y, FloatProvider verticalRotation, Shape shape) implements WorldCarver {
@@ -24,10 +24,10 @@ public record CanyonWorldCarver(float probability, HeightProvider y, FloatProvid
       return random.nextFloat() <= this.probability;
    }
 
-   public boolean carve(final WorldGenerationContext context, final RandomSource random, final ChunkPos chunkPos, final ChunkPos sourceChunkPos, final CarverOutput output) {
+   public boolean carve(final VerticalAnchor.Context verticalAnchorContext, final RandomSource random, final ChunkPos chunkPos, final ChunkPos sourceChunkPos, final CarverOutput output) {
       int maxDistance = (this.getRange() * 2 - 1) * 16;
       double x = (double)sourceChunkPos.getBlockX(random.nextInt(16));
-      int y = this.y.sample(random, context);
+      int y = this.y.sample(random, verticalAnchorContext);
       double z = (double)sourceChunkPos.getBlockZ(random.nextInt(16));
       float horizontalRotation = random.nextFloat() * 6.2831855F;
       float verticalRotation = this.verticalRotation.sample(random);
@@ -35,11 +35,11 @@ public record CanyonWorldCarver(float probability, HeightProvider y, FloatProvid
       float thickness = this.shape.thickness().sample(random);
       int distance = (int)((float)maxDistance * this.shape.distanceFactor().sample(random));
       int initialStep = 0;
-      this.doCarve(context, chunkPos, random.nextLong(), x, (double)y, z, thickness, horizontalRotation, verticalRotation, 0, distance, yScale, output);
+      this.doCarve(verticalAnchorContext, chunkPos, random.nextLong(), x, (double)y, z, thickness, horizontalRotation, verticalRotation, 0, distance, yScale, output);
       return true;
    }
 
-   private void doCarve(final WorldGenerationContext context, final ChunkPos chunkPos, final long tunnelSeed, double x, double y, double z, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int distance, final double yScale, final CarverOutput output) {
+   private void doCarve(final VerticalAnchor.Context context, final ChunkPos chunkPos, final long tunnelSeed, double x, double y, double z, final float thickness, float horizontalRotation, float verticalRotation, final int step, final int distance, final double yScale, final CarverOutput output) {
       RandomSource random = RandomSource.createThreadLocalInstance(tunnelSeed);
       float[] widthFactorPerHeight = this.initWidthFactors(context, random);
       float yRota = 0.0F;
@@ -73,8 +73,8 @@ public record CanyonWorldCarver(float probability, HeightProvider y, FloatProvid
 
    }
 
-   private float[] initWidthFactors(final WorldGenerationContext context, final RandomSource random) {
-      int depth = context.getGenDepth();
+   private float[] initWidthFactors(final VerticalAnchor.Context context, final RandomSource random) {
+      int depth = context.height();
       float[] widthFactorPerHeight = new float[depth];
       float widthFactor = 1.0F;
 
@@ -95,8 +95,8 @@ public record CanyonWorldCarver(float probability, HeightProvider y, FloatProvid
       return (double)factor * verticalRadius * (double)Mth.randomBetween(random, 0.75F, 1.0F);
    }
 
-   private boolean shouldSkip(final WorldGenerationContext context, final float[] widthFactorPerHeight, final double xd, final double yd, final double zd, final int y) {
-      int yIndex = y - context.getMinGenY();
+   private boolean shouldSkip(final VerticalAnchor.Context context, final float[] widthFactorPerHeight, final double xd, final double yd, final double zd, final int y) {
+      int yIndex = y - context.minY();
       return (xd * xd + zd * zd) * (double)widthFactorPerHeight[yIndex - 1] + yd * yd / 6.0 >= 1.0;
    }
 

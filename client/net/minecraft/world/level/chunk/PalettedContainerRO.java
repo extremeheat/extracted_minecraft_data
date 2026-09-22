@@ -31,6 +31,8 @@ public interface PalettedContainerRO<T> {
 
    PalettedContainer<T> recreate();
 
+   PalettedContainer<T> recreate(T initialValue, final int dataBits);
+
    PackedData<T> pack(Strategy<T> strategy);
 
    public static record PackedData<T>(List<T> paletteEntries, Optional<LongStream> storage, int bitsPerEntry) {

@@ -157,6 +157,7 @@ public class OverworldMaterialRules {
       MaterialRule ruleAbovePreliminarySurface = MaterialRules.ifTrue(MaterialRules.abovePreliminarySurface(), mainRuleCloseToSurface);
       builder.add(doPreliminarySurfaceCheck ? ruleAbovePreliminarySurface : mainRuleCloseToSurface);
       builder.add(underground);
+      builder.add(STONE);
       return MaterialRules.sequence((List)builder.build());
    }
 

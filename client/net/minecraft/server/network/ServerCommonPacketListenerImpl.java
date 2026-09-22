@@ -3,6 +3,7 @@ package net.minecraft.server.network;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import io.netty.channel.ChannelFutureListener;
+import java.util.Map;
 import java.util.Objects;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -23,6 +24,9 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
+import net.minecraft.network.protocol.common.custom.BrandPayload;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.custom.ModListPayload;
 import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
@@ -49,6 +53,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    private boolean closed = false;
    private int latency;
    private volatile boolean suspendFlushingOnServerThread = false;
+   private final ClientDebugInfo debugInfo;
 
    public ServerCommonPacketListenerImpl(final MinecraftServer server, final Connection connection, final CommonListenerCookie cookie) {
       super();
@@ -57,6 +62,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       this.keepAliveTime = Util.getMillis();
       this.latency = cookie.latency();
       this.transferred = cookie.transferred();
+      this.debugInfo = cookie.debugInfo();
    }
 
    private void close() {
@@ -95,6 +101,42 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void handleCustomPayload(final ServerboundCustomPayloadPacket packet) {
+      PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.server.packetProcessor());
+      ModListPayload var10000 = packet.payload();
+      Objects.requireNonNull(var10000);
+      CustomPacketPayload var2 = var10000;
+      byte var3 = 0;
+      //$FF: var3->value
+      //0->net/minecraft/network/protocol/common/custom/BrandPayload
+      //1->net/minecraft/network/protocol/common/custom/ModListPayload
+      switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
+         case 0:
+            BrandPayload var4 = (BrandPayload)var2;
+            BrandPayload var14 = var4;
+
+            try {
+               var15 = var14.brand();
+            } catch (Throwable var10) {
+               throw new MatchException(var10.toString(), var10);
+            }
+
+            String brand = var15;
+            this.debugInfo.setBrand(brand);
+            break;
+         case 1:
+            ModListPayload brand = (ModListPayload)var2;
+            var10000 = brand;
+
+            try {
+               var13 = var10000.entries();
+            } catch (Throwable var9) {
+               throw new MatchException(var9.toString(), var9);
+            }
+
+            Map entries = var13;
+            this.debugInfo.appendModInfo(entries);
+      }
+
    }
 
    public void handleCustomClickAction(final ServerboundCustomClickActionPacket packet) {
@@ -181,10 +223,6 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    public void disconnect(final DisconnectionDetails details) {
       this.connection.send(new ClientboundDisconnectPacket(details.reason()), PacketSendListener.thenRun(() -> this.connection.disconnect(details)));
       this.connection.setReadOnly();
-      MinecraftServer var10000 = this.server;
-      Connection var10001 = this.connection;
-      Objects.requireNonNull(var10001);
-      var10000.executeBlocking(var10001::handleDisconnection);
    }
 
    protected boolean isSingleplayerOwner() {
@@ -202,7 +240,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       return this.latency;
    }
 
+   public ClientDebugInfo debugInfo() {
+      return this.debugInfo;
+   }
+
    protected CommonListenerCookie createCookie(final ClientInformation clientInformation) {
-      return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred);
+      return new CommonListenerCookie(this.playerProfile(), this.latency, clientInformation, this.transferred, this.debugInfo);
    }
 }

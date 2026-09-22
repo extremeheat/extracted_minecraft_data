@@ -222,7 +222,7 @@ public class Vex extends Monster implements TraceableEntity, OwnableEntity {
                this.operation = MoveControl.Operation.WAIT;
                Vex.this.setDeltaMovement(Vex.this.getDeltaMovement().scale(0.5));
             } else {
-               Vex.this.setDeltaMovement(Vex.this.getDeltaMovement().add(delta.scale(this.speedModifier * 0.05 / deltaLength)));
+               Vex.this.addDeltaMovement(delta.scale(this.speedModifier * 0.05 / deltaLength));
                if (Vex.this.getTarget() == null) {
                   Vec3 movement = Vex.this.getDeltaMovement();
                   Vex.this.setYRot(-((float)Mth.atan2(movement.x, movement.z)) * 57.295776F);

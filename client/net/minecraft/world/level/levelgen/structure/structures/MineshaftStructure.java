@@ -49,7 +49,7 @@ public class MineshaftStructure extends Structure {
       int seaLevel = chunkGenerator.getSeaLevel();
       if (this.type == MineshaftStructure.Type.MESA) {
          BlockPos center = builder.getBoundingBox().getCenter();
-         int surfaceHeight = chunkGenerator.getBaseHeight(center.getX(), center.getZ(), Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
+         int surfaceHeight = chunkGenerator.getFirstFreeHeight(center.getX(), center.getZ(), Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
          int targetYForCenter = surfaceHeight <= seaLevel ? seaLevel : Mth.randomBetweenInclusive(random, seaLevel, surfaceHeight);
          int dy = targetYForCenter - center.getY();
          builder.offsetPiecesVertically(dy);

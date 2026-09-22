@@ -14,8 +14,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.players.NameAndId;
 
-public record ServerStatus(Component description, Optional<Players> players, Optional<Version> version, Optional<Favicon> favicon, boolean enforcesSecureChat) {
-   public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create((i) -> i.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)).apply(i, ServerStatus::new));
+public record ServerStatus(Component description, Optional<Players> players, Optional<Version> version, Optional<Favicon> favicon, boolean enforcesSecureChat, Optional<String> contact) {
+   public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create((i) -> i.group(ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description), ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players), ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version), ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon), Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat), Codec.STRING.lenientOptionalFieldOf("contact").forGetter(ServerStatus::contact)).apply(i, ServerStatus::new));
 
    public ServerStatus {
       super();

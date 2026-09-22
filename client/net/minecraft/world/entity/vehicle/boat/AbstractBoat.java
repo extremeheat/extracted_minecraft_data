@@ -325,10 +325,10 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    protected void handleBubbleColumnEffect(final boolean dragDown) {
       if (this.canSimulateMovement()) {
-         Vec3 movement = this.getDeltaMovement();
          if (dragDown) {
-            this.setDeltaMovement(movement.add(0.0, -0.7, 0.0));
+            this.addDeltaMovement(0.0, -0.7, 0.0);
          } else {
+            Vec3 movement = this.getDeltaMovement();
             this.setDeltaMovement(movement.x, 0.6, movement.z);
          }
 
@@ -607,7 +607,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             acceleration -= 0.005F;
          }
 
-         this.setDeltaMovement(this.getDeltaMovement().add((double)(Mth.sin((double)(-this.getYRot() * 0.017453292F)) * acceleration), 0.0, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * acceleration)));
+         this.addDeltaMovement((double)(Mth.sin((double)(-this.getYRot() * 0.017453292F)) * acceleration), 0.0, (double)(Mth.cos((double)(this.getYRot() * 0.017453292F)) * acceleration));
          this.setPaddleState(this.inputRight && !this.inputLeft || this.inputUp, this.inputLeft && !this.inputRight || this.inputUp);
       }
    }

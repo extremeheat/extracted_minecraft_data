@@ -9,11 +9,14 @@ import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.UvMapping;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.ColorCollection;
 
 public class WolfCollarLayer extends RenderLayer<WolfRenderState, WolfModel> {
    private static final Identifier WOLF_COLLAR_LOCATION = Identifier.withDefaultNamespace("textures/entity/wolf/wolf_collar.png");
    private static final Identifier WOLF_BABY_COLLAR_LOCATION = Identifier.withDefaultNamespace("textures/entity/wolf/wolf_collar_baby.png");
+   private static final ColorCollection<Integer> COLLAR_COLORS;
 
    public WolfCollarLayer(final RenderLayerParent<WolfRenderState, WolfModel> renderer) {
       super(renderer);
@@ -22,9 +25,13 @@ public class WolfCollarLayer extends RenderLayer<WolfRenderState, WolfModel> {
    public void submit(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final WolfRenderState state, final float yRot, final float xRot) {
       DyeColor collarColor = state.collarColor;
       if (collarColor != null && !state.isInvisible) {
-         int color = collarColor.getTextureDiffuseColor();
+         int color = (Integer)COLLAR_COLORS.pick(collarColor);
          Identifier collarLocation = state.isBaby ? WOLF_BABY_COLLAR_LOCATION : WOLF_COLLAR_LOCATION;
          submitNodeCollector.order(1).submitModel(this.getParentModel(), state, poseStack, RenderTypes.entityCutout(collarLocation), lightCoords, OverlayTexture.NO_OVERLAY, color, (UvMapping)null, state.outlineColor);
       }
+   }
+
+   static {
+      COLLAR_COLORS = CommonColors.TEXTURE_TINT_COLORS;
    }
 }

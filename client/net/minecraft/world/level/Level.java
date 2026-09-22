@@ -59,7 +59,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LevelEvent;
@@ -125,21 +124,19 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
    private final boolean isClientSide;
-   private final BiomeManager biomeManager;
    private final ResourceKey<Level> dimension;
    private final RegistryAccess registryAccess;
    private final DamageSources damageSources;
    private final PalettedContainerFactory palettedContainerFactory;
    private long subTickCount;
 
-   protected Level(final WritableLevelData levelData, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final Holder<DimensionType> dimensionTypeRegistration, final boolean isClientSide, final boolean isDebug, final long biomeZoomSeed, final int maxChainedNeighborUpdates) {
+   protected Level(final WritableLevelData levelData, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final Holder<DimensionType> dimensionTypeRegistration, final boolean isClientSide, final boolean isDebug, final int maxChainedNeighborUpdates) {
       super();
       this.levelData = levelData;
       this.dimensionTypeRegistration = dimensionTypeRegistration;
       this.dimension = dimension;
       this.isClientSide = isClientSide;
       this.thread = Thread.currentThread();
-      this.biomeManager = new BiomeManager(this, biomeZoomSeed);
       this.isDebug = isDebug;
       this.neighborUpdater = new CollectingNeighborUpdater(this, maxChainedNeighborUpdates);
       this.registryAccess = registryAccess;
@@ -741,10 +738,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public CrashReportCategory fillReportDetails(final CrashReport report) {
       CrashReportCategory category = report.addCategory("Affected level", 1);
-      category.setDetail("All players", (CrashReportDetail)(() -> {
+      category.setDetail("Players in level", (CrashReportDetail)(() -> {
          List<? extends Player> players = this.players();
          int var10000 = players.size();
-         return var10000 + " total; " + (String)players.stream().map(Player::debugInfo).collect(Collectors.joining(", "));
+         return var10000 + " total; " + (String)players.stream().map((p) -> p.debugInfo(false)).collect(Collectors.joining(", "));
       }));
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);
@@ -832,10 +829,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean noSave() {
       return false;
-   }
-
-   public BiomeManager getBiomeManager() {
-      return this.biomeManager;
    }
 
    public final boolean isDebug() {

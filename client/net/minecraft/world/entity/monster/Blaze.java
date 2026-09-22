@@ -108,7 +108,7 @@ public class Blaze extends Monster {
       LivingEntity target = this.getTarget();
       if (target != null && target.getEyeY() > this.getEyeY() + (double)this.allowedHeightOffset && this.canAttack(target)) {
          Vec3 movement = this.getDeltaMovement();
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, (0.30000001192092896 - movement.y) * 0.30000001192092896, 0.0));
+         this.addDeltaMovement(0.0, (0.30000001192092896 - movement.y) * 0.30000001192092896, 0.0);
          this.needsSync = true;
       }
 

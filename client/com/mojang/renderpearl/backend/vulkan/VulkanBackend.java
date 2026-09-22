@@ -373,12 +373,12 @@ public class VulkanBackend implements GpuBackend {
    }
 
    private static BackendCreationException checkDeviceSuitability(final VkPhysicalDevice vkPhysicalDevice, final Set<FeatureSet> requiredFeatureSets, final Set<FeatureSet> requiredIfExtensionsAvailable) throws BackendCreationException {
-      try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
-         String deviceName = physicalDevice.deviceName();
-         if (!deviceMeetsFeatureQueryRequirements(vkPhysicalDevice)) {
-            LOGGER.warn("Device [{}] does not support Vulkan 1.1, skipping further capability checks", deviceName);
-            return new BackendCreationException("Device missing capabilities", BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW, List.of("VULKAN_CORE_1_1"));
-         } else {
+      if (!deviceMeetsFeatureQueryRequirements(vkPhysicalDevice)) {
+         LOGGER.warn("Device [{}] does not support Vulkan 1.1, skipping further capability checks", getDeviceName(vkPhysicalDevice));
+         return new BackendCreationException("Device missing capabilities", BackendCreationException.Reason.VULKAN_DEVICE_VERSION_TOO_LOW, List.of("VULKAN_CORE_1_1"));
+      } else {
+         try (VulkanPhysicalDevice physicalDevice = new VulkanPhysicalDevice(vkPhysicalDevice)) {
+            String deviceName = physicalDevice.deviceName();
             VulkanUtils.DeviceUUID deviceUUID = new VulkanUtils.DeviceUUID(physicalDevice.vkPhysicalDeviceDriverProperties().driverID(), physicalDevice.vkPhysicalDeviceProperties().vendorID(), physicalDevice.vkPhysicalDeviceProperties().deviceID());
             if (VulkanUtils.KNOWN_PROBLEMATIC_DEVICES.contains(deviceUUID)) {
                LOGGER.warn("Device [{}] is known to be problematic, skipping", deviceName);

@@ -96,14 +96,14 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
       if (this.getTarget() == null) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.005, 0.0));
+         this.addDeltaMovement(0.0, -0.005, 0.0);
       }
 
    }
 
    public void aiStep() {
       if (!this.isInWater() && this.onGround() && this.verticalCollision) {
-         this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F), 0.4000000059604645, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F)));
+         this.addDeltaMovement((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F), 0.4000000059604645, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.05F));
          this.setOnGround(false);
          this.needsSync = true;
          this.makeSound(this.getFlopSound());
@@ -165,7 +165,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
 
       public void tick() {
          if (((AbstractFish)this.mob).isEyeInFluid(FluidTags.WATER)) {
-            ((AbstractFish)this.mob).setDeltaMovement(((AbstractFish)this.mob).getDeltaMovement().add(0.0, 0.005, 0.0));
+            ((AbstractFish)this.mob).addDeltaMovement(0.0, 0.005, 0.0);
          }
 
          if (this.operation == MoveControl.Operation.MOVE_TO && !((AbstractFish)this.mob).getNavigation().isDone()) {
@@ -176,7 +176,7 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
             double zd = this.wantedZ - ((AbstractFish)this.mob).getZ();
             if (yd != 0.0) {
                double dd = Math.sqrt(xd * xd + yd * yd + zd * zd);
-               ((AbstractFish)this.mob).setDeltaMovement(((AbstractFish)this.mob).getDeltaMovement().add(0.0, (double)((AbstractFish)this.mob).getSpeed() * (yd / dd) * 0.1, 0.0));
+               ((AbstractFish)this.mob).addDeltaMovement(0.0, (double)((AbstractFish)this.mob).getSpeed() * (yd / dd) * 0.1, 0.0);
             }
 
             if (xd != 0.0 || zd != 0.0) {

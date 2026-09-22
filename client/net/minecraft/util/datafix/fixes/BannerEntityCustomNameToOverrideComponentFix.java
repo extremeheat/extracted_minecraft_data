@@ -12,7 +12,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.util.Util;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class BannerEntityCustomNameToOverrideComponentFix extends DataFix {
@@ -34,7 +34,7 @@ public class BannerEntityCustomNameToOverrideComponentFix extends DataFix {
    private Typed<?> fix(final Typed<?> input, final OpticFinder<Pair<String, String>> textComponentFinder, final OpticFinder<?> customNameFinder) {
       Optional<String> customName = input.getOptionalTyped(customNameFinder).flatMap((name) -> name.getOptional(textComponentFinder).map(Pair::getSecond));
       boolean isOminousBanner = customName.flatMap(LegacyComponentDataFixUtils::extractTranslationString).filter((e) -> e.equals("block.minecraft.ominous_banner")).isPresent();
-      return isOminousBanner ? Util.writeAndReadTypedOrThrow(input, input.getType(), (dynamic) -> {
+      return isOminousBanner ? ExtraDataFixUtils.writeAndReadTypedOrThrow(input, input.getType(), (dynamic) -> {
          Dynamic<?> components = dynamic.createMap(Map.of(dynamic.createString("minecraft:item_name"), dynamic.createString((String)customName.get()), dynamic.createString("minecraft:hide_additional_tooltip"), dynamic.emptyMap()));
          return dynamic.set("components", components).remove("CustomName");
       }) : input;

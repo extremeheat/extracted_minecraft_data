@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.font;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.rendertype.RenderType;

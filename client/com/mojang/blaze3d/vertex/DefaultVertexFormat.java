@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.vertex;
 
 import com.mojang.renderpearl.api.GpuFormat;
-import com.mojang.renderpearl.api.vertex.VertexFormat;
 
 public class DefaultVertexFormat {
    public static final String POSITION_SEMANTIC_NAME = "Position";

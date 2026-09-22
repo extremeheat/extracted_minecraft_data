@@ -199,6 +199,7 @@ import net.minecraft.util.datafix.fixes.MergeTerrainChunkStatusFix;
 import net.minecraft.util.datafix.fixes.MissingDimensionFix;
 import net.minecraft.util.datafix.fixes.MobEffectIdFix;
 import net.minecraft.util.datafix.fixes.MobSpawnerEntityIdentifiersFix;
+import net.minecraft.util.datafix.fixes.MoveNoiseBiomesFix;
 import net.minecraft.util.datafix.fixes.NamedEntityConvertUncheckedFix;
 import net.minecraft.util.datafix.fixes.NamedEntityWriteReadFix;
 import net.minecraft.util.datafix.fixes.NamespacedTypeRenameFix;
@@ -409,6 +410,7 @@ import net.minecraft.util.datafix.schemas.V4996_1;
 import net.minecraft.util.datafix.schemas.V4997;
 import net.minecraft.util.datafix.schemas.V5000;
 import net.minecraft.util.datafix.schemas.V501;
+import net.minecraft.util.datafix.schemas.V5116;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
 import net.minecraft.util.datafix.schemas.V702;
@@ -432,7 +434,7 @@ public class DataFixers {
    private static final BiFunction<Integer, Schema, Schema> SAME_NAMESPACED = NamespacedSchema::new;
    private static final DataFixerBuilder.Result DATA_FIXER;
    private static final FileFixerUpper FILE_FIXER;
-   public static final int BLENDING_VERSION = 4997;
+   public static final int BLENDING_VERSION = 5118;
 
    private DataFixers() {
       super();
@@ -917,9 +919,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var323 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var323);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var323::contains));
+      Set var324 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var324);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var324::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1214,16 +1216,12 @@ public class DataFixers {
       fixerUpper.addFixer(new RemoveBlockEntityTagFix(v4885, Set.of("minecraft:bed")));
       Schema v4888 = fixerUpper.addSchema(4888, SAME_NAMESPACED);
       fixerUpper.addFixer(new RenameNameplateToNameTagFix(v4888));
-      Schema v4892 = fixerUpper.addSchema(4892, SAME_NAMESPACED);
-      fixerUpper.addFixer(new OptionsForceDefaultGraphicsApiFix(v4892));
       Schema v4899 = fileFixerUpper.addSchema(fixerUpper, 4899, SAME_NAMESPACED);
       fileFixerUpper.addFixer(new ReenableSpectatorsGenerateChunksInHardcoreWorldsFileFix(v4899));
       Schema v4996 = fixerUpper.addSchema(4996, V4996::new);
       fixerUpper.addFixer(new PotDecorationsComponentUnflatteningFix(v4996));
       Schema v4996_1 = fixerUpper.addSchema(4996, 1, V4996_1::new);
       fixerUpper.addFixer(new PotDecorationsBlockEntityUnflatteningFix(v4996_1));
-      Schema blendingSchema = fixerUpper.addSchema(4997, SAME_NAMESPACED);
-      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
       Schema v4997 = fixerUpper.addSchema(4997, V4997::new);
       fixerUpper.addFixer(new AddNewChoices(v4997, "Added Poplar Boat and Poplar Chest Boat", References.ENTITY));
       Schema v5000 = fixerUpper.addSchema(5000, V5000::new);
@@ -1249,6 +1247,12 @@ public class DataFixers {
       fixerUpper.addFixer(new RemoveBlockTransformerComponentFix(v5014));
       Schema v5016 = fixerUpper.addSchema(5016, SAME_NAMESPACED);
       fixerUpper.addFixer(new UnfilledBuriedTreasureMapFix(v5016));
+      Schema v5116 = fixerUpper.addSchema(5116, V5116::new);
+      fixerUpper.addFixer(new MoveNoiseBiomesFix(v5116));
+      Schema v5117 = fixerUpper.addSchema(5117, SAME_NAMESPACED);
+      fixerUpper.addFixer(new OptionsForceDefaultGraphicsApiFix(v5117));
+      Schema blendingSchema = fixerUpper.addSchema(5118, SAME_NAMESPACED);
+      fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

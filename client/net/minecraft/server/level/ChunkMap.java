@@ -80,7 +80,6 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.TicketStorage;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -173,7 +172,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
          this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value());
       } else {
-         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, Blocks.STONE.defaultBlockState(), 63, NoiseRouterData.none());
+         this.randomState = RandomState.create(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, false, 63, NoiseRouterData.none());
       }
 
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);
@@ -568,10 +567,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       Throwable cause = var10000;
       boolean alwaysThrow = cause instanceof Error;
       boolean ioException = cause instanceof IOException || cause instanceof NbtException;
-      if (!alwaysThrow) {
-         if (!ioException) {
-         }
-
+      if (!alwaysThrow && ioException) {
          this.level.getServer().reportChunkLoadFailure(cause, this.storageInfo(), pos);
          return this.createEmptyChunk(pos);
       } else {
@@ -612,7 +608,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          return this.scheduleChunkLoad(pos);
       } else {
          try {
-            GenerationChunkHolder holder = cache.get(pos.x(), pos.z());
+            GenerationChunkHolder holder = cache.get(pos);
             ChunkAccess centerChunk = holder.getChunkIfPresentUnchecked(step.targetStatus().getParent());
             if (centerChunk == null) {
                throw new IllegalStateException("Parent chunk missing");

@@ -1,10 +1,8 @@
 package net.minecraft.world.level.pathfinder;
 
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 
 public enum PathType {
    BLOCKED(0, -1.0F),
@@ -35,8 +33,7 @@ public enum PathType {
    ON_TOP_OF_TRAPDOOR(25, 0.0F),
    BIG_MOBS_CLOSE_TO_DANGER(26, 4.0F);
 
-   private static final IntFunction<PathType> BY_ID = ByIdMap.<PathType>continuous((t) -> t.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, PathType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (t) -> t.id);
+   public static final StreamCodec<ByteBuf, PathType> STREAM_CODEC = ByteBufCodecs.enumCodec(PathType.class, (t) -> t.id);
    private final int id;
    private final float malus;
 

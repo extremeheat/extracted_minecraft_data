@@ -61,7 +61,7 @@ public class DolphinJumpGoal extends JumpGoal {
 
    public void start() {
       Direction direction = this.dolphin.getMotionDirection();
-      this.dolphin.setDeltaMovement(this.dolphin.getDeltaMovement().add((double)direction.getStepX() * 0.6, 0.7, (double)direction.getStepZ() * 0.6));
+      this.dolphin.addDeltaMovement((double)direction.getStepX() * 0.6, 0.7, (double)direction.getStepZ() * 0.6);
       this.dolphin.getNavigation().stop();
    }
 

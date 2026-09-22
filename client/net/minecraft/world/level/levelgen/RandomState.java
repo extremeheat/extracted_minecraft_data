@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.level.biome.Climate;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBufferPool;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctionCompiler;
@@ -40,14 +39,14 @@ public final class RandomState {
    private final List<DensityBufferPool> densityBufferPools = new ArrayList(16);
 
    public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final NoiseGeneratorSettings settings) {
-      return create(noises, seed, settings.useLegacyRandomSource(), settings.defaultBlock(), settings.seaLevel(), settings.noiseRouter());
+      return create(noises, seed, settings.useLegacyRandomSource(), settings.seaLevel(), settings.noiseRouter());
    }
 
-   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter noiseRouter) {
-      return new RandomState(noises, seed, useLegacyRandom, defaultBlock, seaLevel, noiseRouter);
+   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final int seaLevel, final NoiseRouter noiseRouter) {
+      return new RandomState(noises, seed, useLegacyRandom, seaLevel, noiseRouter);
    }
 
-   private RandomState(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final BlockState defaultBlock, final int seaLevel, final NoiseRouter router) {
+   private RandomState(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final int seaLevel, final NoiseRouter router) {
       super();
       WorldgenRandom.Algorithm randomAlgorithm = useLegacyRandom ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
       this.seed = seed;
@@ -56,7 +55,7 @@ public final class RandomState {
       this.router = router;
       this.noiseInstances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
-      this.materialSystem = new MaterialSystem(this, defaultBlock, seaLevel, router.chunkSurfaceLevel(), this.random);
+      this.materialSystem = new MaterialSystem(this, seaLevel, router.chunkSurfaceLevel(), this.random);
       this.densityFunctionCompiler = new DensityFunctionCompiler(new DensityFunction.CompileContext() {
          {
             Objects.requireNonNull(RandomState.this);
@@ -112,7 +111,7 @@ public final class RandomState {
       return (PositionalRandomFactory)this.positionalRandoms.computeIfAbsent(name, (key) -> this.random.fromHashOf(name).forkPositional());
    }
 
-   public MaterialSystem surfaceSystem() {
+   public MaterialSystem materialSystem() {
       return this.materialSystem;
    }
 

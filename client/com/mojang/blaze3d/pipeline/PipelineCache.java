@@ -1,23 +1,19 @@
 package com.mojang.blaze3d.pipeline;
 
-import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-import com.mojang.renderpearl.api.pipeline.ShaderSource;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import java.util.Map;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class PipelineCache implements AutoCloseable {
-   private final GpuDevice device;
+   private final PipelineBuilder pipelineBuilder;
    private final ShaderSource shaderSource;
    private final Map<RenderPipeline, CompiledRenderPipeline> cache = new Reference2ReferenceOpenHashMap();
 
-   public PipelineCache(final GpuDevice device, final ShaderSource shaderSource) {
+   public PipelineCache(final PipelineBuilder pipelineBuilder, final ShaderSource shaderSource) {
       super();
-      this.device = device;
+      this.pipelineBuilder = pipelineBuilder;
       this.shaderSource = shaderSource;
    }
 
@@ -30,7 +26,7 @@ public class PipelineCache implements AutoCloseable {
       if (cachedPipeline != null) {
          return cachedPipeline;
       } else {
-         CompiledRenderPipeline newPipeline = ((CompiledRenderPipeline.Pending)this.device.compilePipeline(pipeline, this.shaderSource, Util.backgroundExecutor()).join()).finishCompile();
+         CompiledRenderPipeline newPipeline = this.pipelineBuilder.compilePipeline(pipeline, this.shaderSource).finishCompile();
          if (newPipeline == null) {
             return null;
          } else {

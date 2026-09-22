@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.IntFunction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -21,7 +20,6 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -140,8 +138,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers) {
          OVERRIDE("override", 2, ItemAttributeModifiers.Display.OverrideText.CODEC, ItemAttributeModifiers.Display.OverrideText.STREAM_CODEC);
 
          private static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
-         private static final IntFunction<Type> BY_ID = ByIdMap.<Type>continuous(Type::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-         private static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Type::id);
+         private static final StreamCodec<ByteBuf, Type> STREAM_CODEC = ByteBufCodecs.enumCodec(Type.class, Type::id);
          private final String name;
          private final int id;
          private final MapCodec<? extends Display> codec;

@@ -2,10 +2,8 @@ package net.minecraft.world.entity.animal.golem;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import java.util.function.IntFunction;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public enum CopperGolemState implements StringRepresentable {
@@ -16,8 +14,7 @@ public enum CopperGolemState implements StringRepresentable {
    DROPPING_NO_ITEM("dropping_no_item", 4);
 
    public static final Codec<CopperGolemState> CODEC = StringRepresentable.<CopperGolemState>fromEnum(CopperGolemState::values);
-   private static final IntFunction<CopperGolemState> BY_ID = ByIdMap.<CopperGolemState>continuous(CopperGolemState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, CopperGolemState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, CopperGolemState::id);
+   public static final StreamCodec<ByteBuf, CopperGolemState> STREAM_CODEC = ByteBufCodecs.enumCodec(CopperGolemState.class, CopperGolemState::id);
    private final String name;
    private final int id;
 

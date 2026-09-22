@@ -6,12 +6,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 
 public interface PlacementModifier {
    Codec<PlacementModifier> CODEC = BuiltInRegistries.PLACEMENT_MODIFIER_TYPE.byNameCodec().dispatch(PlacementModifier::codec, Function.identity());
 
    void modify(PlacementContext context, RandomSource random, BlockPos origin, Consumer<BlockPos> output);
+
+   InclusiveRange<Integer> modifyXzDomain(InclusiveRange<Integer> inputDomain);
 
    MapCodec<? extends PlacementModifier> codec();
 }

@@ -137,7 +137,7 @@ public class GameTestHelper {
       ServerLevel level = this.getLevel();
       Vec3 absoluteVec = this.absoluteVec(pos);
       ItemEntity itemEntity = new ItemEntity(level, absoluteVec.x, absoluteVec.y, absoluteVec.z, new ItemStack(item, 1));
-      itemEntity.setDeltaMovement(0.0, 0.0, 0.0);
+      itemEntity.setDeltaMovement(Vec3.ZERO);
       level.addFreshEntity(itemEntity);
       return itemEntity;
    }

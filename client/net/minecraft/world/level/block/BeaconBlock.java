@@ -2,9 +2,9 @@ package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,8 +21,8 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
       super(properties);
    }
 
-   public DyeColor getColor() {
-      return DyeColor.WHITE;
+   public int getColor() {
+      return (Integer)CommonColors.TEXTURE_TINT_COLORS.white();
    }
 
    public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {

@@ -3,6 +3,7 @@ package net.minecraft.server.network;
 import net.minecraft.SharedConstants;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.ServerConnectionDetails;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.handshake.ServerHandshakePacketListener;
@@ -14,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 
 public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketListener {
    private static final Component IGNORE_STATUS_REASON = Component.translatable("disconnect.ignoring_status_request");
+   private static final Component CONNECTION_REJECTED_REASON = Component.translatable("multiplayer.disconnect.rejected");
    private final MinecraftServer server;
    private final Connection connection;
 
@@ -24,33 +26,38 @@ public class ServerHandshakePacketListenerImpl implements ServerHandshakePacketL
    }
 
    public void handleIntention(final ClientIntentionPacket packet) {
-      switch (packet.intention()) {
-         case LOGIN:
-            this.beginLogin(packet, false);
-            break;
-         case STATUS:
-            ServerStatus status = this.server.getStatus();
-            this.connection.setupOutboundProtocol(StatusProtocols.CLIENTBOUND);
-            if (this.server.repliesToStatus() && status != null) {
-               this.connection.setupInboundProtocol(StatusProtocols.SERVERBOUND, new ServerStatusPacketListenerImpl(status, this.connection));
-            } else {
-               this.connection.disconnect(IGNORE_STATUS_REASON);
-            }
-            break;
-         case TRANSFER:
-            if (!this.server.acceptsTransfers()) {
-               this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
-               Component reason = Component.translatable("multiplayer.disconnect.transfers_disabled");
-               this.connection.send(new ClientboundLoginDisconnectPacket(reason));
-               this.connection.disconnect(reason);
-            } else {
-               this.beginLogin(packet, true);
-            }
-            break;
-         default:
-            throw new UnsupportedOperationException("Invalid intention " + String.valueOf(packet.intention()));
-      }
+      ServerConnectionDetails details = ServerConnectionDetails.fromIntentPacket(packet);
+      if (!this.server.acceptsConnection(this.connection, details)) {
+         this.connection.disconnect(CONNECTION_REJECTED_REASON);
+      } else {
+         switch (packet.intention()) {
+            case LOGIN:
+               this.beginLogin(packet, false);
+               break;
+            case STATUS:
+               ServerStatus status = this.server.getStatus();
+               this.connection.setupOutboundProtocol(StatusProtocols.CLIENTBOUND);
+               if (this.server.repliesToStatus() && status != null) {
+                  this.connection.setupInboundProtocol(StatusProtocols.SERVERBOUND, new ServerStatusPacketListenerImpl(status, this.connection));
+               } else {
+                  this.connection.disconnect(IGNORE_STATUS_REASON);
+               }
+               break;
+            case TRANSFER:
+               if (!this.server.acceptsTransfers()) {
+                  this.connection.setupOutboundProtocol(LoginProtocols.CLIENTBOUND);
+                  Component reason = Component.translatable("multiplayer.disconnect.transfers_disabled");
+                  this.connection.send(new ClientboundLoginDisconnectPacket(reason));
+                  this.connection.disconnect(reason);
+               } else {
+                  this.beginLogin(packet, true);
+               }
+               break;
+            default:
+               throw new UnsupportedOperationException("Invalid intention " + String.valueOf(packet.intention()));
+         }
 
+      }
    }
 
    private void beginLogin(final ClientIntentionPacket packet, final boolean transfer) {

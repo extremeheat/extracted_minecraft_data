@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -33,10 +33,7 @@ public class EnvironmentAttributeProbe {
       this.position = position;
       this.valueProbes.values().removeIf(ValueProbe::tick);
       this.biomeInterpolator.clear();
-      Vec3 var10000 = position.scale(0.25);
-      BiomeManager var10001 = level.getBiomeManager();
-      Objects.requireNonNull(var10001);
-      GaussianSampler.sample(var10000, var10001::getNoiseBiomeAtQuart, (weight, biome) -> this.biomeInterpolator.accumulate(weight, ((Biome)biome.value()).getAttributes()));
+      GaussianSampler.sample(position.scale(0.25), (quartX, quartY, quartZ) -> level.getBiome(QuartPos.toBlock(quartX) + 2, QuartPos.toBlock(quartY) + 2, QuartPos.toBlock(quartZ) + 2), (weight, biome) -> this.biomeInterpolator.accumulate(weight, ((Biome)biome.value()).getAttributes()));
    }
 
    public <Value> Value getValue(final EnvironmentAttribute<Value> attribute, final float partialTicks) {

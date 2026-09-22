@@ -11,14 +11,12 @@ import com.google.common.escape.Escapers;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -76,7 +74,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
-import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -1119,29 +1116,6 @@ public class Util {
          }
 
          return lookup;
-      }
-   }
-
-   public static <A, B> Typed<B> writeAndReadTypedOrThrow(final Typed<A> typed, final Type<B> newType, final UnaryOperator<Dynamic<?>> function) {
-      Dynamic<?> dynamic = (Dynamic)typed.write().getOrThrow();
-      return readTypedOrThrow(newType, (Dynamic)function.apply(dynamic), true);
-   }
-
-   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic) {
-      return readTypedOrThrow(type, dynamic, false);
-   }
-
-   public static <T> Typed<T> readTypedOrThrow(final Type<T> type, final Dynamic<?> dynamic, final boolean acceptPartial) {
-      DataResult<Typed<T>> result = type.readTyped(dynamic).map(Pair::getFirst);
-
-      try {
-         return acceptPartial ? (Typed)result.getPartialOrThrow(IllegalStateException::new) : (Typed)result.getOrThrow(IllegalStateException::new);
-      } catch (IllegalStateException e) {
-         CrashReport report = CrashReport.forThrowable(e, "Reading type");
-         CrashReportCategory category = report.addCategory("Info");
-         category.setDetail("Data", dynamic);
-         category.setDetail("Type", type);
-         throw new ReportedException(report);
       }
    }
 

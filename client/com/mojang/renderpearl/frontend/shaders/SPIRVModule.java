@@ -1,7 +1,7 @@
 package com.mojang.renderpearl.frontend.shaders;
 
 import com.mojang.renderpearl.api.pipeline.ShaderType;
-import com.mojang.renderpearl.backend.api.SpvModule;
+import com.mojang.renderpearl.api.pipeline.SpvModule;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
@@ -20,15 +20,19 @@ import org.lwjgl.util.spvc.Spvc;
 import org.lwjgl.util.spvc.SpvcReflectedResource;
 
 public class SPIRVModule implements SpvModule {
+   private final String name;
    private final ByteBuffer spv;
    private final ShaderType type;
+   private final String entryPoint;
    private SpvModule.@Nullable Reflection reflection;
    private long spvcContext;
 
-   public SPIRVModule(final ByteBuffer spv, final ShaderType type) {
+   public SPIRVModule(final String name, final ByteBuffer spv, final ShaderType type, final String entryPoint) {
       super();
+      this.name = name;
       this.spv = spv;
       this.type = type;
+      this.entryPoint = entryPoint;
    }
 
    public void close() {
@@ -39,12 +43,20 @@ public class SPIRVModule implements SpvModule {
 
    }
 
+   public String name() {
+      return this.name;
+   }
+
    public ByteBuffer spv() {
       return this.spv;
    }
 
    public ShaderType type() {
       return this.type;
+   }
+
+   public String entryPoint() {
+      return this.entryPoint;
    }
 
    public SpvModule.Reflection reflect() throws ShaderCompileException {
@@ -91,6 +103,7 @@ public class SPIRVModule implements SpvModule {
          long ir = pointerReturnBuffer.get(0);
          SpvUtil.throwIfError(Spvc.spvc_context_create_compiler(this.spvcContext, 0, ir, 0, pointerReturnBuffer), "Couldn't create compiler");
          long compiler = pointerReturnBuffer.get(0);
+         SpvUtil.throwIfError(Spvc.spvc_compiler_set_entry_point(compiler, this.entryPoint, SpvUtil.executionModel(this.type)), "Failed to set entry point");
          SpvUtil.throwIfError(Spvc.spvc_compiler_create_shader_resources(compiler, pointerReturnBuffer), "Couldn't create resource list");
          long spvcResources = pointerReturnBuffer.get(0);
          final List<SpvModule.Reflection.InterfaceVariable> inputs = generateInterfaceVariableList(compiler, spvcResources, spirvBuffer, 3);

@@ -158,7 +158,7 @@ public class ServerStatusPinger {
          };
 
          try {
-            connection.initiateServerboundStatusConnection(rawAddress.getHost(), rawAddress.getPort(), listener);
+            connection.initiateServerboundStatusConnection(rawAddress.createConnectionDetails(address), listener);
             connection.send(ServerboundStatusRequestPacket.INSTANCE);
          } catch (Throwable t) {
             LOGGER.error("Failed to ping server {}", rawAddress, t);

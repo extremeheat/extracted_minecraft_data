@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -184,15 +185,22 @@ public class TestCommand {
    private static int run(final TestFinder finder, final RetryOptions retryOptions, final int extraRotationSteps, final int testsPerRow) {
       stopTests();
       CommandSourceStack source = finder.source();
-      Collection<GameTestInfo> infos = Stream.concat(toGameTestInfos(source, retryOptions, finder), toGameTestInfo(source, retryOptions, finder, extraRotationSteps)).toList();
-      if (infos.isEmpty()) {
+      Map<Boolean, List<GameTestInfo>> infos = (Map)Stream.concat(toGameTestInfos(source, retryOptions, finder), toGameTestInfo(source, retryOptions, finder, extraRotationSteps)).collect(Collectors.partitioningBy((test) -> test.getTest().manualOnly()));
+      if (((List)infos.get(true)).isEmpty() && ((List)infos.get(false)).isEmpty()) {
          source.sendSuccess(() -> Component.translatable("commands.test.no_tests"), false);
          return 0;
       } else {
          FailedTestTracker.forgetFailedTests();
-         source.sendSuccess(() -> Component.translatable("commands.test.run.running", infos.size()), false);
          Function<ResourceKey<Level>, BlockPos> testPos = (dimension) -> createTestPositionAround(source, dimension);
-         GameTestRunner runner = GameTestRunner.Builder.fromInfo(infos, source.getServer()).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
+         List<GameTestInfo> testsToRun;
+         if (((List)infos.get(false)).isEmpty()) {
+            testsToRun = (List)infos.get(true);
+         } else {
+            testsToRun = (List)infos.get(false);
+         }
+
+         GameTestRunner runner = GameTestRunner.Builder.fromInfo(testsToRun, source.getServer()).newStructureSpawner(new StructureGridSpawner(testPos, testsPerRow, false)).build();
+         source.sendSuccess(() -> Component.translatable("commands.test.run.running", testsToRun.size()), false);
          return trackAndStartRunner(source, runner);
       }
    }
@@ -265,7 +273,7 @@ public class TestCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptionsAndBuildInfo(final ArgumentBuilder<CommandSourceStack, ?> runArgument, final InCommandFunction<CommandContext<CommandSourceStack>, TestFinder> finder) {
-      return runWithRetryOptions(runArgument, finder, (then) -> then.then(((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), 8))).then(Commands.argument("testsPerRow", IntegerArgumentType.integer()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), IntegerArgumentType.getInteger(c, "testsPerRow"))))));
+      return runWithRetryOptions(runArgument, finder, (then) -> then.then(((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer(0, 3)).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), 8))).then(Commands.argument("testsPerRow", IntegerArgumentType.integer()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), IntegerArgumentType.getInteger(c, "testsPerRow"))))));
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {

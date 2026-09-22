@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
@@ -27,7 +28,7 @@ public record EnvironmentScanPlacement(Direction directionOfSearch, BlockPredica
 
    public void modify(final PlacementContext context, final RandomSource random, final BlockPos origin, final Consumer<BlockPos> output) {
       BlockPos.MutableBlockPos pos = origin.mutable();
-      WorldGenLevel level = context.getLevel();
+      WorldGenLevel level = context.level();
       if (this.allowedSearchCondition.test(level, pos)) {
          int i = 0;
 
@@ -56,6 +57,10 @@ public record EnvironmentScanPlacement(Direction directionOfSearch, BlockPredica
             return;
          }
       }
+   }
+
+   public InclusiveRange<Integer> modifyXzDomain(final InclusiveRange<Integer> inputDomain) {
+      return inputDomain;
    }
 
    public MapCodec<EnvironmentScanPlacement> codec() {

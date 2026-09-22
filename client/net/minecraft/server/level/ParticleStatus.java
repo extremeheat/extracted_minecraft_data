@@ -2,12 +2,10 @@ package net.minecraft.server.level;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.PrimitiveCodec;
-import io.netty.buffer.ByteBuf;
 import java.util.Objects;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.util.ByIdMap;
 
 public enum ParticleStatus {
@@ -15,9 +13,8 @@ public enum ParticleStatus {
    DECREASED(1, "options.particles.decreased"),
    MINIMAL(2, "options.particles.minimal");
 
-   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.<ParticleStatus>continuous((s) -> s.id, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final EnumStreamCodec<ParticleStatus> STREAM_CODEC = ByteBufCodecs.<ParticleStatus>enumCodec(ParticleStatus.class, (s) -> s.id, ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final Codec<ParticleStatus> LEGACY_CODEC;
-   public static final StreamCodec<ByteBuf, ParticleStatus> STREAM_CODEC;
    private final int id;
    private final Component caption;
 
@@ -37,9 +34,8 @@ public enum ParticleStatus {
 
    static {
       PrimitiveCodec var10000 = Codec.INT;
-      IntFunction var10001 = BY_ID;
+      EnumStreamCodec var10001 = STREAM_CODEC;
       Objects.requireNonNull(var10001);
-      LEGACY_CODEC = var10000.xmap(var10001::apply, (s) -> s.id);
-      STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (s) -> s.id);
+      LEGACY_CODEC = var10000.xmap(var10001::byId, (s) -> s.id);
    }
 }

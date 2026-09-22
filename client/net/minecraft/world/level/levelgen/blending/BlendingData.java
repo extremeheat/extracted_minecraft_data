@@ -24,10 +24,12 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.NoiseBiomeChunk;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import org.jspecify.annotations.Nullable;
@@ -86,7 +88,7 @@ public class BlendingData {
    public static @Nullable BlendingData getOrUpdateBlendingData(final WorldGenRegion region, final int chunkX, final int chunkZ) {
       ChunkAccess chunk = region.getChunk(chunkX, chunkZ);
       BlendingData blendingData = chunk.getBlendingData();
-      if (blendingData != null && !chunk.getHighestGeneratedStatus().isBefore(ChunkStatus.BIOMES)) {
+      if (blendingData != null && !chunk.getHighestGeneratedStatus().isBefore(ChunkStatus.NOISE_BIOMES)) {
          blendingData.calculateData(chunk, sideByGenerationAge(region, chunkX, chunkZ, false));
          return blendingData;
       } else {
@@ -223,10 +225,23 @@ public class BlendingData {
    private List<Holder<Biome>> getBiomeColumn(final ChunkAccess chunk, final int blockX, final int blockZ) {
       ObjectArrayList<Holder<Biome>> biomes = new ObjectArrayList(this.quartCountPerColumn());
       biomes.size(this.quartCountPerColumn());
+      NoiseBiomeChunk noiseBiomeChunk;
+      if (chunk instanceof ProtoChunk protoChunk) {
+         noiseBiomeChunk = protoChunk.getNoiseBiomeChunk();
+      } else {
+         noiseBiomeChunk = null;
+      }
 
       for(int quartIndex = 0; quartIndex < biomes.size(); ++quartIndex) {
          int quartY = quartIndex + QuartPos.fromBlock(this.areaWithOldGeneration.getMinY());
-         biomes.set(quartIndex, chunk.getNoiseBiome(QuartPos.fromBlock(blockX), quartY, QuartPos.fromBlock(blockZ)));
+         Holder<Biome> biome;
+         if (noiseBiomeChunk != null) {
+            biome = noiseBiomeChunk.getNoiseBiome(QuartPos.fromBlock(blockX), quartY, QuartPos.fromBlock(blockZ));
+         } else {
+            biome = chunk.getBiome(blockX + 2, QuartPos.toBlock(quartY) + 2, blockZ + 2);
+         }
+
+         biomes.set(quartIndex, biome);
       }
 
       return biomes;

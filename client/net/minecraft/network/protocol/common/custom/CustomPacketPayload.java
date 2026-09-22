@@ -52,7 +52,7 @@ public interface CustomPacketPayload {
       }
    }
 
-   public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<B, T> codec) {
+   public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<? super B, T> codec) {
       public TypeAndCodec {
          super();
       }

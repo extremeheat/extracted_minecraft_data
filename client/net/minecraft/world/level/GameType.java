@@ -5,11 +5,10 @@ import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.function.IntFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.EnumStreamCodec;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.player.Abilities;
 import org.jetbrains.annotations.Contract;
@@ -23,8 +22,7 @@ public enum GameType implements StringRepresentable {
 
    public static final GameType DEFAULT_MODE = SURVIVAL;
    public static final StringRepresentable.EnumCodec<GameType> CODEC = StringRepresentable.<GameType>fromEnum(GameType::values);
-   private static final IntFunction<GameType> BY_ID = ByIdMap.<GameType>continuous(GameType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StreamCodec<ByteBuf, GameType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, GameType::getId);
+   public static final EnumStreamCodec<GameType> STREAM_CODEC = ByteBufCodecs.<GameType>enumCodec(GameType.class, GameType::getId);
    public static final StreamCodec<ByteBuf, Optional<GameType>> OPTIONAL_STREAM_CODEC = ByteBufCodecs.OPTIONAL_VAR_INT.map((id) -> id.isPresent() ? Optional.of(byId(id.getAsInt())) : Optional.empty(), (gameType) -> gameType.isPresent() ? OptionalInt.of(((GameType)gameType.get()).getId()) : OptionalInt.empty());
    /** @deprecated */
    @Deprecated
@@ -94,7 +92,7 @@ public enum GameType implements StringRepresentable {
    }
 
    public static GameType byId(final int id) {
-      return (GameType)BY_ID.apply(id);
+      return STREAM_CODEC.byId(id);
    }
 
    public static GameType byName(final String name) {

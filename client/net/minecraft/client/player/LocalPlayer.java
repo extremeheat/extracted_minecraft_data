@@ -163,6 +163,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private int waterVisionTime;
    private boolean showDeathScreen;
    private boolean doLimitedCrafting;
+   private int ridingSoundId;
 
    public LocalPlayer(final Minecraft minecraft, final ClientLevel level, final ClientPacketListener connection, final StatsCounter stats, final ClientRecipeBook recipeBook, final Input lastSentInput, final boolean wasSprinting, final ChatAbilities chatAbilities, final ItemActivation itemActivation) {
       super(level, connection.getLocalGameProfile());
@@ -193,20 +194,25 @@ public class LocalPlayer extends AbstractClientPlayer {
       if (!super.startRiding(entity, force, sendEventAndTriggers)) {
          return false;
       } else {
+         int ridingSoundId = ++this.ridingSoundId;
          if (entity instanceof AbstractMinecart) {
             AbstractMinecart minecart = (AbstractMinecart)entity;
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, minecart, true, SoundEvents.MINECART_INSIDE_UNDERWATER, 0.0F, 0.75F, 1.0F));
-            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, minecart, false, SoundEvents.MINECART_INSIDE, 0.0F, 0.75F, 1.0F));
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, ridingSoundId, minecart, true, SoundEvents.MINECART_INSIDE_UNDERWATER, 0.0F, 0.75F, 1.0F));
+            this.minecraft.getSoundManager().play(new RidingMinecartSoundInstance(this, ridingSoundId, minecart, false, SoundEvents.MINECART_INSIDE, 0.0F, 0.75F, 1.0F));
          } else if (entity instanceof HappyGhast) {
             HappyGhast happyGhast = (HappyGhast)entity;
-            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, happyGhast, false, SoundEvents.HAPPY_GHAST_RIDING, happyGhast.getSoundSource(), 0.0F, 1.0F, 5.0F));
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, ridingSoundId, happyGhast, false, SoundEvents.HAPPY_GHAST_RIDING, happyGhast.getSoundSource(), 0.0F, 1.0F, 5.0F));
          } else if (entity instanceof AbstractNautilus) {
             AbstractNautilus nautilus = (AbstractNautilus)entity;
-            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, nautilus, true, SoundEvents.NAUTILUS_RIDING, nautilus.getSoundSource(), 0.0F, 1.0F, 5.0F));
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, ridingSoundId, nautilus, true, SoundEvents.NAUTILUS_RIDING, nautilus.getSoundSource(), 0.0F, 1.0F, 5.0F));
          }
 
          return true;
       }
+   }
+
+   public int getRidingSoundId() {
+      return this.ridingSoundId;
    }
 
    public void removeVehicle() {
@@ -858,7 +864,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
 
          if (inputYa != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)inputYa * abilities.getFlyingSpeed() * 3.0F), 0.0));
+            this.addDeltaMovement(0.0, (double)((float)inputYa * abilities.getFlyingSpeed() * 3.0F), 0.0);
          }
       }
 

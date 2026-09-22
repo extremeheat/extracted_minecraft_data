@@ -154,7 +154,7 @@ public class FrontendCommandEncoder implements CommandEncoder {
                      this.profiler.pushZone(this, (String)descriptor.label().get());
                   }
 
-                  return new FrontendRenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments(), descriptor.depthAttachment() != null, this::submitRenderPass, renderArea);
+                  return new FrontendRenderPass(this.backend.createRenderPass(descriptor), this.device, descriptor.colorAttachments(), descriptor.depthAttachment() != null ? descriptor.depthAttachment().textureView().texture().getFormat() : null, this::submitRenderPass, renderArea);
                } else {
                   throw new IllegalArgumentException("RenderPass render area " + String.valueOf(renderArea) + " is out of bounds for texture of " + attachmentWidth + "x" + attachmentHeight);
                }

@@ -10,7 +10,7 @@ import net.minecraft.util.StringRepresentable;
 public enum PreferredGraphicsApi implements StringRepresentable {
    DEFAULT("default", "options.graphicsApi.default"),
    OPENGL("opengl", "options.graphicsApi.opengl"),
-   VULKAN("vulkan", "options.graphicsApi.vulkan");
+   VULKAN("vulkan", "options.graphicsApi.vulkanNonExperimental");
 
    public static final Codec<PreferredGraphicsApi> CODEC = StringRepresentable.<PreferredGraphicsApi>fromEnum(PreferredGraphicsApi::values);
    private final String serializedName;
@@ -32,7 +32,7 @@ public enum PreferredGraphicsApi implements StringRepresentable {
    public GpuBackend[] getBackendsToTry() {
       GlBackend gl = new GlBackend();
       VulkanBackend vulkan = new VulkanBackend();
-      return this == VULKAN ? new GpuBackend[]{vulkan, gl} : new GpuBackend[]{gl, vulkan};
+      return this != OPENGL ? new GpuBackend[]{vulkan, gl} : new GpuBackend[]{gl, vulkan};
    }
 
    // $FF: synthetic method
