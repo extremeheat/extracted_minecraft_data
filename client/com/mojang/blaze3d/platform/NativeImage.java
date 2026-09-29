@@ -3,6 +3,9 @@ package com.mojang.blaze3d.platform;
 import com.mojang.jtracy.MemoryPool;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.commands.CommandEncoder;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -333,6 +336,27 @@ public final class NativeImage implements AutoCloseable {
          }
 
          return pixels;
+      }
+   }
+
+   public void writeToGpuTexture(final CommandEncoder commandEncoder, final GpuTexture destination) {
+      int width = destination.getWidth(0);
+      int height = destination.getHeight(0);
+      if (this.width == width && this.height == height) {
+         this.writeToGpuTexture(commandEncoder, destination, 0, 0, 0, 0);
+      } else {
+         throw new IllegalArgumentException("Cannot replace texture of size " + width + "x" + height + " with image of size " + this.width + "x" + this.height);
+      }
+   }
+
+   public void writeToGpuTexture(final CommandEncoder commandEncoder, final GpuTexture destination, final int mipLevel, final int depthOrLayer, final int destX, final int destY) {
+      if (destination.getFormat().componentType() != GpuFormat.ComponentType.UNORM_8) {
+         throw new IllegalArgumentException("Destination texture for NativeImage writes must have component type of UNORM_8");
+      } else if (destination.getFormat().componentCount() != this.format().components()) {
+         String var10002 = String.valueOf(destination.getFormat());
+         throw new IllegalArgumentException("Destination(" + var10002 + ") texture for NativeImage(" + String.valueOf(this.format()) + ") write must have channel count matching source");
+      } else {
+         commandEncoder.writeToTexture(destination, this.getPixelBytes(), mipLevel, depthOrLayer, destX, destY, this.width, this.height);
       }
    }
 

@@ -121,7 +121,7 @@ public class Options {
    private final OptionInstance<Boolean> cutoutLeaves;
    private static final Component GRAPHICS_TOOLTIP_VIGNETTE = Component.translatable("options.vignette.tooltip");
    private final OptionInstance<Boolean> vignette;
-   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.oit.tooltip");
+   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.oitWithImprovedFog.tooltip");
    private final OptionInstance<Boolean> improvedTransparency;
    private final OptionInstance<Boolean> ambientOcclusion;
    private static final Component GRAPHICS_TOOLTIP_CHUNK_FADE = Component.translatable("options.chunkFade.tooltip");

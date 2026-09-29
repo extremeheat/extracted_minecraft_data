@@ -18,7 +18,7 @@ public class DebugEntrySectionPosition implements DebugScreenEntry {
       Entity entity = minecraft.getCameraEntity();
       if (entity != null) {
          BlockPos feetPos = minecraft.getCameraEntity().blockPosition();
-         displayer.addToGroup(DebugEntryPosition.GROUP, String.format(Locale.ROOT, "Section-relative: %02d %02d %02d", feetPos.getX() & 15, feetPos.getY() & 15, feetPos.getZ() & 15));
+         displayer.addFactToGroup(DebugGroups.POSITION, "Section-Relative", (fact) -> fact.value(String.format(Locale.ROOT, "%02d %02d %02d", feetPos.getX() & 15, feetPos.getY() & 15, feetPos.getZ() & 15)));
       }
    }
 

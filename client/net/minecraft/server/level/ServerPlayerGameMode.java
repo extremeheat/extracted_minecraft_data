@@ -133,15 +133,17 @@ public class ServerPlayerGameMode {
             this.isDestroyingBlock = false;
          } else {
             int ticksSpentDestroying = this.gameTicks - this.destroyProgressStart;
-            int event;
-            if (ticksSpentDestroying % 4 == 0) {
-               event = 2020;
-            } else {
-               event = 2019;
-            }
+            float destroyProgress = this.incrementDestroyProgress(blockState, this.destroyPos, ticksSpentDestroying);
+            if (destroyProgress >= 0.0F && destroyProgress <= 1.0F) {
+               int event;
+               if (ticksSpentDestroying % 4 == 0) {
+                  event = 2020;
+               } else {
+                  event = 2019;
+               }
 
-            this.incrementDestroyProgress(blockState, this.destroyPos, ticksSpentDestroying);
-            this.level.levelEvent((Entity)null, event, this.destroyPos, this.destroyDirection.ordinal());
+               this.level.levelEvent((Entity)null, event, this.destroyPos, this.destroyDirection.ordinal());
+            }
          }
       }
 

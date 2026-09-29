@@ -59,7 +59,7 @@ public class GlBackend implements GpuBackend {
       return SDLVideo.SDL_CreateWindow(title, width, height, 2L | flags);
    }
 
-   public GpuDevice createDevice(final GpuDebugOptions debugOptions) throws BackendCreationException {
-      return new FrontendGpuDevice(new GlDevice(this, debugOptions));
+   public GpuDevice createDevice(final String applicationName, final int applicationVersion, final GpuDebugOptions debugOptions) throws BackendCreationException {
+      return new FrontendGpuDevice(new GlDevice(this, debugOptions), debugOptions);
    }
 }

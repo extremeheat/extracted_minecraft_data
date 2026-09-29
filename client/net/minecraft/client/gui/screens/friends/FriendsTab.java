@@ -26,7 +26,7 @@ import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 
 class FriendsTab extends AbstractFriendsTab {
-   private static final Component TAB_TITLE = Component.translatable("gui.friends.tab_friends");
+   public static final Component TAB_TITLE = Component.translatable("gui.friends.tab_friends");
    private static final Component MICROSOFT_ACCOUNT_LINK = Component.translatable("gui.friends.empty_state.link").withStyle((UnaryOperator)((style) -> style.withUnderlined(true).withColor(ChatFormatting.GRAY).withClickEvent(new ClickEvent.OpenUrl(CommonLinks.PRIVACY_AND_ONLINE_SETTINGS))));
    private static final Component EMPTY_STATE;
    private static final Component MANAGE_ACCOUNT_FOOTER;
@@ -112,10 +112,6 @@ class FriendsTab extends AbstractFriendsTab {
 
    private void onSendFriendRequestFinished() {
       this.screen.refreshLists();
-   }
-
-   public Component getTabTitle() {
-      return TAB_TITLE;
    }
 
    public Component getTabExtraNarration() {

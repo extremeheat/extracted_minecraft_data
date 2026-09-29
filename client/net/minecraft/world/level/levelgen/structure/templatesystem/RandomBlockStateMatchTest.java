@@ -7,22 +7,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class RandomBlockStateMatchTest extends RuleTest {
+public record RandomBlockStateMatchTest(BlockState blockState, float probability) implements RuleTest {
    public static final MapCodec<RandomBlockStateMatchTest> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockState.CODEC.fieldOf("block_state").forGetter((t) -> t.blockState), Codec.FLOAT.fieldOf("probability").forGetter((t) -> t.probability)).apply(i, RandomBlockStateMatchTest::new));
-   private final BlockState blockState;
-   private final float probability;
 
-   public RandomBlockStateMatchTest(final BlockState blockState, final float probability) {
+   public RandomBlockStateMatchTest {
       super();
-      this.blockState = blockState;
-      this.probability = probability;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState == this.blockState && random.nextFloat() < this.probability;
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.RANDOM_BLOCKSTATE_TEST;
+   public MapCodec<RandomBlockStateMatchTest> codec() {
+      return CODEC;
    }
 }

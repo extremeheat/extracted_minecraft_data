@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.debug.DebugFact;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
@@ -553,8 +554,8 @@ public class SoundEngine {
 
    }
 
-   public String getChannelDebugString() {
-      return this.library.getChannelDebugString();
+   public void getChannelDebugString(final DebugFact fact) {
+      this.library.getChannelDebugString(fact);
    }
 
    public void getSoundCacheDebugStats(final SoundBufferLibrary.DebugOutput output) {

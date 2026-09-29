@@ -77,7 +77,7 @@ public class SinglePoolElement extends StructurePoolElement {
    private StructureTemplate getTemplate(final StructureTemplateManager structureTemplateManager) {
       Either var10000 = this.template;
       Objects.requireNonNull(structureTemplateManager);
-      return (StructureTemplate)var10000.map(structureTemplateManager::getOrCreate, Function.identity());
+      return (StructureTemplate)var10000.map(structureTemplateManager::getOrEmpty, Function.identity());
    }
 
    public List<StructureTemplate.StructureBlockInfo> getDataMarkers(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final boolean absolute) {

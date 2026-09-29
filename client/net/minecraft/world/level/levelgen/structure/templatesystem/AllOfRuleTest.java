@@ -6,13 +6,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class AllOfRuleTest extends RuleTest {
+public record AllOfRuleTest(List<RuleTest> rules) implements RuleTest {
    public static final MapCodec<AllOfRuleTest> CODEC;
-   private final List<RuleTest> rules;
 
-   public AllOfRuleTest(final List<RuleTest> rules) {
+   public AllOfRuleTest {
       super();
-      this.rules = rules;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
@@ -25,8 +23,8 @@ public class AllOfRuleTest extends RuleTest {
       return true;
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.ALL_OF_TEST;
+   public MapCodec<AllOfRuleTest> codec() {
+      return CODEC;
    }
 
    static {

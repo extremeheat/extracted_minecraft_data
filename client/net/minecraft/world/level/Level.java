@@ -465,8 +465,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> blockParticles, final Holder<SoundEvent> explosionSound);
 
-   public abstract String gatherChunkSourceStats();
-
    public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
       if (!this.isInValidBounds(pos)) {
          return null;

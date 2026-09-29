@@ -268,12 +268,12 @@ public class ArmorStand extends LivingEntity {
       } else if (!(Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING) && source.getEntity() instanceof Mob) {
          return false;
       } else if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-         this.kill(level, source.getEntity());
+         this.kill(level, source);
          return false;
       } else if (!this.isInvulnerableTo(level, source) && !this.invisible && !this.isMarker()) {
          if (source.is(DamageTypeTags.IS_EXPLOSION)) {
             this.brokenByAnything(level, source);
-            this.kill(level, source.getEntity());
+            this.kill(level, source);
             return false;
          } else if (source.is(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
             if (this.isOnFire()) {
@@ -303,7 +303,7 @@ public class ArmorStand extends LivingEntity {
                if (source.isCreativePlayer()) {
                   this.playBrokenSound();
                   this.showBreakingParticles();
-                  this.kill(level, source.getEntity());
+                  this.kill(level, source);
                   return true;
                } else {
                   long time = level.getGameTime();
@@ -314,7 +314,7 @@ public class ArmorStand extends LivingEntity {
                   } else {
                      this.brokenByPlayer(level, source);
                      this.showBreakingParticles();
-                     this.kill(level, source.getEntity());
+                     this.kill(level, source);
                   }
 
                   return true;
@@ -360,7 +360,7 @@ public class ArmorStand extends LivingEntity {
       health -= dmg;
       if (health <= 0.5F) {
          this.brokenByAnything(level, source);
-         this.kill(level, source.getEntity());
+         this.kill(level, source);
       } else {
          this.setHealth(health);
          this.gameEvent(GameEvent.ENTITY_DAMAGE, source.getEntity());
@@ -434,9 +434,14 @@ public class ArmorStand extends LivingEntity {
       return this.isSmall();
    }
 
-   public void kill(final ServerLevel level, final @Nullable Entity attributedTo) {
+   protected void kill(final ServerLevel level, final DamageSource source) {
+      this.lastDamageSource = source;
+      this.kill(level);
+   }
+
+   public void kill(final ServerLevel level) {
       this.remove(Entity.RemovalReason.KILLED);
-      this.gameEvent(GameEvent.ENTITY_DIE, (Entity)(attributedTo != null ? attributedTo : this));
+      this.gameEvent(GameEvent.ENTITY_DIE);
    }
 
    public boolean ignoreExplosion(final Explosion explosion) {

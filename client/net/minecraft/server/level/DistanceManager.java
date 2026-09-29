@@ -252,20 +252,20 @@ public abstract class DistanceManager {
 
    private class PlayerTicketTracker extends FixedPlayerDistanceChunkTracker {
       private int viewDistance;
+      private final Long2IntMap toUpdateFromLevel;
       private final Long2IntMap queueLevels;
-      private final LongSet toUpdate;
 
       protected PlayerTicketTracker(final int maxDistance) {
          Objects.requireNonNull(DistanceManager.this);
          super(maxDistance);
-         this.queueLevels = Long2IntMaps.synchronize(new Long2IntOpenHashMap());
-         this.toUpdate = new LongOpenHashSet();
+         this.toUpdateFromLevel = new Long2IntOpenHashMap();
+         this.queueLevels = new Long2IntOpenHashMap();
          this.viewDistance = 0;
          this.queueLevels.defaultReturnValue(maxDistance + 2);
       }
 
       protected void onLevelChange(final long node, final int oldLevel, final int level) {
-         this.toUpdate.add(node);
+         this.toUpdateFromLevel.putIfAbsent(node, oldLevel);
       }
 
       public void updateViewDistance(final int viewDistance) {
@@ -275,13 +275,13 @@ public abstract class DistanceManager {
             Long2ByteMap.Entry entry = (Long2ByteMap.Entry)var2.next();
             byte level = entry.getByteValue();
             long key = entry.getLongKey();
-            this.onLevelChange(key, level, this.haveTicketFor(level), level <= viewDistance);
+            this.onLevelChange(key, this.haveTicketFor(level), level <= viewDistance);
          }
 
          this.viewDistance = viewDistance;
       }
 
-      private void onLevelChange(final long key, final int level, final boolean saw, final boolean sees) {
+      private void onLevelChange(final long key, final boolean saw, final boolean sees) {
          if (saw != sees) {
             Ticket ticket = new Ticket(TicketType.PLAYER_LOADING, DistanceManager.PLAYER_TICKET_LEVEL);
             if (sees) {
@@ -294,7 +294,7 @@ public abstract class DistanceManager {
                         }, false);
                      }
 
-                  }), key, () -> level);
+                  }), key, () -> this.queueLevels.get(key));
             } else {
                DistanceManager.this.ticketDispatcher.release(key, () -> DistanceManager.this.mainThreadExecutor.execute(() -> DistanceManager.this.ticketStorage.removeTicket(key, ticket)), true);
             }
@@ -304,29 +304,27 @@ public abstract class DistanceManager {
 
       public void runAllUpdates() {
          super.runAllUpdates();
-         if (!this.toUpdate.isEmpty()) {
-            LongIterator iterator = this.toUpdate.iterator();
+         if (!this.toUpdateFromLevel.isEmpty()) {
+            ObjectIterator var1 = Long2IntMaps.fastIterable(this.toUpdateFromLevel).iterator();
 
-            while(iterator.hasNext()) {
-               long node = iterator.nextLong();
-               int oldLevel = this.queueLevels.get(node);
+            while(var1.hasNext()) {
+               Long2IntMap.Entry entry = (Long2IntMap.Entry)var1.next();
+               long node = entry.getLongKey();
+               int oldLevel = entry.getIntValue();
                int level = this.getLevel(node);
-               if (oldLevel != level) {
-                  DistanceManager.this.ticketDispatcher.onLevelChange(ChunkPos.unpack(node), () -> this.queueLevels.get(node), level, (l) -> {
-                     if (l >= this.queueLevels.defaultReturnValue()) {
-                        this.queueLevels.remove(node);
-                     } else {
-                        this.queueLevels.put(node, l);
-                     }
+               DistanceManager.this.ticketDispatcher.onLevelChange(ChunkPos.unpack(node), () -> this.queueLevels.get(node), level, (l) -> {
+                  if (l >= this.queueLevels.defaultReturnValue()) {
+                     this.queueLevels.remove(node);
+                  } else {
+                     this.queueLevels.put(node, l);
+                  }
 
-                  });
-                  this.onLevelChange(node, level, this.haveTicketFor(oldLevel), this.haveTicketFor(level));
-               }
+               });
+               this.onLevelChange(node, this.haveTicketFor(oldLevel), this.haveTicketFor(level));
             }
 
-            this.toUpdate.clear();
+            this.toUpdateFromLevel.clear();
          }
-
       }
 
       private boolean haveTicketFor(final int level) {

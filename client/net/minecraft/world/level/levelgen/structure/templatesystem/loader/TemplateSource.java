@@ -116,9 +116,7 @@ public abstract class TemplateSource {
    }
 
    private StructureTemplate readStructure(final CompoundTag tag) {
-      StructureTemplate structureTemplate = new StructureTemplate();
       int version = NbtUtils.getDataVersion(tag, 500);
-      structureTemplate.load(this.blockLookup, DataFixTypes.STRUCTURE.updateToCurrentVersion(this.fixerUpper, tag, version));
-      return structureTemplate;
+      return StructureTemplate.load(this.blockLookup, DataFixTypes.STRUCTURE.updateToCurrentVersion(this.fixerUpper, tag, version));
    }
 }

@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 public class RenderSystem {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final double DEFAULT_DEPTH_CLEAR_VALUE = 0.0;
-   public static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    public static final int PROJECTION_MATRIX_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().get();
    private static @Nullable Thread renderThread;
    private static @Nullable GpuDevice DEVICE;
@@ -79,7 +78,6 @@ public class RenderSystem {
    public static boolean isRenderingLevel;
    private static @Nullable GpuBuffer globalSettingsUniform;
    private static @Nullable DynamicGpuData dynamicGpuData;
-   private static final ScissorState scissorStateForRenderTypeDraws;
    private static final SamplerCache samplerCache;
    private static @Nullable PipelineCache fallbackPipelineCache;
    private static @Nullable PipelineCache currentPipelineCache;
@@ -186,18 +184,6 @@ public class RenderSystem {
       return shaderLightDirections;
    }
 
-   public static void enableScissorForRenderTypeDraws(final int x, final int y, final int width, final int height) {
-      scissorStateForRenderTypeDraws.enable(x, y, width, height);
-   }
-
-   public static void disableScissorForRenderTypeDraws() {
-      scissorStateForRenderTypeDraws.disable();
-   }
-
-   public static ScissorState getScissorStateForRenderTypeDraws() {
-      return scissorStateForRenderTypeDraws;
-   }
-
    public static String getBackendDescription() {
       return String.format(Locale.ROOT, "LWJGL version %s", Version.getVersion());
    }
@@ -212,7 +198,6 @@ public class RenderSystem {
       SDLInit.SDL_SetAppMetadataProperty("SDL.app.metadata.url", "https://www.minecraft.net");
       SDLInit.SDL_SetAppMetadataProperty("SDL.app.metadata.type", "game");
       SDLHints.SDL_SetHint("SDL_NO_SIGNAL_HANDLERS", "1");
-      SDLHints.SDL_SetHint("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0");
       SDLHints.SDL_SetHint("SDL_QUIT_ON_LAST_WINDOW_CLOSE", "0");
       SDLHints.SDL_SetHint("SDL_MOUSE_FOCUS_CLICKTHROUGH", "1");
       SDLHints.SDL_SetHint("SDL_ENABLE_SCREEN_KEYBOARD", "0");
@@ -426,7 +411,6 @@ public class RenderSystem {
       pollingEvents = new AtomicBoolean(false);
       PENDING_FENCES = new ArrayListDeque<GpuAsyncTask>();
       isRenderingLevel = false;
-      scissorStateForRenderTypeDraws = new ScissorState();
       samplerCache = new SamplerCache();
    }
 

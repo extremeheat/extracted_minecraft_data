@@ -342,16 +342,8 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
 
    public static boolean saveStructure(final ServerLevel level, final Identifier structureName, final BlockPos pos, final Vec3i structureSize, final boolean ignoreEntities, final String author, final boolean saveToDisk, final List<Block> ignoreBlocks) {
       StructureTemplateManager manager = level.getStructureTemplateManager();
-
-      StructureTemplate structureTemplate;
-      try {
-         structureTemplate = manager.getOrCreate(structureName);
-      } catch (IdentifierException var12) {
-         return false;
-      }
-
-      structureTemplate.fillFromWorld(level, pos, structureSize, !ignoreEntities, Stream.concat(ignoreBlocks.stream(), Stream.of(Blocks.STRUCTURE_VOID)).toList());
-      structureTemplate.setAuthor(author);
+      StructureTemplate structureTemplate = StructureTemplate.createFromWorld(level, pos, structureSize, author, !ignoreEntities, Stream.concat(ignoreBlocks.stream(), Stream.of(Blocks.STRUCTURE_VOID)).toList());
+      manager.store(structureName, structureTemplate);
       if (saveToDisk) {
          try {
             return manager.save(structureName);

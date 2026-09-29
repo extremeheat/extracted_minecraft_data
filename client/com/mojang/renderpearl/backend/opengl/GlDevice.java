@@ -158,7 +158,7 @@ class GlDevice implements GpuDeviceBackend {
 
                this.deviceInfo = this.heuristics.createDeviceInfo(capabilities, maxSupportedAnisotropy, enabledExtensions);
                this.encoder = new GlCommandEncoder(this);
-               this.recompiler = new GlPipelineRecompiler(this.stateManager, this.debugLabels, this.deviceInfo.features().shaderDrawParameters());
+               this.recompiler = new GlPipelineRecompiler(this.stateManager, this.debugLabels, this.deviceInfo.features().shaderDrawParameters(), debugOptions.shaderDebug());
                this.frameBufferCache = new FrameBufferCache(this.stateManager);
             } catch (Throwable throwable) {
                SDLVideo.SDL_GL_DestroyContext(glContext);

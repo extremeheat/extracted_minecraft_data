@@ -23,8 +23,6 @@ public interface CommandEncoderBackend {
 
    void clearColorAndDepthTextures(GpuTexture colorTexture, Vector4fc clearColor, GpuTexture depthTexture, double clearDepth);
 
-   void clearColorAndDepthTextures(GpuTexture colorTexture, Vector4fc clearColor, GpuTexture depthTexture, double clearDepth, int regionX, int regionY, int regionWidth, int regionHeight, int mipLevel);
-
    void clearDepthTexture(GpuTexture depthTexture, double clearDepth);
 
    void writeToBuffer(GpuBufferSlice destination, ByteBuffer data);
@@ -35,9 +33,7 @@ public interface CommandEncoderBackend {
 
    void copyBufferToTexture(GpuBufferSlice source, int sourceX, int sourceY, int sourceWidth, int sourceHeight, GpuTexture destination, int destinationX, int destinationY, int copyWidth, int copyHeight, int mipLevel, int arrayLayer);
 
-   void copyTextureToBuffer(GpuTexture source, GpuBuffer destination, long offset, Runnable callback, int mipLevel);
-
-   void copyTextureToBuffer(GpuTexture source, GpuBuffer destination, long offset, Runnable callback, int mipLevel, int x, int y, int width, int height);
+   void copyTextureToBuffer(GpuTexture source, GpuBuffer destination, long offset, int mipLevel, int x, int y, int width, int height);
 
    void copyTextureToTexture(GpuTexture source, GpuTexture destination, int mipLevel, int destX, int destY, int sourceX, int sourceY, int width, int height);
 

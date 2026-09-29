@@ -38,6 +38,19 @@ public interface LevelReader extends BlockAndLightGetter, CollisionGetter, Signa
       return this.getHeight(type, pos.getX(), pos.getZ());
    }
 
+   default boolean anyHeightMatches(final Heightmap.Types type, final int minX, final int minZ, final int maxX, final int maxZ, final int requiredMinY, final int requiredMaxY) {
+      for(int xprobe = minX; xprobe <= maxX; ++xprobe) {
+         for(int zprobe = minZ; zprobe <= maxZ; ++zprobe) {
+            int height = this.getHeight(type, xprobe, zprobe);
+            if (height >= requiredMinY && height <= requiredMaxY) {
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
    int getSkyDarken();
 
    default Stream<BlockState> getBlockStatesIfLoaded(final AABB box) {

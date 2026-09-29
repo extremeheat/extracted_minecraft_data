@@ -248,10 +248,6 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       }
    }
 
-   protected boolean hasClickedOutside(final double mx, final double my, final int xo, final int yo) {
-      return mx < (double)xo || my < (double)yo || mx >= (double)(xo + this.imageWidth) || my >= (double)(yo + this.imageHeight);
-   }
-
    private void containerChanged() {
       ItemStack resultStack = ((LoomMenu)this.menu).getResultSlot().getItem();
       if (resultStack.isEmpty()) {

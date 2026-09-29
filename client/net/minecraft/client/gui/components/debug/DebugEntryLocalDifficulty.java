@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.debug;
 
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -24,7 +23,7 @@ public class DebugEntryLocalDifficulty implements DebugScreenEntry {
             float moonBrightness = serverLevel.getMoonBrightness(feetPos);
             long localTime = serverChunk.getInhabitedTime();
             DifficultyInstance localDifficulty = new DifficultyInstance(serverLevel.getDifficulty(), serverLevel.getOverworldClockTime(), localTime, moonBrightness);
-            displayer.addLine(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f", localDifficulty.getEffectiveDifficulty(), localDifficulty.getSpecialMultiplier()));
+            displayer.addFactToGroup(DebugGroups.MISC, "Local Difficulty", (fact) -> fact.formattedValue("%.2f", localDifficulty.getEffectiveDifficulty()).text(" // ").formattedValue("%.2f", localDifficulty.getSpecialMultiplier()));
          }
 
       }

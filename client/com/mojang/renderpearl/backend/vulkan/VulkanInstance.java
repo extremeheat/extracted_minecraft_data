@@ -2,14 +2,13 @@ package com.mojang.renderpearl.backend.vulkan;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.device.BackendCreationException;
+import com.mojang.renderpearl.util.PlatformUtil;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.SharedConstants;
-import net.minecraft.util.Util;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.sdl.SDLVulkan;
 import org.lwjgl.system.MemoryStack;
@@ -25,20 +24,18 @@ import org.slf4j.Logger;
 
 public class VulkanInstance implements UncheckedAutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final String APPLICATION_NAME = "Minecraft Java Edition";
-   private static final int APPLICATION_VERSION = SharedConstants.getCurrentVersion().dataVersion().version();
    private static final String ENGINE_NAME = "MinecraftJE";
    private static final int ENGINE_VERSION = 0;
    private final Set<String> enabledExtensions = new HashSet();
    private final VkInstance vkInstance;
    private final VulkanDebug debug;
 
-   protected VulkanInstance(final int debugVerbosity, boolean wantsDebugLabels, final boolean validation) throws BackendCreationException {
+   protected VulkanInstance(final String applicationName, final int applicationVersion, final int debugVerbosity, boolean wantsDebugLabels, final boolean validation) throws BackendCreationException {
       super();
       MemoryStack stack = MemoryStack.stackPush();
 
       try {
-         VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack).sType$Default().pApplicationName(stack.UTF8("Minecraft Java Edition")).applicationVersion(APPLICATION_VERSION).pEngineName(stack.UTF8("MinecraftJE")).engineVersion(0).apiVersion(VK12.VK_API_VERSION_1_2);
+         VkApplicationInfo appInfo = VkApplicationInfo.calloc(stack).sType$Default().pApplicationName(stack.UTF8(applicationName)).applicationVersion(applicationVersion).pEngineName(stack.UTF8("MinecraftJE")).engineVersion(0).apiVersion(VK12.VK_API_VERSION_1_2);
          List<String> validationLayers = this.getSupportedValidationLayers();
          PointerBuffer requiredLayers = null;
          if (validation) {
@@ -66,7 +63,7 @@ public class VulkanInstance implements UncheckedAutoCloseable {
          }
 
          this.debug = VulkanDebug.create(debugVerbosity, wantsDebugLabels, availableExtensions, this.enabledExtensions);
-         boolean usePortability = availableExtensions.contains("VK_KHR_portability_enumeration") && Util.getPlatform() == Util.OS.OSX;
+         boolean usePortability = PlatformUtil.IS_MACOS && availableExtensions.contains("VK_KHR_portability_enumeration");
          if (usePortability) {
             this.enabledExtensions.add("VK_KHR_portability_enumeration");
          }
@@ -88,16 +85,16 @@ public class VulkanInstance implements UncheckedAutoCloseable {
          VulkanUtils.throwIfFailure(VK12.vkCreateInstance(instanceInfo, (VkAllocationCallbacks)null, pInstance), "Error creating instance", BackendCreationException.Reason.VULKAN_INSTANCE_CREATION_FAILED);
          this.vkInstance = new VkInstance(pInstance.get(0), instanceInfo);
          this.debug.setup(this.vkInstance);
-      } catch (Throwable var15) {
+      } catch (Throwable var17) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var14) {
-               var15.addSuppressed(var14);
+            } catch (Throwable var16) {
+               var17.addSuppressed(var16);
             }
          }
 
-         throw var15;
+         throw var17;
       }
 
       if (stack != null) {

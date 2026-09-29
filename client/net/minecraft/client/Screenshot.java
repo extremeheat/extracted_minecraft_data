@@ -95,7 +95,8 @@ public class Screenshot {
          throw new IllegalStateException("Tried to capture screenshot of an incomplete framebuffer");
       } else if (width % downscaleFactor == 0 && height % downscaleFactor == 0) {
          GpuBuffer buffer = RenderSystem.getDevice().createBuffer(() -> "Screenshot buffer", 9, (long)width * (long)height * (long)sourceTexture.getFormat().blockSize());
-         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(sourceTexture, buffer, 0L, () -> {
+         RenderSystem.getDevice().createCommandEncoder().copyTextureToBuffer(sourceTexture, buffer, 0L, 0);
+         RenderSystem.queueFencedTask(() -> {
             try (GpuBufferSlice.MappedView read = buffer.map(true, false)) {
                int outputHeight = height / downscaleFactor;
                int outputWidth = width / downscaleFactor;
@@ -130,7 +131,7 @@ public class Screenshot {
             }
 
             buffer.close();
-         }, 0);
+         });
       } else {
          throw new IllegalArgumentException("Image size is not divisible by downscale factor");
       }

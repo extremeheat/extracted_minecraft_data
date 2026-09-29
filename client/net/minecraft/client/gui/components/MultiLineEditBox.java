@@ -94,7 +94,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
    }
 
    public boolean charTyped(final CharacterEvent event) {
-      if (this.visible && this.isFocused() && event.isAllowedChatCharacter()) {
+      if (this.isVisible() && this.isFocused() && event.isAllowedChatCharacter()) {
          this.textField.insertText(event.codepointAsString());
          return true;
       } else {

@@ -14,12 +14,14 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.CopperGolemRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.animal.golem.CopperGolemState;
 
 public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implements ArmedModel<CopperGolemRenderState>, HeadedModel {
+   private static final MeshTransformer BODY_TRANSLATION = MeshTransformer.translating(0.0F, 24.0F, 0.0F);
    private static final float MAX_WALK_ANIMATION_SPEED = 2.0F;
    private static final float WALK_ANIMATION_SCALE_FACTOR = 2.5F;
    private static final float Z_FIGHT_MITIGATION = 0.015F;
@@ -51,7 +53,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    }
 
    public static LayerDefinition createBodyLayer() {
-      MeshDefinition meshDefinition = (new MeshDefinition()).transformed((p) -> p.translated(0.0F, 24.0F, 0.0F));
+      MeshDefinition meshDefinition = (new MeshDefinition()).apply(BODY_TRANSLATION);
       PartDefinition root = meshDefinition.getRoot();
       PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 15).addBox(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, CubeDeformation.NONE), PartPose.offset(0.0F, -5.0F, 0.0F));
       body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.0F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.015F)).texOffs(56, 0).addBox(-1.0F, -2.0F, -6.0F, 2.0F, 3.0F, 2.0F, CubeDeformation.NONE).texOffs(37, 8).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)), PartPose.offset(0.0F, -6.0F, 0.0F));
@@ -63,7 +65,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    }
 
    public static LayerDefinition createRunningPoseBodyLayer() {
-      MeshDefinition meshDefinition = (new MeshDefinition()).transformed((p) -> p.translated(0.0F, 0.0F, 0.0F));
+      MeshDefinition meshDefinition = new MeshDefinition();
       PartDefinition root = meshDefinition.getRoot();
       PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(-1.064F, -5.0F, 0.0F));
       body.addOrReplaceChild("body_r1", CubeListBuilder.create().texOffs(0, 15).addBox(-4.02F, -6.116F, -3.5F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(1.1F, 0.1F, 0.7F, 0.1204F, -0.0064F, -0.0779F));
@@ -80,7 +82,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    }
 
    public static LayerDefinition createSittingPoseBodyLayer() {
-      MeshDefinition meshDefinition = (new MeshDefinition()).transformed((p) -> p.translated(0.0F, 0.0F, 0.0F));
+      MeshDefinition meshDefinition = new MeshDefinition();
       PartDefinition root = meshDefinition.getRoot();
       PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(3, 19).addBox(-3.0F, -4.0F, -4.525F, 6.0F, 1.0F, 6.0F, new CubeDeformation(0.0F)).texOffs(0, 15).addBox(-4.0F, -3.0F, -3.525F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -3.0F, 2.325F));
       body.addOrReplaceChild("body_r1", CubeListBuilder.create().texOffs(3, 18).addBox(-4.0F, -3.0F, -2.2F, 8.0F, 6.0F, 3.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -1.0F, -4.325F, 0.0F, 0.0F, -3.1416F));
@@ -97,7 +99,7 @@ public class CopperGolemModel extends EntityModel<CopperGolemRenderState> implem
    }
 
    public static LayerDefinition createStarPoseBodyLayer() {
-      MeshDefinition meshDefinition = (new MeshDefinition()).transformed((p) -> p.translated(0.0F, 0.0F, 0.0F));
+      MeshDefinition meshDefinition = new MeshDefinition();
       PartDefinition root = meshDefinition.getRoot();
       PartDefinition body = root.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 15).addBox(-4.0F, -6.0F, -3.0F, 8.0F, 6.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offset(0.0F, -5.0F, 0.0F));
       body.addOrReplaceChild("head", CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -5.0F, -5.0F, 8.0F, 5.0F, 10.0F, new CubeDeformation(0.0F)).texOffs(56, 0).addBox(-1.0F, -2.0F, -6.0F, 2.0F, 3.0F, 2.0F, new CubeDeformation(0.0F)).texOffs(37, 8).addBox(-1.0F, -9.0F, -1.0F, 2.0F, 4.0F, 2.0F, new CubeDeformation(-0.015F)).texOffs(37, 0).addBox(-2.0F, -13.0F, -2.0F, 4.0F, 4.0F, 4.0F, new CubeDeformation(-0.015F)), PartPose.offset(0.0F, -6.0F, 0.0F));

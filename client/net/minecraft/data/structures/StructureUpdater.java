@@ -23,7 +23,6 @@ public class StructureUpdater implements SnbtToNbt.Filter {
    }
 
    public static CompoundTag update(final String name, final CompoundTag tag) {
-      StructureTemplate structureTemplate = new StructureTemplate();
       int fromVersion = NbtUtils.getDataVersion(tag, 500);
       int toVersion = 5116;
       if (fromVersion < 5116) {
@@ -31,7 +30,7 @@ public class StructureUpdater implements SnbtToNbt.Filter {
       }
 
       CompoundTag updated = DataFixTypes.STRUCTURE.updateToCurrentVersion(DataFixers.getDataFixer(), tag, fromVersion);
-      structureTemplate.load(BuiltInRegistries.BLOCK, updated);
+      StructureTemplate structureTemplate = StructureTemplate.load(BuiltInRegistries.BLOCK, updated);
       return structureTemplate.save(new CompoundTag());
    }
 

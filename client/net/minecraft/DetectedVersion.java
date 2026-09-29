@@ -29,7 +29,7 @@ public class DetectedVersion {
    }
 
    public static WorldVersion createBuiltIn(final String id, final String name, final boolean stable) {
-      return new WorldVersion.Simple(id, name, new DataVersion(5119, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(98, 0), PackFormat.of(122, 0), new Date(), stable);
+      return new WorldVersion.Simple(id, name, new DataVersion(5120, "main"), SharedConstants.getProtocolVersion(), PackFormat.of(99, 0), PackFormat.of(122, 1), new Date(), stable);
    }
 
    private static WorldVersion createFromJson(final JsonObject root) {

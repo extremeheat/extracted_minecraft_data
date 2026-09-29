@@ -30,13 +30,18 @@ public class Mth {
    public static final Vector3fc Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
    private static final int SIN_QUANTIZATION = 65536;
    private static final int SIN_MASK = 65535;
-   private static final int COS_OFFSET = 16384;
+   private static final int QUADRANT_OFFSET = 16384;
+   private static final double COS_OFFSET = 16384.0;
    private static final double SIN_SCALE = 10430.378350470453;
    private static final float[] SIN = (float[])Util.make(new float[65536], (sin) -> {
       for(int i = 0; i < sin.length; ++i) {
          sin[i] = (float)Math.sin((double)i / 10430.378350470453);
       }
 
+      sin[0] = 0.0F;
+      sin[16384] = 1.0F;
+      sin['\u8000'] = 0.0F;
+      sin['\uc000'] = -1.0F;
    });
    private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[]{0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
    private static final double ONE_SIXTH = 0.16666666666666666;
@@ -51,11 +56,11 @@ public class Mth {
    }
 
    public static float sin(final double i) {
-      return SIN[(int)((long)(i * 10430.378350470453) & 65535L)];
+      return i >= 0.0 ? SIN[(int)((long)(i * 10430.378350470453 + 0.5) & 65535L)] : -SIN[(int)((long)(-i * 10430.378350470453 + 0.5) & 65535L)];
    }
 
    public static float cos(final double i) {
-      return SIN[(int)((long)(i * 10430.378350470453 + 16384.0) & 65535L)];
+      return i >= 0.0 ? SIN[(int)((long)(i * 10430.378350470453 + 16384.0 + 0.5) & 65535L)] : SIN[(int)((long)(-i * 10430.378350470453 + 16384.0 + 0.5) & 65535L)];
    }
 
    public static float sqrt(final float x) {

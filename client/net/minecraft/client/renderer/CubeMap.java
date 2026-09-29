@@ -14,7 +14,6 @@ import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -50,7 +49,6 @@ public class CubeMap implements AutoCloseable {
       RenderPipeline renderPipeline = RenderPipelines.PANORAMA;
       RenderTarget mainRenderTarget = Minecraft.getInstance().gameRenderer.mainRenderTarget();
       GpuTextureView colorTexture = mainRenderTarget.getColorTextureView();
-      GpuTextureView depthTexture = mainRenderTarget.getDepthTextureView();
       RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer indexBuffer = indices.getBuffer(36);
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
@@ -61,7 +59,7 @@ public class CubeMap implements AutoCloseable {
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
       modelViewStack.popMatrix();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, Optional.empty(), depthTexture, OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, Optional.empty())) {
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setVertexBuffer(0, this.vertexBuffer.slice());

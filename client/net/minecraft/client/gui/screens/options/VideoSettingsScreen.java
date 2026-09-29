@@ -130,17 +130,17 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       }
 
       boolean restartRequired = this.options.isRestartRequiredToApplyVideoSettings();
-      if (restartRequired && (this.restartWarning == null || !this.restartWarning.visible)) {
+      if (restartRequired && (this.restartWarning == null || !this.restartWarning.isVisible())) {
          if (this.restartWarning == null) {
             this.restartWarning = new StringWidget(RESTART_REQUIRED, this.font);
             this.header.addChild(this.restartWarning);
             this.addRenderableWidget(this.restartWarning);
          }
 
-         this.restartWarning.visible = true;
+         this.restartWarning.setVisible(true);
          this.repositionElements();
-      } else if (!restartRequired && this.restartWarning != null && this.restartWarning.visible) {
-         this.restartWarning.visible = false;
+      } else if (!restartRequired && this.restartWarning != null && this.restartWarning.isVisible()) {
+         this.restartWarning.setVisible(false);
          this.repositionElements();
       }
 

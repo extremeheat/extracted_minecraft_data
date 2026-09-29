@@ -138,8 +138,9 @@ public class ItemFrame extends HangingEntity {
 
    }
 
-   protected void onKilled() {
+   public void kill(final ServerLevel level) {
       this.removeFramedMap(this.getItem());
+      super.kill(level);
    }
 
    private boolean shouldDamageDropItem(final DamageSource source) {

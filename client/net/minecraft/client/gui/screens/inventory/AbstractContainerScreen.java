@@ -4,7 +4,9 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.ItemSlotMouseAction;
@@ -12,7 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -46,9 +47,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    protected int leftPos;
    protected int topPos;
    protected final Set<Slot> quickCraftSlots;
-   protected boolean isQuickCrafting;
+   private boolean isQuickCrafting;
    private int quickCraftingType;
-   private @MouseButtonInfo.MouseButton int quickCraftingButton;
+   private int quickCraftingButton;
    private boolean skipNextRelease;
    private int quickCraftingRemainder;
    private boolean doubleclick;
@@ -72,6 +73,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.inventoryLabelX = 8;
       this.inventoryLabelY = imageHeight - 94;
       this.itemSlotMouseActions = new ArrayList();
+   }
+
+   private boolean isQuickCrafting() {
+      return this.isQuickCrafting;
+   }
+
+   private void setQuickCrafting(final boolean isQuickCrafting) {
+      this.isQuickCrafting = isQuickCrafting;
    }
 
    protected void init() {
@@ -116,7 +125,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          int xOffset = 8;
          int yOffset = 8;
          String itemCount = null;
-         if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
+         if (this.isQuickCrafting() && this.quickCraftSlots.size() > 1) {
             carried = carried.copyWithCount(this.quickCraftingRemainder);
             if (carried.isEmpty()) {
                itemCount = String.valueOf(ChatFormatting.YELLOW) + "0";
@@ -200,7 +209,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       boolean done = false;
       ItemStack carried = this.menu.getCarried();
       String itemCount = null;
-      if (this.isQuickCrafting && this.quickCraftSlots.contains(slot) && !carried.isEmpty()) {
+      if (this.isQuickCrafting() && this.quickCraftSlots.contains(slot) && !carried.isEmpty()) {
          if (this.quickCraftSlots.size() == 1) {
             return;
          }
@@ -250,7 +259,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void recalculateQuickCraftRemaining() {
       ItemStack carried = this.menu.getCarried();
-      if (!carried.isEmpty() && this.isQuickCrafting) {
+      if (!carried.isEmpty() && this.isQuickCrafting()) {
          if (this.quickCraftingType == 2) {
             this.quickCraftingRemainder = carried.getMaxStackSize();
          } else {
@@ -278,10 +287,6 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return null;
    }
 
-   private void slotClicked(final Slot slot, final int slotId, final MouseButtonEvent event, final ContainerInput containerInput) {
-      this.slotClicked(slot, slotId, getContainerClickButton(event), containerInput);
-   }
-
    private static int getContainerClickButton(final MouseButtonEvent event) {
       int var10000;
       switch (event.button()) {
@@ -300,78 +305,89 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          boolean cloning = this.minecraft.options.keyPickItem.matchesMouse(event) && this.minecraft.player.hasInfiniteMaterials();
          Slot slot = this.getHoveredSlot(event.x(), event.y());
          this.doubleclick = this.lastClickSlot == slot && doubleClick;
+         this.lastClickSlot = slot;
          this.skipNextRelease = false;
          if (event.button() != 1 && event.button() != 3 && !cloning) {
-            this.checkHotbarMouseClicked(event);
+            this.checkHotbarSwap((keyMapping) -> keyMapping.matchesMouse(event));
          } else {
-            int xo = this.leftPos;
-            int yo = this.topPos;
-            boolean clickedOutside = this.hasClickedOutside(event.x(), event.y(), xo, yo);
-            int slotId = -1;
-            if (slot != null) {
+            if (this.isQuickCrafting()) {
+               return true;
+            }
+
+            int slotId;
+            if (this.hasClickedOutside(event.x(), event.y())) {
+               slotId = -999;
+            } else {
+               if (slot == null) {
+                  return true;
+               }
+
                slotId = slot.index;
             }
 
-            if (clickedOutside) {
-               slotId = -999;
-            }
-
-            if (slotId != -1 && !this.isQuickCrafting) {
-               if (this.menu.getCarried().isEmpty()) {
-                  if (cloning) {
-                     this.slotClicked(slot, slotId, event, ContainerInput.CLONE);
-                  } else {
-                     boolean quickKey = slotId != -999 && event.hasShiftDown();
-                     ContainerInput containerInput = ContainerInput.PICKUP;
-                     if (quickKey) {
-                        this.lastQuickMoved = slot != null && slot.hasItem() ? slot.getItem().copy() : ItemStack.EMPTY;
-                        containerInput = ContainerInput.QUICK_MOVE;
-                     } else if (slotId == -999) {
-                        containerInput = ContainerInput.THROW;
-                     }
-
-                     this.slotClicked(slot, slotId, event, containerInput);
-                  }
-
-                  this.skipNextRelease = true;
-               } else {
-                  this.isQuickCrafting = true;
-                  this.quickCraftingButton = event.button();
-                  this.quickCraftSlots.clear();
-                  if (event.button() == 1) {
-                     this.quickCraftingType = 0;
-                  } else if (event.button() == 3) {
-                     this.quickCraftingType = 1;
-                  } else if (cloning) {
-                     this.quickCraftingType = 2;
-                  }
-               }
+            if (this.menu.getCarried().isEmpty()) {
+               this.tryPickUpItem(slot, slotId, getContainerClickButton(event), cloning, event.hasShiftDown());
+            } else {
+               this.setupQuickCrafting(event.button() == 1, event.button() == 3, cloning, getContainerClickButton(event));
             }
          }
 
-         this.lastClickSlot = slot;
          return true;
       }
    }
 
-   private void checkHotbarMouseClicked(final MouseButtonEvent event) {
-      if (this.hoveredSlot != null && this.menu.getCarried().isEmpty()) {
-         if (this.minecraft.options.keySwapOffhand.matchesMouse(event)) {
-            this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
-            return;
-         }
+   private void tryPickUpItem(final @Nullable Slot slot, final int slotId, final int button, final boolean cloning, final boolean hasShiftDown) {
+      ContainerInput containerInput;
+      if (cloning) {
+         containerInput = ContainerInput.CLONE;
+      } else if (slotId == -999) {
+         containerInput = ContainerInput.THROW;
+      } else if (hasShiftDown) {
+         containerInput = ContainerInput.QUICK_MOVE;
+      } else {
+         containerInput = ContainerInput.PICKUP;
+      }
 
-         for(int i = 0; i < 9; ++i) {
-            if (this.minecraft.options.keyHotbarSlots[i].matchesMouse(event)) {
-               this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);
-            }
-         }
+      this.slotClicked(slot, slotId, button, containerInput);
+      this.skipNextRelease = true;
+   }
+
+   private void setupQuickCrafting(final boolean shouldBeCharitable, final boolean shouldBeGreedy, final boolean cloning, final int button) {
+      this.setQuickCrafting(true);
+      this.quickCraftingButton = button;
+      this.quickCraftSlots.clear();
+      if (shouldBeCharitable) {
+         this.quickCraftingType = 0;
+      } else if (shouldBeGreedy) {
+         this.quickCraftingType = 1;
+      } else if (cloning) {
+         this.quickCraftingType = 2;
       }
 
    }
 
-   protected boolean hasClickedOutside(final double mx, final double my, final int xo, final int yo) {
-      return mx < (double)xo || my < (double)yo || mx >= (double)(xo + this.imageWidth) || my >= (double)(yo + this.imageHeight);
+   private boolean checkHotbarSwap(final Predicate<KeyMapping> matches) {
+      if (this.hoveredSlot != null && this.menu.getCarried().isEmpty()) {
+         if (matches.test(this.minecraft.options.keySwapOffhand)) {
+            this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
+            return true;
+         } else {
+            for(int i = 0; i < 9; ++i) {
+               if (matches.test(this.minecraft.options.keyHotbarSlots[i])) {
+                  this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);
+                  return true;
+               }
+            }
+
+            return false;
+         }
+      } else {
+         return false;
+      }
+   }
+
+   protected boolean hasClickedOutside(final double mx, final double my) {
+      return mx < (double)this.leftPos || my < (double)this.topPos || mx >= (double)(this.leftPos + this.imageWidth) || my >= (double)(this.topPos + this.imageHeight);
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
@@ -387,63 +403,68 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    public boolean mouseReleased(final MouseButtonEvent event) {
       Slot slot = this.getHoveredSlot(event.x(), event.y());
-      int xo = this.leftPos;
-      int yo = this.topPos;
-      boolean clickedOutside = this.hasClickedOutside(event.x(), event.y(), xo, yo);
-      int slotId = -1;
-      if (slot != null) {
-         slotId = slot.index;
-      }
-
-      if (clickedOutside) {
+      int slotId;
+      if (this.hasClickedOutside(event.x(), event.y())) {
          slotId = -999;
+      } else if (slot != null) {
+         slotId = slot.index;
+      } else {
+         slotId = -1;
       }
 
-      if (this.doubleclick && slot != null && event.button() == 1 && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
-         if (event.hasShiftDown()) {
-            if (!this.lastQuickMoved.isEmpty()) {
-               for(Slot target : this.menu.slots) {
-                  if (target != null && target.mayPickup(this.minecraft.player) && target.hasItem() && target.container == slot.container && AbstractContainerMenu.canItemQuickReplace(target, this.lastQuickMoved, true)) {
-                     this.slotClicked(target, target.index, event, ContainerInput.QUICK_MOVE);
-                  }
-               }
-            }
-         } else {
-            this.slotClicked(slot, slotId, event, ContainerInput.PICKUP_ALL);
-         }
-
+      if (this.handleDoublePress(slot, slotId, this.doubleclick, event.button() == 1, event.hasShiftDown(), getContainerClickButton(event))) {
          this.doubleclick = false;
+         this.setQuickCrafting(false);
+         return super.mouseReleased(event);
+      } else if (this.isQuickCrafting() && this.quickCraftingButton != getContainerClickButton(event)) {
+         this.setQuickCrafting(false);
+         this.quickCraftSlots.clear();
+         this.skipNextRelease = true;
+         return true;
+      } else if (this.skipNextRelease) {
+         this.skipNextRelease = false;
+         return true;
       } else {
-         if (this.isQuickCrafting && this.quickCraftingButton != event.button()) {
-            this.isQuickCrafting = false;
-            this.quickCraftSlots.clear();
-            this.skipNextRelease = true;
-            return true;
-         }
-
-         if (this.skipNextRelease) {
-            this.skipNextRelease = false;
-            return true;
-         }
-
-         if (this.isQuickCrafting && !this.quickCraftSlots.isEmpty()) {
+         if (this.isQuickCrafting() && !this.quickCraftSlots.isEmpty()) {
             this.quickCraftToSlots();
          } else if (!this.menu.getCarried().isEmpty()) {
-            if (this.minecraft.options.keyPickItem.matchesMouse(event)) {
-               this.slotClicked(slot, slotId, event, ContainerInput.CLONE);
-            } else {
-               boolean quickKey = slotId != -999 && event.hasShiftDown();
-               if (quickKey) {
-                  this.lastQuickMoved = slot != null && slot.hasItem() ? slot.getItem().copy() : ItemStack.EMPTY;
-               }
+            this.releaseCarriedItem(slot, slotId, getContainerClickButton(event), this.minecraft.options.keyPickItem.matchesMouse(event), event.hasShiftDown());
+         }
 
-               this.slotClicked(slot, slotId, event, quickKey ? ContainerInput.QUICK_MOVE : ContainerInput.PICKUP);
+         this.setQuickCrafting(false);
+         return super.mouseReleased(event);
+      }
+   }
+
+   private boolean handleDoublePress(final @Nullable Slot slot, final int slotId, final boolean isDoublePress, final boolean isDoublePressButton, final boolean hasShiftDown, final int button) {
+      if (slot != null && isDoublePress && isDoublePressButton && this.menu.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
+         if (!hasShiftDown) {
+            this.slotClicked(slot, slotId, button, ContainerInput.PICKUP_ALL);
+         } else if (!this.lastQuickMoved.isEmpty()) {
+            for(Slot target : this.menu.slots) {
+               if (target.mayPickup(this.minecraft.player) && target.hasItem() && target.container == slot.container && AbstractContainerMenu.canItemQuickReplace(target, this.lastQuickMoved, true)) {
+                  this.slotClicked(target, target.index, button, ContainerInput.QUICK_MOVE);
+               }
             }
          }
+
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   private void releaseCarriedItem(final @Nullable Slot slot, final int slotId, final int button, final boolean cloning, final boolean hasShiftDown) {
+      ContainerInput containerInput;
+      if (cloning) {
+         containerInput = ContainerInput.CLONE;
+      } else if (slotId != -999 && hasShiftDown) {
+         containerInput = ContainerInput.QUICK_MOVE;
+      } else {
+         containerInput = ContainerInput.PICKUP;
       }
 
-      this.isQuickCrafting = false;
-      return super.mouseReleased(event);
+      this.slotClicked(slot, slotId, button, containerInput);
    }
 
    private boolean isHovering(final Slot slot, final double xm, final double ym) {
@@ -469,13 +490,21 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    }
 
-   protected void slotClicked(final Slot slot, int slotId, final int buttonNum, final ContainerInput containerInput) {
+   protected void slotClicked(final @Nullable Slot slot, int slotId, final int buttonNum, final ContainerInput containerInput) {
       if (slot != null) {
          slotId = slot.index;
       }
 
+      if (containerInput == ContainerInput.QUICK_MOVE) {
+         this.updateLastQuickMoved(slot);
+      }
+
       this.onMouseClickAction(slot, containerInput);
       this.minecraft.gameMode.handleContainerInput(this.menu.containerId, slotId, buttonNum, containerInput, this.minecraft.player);
+   }
+
+   protected void updateLastQuickMoved(final @Nullable Slot slot) {
+      this.lastQuickMoved = slot != null && slot.hasItem() ? slot.getItem().copy() : ItemStack.EMPTY;
    }
 
    protected void onMouseClickAction(final @Nullable Slot slot, final ContainerInput containerInput) {
@@ -514,21 +543,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    protected boolean checkHotbarKeyPressed(final KeyEvent event) {
-      if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null) {
-         if (this.minecraft.options.keySwapOffhand.matches(event)) {
-            this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, 40, ContainerInput.SWAP);
-            return true;
-         }
-
-         for(int i = 0; i < 9; ++i) {
-            if (this.minecraft.options.keyHotbarSlots[i].matches(event)) {
-               this.slotClicked(this.hoveredSlot, this.hoveredSlot.index, i, ContainerInput.SWAP);
-               return true;
-            }
-         }
-      }
-
-      return false;
+      return this.checkHotbarSwap((keyMapping) -> keyMapping.matches(event));
    }
 
    public void removed() {
@@ -559,7 +574,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    private boolean shouldAddSlotToQuickCraft(final Slot slot, final ItemStack carried) {
-      return this.isQuickCrafting && !carried.isEmpty() && (carried.getCount() > this.quickCraftSlots.size() || this.quickCraftingType == 2) && AbstractContainerMenu.canItemQuickReplace(slot, carried, true) && slot.mayPlace(carried) && this.menu.canDragTo(slot);
+      return this.isQuickCrafting() && !carried.isEmpty() && (carried.getCount() > this.quickCraftSlots.size() || this.quickCraftingType == 2) && AbstractContainerMenu.canItemQuickReplace(slot, carried, true) && slot.mayPlace(carried) && this.menu.canDragTo(slot);
    }
 
    private void quickCraftToSlots() {

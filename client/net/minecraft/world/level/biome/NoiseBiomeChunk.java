@@ -54,8 +54,9 @@ public class NoiseBiomeChunk implements NoiseBiomeResolver {
       return (Holder)this.noiseBiomeSections[sectionIndex].get(quartX & 3, clampedQuartY & 3, quartZ & 3);
    }
 
-   public PalettedContainerRO<Holder<Biome>> getSection(final int y) {
-      return this.noiseBiomeSections[y - QuartPos.toSection(this.minQuartY)];
+   public @Nullable PalettedContainerRO<Holder<Biome>> getSection(final int y) {
+      int index = y - QuartPos.toSection(this.minQuartY);
+      return index >= 0 && index < this.noiseBiomeSections.length ? this.noiseBiomeSections[index] : null;
    }
 
    public static class Builder {

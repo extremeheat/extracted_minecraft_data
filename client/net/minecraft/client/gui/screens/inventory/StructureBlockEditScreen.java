@@ -259,18 +259,18 @@ public class StructureBlockEditScreen extends Screen {
       this.integrityEdit.setVisible(false);
       this.seedEdit.setVisible(false);
       this.dataEdit.setVisible(false);
-      this.saveButton.visible = false;
-      this.loadButton.visible = false;
-      this.detectButton.visible = false;
-      this.includeEntitiesButton.visible = false;
-      this.strictButton.visible = false;
-      this.mirrorButton.visible = false;
-      this.rot0Button.visible = false;
-      this.rot90Button.visible = false;
-      this.rot180Button.visible = false;
-      this.rot270Button.visible = false;
-      this.toggleAirButton.visible = false;
-      this.toggleBoundingBox.visible = false;
+      this.saveButton.setVisible(false);
+      this.loadButton.setVisible(false);
+      this.detectButton.setVisible(false);
+      this.includeEntitiesButton.setVisible(false);
+      this.strictButton.setVisible(false);
+      this.mirrorButton.setVisible(false);
+      this.rot0Button.setVisible(false);
+      this.rot90Button.setVisible(false);
+      this.rot180Button.setVisible(false);
+      this.rot270Button.setVisible(false);
+      this.toggleAirButton.setVisible(false);
+      this.toggleBoundingBox.setVisible(false);
       switch (mode) {
          case SAVE:
             this.nameEdit.setVisible(true);
@@ -280,11 +280,11 @@ public class StructureBlockEditScreen extends Screen {
             this.sizeXEdit.setVisible(true);
             this.sizeYEdit.setVisible(true);
             this.sizeZEdit.setVisible(true);
-            this.saveButton.visible = true;
-            this.detectButton.visible = true;
-            this.includeEntitiesButton.visible = true;
-            this.strictButton.visible = false;
-            this.toggleAirButton.visible = true;
+            this.saveButton.setVisible(true);
+            this.detectButton.setVisible(true);
+            this.includeEntitiesButton.setVisible(true);
+            this.strictButton.setVisible(false);
+            this.toggleAirButton.setVisible(true);
             break;
          case LOAD:
             this.nameEdit.setVisible(true);
@@ -293,15 +293,15 @@ public class StructureBlockEditScreen extends Screen {
             this.posZEdit.setVisible(true);
             this.integrityEdit.setVisible(true);
             this.seedEdit.setVisible(true);
-            this.loadButton.visible = true;
-            this.includeEntitiesButton.visible = true;
-            this.strictButton.visible = true;
-            this.mirrorButton.visible = true;
-            this.rot0Button.visible = true;
-            this.rot90Button.visible = true;
-            this.rot180Button.visible = true;
-            this.rot270Button.visible = true;
-            this.toggleBoundingBox.visible = true;
+            this.loadButton.setVisible(true);
+            this.includeEntitiesButton.setVisible(true);
+            this.strictButton.setVisible(true);
+            this.mirrorButton.setVisible(true);
+            this.rot0Button.setVisible(true);
+            this.rot90Button.setVisible(true);
+            this.rot180Button.setVisible(true);
+            this.rot270Button.setVisible(true);
+            this.toggleBoundingBox.setVisible(true);
             this.updateDirectionButtons();
             break;
          case CORNER:

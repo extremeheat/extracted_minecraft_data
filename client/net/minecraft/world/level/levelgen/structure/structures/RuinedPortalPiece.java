@@ -76,7 +76,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
-      StructureTemplate template = structureTemplateManager.getOrCreate(location);
+      StructureTemplate template = structureTemplateManager.getOrEmpty(location);
       BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);
       return makeSettings(registries, (Mirror)tag.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)tag.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), pivot, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
    }

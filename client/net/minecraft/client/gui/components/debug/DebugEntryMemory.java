@@ -3,15 +3,12 @@ package net.minecraft.client.gui.components.debug;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryMemory implements DebugScreenEntry {
-   private static final Identifier GROUP = Identifier.withDefaultNamespace("memory");
    private final AllocationRateCalculator allocationRateCalculator = new AllocationRateCalculator();
 
    public DebugEntryMemory() {
@@ -23,7 +20,9 @@ public class DebugEntryMemory implements DebugScreenEntry {
       long total = Runtime.getRuntime().totalMemory();
       long free = Runtime.getRuntime().freeMemory();
       long used = total - free;
-      displayer.addToGroup(GROUP, List.of(String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMiB", used * 100L / max, bytesToMebibytes(used), bytesToMebibytes(max)), String.format(Locale.ROOT, "Allocation rate: %03dMiB/s", bytesToMebibytes(this.allocationRateCalculator.bytesAllocatedPerSecond(used))), String.format(Locale.ROOT, "Allocated: %2d%% %03dMiB", total * 100L / max, bytesToMebibytes(total))));
+      displayer.addFactToGroup(DebugGroups.MEMORY, "Used", (fact) -> fact.formattedValue("%2d", used * 100L / max).text("% ").formattedValue("%03d", bytesToMebibytes(used)).text("/").formattedValue("%03d", bytesToMebibytes(max)).text("MiB"));
+      displayer.addFactToGroup(DebugGroups.MEMORY, "Alloc rate", (fact) -> fact.formattedValue("%03d", bytesToMebibytes(this.allocationRateCalculator.bytesAllocatedPerSecond(used))).text("MiB/s"));
+      displayer.addFactToGroup(DebugGroups.MEMORY, "Allocated", (fact) -> fact.formattedValue("%2d", total * 100L / max).text("% ").formattedValue("%03d", bytesToMebibytes(total)).text("MiB"));
    }
 
    private static long bytesToMebibytes(final long used) {

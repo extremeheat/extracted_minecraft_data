@@ -77,7 +77,6 @@ public class MultiPlayerGameMode {
    private BlockPos destroyBlockPos = new BlockPos(-1, -1, -1);
    private ItemStack destroyingItem;
    private float destroyProgress;
-   private float destroyTicks;
    private int destroyDelay;
    private @Nullable Direction destroyDirection;
    private boolean isDestroying;
@@ -172,6 +171,7 @@ public class MultiPlayerGameMode {
             });
             this.destroyDelay = 5;
          } else if (!this.isDestroying || !this.sameDestroyTarget(pos)) {
+            this.destroyDelay = 0;
             if (this.isDestroying) {
                if (SharedConstants.DEBUG_BLOCK_BREAK) {
                   LOGGER.info("Abort old break {} {}", pos, this.minecraft.level.getBlockState(pos));
@@ -200,7 +200,6 @@ public class MultiPlayerGameMode {
                   this.destroyDirection = direction;
                   this.destroyingItem = this.minecraft.player.getMainHandItem();
                   this.destroyProgress = 0.0F;
-                  this.destroyTicks = 0.0F;
                   this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
                   this.minecraft.level.addBreakingBlockEffects(this.destroyBlockPos, this.destroyDirection, true);
                }
@@ -255,7 +254,6 @@ public class MultiPlayerGameMode {
             return false;
          } else {
             this.destroyProgress += state.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), pos);
-            ++this.destroyTicks;
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, pos, state, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
                this.isDestroying = false;
@@ -269,7 +267,6 @@ public class MultiPlayerGameMode {
                });
                this.destroyDirection = null;
                this.destroyProgress = 0.0F;
-               this.destroyTicks = 0.0F;
                this.destroyDelay = 5;
             } else if (this.destroyDirection != direction) {
                this.destroyDirection = direction;

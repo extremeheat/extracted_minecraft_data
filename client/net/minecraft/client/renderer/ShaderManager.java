@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 public class ShaderManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String SHADER_PATH = "shaders";
+   private static final ShaderType[] SHADER_TYPES = ShaderType.values();
    public static final String SHADER_INCLUDE_PATH = "shaders/include/";
    public static final String SHADER_INCLUDE_EXTENSION = ".glsl";
    public static final FileToIdConverter SHADER_INCLUDE_CONVERTER = new FileToIdConverter("shaders/include", ".glsl");
@@ -85,7 +86,7 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
 
       for(Map.Entry<Identifier, Resource> entry : files.entrySet()) {
          Identifier location = (Identifier)entry.getKey();
-         ShaderType shaderType = ShaderType.byLocation(location);
+         ShaderType shaderType = shaderTypeByLocation(location);
          if (shaderType != null) {
             loadShader(location, (Resource)entry.getValue(), shaderType, shaderSources);
          } else if (SHADER_INCLUDE_CONVERTER.matches(location)) {
@@ -105,7 +106,7 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
    private static void loadShader(final Identifier location, final Resource resource, final ShaderType type, final ImmutableMap.Builder<ShaderSourceKey, String> output) {
       try {
          String contents = resource.readAllAsString();
-         Identifier id = type.idConverter().fileToId(location);
+         Identifier id = (new FileToIdConverter("shaders", type.getExtension())).fileToId(location);
          output.put(new ShaderSourceKey(id, type), contents);
       } catch (IOException e) {
          LOGGER.error("Failed to load shader source at {}", location, e);
@@ -171,6 +172,16 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
 
    private static Identifier includeShaderLocationToId(final Identifier location) {
       return SHADER_INCLUDE_CONVERTER.fileToId(location).withSuffix(".glsl");
+   }
+
+   private static @Nullable ShaderType shaderTypeByLocation(final Identifier location) {
+      for(ShaderType type : SHADER_TYPES) {
+         if (location.getPath().endsWith(type.getExtension())) {
+            return type;
+         }
+      }
+
+      return null;
    }
 
    private void apply(final PipelineBuilder pipelineBuilder, final PendingResults compilations) {

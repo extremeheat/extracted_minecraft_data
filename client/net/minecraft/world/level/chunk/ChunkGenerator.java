@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -456,62 +457,67 @@ public abstract class ChunkGenerator {
       return ((MobSpawnSettings)level.environmentAttributes().getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, pos)).getMobsToSpawn(mobCategory);
    }
 
-   public void createStructures(final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
-      if (!SharedConstants.DEBUG_DISABLE_STRUCTURES) {
-         ChunkPos sourceChunkPos = centerChunk.getPos();
-         RandomState randomState = state.randomState();
-         Climate.Sampler climateSampler = randomState.createClimateSampler(SamplerContext.builder().enableCaches().build());
-         state.possibleStructureSets().forEach((set) -> {
-            StructurePlacement featurePlacement = ((StructureSet)set.value()).placement();
-            List<StructureSet.StructureSelectionEntry> structures = ((StructureSet)set.value()).structures();
+   public CompletableFuture<ChunkAccess> createStructures(final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
+      ChunkPos sourceChunkPos = centerChunk.getPos();
+      List<Holder<StructureSet>> structureSetsInChunk = state.possibleStructureSets().stream().filter((set) -> {
+         StructurePlacement featurePlacement = ((StructureSet)set.value()).placement();
 
-            for(StructureSet.StructureSelectionEntry structure : structures) {
-               StructureStart existingStart = structureManager.getStartForStructure((Structure)structure.structure().value(), centerChunk);
-               if (existingStart != null && existingStart.isValid()) {
+         for(StructureSet.StructureSelectionEntry structure : ((StructureSet)set.value()).structures()) {
+            StructureStart existingStart = structureManager.getStartForStructure((Structure)structure.structure().value(), centerChunk);
+            if (existingStart != null && existingStart.isValid()) {
+               return false;
+            }
+         }
+
+         return featurePlacement.isStructureChunk(state, sourceChunkPos.x(), sourceChunkPos.z());
+      }).toList();
+      return structureSetsInChunk.isEmpty() ? CompletableFuture.completedFuture(centerChunk) : CompletableFuture.supplyAsync(() -> this.createStructuresForSets(structureSetsInChunk, registryAccess, state, structureManager, centerChunk, structureTemplateManager, level), Util.backgroundExecutor().forName("createStructures"));
+   }
+
+   private ChunkAccess createStructuresForSets(final List<Holder<StructureSet>> structureSetsInChunk, final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
+      RandomState randomState = state.randomState();
+      Climate.Sampler climateSampler = randomState.createClimateSampler(SamplerContext.builder().enableCaches().build());
+      ChunkPos sourceChunkPos = centerChunk.getPos();
+      structureSetsInChunk.forEach((set) -> {
+         List<StructureSet.StructureSelectionEntry> structures = ((StructureSet)set.value()).structures();
+         if (structures.size() == 1) {
+            this.tryGenerateStructure((StructureSet.StructureSelectionEntry)structures.getFirst(), structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler);
+         } else {
+            ArrayList<StructureSet.StructureSelectionEntry> options = new ArrayList(structures.size());
+            options.addAll(structures);
+            WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
+            random.setLargeFeatureSeed(state.getLevelSeed(), sourceChunkPos.x(), sourceChunkPos.z());
+            int total = 0;
+
+            for(StructureSet.StructureSelectionEntry option : options) {
+               total += option.weight();
+            }
+
+            while(!options.isEmpty()) {
+               int choice = random.nextInt(total);
+               int index = 0;
+
+               for(StructureSet.StructureSelectionEntry option : options) {
+                  choice -= option.weight();
+                  if (choice < 0) {
+                     break;
+                  }
+
+                  ++index;
+               }
+
+               StructureSet.StructureSelectionEntry selected = (StructureSet.StructureSelectionEntry)options.get(index);
+               if (this.tryGenerateStructure(selected, structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler)) {
                   return;
                }
+
+               options.remove(index);
+               total -= selected.weight();
             }
 
-            if (featurePlacement.isStructureChunk(state, sourceChunkPos.x(), sourceChunkPos.z())) {
-               if (structures.size() == 1) {
-                  this.tryGenerateStructure((StructureSet.StructureSelectionEntry)structures.get(0), structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler);
-               } else {
-                  ArrayList<StructureSet.StructureSelectionEntry> options = new ArrayList(structures.size());
-                  options.addAll(structures);
-                  WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(0L));
-                  random.setLargeFeatureSeed(state.getLevelSeed(), sourceChunkPos.x(), sourceChunkPos.z());
-                  int total = 0;
-
-                  for(StructureSet.StructureSelectionEntry option : options) {
-                     total += option.weight();
-                  }
-
-                  while(!options.isEmpty()) {
-                     int choice = random.nextInt(total);
-                     int index = 0;
-
-                     for(StructureSet.StructureSelectionEntry option : options) {
-                        choice -= option.weight();
-                        if (choice < 0) {
-                           break;
-                        }
-
-                        ++index;
-                     }
-
-                     StructureSet.StructureSelectionEntry selected = (StructureSet.StructureSelectionEntry)options.get(index);
-                     if (this.tryGenerateStructure(selected, structureManager, registryAccess, randomState, structureTemplateManager, state.getLevelSeed(), centerChunk, sourceChunkPos, level, climateSampler)) {
-                        return;
-                     }
-
-                     options.remove(index);
-                     total -= selected.weight();
-                  }
-
-               }
-            }
-         });
-      }
+         }
+      });
+      return centerChunk;
    }
 
    private boolean tryGenerateStructure(final StructureSet.StructureSelectionEntry selected, final StructureManager structureManager, final RegistryAccess registryAccess, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkAccess centerChunk, final ChunkPos sourceChunkPos, final ResourceKey<Level> level, final Climate.Sampler climateSampler) {
@@ -594,7 +600,7 @@ public abstract class ChunkGenerator {
       return this.getFirstFreeHeight(x, z, type, heightAccessor, randomState) - 1;
    }
 
-   public abstract void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext);
+   public abstract void addDebugScreenInfo(final BiConsumer<String, String> addFact, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext);
 
    /** @deprecated */
    @Deprecated

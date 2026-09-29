@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -55,16 +56,8 @@ public class MenuTabBar extends TabNavigationBar {
          super(tabManager, 0, 0, width, 24);
       }
 
-      public Builder addTab(final Tab tab) {
-         super.addTab(new MenuTabButton(this.tabManager, tab, 0, this.height), tab);
-         return this;
-      }
-
-      public Builder addTabs(final Tab... tabs) {
-         for(Tab tab : tabs) {
-            this.addTab(tab);
-         }
-
+      public Builder addTab(final Component label, final Tab tab) {
+         super.addTab(new MenuTabButton(this.tabManager, tab, 0, this.height, label), tab);
          return this;
       }
 
@@ -81,8 +74,8 @@ public class MenuTabBar extends TabNavigationBar {
       private static final int UNDERLINE_MARGIN_X = 4;
       private static final int UNDERLINE_MARGIN_BOTTOM = 2;
 
-      public MenuTabButton(final TabManager tabManager, final Tab tab, final int width, final int height) {
-         super(tabManager, tab, width, height);
+      public MenuTabButton(final TabManager tabManager, final Tab tab, final int width, final int height, final Component label) {
+         super(tabManager, tab, width, height, label);
       }
 
       protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
@@ -90,19 +83,19 @@ public class MenuTabBar extends TabNavigationBar {
          Font font = Minecraft.getInstance().font;
          int underlineColor = this.active ? -1 : -6250336;
          if (this.isSelected()) {
-            this.renderMenuBackground(graphics, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
-            this.renderFocusUnderline(graphics, font, underlineColor);
+            this.extractMenuBackground(graphics, this.getX() + 2, this.getY() + 2, this.getRight() - 2, this.getBottom());
+            this.extractFocusUnderline(graphics, font, underlineColor);
          }
 
-         this.renderLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
+         this.extractLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
          this.handleCursor(graphics);
       }
 
-      protected void renderMenuBackground(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1) {
+      protected void extractMenuBackground(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1) {
          Screen.extractMenuBackgroundTexture(graphics, Screen.MENU_BACKGROUND, x0, y0, 0.0F, 0.0F, x1 - x0, y1 - y0);
       }
 
-      private void renderLabel(final ActiveTextCollector output) {
+      private void extractLabel(final ActiveTextCollector output) {
          int left = this.getX() + 1;
          int top = this.getY() + (this.isSelected() ? 0 : 3);
          int right = this.getX() + this.getWidth() - 1;
@@ -110,7 +103,7 @@ public class MenuTabBar extends TabNavigationBar {
          output.acceptScrollingWithDefaultCenter(this.getMessage(), left, right, top, bottom);
       }
 
-      private void renderFocusUnderline(final GuiGraphicsExtractor graphics, final Font font, final int color) {
+      private void extractFocusUnderline(final GuiGraphicsExtractor graphics, final Font font, final int color) {
          int width = Math.min(font.width((FormattedText)this.getMessage()), this.getWidth() - 4);
          int left = this.getX() + (this.getWidth() - width) / 2;
          int top = this.getY() + this.getHeight() - 2;

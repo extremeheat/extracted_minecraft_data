@@ -176,7 +176,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    protected void init() {
-      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new GameTab(), new WorldTab(), new MoreTab()).build();
+      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTab(CreateWorldScreen.GameTab.TITLE, new GameTab()).addTab(CreateWorldScreen.WorldTab.TITLE, new WorldTab()).addTab(CreateWorldScreen.MoreTab.TITLE, new MoreTab()).build();
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       footer.addChild(Button.builder(Component.translatable("selectWorld.create"), (button) -> this.onCreate()).build());
@@ -556,7 +556,7 @@ public class CreateWorldScreen extends Screen {
 
       private GameTab() {
          Objects.requireNonNull(CreateWorldScreen.this);
-         super(TITLE);
+         super();
          GridLayout.RowHelper helper = this.layout.rowSpacing(8).createRowHelper(1);
          LayoutSettings buttonLayoutSettings = helper.newCellSettings();
          this.nameEdit = new EditBox(CreateWorldScreen.this.font, 208, 20, Component.translatable("selectWorld.enterName"));
@@ -606,7 +606,7 @@ public class CreateWorldScreen extends Screen {
 
       private WorldTab() {
          Objects.requireNonNull(CreateWorldScreen.this);
-         super(TITLE);
+         super();
          GridLayout.RowHelper helper = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
          CycleButton<WorldCreationUiState.WorldTypeEntry> typeButton = (CycleButton)helper.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier()).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (button, newPreset) -> CreateWorldScreen.this.uiState.setWorldType(newPreset)));
          typeButton.setValue(CreateWorldScreen.this.uiState.getWorldType());
@@ -688,7 +688,7 @@ public class CreateWorldScreen extends Screen {
 
       private MoreTab() {
          Objects.requireNonNull(CreateWorldScreen.this);
-         super(TITLE);
+         super();
          GridLayout.RowHelper helper = this.layout.rowSpacing(8).createRowHelper(1);
          helper.addChild(Button.builder(GAME_RULES_LABEL, (b) -> this.openGameRulesScreen()).width(210).build());
          helper.addChild(Button.builder(CreateWorldScreen.EXPERIMENTS_LABEL, (b) -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())).width(210).build());

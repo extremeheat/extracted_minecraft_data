@@ -13,7 +13,6 @@ import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import com.mojang.renderpearl.backend.api.GpuDeviceBackend;
 import com.mojang.renderpearl.backend.api.RenderPassBackend;
 import com.mojang.renderpearl.backend.common.BaseGpuBuffer;
 import com.mojang.renderpearl.util.TextureViewAndSampler;
@@ -34,7 +33,7 @@ import org.lwjgl.vulkan.VkDrawIndirectCommand;
 
 public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploader {
    private final RenderPassBackend backend;
-   private final GpuDeviceBackend device;
+   private final FrontendGpuDevice device;
    private final DeviceFeatures deviceFeatures;
    private final DeviceLimits deviceLimits;
    private final Runnable onFinish;
@@ -49,7 +48,7 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
    protected final HashMap<String, Object> uniforms;
    private boolean constantsPushed;
 
-   public FrontendRenderPass(final RenderPassBackend backend, final GpuDeviceBackend device, final List<@Nullable RenderPassDescriptor.Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable GpuFormat depthAttachmentFormat, final Runnable onFinish, final RenderPass.@Nullable RenderArea renderArea) {
+   public FrontendRenderPass(final RenderPassBackend backend, final FrontendGpuDevice device, final List<@Nullable RenderPassDescriptor.Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable GpuFormat depthAttachmentFormat, final Runnable onFinish, final RenderPass.@Nullable RenderArea renderArea) {
       super();
       this.vertexBuffers = new GpuBufferSlice[CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS];
       this.uniforms = new HashMap();
@@ -115,6 +114,8 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
                throw new IllegalStateException("Render pass depth/stencil attachment format " + var10002 + " doesn't match pipeline format " + String.valueOf(frontendPipeline.depthStencilFormat()) + ".");
             } else if (frontendPipeline.wantsDepthTexture() && this.depthAttachmentFormat == null) {
                throw new IllegalStateException(String.format(Locale.ROOT, "Render pipeline %s wants a depth texture but none was provided", frontendPipeline.name()));
+            } else if (!frontendPipeline.wantsDepthTexture() && this.depthAttachmentFormat != null) {
+               throw new IllegalStateException(String.format(Locale.ROOT, "Render pipeline %s doesn't want a depth texture but one was provided", frontendPipeline.name()));
             } else {
                this.boundPipeline = frontendPipeline;
                this.backend.setPipeline(frontendPipeline.backendRenderPipeline());
@@ -300,7 +301,7 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
             assert indexType != null;
 
             this.setVertexBuffer(draw.slot(), draw.vertexBuffer().slice());
-            if (FrontendGpuDevice.STRICT_VALIDATION) {
+            if (this.device.strictValidation) {
                if (indexBuffer == null) {
                   throw new IllegalStateException("Missing index buffer");
                }
@@ -422,7 +423,7 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
    private void validateDraw(final Collection<String> dynamicUniforms, final boolean dynamicVertexBuffer, final boolean indexed) {
       if (this.boundPipeline == null) {
          throw new IllegalStateException("Can't draw without a render pipeline");
-      } else if (FrontendGpuDevice.STRICT_VALIDATION) {
+      } else if (this.device.strictValidation) {
          if (this.boundPipeline.pushConstantSize() > 0 && !this.constantsPushed) {
             throw new IllegalStateException("Missing push constants");
          } else {

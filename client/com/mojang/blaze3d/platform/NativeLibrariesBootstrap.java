@@ -57,7 +57,6 @@ import org.slf4j.Logger;
 public class NativeLibrariesBootstrap {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
-   private static boolean vulkanLoaderAvailable;
 
    public NativeLibrariesBootstrap() {
       super();
@@ -81,15 +80,15 @@ public class NativeLibrariesBootstrap {
          }
 
          loadLibrary(stopCapturing, "LWJGL system", NativeLibrariesBootstrap::loadLWJGLSystem);
-         vulkanLoaderAvailable = tryLoadingVulkan();
+         boolean vulkanLoaderAvailable = tryLoadingVulkan();
          entries.add(new LibraryLoadEntry("SDL", NativeLibrariesBootstrap::loadSdl));
          entries.add(new LibraryLoadEntry("OpenGL", NativeLibrariesBootstrap::loadOpenGL));
          entries.add(new LibraryLoadEntry("OpenAL", NativeLibrariesBootstrap::loadOpenAL));
          entries.add(new LibraryLoadEntry("STB", NativeLibrariesBootstrap::loadSTB));
          entries.add(new LibraryLoadEntry("freetype", NativeLibrariesBootstrap::loadFreeType));
+         entries.add(new LibraryLoadEntry("shaderc", NativeLibrariesBootstrap::loadShaderc));
+         entries.add(new LibraryLoadEntry("spvc", NativeLibrariesBootstrap::loadSpvc));
          if (vulkanLoaderAvailable) {
-            entries.add(new LibraryLoadEntry("shaderc", NativeLibrariesBootstrap::loadShaderc));
-            entries.add(new LibraryLoadEntry("spvc", NativeLibrariesBootstrap::loadSpvc));
             entries.add(new LibraryLoadEntry("vma", NativeLibrariesBootstrap::loadVma));
          }
 
@@ -353,10 +352,6 @@ public class NativeLibrariesBootstrap {
          LOGGER.warn("Failed to load Vulkan loader", t);
          return false;
       }
-   }
-
-   public static boolean isVulkanLoaderAvailable() {
-      return vulkanLoaderAvailable;
    }
 
    private static void loadShaderc() {

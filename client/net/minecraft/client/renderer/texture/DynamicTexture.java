@@ -51,7 +51,7 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
 
    public void upload() {
       if (this.texture != null) {
-         RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels);
+         this.pixels.writeToGpuTexture(RenderSystem.getDevice().createCommandEncoder(), this.texture);
       } else {
          LOGGER.warn("Trying to upload disposed texture {}", this.getTexture().getLabel());
       }

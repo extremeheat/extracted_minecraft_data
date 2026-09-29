@@ -16,6 +16,7 @@ import net.minecraft.util.valueproviders.ClampedInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -152,7 +153,7 @@ public class VegetationPlacements {
       builder.add(BiomeFilter.biome());
       builder.add(CountPlacement.of(96));
       builder.add(OffsetPlacement.ofTriangle(7, 3));
-      builder.add(BlockPredicateFilter.forPredicate(BlockPredicate.ONLY_IN_AIR_PREDICATE));
+      builder.add(BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.belowHeightmap(Heightmap.Types.MOTION_BLOCKING))));
       return builder.build();
    }
 

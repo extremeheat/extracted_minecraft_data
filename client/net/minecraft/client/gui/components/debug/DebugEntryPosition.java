@@ -2,13 +2,10 @@ package net.minecraft.client.gui.components.debug;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import java.util.List;
-import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -18,8 +15,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryPosition implements DebugScreenEntry {
-   public static final Identifier GROUP = Identifier.withDefaultNamespace("position");
-
    public DebugEntryPosition() {
       super();
    }
@@ -50,13 +45,15 @@ public class DebugEntryPosition implements DebugScreenEntry {
          }
 
          LongSet chunks = (LongSet)var13;
-         Identifier var10001 = GROUP;
-         String var10002 = String.format(Locale.ROOT, "XYZ: %.3f / %.5f / %.3f", minecraft.getCameraEntity().getX(), minecraft.getCameraEntity().getY(), minecraft.getCameraEntity().getZ());
-         String var10003 = String.format(Locale.ROOT, "Block: %d %d %d", feetPos.getX(), feetPos.getY(), feetPos.getZ());
-         String var10004 = String.format(Locale.ROOT, "Chunk: %d %d %d [%d %d in r.%d.%d.mca]", chunkPos.x(), SectionPos.blockToSectionCoord(feetPos.getY()), chunkPos.z(), chunkPos.getRegionLocalX(), chunkPos.getRegionLocalZ(), chunkPos.getRegionX(), chunkPos.getRegionZ());
-         String var10005 = String.format(Locale.ROOT, "Facing: %s (%s) (%.1f / %.1f)", direction, faceString, Mth.wrapDegrees(entity.getYRot()), Mth.wrapDegrees(entity.getXRot()));
-         String var10006 = String.valueOf(minecraft.level.dimension().identifier());
-         displayer.addToGroup(var10001, List.of(var10002, var10003, var10004, var10005, var10006 + " FC: " + chunks.size()));
+         displayer.addFactToGroup(DebugGroups.POSITION, "XYZ", (fact) -> fact.formattedValue("%.3f", minecraft.getCameraEntity().getX()).text(" / ").formattedValue("%.5f", minecraft.getCameraEntity().getY()).text(" / ").formattedValue("%.3f", minecraft.getCameraEntity().getZ()));
+         displayer.addFactToGroup(DebugGroups.POSITION, "Block", (fact) -> fact.value(feetPos.getX()).text(" ").value(feetPos.getY()).text(" ").value(feetPos.getZ()));
+         displayer.addFactToGroup(DebugGroups.POSITION, "Chunk", (fact) -> fact.value(chunkPos.x()).text(" ").value(SectionPos.blockToSectionCoord(feetPos.getY())).text(" ").value(chunkPos.z()).text(" [").value(chunkPos.getRegionLocalX()).text(" ").value(chunkPos.getRegionLocalZ()).text(" in ").formattedValue("r.%d.%d.mca", chunkPos.getRegionX(), chunkPos.getRegionZ()).text("]"));
+         displayer.addFactToGroup(DebugGroups.POSITION, "Facing", (fact) -> fact.value(direction.toString()).text(" (").value(faceString).text(") (").formattedValue("%.1f", Mth.wrapDegrees(entity.getYRot())).text(" / ").formattedValue("%.1f", Mth.wrapDegrees(entity.getXRot())).text(")"));
+         displayer.addFactToGroup(DebugGroups.POSITION, "Dimension", (fact) -> fact.value(minecraft.level.dimension().identifier().toString()));
+         if (!chunks.isEmpty()) {
+            displayer.addFactToGroup(DebugGroups.POSITION, "Forced Chunks", (fact) -> fact.value(chunks.size()));
+         }
+
       }
    }
 }

@@ -93,7 +93,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       Holder<MobEffect> dummyEffect = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(0)).get(0);
       BeaconPowerButton beaconPowerButton = new BeaconUpgradePowerButton(this.leftPos + 167 + (count - 1) * 24 - totalWidth / 2, this.topPos + 47, dummyEffect);
-      beaconPowerButton.visible = false;
+      beaconPowerButton.setVisible(false);
       this.addBeaconButton(beaconPowerButton);
       this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
       this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
@@ -233,11 +233,11 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
       public void updateStatus(final int levels) {
          if (BeaconScreen.this.primary != null) {
-            this.visible = true;
+            this.setVisible(true);
             this.setEffect(BeaconScreen.this.primary);
             super.updateStatus(levels);
          } else {
-            this.visible = false;
+            this.setVisible(false);
          }
 
       }

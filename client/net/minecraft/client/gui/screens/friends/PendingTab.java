@@ -51,10 +51,6 @@ class PendingTab extends AbstractFriendsTab {
 
    }
 
-   public Component getTabTitle() {
-      return Component.translatable("gui.friends.requests_count", 0);
-   }
-
    public Component getTabExtraNarration() {
       return Component.empty();
    }

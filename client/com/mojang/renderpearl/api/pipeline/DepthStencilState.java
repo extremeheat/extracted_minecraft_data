@@ -2,6 +2,7 @@ package com.mojang.renderpearl.api.pipeline;
 
 public record DepthStencilState(CompareOp depthTest, boolean writeDepth, float depthBiasScaleFactor, float depthBiasConstant) {
    public static final DepthStencilState DEFAULT;
+   public static final DepthStencilState OFF;
 
    public DepthStencilState(final CompareOp depthTest, final boolean depthWrite) {
       this(depthTest, depthWrite, 0.0F, 0.0F);
@@ -13,5 +14,6 @@ public record DepthStencilState(CompareOp depthTest, boolean writeDepth, float d
 
    static {
       DEFAULT = new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true);
+      OFF = new DepthStencilState(CompareOp.ALWAYS_PASS, false);
    }
 }

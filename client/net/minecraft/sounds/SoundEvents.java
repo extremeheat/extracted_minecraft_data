@@ -1832,6 +1832,7 @@ public class SoundEvents {
    public static final SoundEvent ZOMBIE_NAUTILUS_EAT = register("entity.zombie_nautilus.eat");
    public static final SoundEvent ZOMBIE_NAUTILUS_HURT = register("entity.zombie_nautilus.hurt");
    public static final SoundEvent ZOMBIE_NAUTILUS_HURT_ON_LAND = register("entity.zombie_nautilus.hurt_land");
+   public static final SoundEvent ZOMBIE_NAUTILUS_RIDING = register("entity.zombie_nautilus.riding");
    public static final SoundEvent ZOMBIE_NAUTILUS_SWIM = register("entity.zombie_nautilus.swim");
    public static final SoundEvent ZOMBIFIED_PIGLIN_AMBIENT = register("entity.zombified_piglin.ambient");
    public static final SoundEvent ZOMBIFIED_PIGLIN_ANGRY = register("entity.zombified_piglin.angry");

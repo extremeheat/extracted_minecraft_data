@@ -80,17 +80,21 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       return this.entityStorage.count();
    }
 
+   @VisibleForDebug
+   public int sectionCount() {
+      return this.sectionStorage.count();
+   }
+
+   @VisibleForDebug
+   public int tickingCount() {
+      return this.tickingChunks.size();
+   }
+
    private void removeSectionIfEmpty(final long sectionPos, final EntitySection<T> section) {
       if (section.isEmpty()) {
          this.sectionStorage.remove(sectionPos);
       }
 
-   }
-
-   @VisibleForDebug
-   public String gatherStats() {
-      int var10000 = this.entityStorage.count();
-      return var10000 + "," + this.sectionStorage.count() + "," + this.tickingChunks.size();
    }
 
    private class Callback implements EntityInLevelCallback {

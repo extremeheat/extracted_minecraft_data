@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import net.minecraft.core.BlockPos;
@@ -74,7 +75,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return new NoiseColumn(heightAccessor.getMinY(), 0);
    }
 
-   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
+   public void addDebugScreenInfo(final BiConsumer<String, String> addFact, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
    }
 
    public static BlockState getBlockStateFor(int worldX, int worldZ) {

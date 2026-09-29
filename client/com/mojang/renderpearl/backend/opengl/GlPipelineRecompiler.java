@@ -7,6 +7,7 @@ import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.pipeline.SpvModule;
 import com.mojang.renderpearl.frontend.shaders.SpvUtil;
+import com.mojang.renderpearl.util.PlatformUtil;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
@@ -15,8 +16,6 @@ import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import net.minecraft.SharedConstants;
-import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
@@ -30,19 +29,19 @@ import org.slf4j.Logger;
 public class GlPipelineRecompiler {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_LOG_LENGTH = 32768;
-   private static final boolean IS_MACOS;
    public static final String UNIFORM_FORMAT_STRING = "_uniform_%02d_%02d";
    public static final String PUSH_CONSTANT_BLOCK_NAME = "_push_constants";
-   private static final boolean SHADER_DEBUG_MODE;
    private final GlStateManager stateManager;
    private final GlDebugLabel debugLabels;
    private final boolean drawParametersSupported;
+   private final boolean debugMode;
 
-   public GlPipelineRecompiler(final GlStateManager stateManager, final GlDebugLabel debugLabels, final boolean drawParametersSupported) {
+   public GlPipelineRecompiler(final GlStateManager stateManager, final GlDebugLabel debugLabels, final boolean drawParametersSupported, final boolean debugMode) {
       super();
       this.stateManager = stateManager;
       this.debugLabels = debugLabels;
       this.drawParametersSupported = drawParametersSupported;
+      this.debugMode = debugMode;
    }
 
    private String decompileShader(final SpvModule spvModule) throws ShaderCompileException {
@@ -67,14 +66,14 @@ public class GlPipelineRecompiler {
             Spvc.spvc_compiler_options_set_bool(options, 33554439, false);
             Spvc.spvc_compiler_options_set_bool(options, 33554465, true);
             Spvc.spvc_compiler_options_set_bool(options, 33554437, this.drawParametersSupported);
-            if (!SHADER_DEBUG_MODE) {
+            if (!this.debugMode) {
                Spvc.spvc_compiler_options_set_bool(options, 16777270, true);
                Spvc.spvc_compiler_options_set_bool(options, 16777218, true);
             }
 
             SpvUtil.throwIfError(Spvc.spvc_compiler_create_shader_resources(compiler, pointerReturnBuffer), "Couldn't create resource list");
             long spvcResources = pointerReturnBuffer.get(0);
-            if (!SHADER_DEBUG_MODE) {
+            if (!this.debugMode) {
                if (spvModule.type() == ShaderType.VERTEX) {
                   this.renameInterfaceVariables(compiler, spvcResources, 3, "_vert_input_%02d");
                }
@@ -84,7 +83,7 @@ public class GlPipelineRecompiler {
                }
             }
 
-            if (SHADER_DEBUG_MODE && !IS_MACOS) {
+            if (this.debugMode && !PlatformUtil.IS_MACOS) {
                Spvc.spvc_compiler_options_set_bool(options, 33554438, true);
             } else if (spvModule.type() == ShaderType.VERTEX || spvModule.type() == ShaderType.FRAGMENT) {
                this.renameInterfaceVariables(compiler, spvcResources, spvModule.type() == ShaderType.FRAGMENT ? 3 : 4, "_interface_variable_%02d");
@@ -186,7 +185,7 @@ public class GlPipelineRecompiler {
                case 1:
                case 2:
                   String blockName = String.format(Locale.ROOT, "_uniform_instance_%02d_%02d", descriptorSet, binding);
-                  if (SHADER_DEBUG_MODE) {
+                  if (this.debugMode) {
                      String existingBlockName = Spvc.spvc_compiler_get_name(compiler, resource.base_type_id());
                      if (existingBlockName != null) {
                         blockName = existingBlockName;
@@ -209,7 +208,7 @@ public class GlPipelineRecompiler {
                   break;
                case 9:
                   String blockName = "_push_constants_instance";
-                  if (SHADER_DEBUG_MODE) {
+                  if (this.debugMode) {
                      String existingBlockName = Spvc.spvc_compiler_get_name(compiler, resource.base_type_id());
                      if (existingBlockName != null) {
                         blockName = existingBlockName;
@@ -349,10 +348,5 @@ public class GlPipelineRecompiler {
       }
 
       return (GlProgram)var9;
-   }
-
-   static {
-      IS_MACOS = Util.getPlatform() == Util.OS.OSX;
-      SHADER_DEBUG_MODE = SharedConstants.IS_RENDERDOC_ATTACHED;
    }
 }

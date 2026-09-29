@@ -240,8 +240,8 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    }
 
    private void updateHideAndShowButton(final boolean isHidden) {
-      this.showButton.visible = isHidden;
-      this.hideButton.visible = !isHidden;
+      this.showButton.setVisible(isHidden);
+      this.hideButton.setVisible(!isHidden);
       this.children.set(0, isHidden ? this.showButton : this.hideButton);
    }
 

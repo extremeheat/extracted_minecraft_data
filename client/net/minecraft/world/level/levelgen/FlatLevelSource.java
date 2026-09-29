@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -95,7 +96,7 @@ public class FlatLevelSource extends ChunkGenerator {
       return noiseColumn;
    }
 
-   public void addDebugScreenInfo(final List<String> result, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
+   public void addDebugScreenInfo(final BiConsumer<String, String> addFact, final RandomState randomState, final BlockPos feetPos, final SamplerContext samplerContext) {
    }
 
    public void spawnOriginalMobs(final WorldGenRegion worldGenRegion) {

@@ -29,7 +29,7 @@ public class WaitingForResponseScreen extends Screen {
       super.init();
       this.layout.addTitleHeader(TITLE, this.font);
       this.layout.addToContents(this.closeButton);
-      this.closeButton.visible = false;
+      this.closeButton.setVisible(false);
       this.closeButton.active = false;
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
@@ -44,7 +44,7 @@ public class WaitingForResponseScreen extends Screen {
       super.tick();
       if (!this.closeButton.active) {
          int secondsVisible = this.ticks++ / 20;
-         this.closeButton.visible = secondsVisible >= 1;
+         this.closeButton.setVisible(secondsVisible >= 1);
          this.closeButton.setMessage(BUTTON_LABELS[secondsVisible]);
          if (secondsVisible == 5) {
             this.closeButton.active = true;

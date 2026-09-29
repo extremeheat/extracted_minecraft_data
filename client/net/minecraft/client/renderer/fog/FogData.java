@@ -9,6 +9,7 @@ public class FogData {
    public float renderDistanceEnd;
    public float skyEnd;
    public float cloudEnd;
+   public boolean shouldCreateBossFog;
    public Vector4f color = new Vector4f();
 
    public FogData() {

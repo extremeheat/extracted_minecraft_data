@@ -204,7 +204,7 @@ public class LocalPlayer extends AbstractClientPlayer {
             this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, ridingSoundId, happyGhast, false, SoundEvents.HAPPY_GHAST_RIDING, happyGhast.getSoundSource(), 0.0F, 1.0F, 5.0F));
          } else if (entity instanceof AbstractNautilus) {
             AbstractNautilus nautilus = (AbstractNautilus)entity;
-            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, ridingSoundId, nautilus, true, SoundEvents.NAUTILUS_RIDING, nautilus.getSoundSource(), 0.0F, 1.0F, 5.0F));
+            this.minecraft.getSoundManager().play(new RidingEntitySoundInstance(this, ridingSoundId, nautilus, true, nautilus.getRidingSound(), nautilus.getSoundSource(), 0.0F, 1.0F, 5.0F));
          }
 
          return true;

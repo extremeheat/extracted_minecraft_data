@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
@@ -114,7 +113,7 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty(), outputTarget.hasDepth() ? outputTarget.getDepthTextureView() : null, OptionalDouble.empty())) {
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty())) {
                renderPass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline));
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());

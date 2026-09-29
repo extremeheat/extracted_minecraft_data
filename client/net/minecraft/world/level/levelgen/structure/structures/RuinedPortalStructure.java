@@ -78,7 +78,7 @@ public class RuinedPortalStructure extends Structure {
             templateLocation = Identifier.withDefaultNamespace(STRUCTURE_LOCATION_PORTALS[random.nextInt(STRUCTURE_LOCATION_PORTALS.length)]);
          }
 
-         StructureTemplate template = context.structureTemplateManager().getOrCreate(templateLocation);
+         StructureTemplate template = context.structureTemplateManager().getOrEmpty(templateLocation);
          Rotation rotation = (Rotation)Util.getRandom(Rotation.values(), random);
          Mirror mirror = random.nextFloat() < 0.5F ? Mirror.NONE : Mirror.FRONT_BACK;
          BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);

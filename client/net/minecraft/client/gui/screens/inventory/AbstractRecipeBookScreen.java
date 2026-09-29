@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
    private final RecipeBookComponent<?> recipeBookComponent;
@@ -102,12 +103,12 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       return (!this.widthTooNarrow || !this.recipeBookComponent.isVisible()) && super.isHovering(left, top, w, h, xm, ym);
    }
 
-   protected boolean hasClickedOutside(final double mx, final double my, final int xo, final int yo) {
-      boolean clickedOutside = mx < (double)xo || my < (double)yo || mx >= (double)(xo + this.imageWidth) || my >= (double)(yo + this.imageHeight);
+   protected boolean hasClickedOutside(final double mx, final double my) {
+      boolean clickedOutside = super.hasClickedOutside(mx, my);
       return this.recipeBookComponent.hasClickedOutside(mx, my, this.leftPos, this.topPos, this.imageWidth, this.imageHeight) && clickedOutside;
    }
 
-   protected void slotClicked(final Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
+   protected void slotClicked(final @Nullable Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
       super.slotClicked(slot, slotId, buttonNum, containerInput);
       this.recipeBookComponent.slotClicked(slot);
    }

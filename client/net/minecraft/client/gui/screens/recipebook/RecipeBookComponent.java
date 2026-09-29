@@ -260,7 +260,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       for(RecipeBookTabButton tabButton : this.tabButtons) {
          ExtendedRecipeBookCategory category = tabButton.getCategory();
          if (category instanceof SearchRecipeBookCategory) {
-            tabButton.visible = true;
+            tabButton.setVisible(true);
             tabButton.setPosition(xPosTab, yPosTab + 27 * index++);
          } else if (tabButton.updateVisibility(this.book)) {
             tabButton.setPosition(xPosTab, yPosTab + 27 * index++);

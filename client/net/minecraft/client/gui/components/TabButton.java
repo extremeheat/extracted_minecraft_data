@@ -11,14 +11,14 @@ public abstract class TabButton extends AbstractWidget.WithInactiveMessage {
    private final TabManager tabManager;
    private final Tab tab;
 
-   public TabButton(final TabManager tabManager, final Tab tab, final int width, final int height) {
-      super(0, 0, width, height, tab.getTabTitle());
+   public TabButton(final TabManager tabManager, final Tab tab, final int width, final int height, final Component label) {
+      super(0, 0, width, height, label);
       this.tabManager = tabManager;
       this.tab = tab;
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {
-      output.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.tab", this.tab.getTabTitle()));
+      output.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.tab", this.message));
       output.add(NarratedElementType.HINT, this.tab().getTabExtraNarration());
    }
 

@@ -33,7 +33,7 @@ public class RealmsWorldsTab extends GridLayoutTab implements RealmsConfiguratio
    private final List<RealmsWorldSlotButton> slotButtonList = Lists.newArrayList();
 
    public RealmsWorldsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
-      super(TITLE);
+      super();
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;
       this.serverData = serverData;

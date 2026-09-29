@@ -402,6 +402,32 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(chunkX, chunkZ).getHeight(type, x & 15, z & 15) + 1;
    }
 
+   public boolean anyHeightMatches(final Heightmap.Types type, final int minX, final int minZ, final int maxX, final int maxZ, final int requiredMinY, final int requiredMaxY) {
+      for(int chunkZ = SectionPos.blockToSectionCoord(minZ); chunkZ <= SectionPos.blockToSectionCoord(maxZ); ++chunkZ) {
+         int zFrom = Math.max(minZ, SectionPos.sectionToBlockCoord(chunkZ));
+         int zTo = Math.min(maxZ, SectionPos.sectionToBlockCoord(chunkZ, 15));
+
+         for(int chunkX = SectionPos.blockToSectionCoord(minX); chunkX <= SectionPos.blockToSectionCoord(maxX); ++chunkX) {
+            this.warnIfReadOutsideWriteZone(chunkX, chunkZ);
+            ChunkAccess chunk = this.getChunk(chunkX, chunkZ);
+            Heightmap heightmap = chunk.getHeightmap(type);
+            int xFrom = Math.max(minX, SectionPos.sectionToBlockCoord(chunkX));
+            int xTo = Math.min(maxX, SectionPos.sectionToBlockCoord(chunkX, 15));
+
+            for(int x = xFrom; x <= xTo; ++x) {
+               for(int z = zFrom; z <= zTo; ++z) {
+                  int height = heightmap.getFirstAvailable(x & 15, z & 15);
+                  if (height >= requiredMinY && height <= requiredMaxY) {
+                     return true;
+                  }
+               }
+            }
+         }
+      }
+
+      return false;
+   }
+
    public void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch) {
    }
 

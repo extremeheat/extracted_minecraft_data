@@ -73,6 +73,7 @@ public class Camera implements TrackedWaypoint.Camera {
    private float oldFovModifier;
    private float fov;
    private float hudFov;
+   private FogType fogType;
    private float depthFar;
    private boolean isPanoramicMode;
    private final EnvironmentAttributeProbe attributeProbe;
@@ -124,6 +125,7 @@ public class Camera implements TrackedWaypoint.Camera {
          float windowWidth = (float)this.minecraft.getWindow().getWidth();
          float windowHeight = (float)this.minecraft.getWindow().getHeight();
          this.setupPerspective(0.05F, this.depthFar, this.fov, windowWidth, windowHeight);
+         this.fogType = this.calculateFogType();
          this.initialized = true;
       }
    }
@@ -257,7 +259,7 @@ public class Camera implements TrackedWaypoint.Camera {
          }
       }
 
-      FogType state = this.getFluidInCamera();
+      FogType state = this.getFogType();
       if (state == FogType.LAVA || state == FogType.WATER) {
          float effectScale = ((Double)this.minecraft.options.fovEffectScale().get()).floatValue();
          fov *= Mth.lerp(effectScale, 1.0F, 0.85714287F);
@@ -351,6 +353,10 @@ public class Camera implements TrackedWaypoint.Camera {
 
    public float getFov() {
       return this.fov;
+   }
+
+   public FogType getFogType() {
+      return this.fogType;
    }
 
    private void setupPerspective(final float zNear, final float zFar, final float fov, final float width, final float height) {
@@ -462,34 +468,30 @@ public class Camera implements TrackedWaypoint.Camera {
       return new NearPlane(forwardsVec3, leftVec3, upVec3);
    }
 
-   public FogType getFluidInCamera() {
-      if (!this.initialized) {
-         return FogType.NONE;
+   private FogType calculateFogType() {
+      FluidState fluidState1 = this.level.getFluidState(this.blockPosition);
+      if (fluidState1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + fluidState1.getHeightForCamera(this.level, this.blockPosition))) {
+         return FogType.WATER;
       } else {
-         FluidState fluidState1 = this.level.getFluidState(this.blockPosition);
-         if (fluidState1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + fluidState1.getHeightForCamera(this.level, this.blockPosition))) {
-            return FogType.WATER;
-         } else {
-            NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
+         NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
 
-            for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
-               Vec3 offsetPos = this.position.add(point);
-               BlockPos checkPos = BlockPos.containing(offsetPos);
-               FluidState fluidState = this.level.getFluidState(checkPos);
-               if (fluidState.is(FluidTags.LAVA)) {
-                  if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
-                     return FogType.LAVA;
-                  }
-               } else {
-                  BlockState state = this.level.getBlockState(checkPos);
-                  if (state.is(Blocks.POWDER_SNOW)) {
-                     return FogType.POWDER_SNOW;
-                  }
+         for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
+            Vec3 offsetPos = this.position.add(point);
+            BlockPos checkPos = BlockPos.containing(offsetPos);
+            FluidState fluidState = this.level.getFluidState(checkPos);
+            if (fluidState.is(FluidTags.LAVA)) {
+               if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
+                  return FogType.LAVA;
+               }
+            } else {
+               BlockState state = this.level.getBlockState(checkPos);
+               if (state.is(Blocks.POWDER_SNOW)) {
+                  return FogType.POWDER_SNOW;
                }
             }
-
-            return FogType.NONE;
          }
+
+         return FogType.NONE;
       }
    }
 

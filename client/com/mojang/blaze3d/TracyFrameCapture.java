@@ -88,7 +88,8 @@ public class TracyFrameCapture implements AutoCloseable {
             renderPass.draw(3, 1, 0, 0);
          }
 
-         commandEncoder.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0L, () -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD, 0);
+         commandEncoder.copyTextureToBuffer(this.frameBuffer, this.pixelbuffer, 0L, 0);
+         RenderSystem.queueFencedTask(() -> this.status = TracyFrameCapture.Status.WAITING_FOR_UPLOAD);
          this.lastCaptureDelay = 0;
       }
    }

@@ -14,6 +14,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -135,5 +136,9 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
 
    static BlockPredicate volumeMatch(final Vec3i min, final Vec3i max, final BlockPredicate match) {
       return new VolumeMatchPredicate(min, max, match);
+   }
+
+   static BlockPredicate belowHeightmap(final Heightmap.Types heightmap) {
+      return new BelowHeightmapPredicate(heightmap);
    }
 }

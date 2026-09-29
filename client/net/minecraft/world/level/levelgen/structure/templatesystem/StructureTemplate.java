@@ -1,8 +1,9 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -14,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -29,6 +31,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.RandomizableContainer;
@@ -67,6 +70,7 @@ import org.slf4j.Logger;
 
 public class StructureTemplate {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final StructureTemplate EMPTY = new StructureTemplate();
    public static final String PALETTE_TAG = "palette";
    public static final String PALETTE_LIST_TAG = "palettes";
    public static final String ENTITIES_TAG = "entities";
@@ -83,7 +87,7 @@ public class StructureTemplate {
    private Vec3i size;
    private String author;
 
-   public StructureTemplate() {
+   private StructureTemplate() {
       super();
       this.size = Vec3i.ZERO;
       this.author = "?";
@@ -93,15 +97,18 @@ public class StructureTemplate {
       return this.size;
    }
 
-   public void setAuthor(final String author) {
-      this.author = author;
-   }
-
    public String getAuthor() {
       return this.author;
    }
 
-   public void fillFromWorld(final Level level, final BlockPos position, final Vec3i size, final boolean inludeEntities, final List<Block> ignoreBlocks) {
+   public static StructureTemplate createFromWorld(final ServerLevel level, final BlockPos pos, final Vec3i structureSize, final String author, final boolean includeEntities, final List<Block> ignoreBlocks) {
+      StructureTemplate template = new StructureTemplate();
+      template.fillFromWorld(level, pos, structureSize, includeEntities, ignoreBlocks);
+      template.author = author;
+      return template;
+   }
+
+   private void fillFromWorld(final Level level, final BlockPos position, final Vec3i size, final boolean includeEntities, final List<Block> ignoreBlocks) {
       if (size.getX() >= 1 && size.getY() >= 1 && size.getZ() >= 1) {
          BlockPos corner2 = position.offset(size).offset(-1, -1, -1);
          List<StructureBlockInfo> fullBlockList = Lists.newArrayList();
@@ -129,7 +136,7 @@ public class StructureTemplate {
             List<StructureBlockInfo> blockInfoList = buildInfoList(fullBlockList, blockEntitiesList, otherBlocksList);
             this.palettes.clear();
             this.palettes.add(new Palette(blockInfoList));
-            if (inludeEntities) {
+            if (includeEntities) {
                this.fillEntityList(level, minCorner, maxCorner, reporter);
             } else {
                this.entityInfoList.clear();
@@ -651,7 +658,13 @@ public class StructureTemplate {
       return NbtUtils.addCurrentDataVersion(tag);
    }
 
-   public void load(final HolderGetter<Block> blockLookup, final CompoundTag tag) {
+   public static StructureTemplate load(final HolderGetter<Block> blockLookup, final CompoundTag tag) {
+      StructureTemplate template = new StructureTemplate();
+      template.loadFrom(blockLookup, tag);
+      return template;
+   }
+
+   private void loadFrom(final HolderGetter<Block> blockLookup, final CompoundTag tag) {
       this.palettes.clear();
       this.entityInfoList.clear();
       ListTag sizeTag = tag.getListOrEmpty("size");
@@ -806,8 +819,8 @@ public class StructureTemplate {
 
    public static final class Palette {
       private final List<StructureBlockInfo> blocks;
-      private final Map<Block, List<StructureBlockInfo>> cache = Maps.newHashMap();
-      private @Nullable List<JigsawBlockInfo> cachedJigsaws;
+      private final Map<Block, List<StructureBlockInfo>> cache = new ConcurrentHashMap();
+      private final Supplier<List<JigsawBlockInfo>> jigsaws = Suppliers.memoize(() -> this.blocks(Blocks.JIGSAW).stream().map(JigsawBlockInfo::parse).toList());
 
       private Palette(final List<StructureBlockInfo> blocks) {
          super();
@@ -815,11 +828,7 @@ public class StructureTemplate {
       }
 
       public List<JigsawBlockInfo> jigsaws() {
-         if (this.cachedJigsaws == null) {
-            this.cachedJigsaws = this.blocks(Blocks.JIGSAW).stream().map(JigsawBlockInfo::parse).toList();
-         }
-
-         return this.cachedJigsaws;
+         return (List)this.jigsaws.get();
       }
 
       public List<StructureBlockInfo> blocks() {

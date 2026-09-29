@@ -181,7 +181,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
       if (this.selectedTab != null) {
-         this.selectedTab.scroll(scrollX * 16.0, scrollY * 16.0);
+         this.selectedTab.scroll(-scrollX * 16.0, scrollY * 16.0);
          return true;
       } else {
          return false;

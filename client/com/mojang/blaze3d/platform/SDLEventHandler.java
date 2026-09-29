@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
-import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.input.PreeditEvent;
@@ -164,15 +163,8 @@ public class SDLEventHandler {
 
    private void handleMouseWheelEvent(final SDL_Event event) {
       SDL_MouseWheelEvent wheel = event.wheel();
-      Long handle = getWindowHandle(event);
-      boolean invertedScroll = isShiftInvertedScroll((double)wheel.y(), (double)wheel.x());
-      double scrollX = invertedScroll ? 0.0 : (double)wheel.x();
-      double scrollY = invertedScroll ? (double)(-wheel.x()) : (double)wheel.y();
-      this.minecraft.execute(() -> this.minecraft.mouseHandler.onScroll(handle, scrollX, scrollY));
-   }
-
-   private static boolean isShiftInvertedScroll(final double y, final double x) {
-      return InputQuirks.SHIFT_INVERTS_SCROLL_AXIS && y == 0.0 && x != 0.0 && (SDLKeyboard.SDL_GetModState() & 3) != 0;
+      long handle = getWindowHandle(event);
+      this.minecraft.execute(() -> this.minecraft.mouseHandler.onScroll(handle, (double)wheel.x(), (double)wheel.y()));
    }
 
    private void handleDropCompleteEvent(final SDL_Event event) {

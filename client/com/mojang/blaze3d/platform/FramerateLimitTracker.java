@@ -40,8 +40,9 @@ public class FramerateLimitTracker {
 
    public FramerateThrottleReason getThrottleReason() {
       InactivityFpsLimit inactivityFpsLimit = (InactivityFpsLimit)this.options.inactivityFpsLimit().get();
-      Window window = this.minecraft.getWindow();
-      if (!window.isIconified() && (window.isFocused() || !window.isExclusiveFullscreen())) {
+      if (this.minecraft.getWindow().isIconified()) {
+         return FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED;
+      } else {
          if (inactivityFpsLimit == InactivityFpsLimit.AFK) {
             long afkTimeMillis = Util.getMillis() - this.latestInputTime;
             if (afkTimeMillis > 600000L) {
@@ -54,8 +55,6 @@ public class FramerateLimitTracker {
          }
 
          return this.minecraft.level != null || this.minecraft.gui.screen() == null && this.minecraft.gui.overlay() == null ? FramerateLimitTracker.FramerateThrottleReason.NONE : FramerateLimitTracker.FramerateThrottleReason.OUT_OF_LEVEL_MENU;
-      } else {
-         return FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED;
       }
    }
 

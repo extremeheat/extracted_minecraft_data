@@ -90,9 +90,9 @@ public class RecipeBookPage {
          if (startOffset + i < this.recipeCollections.size()) {
             RecipeCollection recipeCollection = (RecipeCollection)this.recipeCollections.get(startOffset + i);
             button.init(recipeCollection, this.isFiltering, this, context);
-            button.visible = true;
+            button.setVisible(true);
          } else {
-            button.visible = false;
+            button.setVisible(false);
          }
       }
 
@@ -101,11 +101,11 @@ public class RecipeBookPage {
 
    private void updateArrowButtons() {
       if (this.forwardButton != null) {
-         this.forwardButton.visible = this.totalPages > 1 && this.currentPage < this.totalPages - 1;
+         this.forwardButton.setVisible(this.totalPages > 1 && this.currentPage < this.totalPages - 1);
       }
 
       if (this.backButton != null) {
-         this.backButton.visible = this.totalPages > 1 && this.currentPage > 0;
+         this.backButton.setVisible(this.totalPages > 1 && this.currentPage > 0);
       }
 
    }
@@ -121,7 +121,7 @@ public class RecipeBookPage {
 
       for(RecipeButton recipeBookButton : this.buttons) {
          recipeBookButton.extractRenderState(graphics, mouseX, mouseY, a);
-         if (recipeBookButton.visible && recipeBookButton.isHoveredOrFocused()) {
+         if (recipeBookButton.isVisible() && recipeBookButton.isHoveredOrFocused()) {
             this.hoveredButton = recipeBookButton;
          }
       }

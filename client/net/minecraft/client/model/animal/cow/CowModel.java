@@ -1,19 +1,15 @@
 package net.minecraft.client.model.animal.cow;
 
-import java.util.Set;
-import net.minecraft.client.model.BabyModelTransform;
 import net.minecraft.client.model.QuadrupedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
-import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
 public class CowModel extends QuadrupedModel<LivingEntityRenderState> {
-   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(false, 8.0F, 6.0F, Set.of("head"));
    private static final int LEG_SIZE = 12;
 
    public CowModel(final ModelPart root) {

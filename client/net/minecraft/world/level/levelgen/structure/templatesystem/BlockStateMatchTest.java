@@ -5,21 +5,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BlockStateMatchTest extends RuleTest {
+public record BlockStateMatchTest(BlockState blockState) implements RuleTest {
    public static final MapCodec<BlockStateMatchTest> CODEC;
-   private final BlockState blockState;
 
-   public BlockStateMatchTest(final BlockState blockState) {
+   public BlockStateMatchTest {
       super();
-      this.blockState = blockState;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState == this.blockState;
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.BLOCKSTATE_TEST;
+   public MapCodec<BlockStateMatchTest> codec() {
+      return CODEC;
    }
 
    static {

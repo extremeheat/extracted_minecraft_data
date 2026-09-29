@@ -4,10 +4,10 @@ import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.nio.IntBuffer;
 import java.util.HexFormat;
-import java.util.Locale;
 import java.util.OptionalLong;
 import java.util.Set;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.gui.components.debug.DebugFact;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
@@ -256,8 +256,8 @@ public class Library {
       }
    }
 
-   public String getChannelDebugString() {
-      return String.format(Locale.ROOT, "Sounds: %d/%d + %d/%d", this.staticChannels.getUsedCount(), this.staticChannels.getMaxCount(), this.streamingChannels.getUsedCount(), this.streamingChannels.getMaxCount());
+   public void getChannelDebugString(final DebugFact fact) {
+      fact.value(this.staticChannels.getUsedCount()).text("/").value(this.staticChannels.getMaxCount()).text(" static + ").value(this.streamingChannels.getUsedCount()).text("/").value(this.streamingChannels.getMaxCount()).text(" streaming");
    }
 
    public boolean isCurrentDeviceDisconnected() {

@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components.debug;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
@@ -18,8 +17,7 @@ public class DebugEntryPostEffects implements DebugScreenEntry {
       Minecraft minecraft = Minecraft.getInstance();
       List<Identifier> effectIds = minecraft.gameRenderer.getAppliedPostEffects();
       if (!effectIds.isEmpty()) {
-         Stream var10001 = effectIds.stream().map(Identifier::toString);
-         displayer.addLine("Post: " + (String)var10001.collect(Collectors.joining(", ")));
+         displayer.addFactToGroup(DebugGroups.MISC, "Post Effects", (fact) -> fact.value((String)effectIds.stream().map(Identifier::toString).collect(Collectors.joining(", "))));
       }
 
    }

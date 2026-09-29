@@ -153,7 +153,8 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementTy
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBindings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestType;
-import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestTypes;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorTypes;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
@@ -196,7 +197,7 @@ public class BuiltInRegistries {
    public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE;
    public static final Registry<Identifier> CUSTOM_STAT;
    public static final DefaultedRegistry<ChunkStatus> CHUNK_STATUS;
-   public static final Registry<RuleTestType<?>> RULE_TEST;
+   public static final Registry<MapCodec<? extends RuleTest>> RULE_TEST_TYPE;
    public static final Registry<RuleBlockEntityModifierType<?>> RULE_BLOCK_ENTITY_MODIFIER;
    public static final Registry<PosRuleTestType<?>> POS_RULE_TEST;
    public static final Registry<MenuType<?>> MENU;
@@ -372,7 +373,7 @@ public class BuiltInRegistries {
       BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> BlockEntityTypes.FURNACE);
       CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, (var0) -> Stats.JUMP);
       CHUNK_STATUS = registerDefaulted(Registries.CHUNK_STATUS, "empty", (var0) -> ChunkStatus.EMPTY);
-      RULE_TEST = registerSimple(Registries.RULE_TEST, (var0) -> RuleTestType.ALWAYS_TRUE_TEST);
+      RULE_TEST_TYPE = registerSimple(Registries.RULE_TEST_TYPE, RuleTestTypes::bootstrap);
       RULE_BLOCK_ENTITY_MODIFIER = registerSimple(Registries.RULE_BLOCK_ENTITY_MODIFIER, (var0) -> RuleBlockEntityModifierType.PASSTHROUGH);
       POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, (var0) -> PosRuleTestType.ALWAYS_TRUE_TEST);
       MENU = registerSimple(Registries.MENU, (var0) -> MenuType.ANVIL);

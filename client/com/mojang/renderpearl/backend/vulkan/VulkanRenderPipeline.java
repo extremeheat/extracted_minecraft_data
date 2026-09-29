@@ -40,8 +40,7 @@ import org.lwjgl.vulkan.VkVertexInputBindingDivisorDescriptionEXT;
 
 public final class VulkanRenderPipeline implements BackendRenderPipeline, Destroyable {
    private final VulkanDevice device;
-   private final long withDepthPipeline;
-   private final long withoutDepthPipeline;
+   private final long pipeline;
    private final long pipelineLayout;
    private final long descriptorSetLayout;
    private final LongList shaderModules;
@@ -49,11 +48,10 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
    private final int maxUniformBinding;
    private boolean closed;
 
-   public VulkanRenderPipeline(final VulkanDevice device, final long withDepthPipeline, final long withoutDepthPipeline, final long pipelineLayout, final long descriptorSetLayout, final LongList shaderModules, final List<CompiledRenderPipeline.CreateInfo.Uniform> uniforms) {
+   public VulkanRenderPipeline(final VulkanDevice device, final long pipeline, final long pipelineLayout, final long descriptorSetLayout, final LongList shaderModules, final List<CompiledRenderPipeline.CreateInfo.Uniform> uniforms) {
       super();
       this.device = device;
-      this.withDepthPipeline = withDepthPipeline;
-      this.withoutDepthPipeline = withoutDepthPipeline;
+      this.pipeline = pipeline;
       this.pipelineLayout = pipelineLayout;
       this.descriptorSetLayout = descriptorSetLayout;
       this.shaderModules = shaderModules;
@@ -110,16 +108,16 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
          LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(device, VK12.vkCreateDescriptorSetLayout(device.vkDevice(), setCreateInfo, (VkAllocationCallbacks)null, pointer), "Can't create descriptor set layout for " + pipelineCreateInfo.name());
          descriptorSetLayout = pointer.get(0);
-      } catch (Throwable var39) {
+      } catch (Throwable var37) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var35) {
-               var39.addSuppressed(var35);
+            } catch (Throwable var33) {
+               var37.addSuppressed(var33);
             }
          }
 
-         throw var39;
+         throw var37;
       }
 
       if (stack != null) {
@@ -143,16 +141,16 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
          VulkanUtils.crashIfFailure(device, VK12.vkCreatePipelineLayout(device.vkDevice(), createInfo, (VkAllocationCallbacks)null, pointer), "Can't create pipeline for " + pipelineCreateInfo.name());
          pipelineLayout = pointer.get(0);
          device.instance().debug().setObjectName(device.vkDevice(), 17, pipelineLayout, (Supplier)(() -> "Pipeline layout for " + pipelineCreateInfo.name()));
-      } catch (Throwable var38) {
+      } catch (Throwable var36) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var34) {
-               var38.addSuppressed(var34);
+            } catch (Throwable var32) {
+               var36.addSuppressed(var32);
             }
          }
 
-         throw var38;
+         throw var36;
       }
 
       if (stack != null) {
@@ -162,7 +160,7 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
       LongList compiledShaderModules = new LongArrayList();
       MemoryStack stack = MemoryStack.stackPush();
 
-      VulkanRenderPipeline var31;
+      VulkanRenderPipeline var29;
       try {
          VkPipelineShaderStageCreateInfo.Buffer shaderStages = VkPipelineShaderStageCreateInfo.calloc(pipelineCreateInfo.shaders().size(), stack);
 
@@ -173,26 +171,26 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
             try {
                VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(shader.spv());
                LongBuffer pointer = stack.callocLong(1);
-               int var68 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
+               int var66 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
                String var10002 = shader.name();
-               VulkanUtils.crashIfFailure(device, var68, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
+               VulkanUtils.crashIfFailure(device, var66, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
                VulkanDebug var10000 = device.instance().debug();
-               VkDevice var69 = device.vkDevice();
+               VkDevice var67 = device.vkDevice();
                long var10003 = pointer.get(0);
                Objects.requireNonNull(pipelineCreateInfo);
-               var10000.setObjectName(var69, 15, var10003, (Supplier)(pipelineCreateInfo::name));
+               var10000.setObjectName(var67, 15, var10003, (Supplier)(pipelineCreateInfo::name));
                module = pointer.get(0);
                compiledShaderModules.add(module);
-            } catch (Throwable var36) {
+            } catch (Throwable var34) {
                if (var13 != null) {
                   try {
                      var13.close();
-                  } catch (Throwable var33) {
-                     var36.addSuppressed(var33);
+                  } catch (Throwable var31) {
+                     var34.addSuppressed(var31);
                   }
                }
 
-               throw var36;
+               throw var34;
             }
 
             if (var13 != null) {
@@ -264,45 +262,34 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
          VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack).sType$Default().scissorCount(1).viewportCount(1);
          VkPipelineMultisampleStateCreateInfo multisampleState = VkPipelineMultisampleStateCreateInfo.calloc(stack).sType$Default().rasterizationSamples(1).sampleShadingEnable(false);
          VkPipelineDynamicStateCreateInfo dynamicStateInfo = VkPipelineDynamicStateCreateInfo.calloc(stack).sType$Default().pDynamicStates(stack.ints(1, 0));
-         VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(vkDepthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).renderPass(device.renderpassCache().getRenderPass(VulkanConst.toVk(pipelineCreateInfo.depthStencilFormat()), colorTargetStates)).subpass(0);
+         VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(vkDepthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).renderPass(device.renderpassCache().getRenderPass(pipelineCreateInfo.depthStencilState() != null ? VulkanConst.toVk(pipelineCreateInfo.depthStencilFormat()) : 0, colorTargetStates)).subpass(0);
          LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(device, VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + pipelineCreateInfo.name());
-         long withDepthPipeline = pointer.get(0);
-         device.instance().debug().setObjectName(device.vkDevice(), 19, withDepthPipeline, (Supplier)(() -> "Pipeline " + pipelineCreateInfo.name()));
-         long withoutDepthPipeline;
-         if (depthStencilState == null) {
-            createInfo.renderPass(device.renderpassCache().getRenderPass(0, colorTargetStates));
-            VulkanUtils.crashIfFailure(device, VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + pipelineCreateInfo.name());
-            withoutDepthPipeline = pointer.get(0);
-            device.instance().debug().setObjectName(device.vkDevice(), 19, withoutDepthPipeline, (Supplier)(() -> "Pipeline " + pipelineCreateInfo.name()));
-         } else {
-            withoutDepthPipeline = 0L;
-         }
-
-         var31 = new VulkanRenderPipeline(device, withDepthPipeline, withoutDepthPipeline, pipelineLayout, descriptorSetLayout, compiledShaderModules, pipelineCreateInfo.uniforms());
-      } catch (Throwable var37) {
+         long pipeline = pointer.get(0);
+         device.instance().debug().setObjectName(device.vkDevice(), 19, pipeline, (Supplier)(() -> "Pipeline " + pipelineCreateInfo.name()));
+         var29 = new VulkanRenderPipeline(device, pipeline, pipelineLayout, descriptorSetLayout, compiledShaderModules, pipelineCreateInfo.uniforms());
+      } catch (Throwable var35) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var32) {
-               var37.addSuppressed(var32);
+            } catch (Throwable var30) {
+               var35.addSuppressed(var30);
             }
          }
 
-         throw var37;
+         throw var35;
       }
 
       if (stack != null) {
          stack.close();
       }
 
-      return var31;
+      return var29;
    }
 
    public void destroy() {
-      if (this.withDepthPipeline != 0L) {
-         VK12.vkDestroyPipeline(this.device.vkDevice(), this.withoutDepthPipeline, (VkAllocationCallbacks)null);
-         VK12.vkDestroyPipeline(this.device.vkDevice(), this.withDepthPipeline, (VkAllocationCallbacks)null);
+      if (this.pipeline != 0L) {
+         VK12.vkDestroyPipeline(this.device.vkDevice(), this.pipeline, (VkAllocationCallbacks)null);
          VK12.vkDestroyPipelineLayout(this.device.vkDevice(), this.pipelineLayout, (VkAllocationCallbacks)null);
          VK12.vkDestroyDescriptorSetLayout(this.device.vkDevice(), this.descriptorSetLayout, (VkAllocationCallbacks)null);
 
@@ -321,12 +308,8 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
       return this.device;
    }
 
-   public long withDepthPipeline() {
-      return this.withDepthPipeline;
-   }
-
-   public long withoutDepthPipeline() {
-      return this.withoutDepthPipeline;
+   public long vkPipeline() {
+      return this.pipeline;
    }
 
    public long pipelineLayout() {

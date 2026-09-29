@@ -11,5 +11,5 @@ public interface GpuBackend {
 
    long createWindow(@Nullable String title, int width, int height, long flags);
 
-   GpuDevice createDevice(GpuDebugOptions debugOptions) throws BackendCreationException;
+   GpuDevice createDevice(String applicationName, int applicationVersion, GpuDebugOptions debugOptions) throws BackendCreationException;
 }

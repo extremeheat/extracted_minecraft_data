@@ -173,7 +173,7 @@ public class FogRenderer implements AutoCloseable {
       return fogEnabled = !fogEnabled;
    }
 
-   public FogData setupFog(final Camera camera, final int renderDistanceInChunks, final DeltaTracker deltaTracker, final float darkenWorldAmount, final ClientLevel level) {
+   public FogData setupFog(final Camera camera, final int renderDistanceInChunks, final DeltaTracker deltaTracker, final float darkenWorldAmount, final ClientLevel level, final boolean shouldCreateBossFog) {
       float partialTickTime = deltaTracker.getGameTimeDeltaPartialTick(false);
       float renderDistanceInBlocks = (float)(renderDistanceInChunks * 16);
       FogType fogType = this.getFogType(camera);
@@ -191,6 +191,7 @@ public class FogRenderer implements AutoCloseable {
       float renderDistanceFogSpan = Mth.clamp(renderDistanceInBlocks / 10.0F, 4.0F, 64.0F);
       fog.renderDistanceStart = renderDistanceInBlocks - renderDistanceFogSpan;
       fog.renderDistanceEnd = renderDistanceInBlocks;
+      fog.shouldCreateBossFog = shouldCreateBossFog;
       return fog;
    }
 
@@ -202,7 +203,7 @@ public class FogRenderer implements AutoCloseable {
    }
 
    private FogType getFogType(final Camera camera) {
-      FogType blockFogType = camera.getFluidInCamera();
+      FogType blockFogType = camera.getFogType();
       return blockFogType == FogType.NONE ? FogType.ATMOSPHERIC : blockFogType;
    }
 

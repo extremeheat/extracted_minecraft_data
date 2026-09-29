@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.rendertype;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
@@ -58,7 +57,7 @@ public class RenderType {
    public PreparedRenderType prepare() {
       Minecraft minecraft = Minecraft.getInstance();
       List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
-      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), new ScissorState(RenderSystem.getScissorStateForRenderTypeDraws()), textures);
+      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), textures);
    }
 
    private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {

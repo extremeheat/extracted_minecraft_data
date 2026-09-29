@@ -55,6 +55,7 @@ public class GameTestEntityBuilder<E extends Entity> {
          }
 
          Vec3 absoluteVec = this.testHelper.absoluteVec(this.position);
+         entity.setYRot(0.0F);
          float yRot = entity.rotate(this.rotation == null ? this.testHelper.getTestRotation() : this.rotation);
          entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, yRot, entity.getXRot());
          entity.setYBodyRot(yRot);

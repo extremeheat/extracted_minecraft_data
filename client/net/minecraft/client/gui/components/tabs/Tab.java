@@ -7,8 +7,6 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 
 public interface Tab {
-   Component getTabTitle();
-
    Component getTabExtraNarration();
 
    void visitChildren(final Consumer<AbstractWidget> childrenConsumer);

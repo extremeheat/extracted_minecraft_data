@@ -155,7 +155,8 @@ public class DebugScreenEntryList {
 
    public void rebuildCurrentList() {
       this.currentlyEnabled.clear();
-      boolean isReducedDebugInfo = Minecraft.getInstance().showOnlyReducedInfo();
+      Minecraft minecraft = Minecraft.getInstance();
+      boolean isReducedDebugInfo = minecraft.showOnlyReducedInfo();
       this.allStatuses.forEach((key, value) -> {
          if (value == DebugScreenEntryStatus.ALWAYS_ON || this.isOverlayVisible && value == DebugScreenEntryStatus.IN_OVERLAY) {
             DebugScreenEntry debug = DebugScreenEntries.getEntry(key);

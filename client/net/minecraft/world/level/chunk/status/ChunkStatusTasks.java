@@ -52,12 +52,15 @@ public class ChunkStatusTasks {
 
    public static CompletableFuture<ChunkAccess> generateStructureStarts(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> chunks, final ChunkAccess chunk) {
       ServerLevel level = context.level();
-      if (level.getServer().getWorldGenSettings().options().generateStructures()) {
-         context.generator().createStructures(level.registryAccess(), level.getChunkSource().getGeneratorState(), level.structureManager(), chunk, context.structureManager(), level.dimension());
+      if (!SharedConstants.DEBUG_DISABLE_STRUCTURES && level.getServer().getWorldGenSettings().options().generateStructures()) {
+         return context.generator().createStructures(level.registryAccess(), level.getChunkSource().getGeneratorState(), level.structureManager(), chunk, context.structureManager(), level.dimension()).thenApply((c) -> {
+            level.onStructureStartsAvailable(c);
+            return c;
+         });
+      } else {
+         level.onStructureStartsAvailable(chunk);
+         return CompletableFuture.completedFuture(chunk);
       }
-
-      level.onStructureStartsAvailable(chunk);
-      return CompletableFuture.completedFuture(chunk);
    }
 
    public static CompletableFuture<ChunkAccess> loadStructureStarts(final WorldGenContext context, final ChunkStep step, final StaticCache2D<GenerationChunkHolder> cache, final ChunkAccess chunk) {

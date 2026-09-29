@@ -58,7 +58,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private RegionSelection preferredRegionSelection;
 
    public RealmsSettingsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData, final @Nullable RealmTierConfigurationDto tierConfiguration, final Map<RealmsRegion, ServiceQuality> regionServiceQuality) {
-      super(TITLE);
+      super();
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;
       this.serverData = serverData;
@@ -164,7 +164,7 @@ public class RealmsSettingsTab extends GridLayoutTab implements RealmsConfigurat
    private void updateRegionPreferenceValues() {
       this.selectedRegionStringWidget.setMessage(getTranslatableFromPreference(this.preferredRegionSelection));
       this.selectedRegionImageWidget.updateResource(getServiceQualityIcon(this.preferredRegionSelection, this.regionServiceQuality));
-      this.selectedRegionImageWidget.visible = this.preferredRegionSelection.preference == RegionSelectionPreference.MANUAL;
+      this.selectedRegionImageWidget.setVisible(this.preferredRegionSelection.preference == RegionSelectionPreference.MANUAL);
    }
 
    public void doLayout(final ScreenRectangle screenRectangle) {

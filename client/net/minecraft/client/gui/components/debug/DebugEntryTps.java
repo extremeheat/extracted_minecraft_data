@@ -24,31 +24,36 @@ public class DebugEntryTps implements DebugScreenEntry {
          Connection connection = connectionListener.getConnection();
          float averageSentPackets = connection.getAverageSentPackets();
          float averageReceivedPackets = connection.getAverageReceivedPackets();
-         TickRateManager tickRateManager = serverOrClientLevel.tickRateManager();
-         String runStatus;
-         if (tickRateManager.isSteppingForward()) {
-            runStatus = " (frozen - stepping)";
-         } else if (tickRateManager.isFrozen()) {
-            runStatus = " (frozen)";
-         } else {
-            runStatus = "";
-         }
-
-         String tps;
-         if (server != null) {
-            ServerTickRateManager serverTickRateManager = server.tickRateManager();
-            boolean isSpriting = serverTickRateManager.isSprinting();
-            if (isSpriting) {
-               runStatus = " (sprinting)";
+         displayer.addFactToGroup(DebugGroups.MISC, "Server", (fact) -> {
+            TickRateManager tickRateManager = serverOrClientLevel.tickRateManager();
+            String runStatus;
+            if (tickRateManager.isSteppingForward()) {
+               runStatus = "frozen - stepping";
+            } else if (tickRateManager.isFrozen()) {
+               runStatus = "frozen";
+            } else {
+               runStatus = "";
             }
 
-            String tpsTarget = isSpriting ? "-" : String.format(Locale.ROOT, "%.1f", tickRateManager.millisecondsPerTick());
-            tps = String.format(Locale.ROOT, "Integrated server @ %.1f/%s ms%s, %.0f tx, %.0f rx", server.getCurrentSmoothedTickTime(), tpsTarget, runStatus, averageSentPackets, averageReceivedPackets);
-         } else {
-            tps = String.format(Locale.ROOT, "\"%s\" server%s, %.0f tx, %.0f rx", connectionListener.serverBrand(), runStatus, averageSentPackets, averageReceivedPackets);
-         }
+            if (server != null) {
+               ServerTickRateManager serverTickRateManager = server.tickRateManager();
+               boolean isSpriting = serverTickRateManager.isSprinting();
+               if (isSpriting) {
+                  runStatus = "sprinting";
+               }
 
-         displayer.addLine(tps);
+               String tpsTarget = isSpriting ? "-" : String.format(Locale.ROOT, "%.1f", tickRateManager.millisecondsPerTick());
+               fact.value("Integrated").text(" @ ").formattedValue("%.1f", server.getCurrentSmoothedTickTime()).text("/").value(tpsTarget).text(" ms");
+            } else {
+               fact.text("\"").value(connectionListener.serverBrand()).text("\"");
+            }
+
+            if (!runStatus.isEmpty()) {
+               fact.text(" (").value(runStatus).text(")");
+            }
+
+         });
+         displayer.addFactToGroup(DebugGroups.MISC, "Packets", (fact) -> fact.formattedValue("%.0f", averageSentPackets).text(" tx, ").formattedValue("%.0f", averageReceivedPackets).text(" rx"));
       }
    }
 

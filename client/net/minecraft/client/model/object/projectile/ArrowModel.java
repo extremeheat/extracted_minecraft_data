@@ -7,12 +7,15 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.ArrowRenderState;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 
 public class ArrowModel extends EntityModel<ArrowRenderState> {
+   public static final MeshTransformer ARROW_SCALE = MeshTransformer.scaled(0.9F);
+
    public ArrowModel(final ModelPart root) {
       super(root, RenderTypes::entityCutoutCull);
    }
@@ -24,7 +27,7 @@ public class ArrowModel extends EntityModel<ArrowRenderState> {
       CubeListBuilder cross = CubeListBuilder.create().texOffs(0, 0).addBox(-12.0F, -2.0F, 0.0F, 16.0F, 4.0F, 0.0F, CubeDeformation.NONE, 1.0F, 0.8F);
       root.addOrReplaceChild("cross_1", cross, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
       root.addOrReplaceChild("cross_2", cross, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
-      return LayerDefinition.create(mesh.transformed((pose) -> pose.scaled(0.9F)), 32, 32);
+      return LayerDefinition.create(mesh.apply(ARROW_SCALE), 32, 32);
    }
 
    public void setupAnim(final ArrowRenderState state) {

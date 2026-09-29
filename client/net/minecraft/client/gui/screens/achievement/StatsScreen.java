@@ -79,7 +79,7 @@ public class StatsScreen extends Screen {
 
    protected void init() {
       Component loadingTitle = PENDING_TEXT;
-      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new LoadingTab(this.getFont(), GENERAL_BUTTON, loadingTitle), new LoadingTab(this.getFont(), ITEMS_BUTTON, loadingTitle), new LoadingTab(this.getFont(), MOBS_BUTTON, loadingTitle)).build();
+      this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTab(GENERAL_BUTTON, new LoadingTab(this.getFont(), loadingTitle)).addTab(ITEMS_BUTTON, new LoadingTab(this.getFont(), loadingTitle)).addTab(MOBS_BUTTON, new LoadingTab(this.getFont(), loadingTitle)).build();
       this.addRenderableWidget(this.tabNavigationBar);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
       this.tabNavigationBar.setTabActiveState(0, true);
@@ -100,7 +100,7 @@ public class StatsScreen extends Screen {
             this.removeWidget(this.tabNavigationBar);
          }
 
-         this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTabs(new StatisticsTab(GENERAL_BUTTON, new GeneralStatisticsList(this.minecraft)), new StatisticsTab(ITEMS_BUTTON, new ItemStatisticsList(this.minecraft)), new StatisticsTab(MOBS_BUTTON, new MobsStatisticsList(this.minecraft))).build();
+         this.tabNavigationBar = MenuTabBar.builder(this.tabManager, this.width).addTab(GENERAL_BUTTON, new StatisticsTab(new GeneralStatisticsList(this.minecraft))).addTab(ITEMS_BUTTON, new StatisticsTab(new ItemStatisticsList(this.minecraft))).addTab(MOBS_BUTTON, new StatisticsTab(new MobsStatisticsList(this.minecraft))).build();
          this.setFocused(this.tabNavigationBar);
          this.addRenderableWidget(this.tabNavigationBar);
          this.setTabActiveStateAndTooltip(1);
@@ -177,9 +177,9 @@ public class StatsScreen extends Screen {
    private class StatisticsTab extends GridLayoutTab {
       protected final AbstractSelectionList<?> list;
 
-      public StatisticsTab(final Component title, final AbstractSelectionList<?> list) {
+      public StatisticsTab(final AbstractSelectionList<?> list) {
          Objects.requireNonNull(StatsScreen.this);
-         super(title);
+         super();
          this.layout.addChild(list, 1, 1);
          this.list = list;
       }

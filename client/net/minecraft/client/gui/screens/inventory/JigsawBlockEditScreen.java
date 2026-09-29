@@ -111,7 +111,7 @@ public class JigsawBlockEditScreen extends Screen {
       this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName, this.joint).withValues(JigsawBlockEntity.JointType.values()).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (button, value) -> this.joint = value));
       boolean vertical = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
       this.jointButton.active = vertical;
-      this.jointButton.visible = vertical;
+      this.jointButton.setVisible(vertical);
       this.addRenderableWidget(new AbstractSliderButton(this.width / 2 - 154, 185, 100, 20, CommonComponents.EMPTY, 0.0) {
          {
             Objects.requireNonNull(JigsawBlockEditScreen.this);

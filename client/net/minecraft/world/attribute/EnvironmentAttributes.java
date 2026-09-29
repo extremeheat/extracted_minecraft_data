@@ -33,6 +33,7 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Float> STAR_ANGLE = register("visual/star_angle", EnvironmentAttribute.builder(AttributeTypes.ANGLE_DEGREES).defaultValue(0.0F).spatiallyInterpolated().syncable());
    EnvironmentAttribute<MoonPhase> MOON_PHASE = register("visual/moon_phase", EnvironmentAttribute.builder(AttributeTypes.MOON_PHASE).defaultValue(MoonPhase.FULL_MOON).syncable());
    EnvironmentAttribute<Float> STAR_BRIGHTNESS = register("visual/star_brightness", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(0.0F).valueRange(AttributeRange.UNIT_FLOAT).spatiallyInterpolated().syncable());
+   EnvironmentAttribute<Boolean> HAS_SKY_OCCLUDER = register("visual/has_sky_occluder", EnvironmentAttribute.builder(AttributeTypes.BOOLEAN).defaultValue(false).syncable());
    EnvironmentAttribute<Vector3fc> BLOCK_LIGHT_TINT = register("visual/block_light_tint", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(ARGB.vector3fFromRGB24(-10100)).spatiallyInterpolated().syncable());
    EnvironmentAttribute<Vector3fc> SKY_LIGHT_COLOR = register("visual/sky_light_color", EnvironmentAttribute.builder(AttributeTypes.RGB_COLOR).defaultValue(ARGB.vector3fFromRGB24(-1)).spatiallyInterpolated().syncable());
    EnvironmentAttribute<Float> SKY_LIGHT_FACTOR = register("visual/sky_light_factor", EnvironmentAttribute.builder(AttributeTypes.FLOAT).defaultValue(1.0F).valueRange(AttributeRange.UNIT_FLOAT).spatiallyInterpolated().syncable());

@@ -1,10 +1,8 @@
 package net.minecraft.client.gui.components.debug;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.BiConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -18,10 +16,6 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryChunkGeneration implements DebugScreenEntry {
-   private static final Identifier GROUP = Identifier.withDefaultNamespace("chunk_generation");
-   private final List<String> result = new ArrayList();
-   private @Nullable BlockPos lastPos = null;
-
    public DebugEntryChunkGeneration() {
       super();
    }
@@ -39,27 +33,22 @@ public class DebugEntryChunkGeneration implements DebugScreenEntry {
       ServerLevel serverLevel = var10000;
       if (entity != null && serverLevel != null) {
          BlockPos feetPos = entity.blockPosition();
-         if (!feetPos.equals(this.lastPos)) {
-            this.update(serverChunk, feetPos, serverLevel);
-         }
-
-         displayer.addToGroup(GROUP, this.result);
+         this.update(serverChunk, feetPos, serverLevel, displayer);
       }
    }
 
-   private void update(final @Nullable LevelChunk serverChunk, final BlockPos feetPos, final ServerLevel serverLevel) {
-      this.result.clear();
-      this.lastPos = feetPos;
+   private void update(final @Nullable LevelChunk serverChunk, final BlockPos feetPos, final ServerLevel serverLevel, final DebugScreenDisplayer displayer) {
       ServerChunkCache chunkSource = serverLevel.getChunkSource();
       SamplerContext samplerContext = SamplerContext.builder().enableCaches().build();
       ChunkGenerator generator = chunkSource.getGenerator();
       RandomState randomState = chunkSource.randomState();
-      generator.addDebugScreenInfo(this.result, randomState, feetPos, samplerContext);
+      BiConsumer<String, String> addFact = (key, value) -> displayer.addFactToGroup(DebugGroups.CHUNK_GENERATION, key, (fact) -> fact.value(value));
+      generator.addDebugScreenInfo(addFact, randomState, feetPos, samplerContext);
       Climate.Sampler sampler = randomState.createClimateSampler(samplerContext);
       BiomeSource biomeSource = generator.getBiomeSource();
-      biomeSource.addDebugInfo(this.result, feetPos, sampler);
+      biomeSource.addDebugInfo(addFact, feetPos, sampler);
       if (serverChunk != null && serverChunk.isOldNoiseGeneration()) {
-         this.result.add("Blending: Old");
+         addFact.accept("Blending", "Old");
       }
 
    }

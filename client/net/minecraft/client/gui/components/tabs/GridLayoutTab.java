@@ -9,16 +9,10 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 
 public class GridLayoutTab implements Tab {
-   private final Component title;
    protected final GridLayout layout = new GridLayout();
 
-   public GridLayoutTab(final Component title) {
+   public GridLayoutTab() {
       super();
-      this.title = title;
-   }
-
-   public Component getTabTitle() {
-      return this.title;
    }
 
    public Component getTabExtraNarration() {

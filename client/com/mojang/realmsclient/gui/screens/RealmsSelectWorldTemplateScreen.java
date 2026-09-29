@@ -115,8 +115,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    private void updateButtonStates() {
-      this.publisherButton.visible = this.selectedTemplate != null && this.selectedTemplate.link() != null;
-      this.trailerButton.visible = this.selectedTemplate != null && this.selectedTemplate.trailer() != null;
+      this.publisherButton.setVisible(this.selectedTemplate != null && this.selectedTemplate.link() != null);
+      this.trailerButton.setVisible(this.selectedTemplate != null && this.selectedTemplate.trailer() != null);
       this.selectButton.active = this.selectedTemplate != null;
    }
 

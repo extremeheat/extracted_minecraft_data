@@ -83,8 +83,8 @@ public class ImposterProtoChunk extends ProtoChunk {
       return this.wrapped.getOrCreateHeightmapUnprimed(type);
    }
 
-   public int getHeight(final Heightmap.Types type, final int x, final int z) {
-      return this.wrapped.getHeight(this.fixType(type), x, z);
+   public Heightmap getHeightmap(final Heightmap.Types type) {
+      return this.wrapped.getHeightmap(this.fixType(type));
    }
 
    public Holder<Biome> getBiome(final int x, final int y, final int z) {

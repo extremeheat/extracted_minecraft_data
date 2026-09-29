@@ -161,7 +161,7 @@ public class Cushion extends BlockAttachedEntity {
 
    public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {
       if (!this.isRemoved()) {
-         this.kill(level, lightningBolt);
+         this.kill(level, this.damageSources().lightningBolt());
          this.dropItem(level, lightningBolt);
       }
 

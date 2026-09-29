@@ -149,7 +149,7 @@ public class BookEditScreen extends Screen {
    }
 
    private void updateButtonVisibility() {
-      this.backButton.visible = this.currentPage > 0;
+      this.backButton.setVisible(this.currentPage > 0);
    }
 
    private void eraseEmptyTrailingPages() {

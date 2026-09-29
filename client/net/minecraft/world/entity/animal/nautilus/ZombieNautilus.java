@@ -101,6 +101,10 @@ public class ZombieNautilus extends AbstractNautilus {
       return SoundEvents.ZOMBIE_NAUTILUS_SWIM;
    }
 
+   public SoundEvent getRidingSound() {
+      return SoundEvents.ZOMBIE_NAUTILUS_RIDING;
+   }
+
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {
       super.defineSynchedData(entityData);
       entityData.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), ZombieNautilusVariants.TEMPERATE));

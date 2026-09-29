@@ -43,6 +43,7 @@ public final class Window implements AutoCloseable {
    private final WindowEventHandler eventHandler;
    private final MonitorManager monitorManager;
    private final long handle;
+   private final boolean wayland;
    private int windowedX;
    private int windowedY;
    private int windowedWidth;
@@ -59,10 +60,10 @@ public final class Window implements AutoCloseable {
    private int guiScaledWidth;
    private int guiScaledHeight;
    private int guiScale;
-   private String errorSection;
+   private String errorSection = "Startup";
    private boolean dirty;
    private boolean iconified;
-   private boolean focused;
+   private boolean focused = true;
    private boolean shouldClose;
    private @Nullable Runnable closeCallback;
    private boolean allowCursorChanges;
@@ -71,14 +72,8 @@ public final class Window implements AutoCloseable {
    private boolean exclusiveFullscreen;
    private boolean borderlessFullscreen;
 
-   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend) {
-      this(eventHandler, displayData, fullscreenVideoModeString, exclusiveFullscreen, title, monitorManager, backend, 0);
-   }
-
    public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend, final int maximumSize) {
       super();
-      this.errorSection = "Startup";
-      this.focused = true;
       this.currentCursor = CursorType.DEFAULT;
       this.monitorManager = monitorManager;
       this.exclusiveFullscreen = exclusiveFullscreen;
@@ -94,10 +89,14 @@ public final class Window implements AutoCloseable {
 
       this.fullscreenRequested = displayData.isFullscreen();
       Monitor initialMonitor = monitorManager.getMonitor(SDLVideo.SDL_GetPrimaryDisplay());
-      this.windowedWidth = this.width = allowedWindowMinSize(displayData.width(), 320);
-      this.windowedHeight = this.height = allowedWindowMinSize(displayData.height(), 240);
+      this.width = Math.max(displayData.width(), 320);
+      this.height = Math.max(displayData.height(), 240);
+      this.setWindowedSize(this.width, this.height);
       this.handle = this.createWindow(backend, this.width, this.height, title);
       this.setWindowMaxSize(maximumSize, maximumSize);
+      String videoDriver = SDLVideo.SDL_GetCurrentVideoDriver();
+      this.wayland = "wayland".equals(videoDriver);
+      LOGGER.info("Created window using SDL video driver: {}", videoDriver);
       MacosUtil.disableCloseWindowMenuItem();
       if (initialMonitor != null) {
          this.windowedX = this.x = initialMonitor.x() + (initialMonitor.w() - this.width) / 2;
@@ -114,16 +113,16 @@ public final class Window implements AutoCloseable {
 
             this.windowedX = this.x = actualX.get(0);
             this.windowedY = this.y = actualY.get(0);
-         } catch (Throwable var15) {
+         } catch (Throwable var16) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var14) {
-                  var15.addSuppressed(var14);
+               } catch (Throwable var15) {
+                  var16.addSuppressed(var15);
                }
             }
 
-            throw var15;
+            throw var16;
          }
 
          if (stack != null) {
@@ -136,8 +135,7 @@ public final class Window implements AutoCloseable {
    }
 
    public static String getPlatform() {
-      String platform = SDLPlatform.SDL_GetPlatform();
-      return platform == null ? "unknown platform" : platform;
+      return (String)Objects.requireNonNullElse(SDLPlatform.SDL_GetPlatform(), "unknown platform");
    }
 
    private static @Nullable SDL_Surface createIconSurface(final NativeImage image) {
@@ -153,7 +151,6 @@ public final class Window implements AutoCloseable {
          throw new IllegalStateException("Failed to create window: " + (String)Objects.requireNonNullElse(var10002, "<no error>"));
       } else {
          SDLVideo.SDL_SetWindowMinimumSize(windowHandle, 320, 240);
-         LOGGER.info("Created window using SDL video driver: {}", SDLVideo.SDL_GetCurrentVideoDriver());
          return windowHandle;
       }
    }
@@ -223,7 +220,7 @@ public final class Window implements AutoCloseable {
             this.onFocus(false);
             break;
          case 531:
-            this.eventHandler.framebufferSizeChanged();
+            this.onWindowDisplayChanged();
             break;
          case 535:
          case 536:
@@ -235,6 +232,11 @@ public final class Window implements AutoCloseable {
    private void onDisplayModeChanged(final int displayId) {
       this.monitorManager.onDisplayModeChanged(displayId);
       this.refreshFramebufferSize();
+      this.eventHandler.framebufferSizeChanged();
+   }
+
+   private void onWindowDisplayChanged() {
+      this.refreshMouseState();
       this.eventHandler.framebufferSizeChanged();
    }
 
@@ -347,17 +349,15 @@ public final class Window implements AutoCloseable {
       this.width = newWidth;
       this.height = newHeight;
       if (!this.isWindowFullscreen()) {
-         this.windowedWidth = allowedWindowMinSize(newWidth, 320);
-         this.windowedHeight = allowedWindowMinSize(newHeight, 240);
+         this.setWindowedSize(newWidth, newHeight);
       }
 
+      this.refreshMouseState();
+   }
+
+   private void refreshMouseState() {
       this.updateWindowMouseGrab();
-      if (Minecraft.getInstance().mouseHandler.isMouseGrabbed()) {
-         double xpos = (double)this.getScreenWidth() / 2.0;
-         double ypos = (double)this.getScreenHeight() / 2.0;
-         InputConstants.grabMouse(this, xpos, ypos);
-      }
-
+      Minecraft.getInstance().mouseHandler.refreshMouseState();
    }
 
    private void onFramebufferResize(final int newWidth, final int newHeight) {
@@ -466,8 +466,7 @@ public final class Window implements AutoCloseable {
       if (this.fullscreenRequested && !this.fullscreen) {
          this.windowedX = this.x;
          this.windowedY = this.y;
-         this.windowedWidth = allowedWindowMinSize(this.width, 320);
-         this.windowedHeight = allowedWindowMinSize(this.height, 240);
+         this.setWindowedSize(this.width, this.height);
       }
 
       boolean success = this.fullscreenRequested ? this.applyFullscreen() : this.applyWindowed();
@@ -588,7 +587,7 @@ public final class Window implements AutoCloseable {
 
    private boolean applyWindowed() {
       this.leaveBorderlessFullscreenWindow();
-      return !SDLVideo.SDL_SetWindowFullscreen(this.handle, false) ? false : this.setWindowSizeAndPosition(this.windowedX, this.windowedY, allowedWindowMinSize(this.windowedWidth, 320), allowedWindowMinSize(this.windowedHeight, 240));
+      return !SDLVideo.SDL_SetWindowFullscreen(this.handle, false) ? false : this.setWindowSizeAndPosition(this.windowedX, this.windowedY, this.windowedWidth, this.windowedHeight);
    }
 
    private boolean applyBorderlessFullscreenWindow() {
@@ -703,10 +702,14 @@ public final class Window implements AutoCloseable {
    }
 
    public void setWindowed(final int width, final int height) {
-      this.windowedWidth = allowedWindowMinSize(width, 320);
-      this.windowedHeight = allowedWindowMinSize(height, 240);
+      this.setWindowedSize(width, height);
       this.fullscreenRequested = false;
       this.setMode();
+   }
+
+   private void setWindowedSize(final int width, final int height) {
+      this.windowedWidth = Math.max(width, 320);
+      this.windowedHeight = Math.max(height, 240);
    }
 
    public int calculateScale(final int maxScale, final boolean enforceUnicode) {
@@ -731,6 +734,10 @@ public final class Window implements AutoCloseable {
 
    public long handle() {
       return this.handle;
+   }
+
+   public boolean isWayland() {
+      return this.wayland;
    }
 
    public void setFullscreen(final boolean fullscreen) {
@@ -828,10 +835,6 @@ public final class Window implements AutoCloseable {
 
    public float getAppropriateLineWidth() {
       return Math.max(2.5F, (float)this.getWidth() / 1920.0F * 2.5F);
-   }
-
-   private static int allowedWindowMinSize(final int size, final int minSize) {
-      return Math.max(size, minSize);
    }
 
    public static record FramebufferSize(int width, int height) {

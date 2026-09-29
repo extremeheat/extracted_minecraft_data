@@ -3,7 +3,6 @@ package com.mojang.renderpearl.backend.opengl;
 import com.mojang.logging.LogUtils;
 import java.util.Set;
 import java.util.function.Supplier;
-import net.minecraft.util.StringUtil;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.EXTDebugLabel;
 import org.lwjgl.opengl.GL33C;
@@ -58,6 +57,17 @@ public abstract class GlDebugLabel {
       return false;
    }
 
+   private static String truncateStringIfNecessary(final String s, final int maxLength, final boolean addDotDotDotIfTruncated) {
+      if (s.length() <= maxLength) {
+         return s;
+      } else if (addDotDotDotIfTruncated && maxLength > 3) {
+         String var10000 = s.substring(0, maxLength - 3);
+         return var10000 + "...";
+      } else {
+         return s.substring(0, maxLength);
+      }
+   }
+
    private static class Empty extends GlDebugLabel {
       private Empty() {
          super();
@@ -73,21 +83,21 @@ public abstract class GlDebugLabel {
 
       public void applyLabel(final GlBuffer buffer, final @Nullable Supplier<String> label) {
          if (label != null) {
-            KHRDebug.glObjectLabel(33504, buffer.handle(), StringUtil.truncateStringIfNecessary((String)label.get(), this.maxLabelLength, true));
+            KHRDebug.glObjectLabel(33504, buffer.handle(), GlDebugLabel.truncateStringIfNecessary((String)label.get(), this.maxLabelLength, true));
          }
 
       }
 
       public void applyLabel(final GlTexture texture) {
-         KHRDebug.glObjectLabel(5890, texture.id, StringUtil.truncateStringIfNecessary(texture.getLabel(), this.maxLabelLength, true));
+         KHRDebug.glObjectLabel(5890, texture.id, GlDebugLabel.truncateStringIfNecessary(texture.getLabel(), this.maxLabelLength, true));
       }
 
       public void applyLabel(final GlShaderModule shaderModule) {
-         KHRDebug.glObjectLabel(33505, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getLabel(), this.maxLabelLength, true));
+         KHRDebug.glObjectLabel(33505, shaderModule.getShaderId(), GlDebugLabel.truncateStringIfNecessary(shaderModule.getLabel(), this.maxLabelLength, true));
       }
 
       public void applyLabel(final GlProgram program) {
-         KHRDebug.glObjectLabel(33506, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), this.maxLabelLength, true));
+         KHRDebug.glObjectLabel(33506, program.getProgramId(), GlDebugLabel.truncateStringIfNecessary(program.getDebugLabel(), this.maxLabelLength, true));
       }
 
       public void pushDebugGroup(final Supplier<String> label) {
@@ -110,21 +120,21 @@ public abstract class GlDebugLabel {
 
       public void applyLabel(final GlBuffer buffer, final @Nullable Supplier<String> label) {
          if (label != null) {
-            EXTDebugLabel.glLabelObjectEXT(37201, buffer.handle(), StringUtil.truncateStringIfNecessary((String)label.get(), 256, true));
+            EXTDebugLabel.glLabelObjectEXT(37201, buffer.handle(), GlDebugLabel.truncateStringIfNecessary((String)label.get(), 256, true));
          }
 
       }
 
       public void applyLabel(final GlTexture texture) {
-         EXTDebugLabel.glLabelObjectEXT(5890, texture.id, StringUtil.truncateStringIfNecessary(texture.getLabel(), 256, true));
+         EXTDebugLabel.glLabelObjectEXT(5890, texture.id, GlDebugLabel.truncateStringIfNecessary(texture.getLabel(), 256, true));
       }
 
       public void applyLabel(final GlShaderModule shaderModule) {
-         EXTDebugLabel.glLabelObjectEXT(35656, shaderModule.getShaderId(), StringUtil.truncateStringIfNecessary(shaderModule.getLabel(), 256, true));
+         EXTDebugLabel.glLabelObjectEXT(35656, shaderModule.getShaderId(), GlDebugLabel.truncateStringIfNecessary(shaderModule.getLabel(), 256, true));
       }
 
       public void applyLabel(final GlProgram program) {
-         EXTDebugLabel.glLabelObjectEXT(35648, program.getProgramId(), StringUtil.truncateStringIfNecessary(program.getDebugLabel(), 256, true));
+         EXTDebugLabel.glLabelObjectEXT(35648, program.getProgramId(), GlDebugLabel.truncateStringIfNecessary(program.getDebugLabel(), 256, true));
       }
 
       public boolean exists() {

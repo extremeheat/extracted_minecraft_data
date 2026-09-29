@@ -1811,7 +1811,7 @@ public class Items {
       STONE_BRICK_STAIRS = registerBlock(BlockItemIds.STONE_BRICK_STAIRS, Blocks.STONE_BRICK_STAIRS);
       MUD_BRICK_STAIRS = registerBlock(BlockItemIds.MUD_BRICK_STAIRS, Blocks.MUD_BRICK_STAIRS);
       MYCELIUM = registerBlock(BlockItemIds.MYCELIUM, Blocks.MYCELIUM);
-      LILY_PAD = registerBlock(BlockItemIds.LILY_PAD, Blocks.LILY_PAD, PlaceOnWaterBlockItem::new, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
+      LILY_PAD = registerBlock(BlockItemIds.LILY_PAD, Blocks.LILY_PAD, PlaceOnFluidBlockItem::new, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
       NETHER_BRICKS = registerBlock(BlockItemIds.NETHER_BRICKS, Blocks.NETHER_BRICKS);
       CRACKED_NETHER_BRICKS = registerBlock(BlockItemIds.CRACKED_NETHER_BRICKS, Blocks.CRACKED_NETHER_BRICKS);
       CHISELED_NETHER_BRICKS = registerBlock(BlockItemIds.CHISELED_NETHER_BRICKS, Blocks.CHISELED_NETHER_BRICKS);
@@ -2607,7 +2607,7 @@ public class Items {
       OCHRE_FROGLIGHT = registerBlock(BlockItemIds.OCHRE_FROGLIGHT, Blocks.OCHRE_FROGLIGHT);
       VERDANT_FROGLIGHT = registerBlock(BlockItemIds.VERDANT_FROGLIGHT, Blocks.VERDANT_FROGLIGHT);
       PEARLESCENT_FROGLIGHT = registerBlock(BlockItemIds.PEARLESCENT_FROGLIGHT, Blocks.PEARLESCENT_FROGLIGHT);
-      FROGSPAWN = registerBlock(BlockItemIds.FROGSPAWN, Blocks.FROGSPAWN, PlaceOnWaterBlockItem::new);
+      FROGSPAWN = registerBlock(BlockItemIds.FROGSPAWN, Blocks.FROGSPAWN, PlaceOnFluidBlockItem::new);
       ECHO_SHARD = registerItem(ItemIds.ECHO_SHARD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       BRUSH = registerItem(ItemIds.BRUSH, BrushItem::new, (new Item.Properties()).durability(64));
       NETHERITE_UPGRADE_SMITHING_TEMPLATE = registerItem(ItemIds.NETHERITE_UPGRADE_SMITHING_TEMPLATE, SmithingTemplateItem::createNetheriteUpgradeTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));

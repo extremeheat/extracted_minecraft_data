@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -132,7 +132,7 @@ public abstract class BiomeSource {
       return this.createResolver(sampler);
    }
 
-   public void addDebugInfo(final List<String> result, final BlockPos feetPos, final Climate.Sampler sampler) {
+   public void addDebugInfo(final BiConsumer<String, String> addFact, final BlockPos feetPos, final Climate.Sampler sampler) {
    }
 
    static {

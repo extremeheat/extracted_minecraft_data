@@ -91,8 +91,8 @@ public class FriendsOverlayScreen extends Screen {
       int scrollableMaxHeight = this.height - 80;
       this.friendsTab = new FriendsTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_FRIENDS), this, 220, scrollableMaxHeight);
       this.pendingTab = new PendingTab(this.minecraft, new LoadingDotsWidget(this.font, LOADING_REQUESTS), this, 220, scrollableMaxHeight);
-      this.pendingTabButton = new FriendsOverlayTabButton(this.tabManager, this.pendingTab, 110, 20);
-      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, 0, 0, 220, 20).addTab(new FriendsOverlayTabButton(this.tabManager, this.friendsTab, 110, 20), this.friendsTab).addTab(this.pendingTabButton, this.pendingTab).build();
+      this.pendingTabButton = new FriendsOverlayTabButton(this.tabManager, this.pendingTab, 110, 20, Component.translatable("gui.friends.requests_count", 0));
+      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, 0, 0, 220, 20).addTab(new FriendsOverlayTabButton(this.tabManager, this.friendsTab, 110, 20, FriendsTab.TAB_TITLE), this.friendsTab).addTab(this.pendingTabButton, this.pendingTab).build();
       this.addRenderableWidget(this.tabNavigationBar);
       this.contentLayout = (LinearLayout)this.layout.addChild(LinearLayout.vertical());
       this.tabManager.setCurrentTab(this.friendsTab, false, false);

@@ -139,7 +139,7 @@ public class PalettedTextureManager implements PreparableReloadListener, AutoClo
 
          try (NativeImage newTexture = baseTexture.image().mappedCopy(paletteMapping)) {
             Slot slot = this.allocateSlot(newTexture.getWidth(), newTexture.getHeight());
-            RenderSystem.getDevice().createCommandEncoder().writeToTexture(slot.texture.getTexture(), newTexture, 0, 0, slot.x, slot.y);
+            newTexture.writeToGpuTexture(RenderSystem.getDevice().createCommandEncoder(), slot.texture.getTexture(), 0, 0, slot.x, slot.y);
             return slot;
          }
       }

@@ -5,8 +5,8 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -83,7 +83,7 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       return (Holder)this.parameters().findValue(target);
    }
 
-   public void addDebugInfo(final List<String> result, final BlockPos feetPos, final Climate.Sampler sampler) {
+   public void addDebugInfo(final BiConsumer<String, String> addFact, final BlockPos feetPos, final Climate.Sampler sampler) {
       int quartX = QuartPos.fromBlock(feetPos.getX());
       int quartY = QuartPos.fromBlock(feetPos.getY());
       int quartZ = QuartPos.fromBlock(feetPos.getZ());
@@ -95,8 +95,11 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       float weirdness = Climate.unquantizeCoord(sampleQuantized.weirdness());
       double peaksAndValleys = (double)NoiseRouterData.peaksAndValleys(weirdness);
       OverworldBiomeBuilder biomeBuilder = new OverworldBiomeBuilder();
-      String var10001 = OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(peaksAndValleys);
-      result.add("Biome builder PV: " + var10001 + " C: " + biomeBuilder.getDebugStringForContinentalness((double)continentalness) + " E: " + biomeBuilder.getDebugStringForErosion((double)erosion) + " T: " + biomeBuilder.getDebugStringForTemperature((double)temperature) + " H: " + biomeBuilder.getDebugStringForHumidity((double)humidity));
+      addFact.accept("(BB) Peaks/Valleys", OverworldBiomeBuilder.getDebugStringForPeaksAndValleys(peaksAndValleys));
+      addFact.accept("(BB) Continents", biomeBuilder.getDebugStringForContinentalness((double)continentalness));
+      addFact.accept("(BB) Erosion", biomeBuilder.getDebugStringForErosion((double)erosion));
+      addFact.accept("(BB) Temperature", biomeBuilder.getDebugStringForTemperature((double)temperature));
+      addFact.accept("(BB) Humidity", biomeBuilder.getDebugStringForHumidity((double)humidity));
    }
 
    static {

@@ -228,7 +228,9 @@ public class Gui {
       return this.screen;
    }
 
-   public void setScreen(@Nullable Screen screen) {
+   public void setScreen(@Nullable Screen newScreen) {
+      Screen oldScreen = this.screen;
+      boolean hadScreenOpen = oldScreen != null;
       if (SharedConstants.IS_RUNNING_IN_IDE && Thread.currentThread() != this.minecraft.getRunningThread()) {
          LOGGER.error("setScreen called from non-game thread");
       }
@@ -238,43 +240,45 @@ public class Gui {
          this.screenTracySection = null;
       }
 
-      if (this.screen != null) {
-         this.screen.clearFocus();
+      if (hadScreenOpen) {
+         oldScreen.clearFocus();
          this.minecraft.textInputManager().stopTextInput();
-         this.screen.removed();
+         oldScreen.removed();
       } else {
          this.minecraft.setLastInputType(InputType.NONE);
       }
 
-      if (screen == null) {
+      if (newScreen == null) {
          if (this.clientLevelTeardownInProgress) {
             throw new IllegalStateException("Trying to return to in-game GUI during disconnection");
          }
 
          if (this.minecraft.level == null) {
-            screen = new TitleScreen();
+            newScreen = new TitleScreen();
          } else if (this.minecraft.player.isDeadOrDying()) {
             if (this.minecraft.player.shouldShowDeathScreen()) {
-               screen = new DeathScreen((Component)null, this.minecraft.level.getLevelData().isHardcore(), this.minecraft.player);
+               newScreen = new DeathScreen((Component)null, this.minecraft.level.getLevelData().isHardcore(), this.minecraft.player);
             } else {
                this.minecraft.player.respawn();
             }
          } else {
-            screen = this.hud.getChat().restoreChatScreen();
+            newScreen = this.hud.getChat().restoreChatScreen();
          }
+      } else if (!hadScreenOpen && this.minecraft.gameMode != null) {
+         this.minecraft.gameMode.stopDestroyBlock();
       }
 
-      this.screen = screen;
-      if (this.screen != null) {
-         this.screen.added();
-         String name = this.screen.getTitle().getString();
-         this.screenTracySection = TRACY_CURRENT_SCREEN.enterSection(name.isBlank() ? this.screen.getClass().getSimpleName() : name);
+      this.screen = newScreen;
+      if (newScreen != null) {
+         newScreen.added();
+         String name = newScreen.getTitle().getString();
+         this.screenTracySection = TRACY_CURRENT_SCREEN.enterSection(name.isBlank() ? newScreen.getClass().getSimpleName() : name);
       }
 
-      if (screen != null) {
+      if (newScreen != null) {
          this.minecraft.mouseHandler.releaseMouse();
          KeyMapping.releaseAll();
-         screen.init(this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight());
+         newScreen.init(this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight());
       } else {
          this.minecraft.textInputManager().stopTextInput();
          if (this.minecraft.level != null) {

@@ -6,18 +6,19 @@ import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.DeviceLimits;
 import com.mojang.renderpearl.api.device.DeviceType;
 import com.mojang.renderpearl.api.device.HintsAndWorkarounds;
+import com.mojang.renderpearl.util.PlatformUtil;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import net.minecraft.util.Util;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GLCapabilities;
 import org.slf4j.Logger;
 
 public class GlHeuristics {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int MINIMUM_SUPPORTED_MAX_TEXTURE_SIZE = 1024;
    private static final List<String> DEVICE_NAMES_THAT_IMPLY_CPU = List.of("mesa offscreen", "llvmpipe");
    private static final List<String> DEVICE_NAMES_THAT_IMPLY_VIRTUAL = List.of("virtgl");
    private final boolean isGlOnDx12;
@@ -50,7 +51,7 @@ public class GlHeuristics {
    }
 
    private static boolean isGlOnDx12(final String deviceName) {
-      boolean isWindowsArm64 = Util.getPlatform() == Util.OS.WINDOWS && Util.isAarch64();
+      boolean isWindowsArm64 = PlatformUtil.IS_WINDOWS && PlatformUtil.IS_AARCH64;
       return isWindowsArm64 || deviceName.startsWith("D3D12");
    }
 
@@ -84,7 +85,7 @@ public class GlHeuristics {
       String rendererLowerCase = renderer.toLowerCase(Locale.ROOT);
       String vendorLowerCase = vendor.toLowerCase(Locale.ROOT);
       int drawIndirectCount = enabledExtensions.contains("GL_ARB_multi_draw_indirect") ? 2147483647 : (enabledExtensions.contains("GL_ARB_draw_indirect") ? 1 : 0);
-      return new DeviceInfo(renderer, vendor, GL33C.glGetString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852), drawIndirectCount), new DeviceFeatures(true, enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd(), Util.isAppleSiliconMac(renderer), vendorLowerCase.contains("intel") && !rendererLowerCase.contains("arc")), this.guessDeviceType(rendererLowerCase, vendorLowerCase));
+      return new DeviceInfo(renderer, vendor, GL33C.glGetString(7938), capabilities.GL_ARB_clip_control, "OpenGL", 1.0F, new DeviceLimits(maxSupportedAnisotropy, GL33C.glGetInteger(35380), getMaxSupportedTextureSize(), 9223372036854775807L, 0, GL33C.glGetInteger(34852), drawIndirectCount), new DeviceFeatures(true, enabledExtensions.contains("GL_ARB_shader_draw_parameters"), false, true, enabledExtensions.contains("GL_ARB_multi_draw_indirect"), enabledExtensions.contains("GL_ARB_draw_indirect"), enabledExtensions.contains("GL_ARB_base_instance"), enabledExtensions.contains("GL_ARB_buffer_storage")), Collections.unmodifiableSet(enabledExtensions), new HintsAndWorkarounds(this.isGlOnDx12(), this.isAmd(), PlatformUtil.isAppleSiliconMac(renderer), vendorLowerCase.contains("intel") && !rendererLowerCase.contains("arc")), this.guessDeviceType(rendererLowerCase, vendorLowerCase));
    }
 
    private static boolean couldBeIntelGen7(final String renderer, final String vendor) {

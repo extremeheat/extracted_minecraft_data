@@ -621,14 +621,6 @@ public class EditBox extends AbstractWidget {
       this.canLoseFocus = canLoseFocus;
    }
 
-   public boolean isVisible() {
-      return this.visible;
-   }
-
-   public void setVisible(final boolean visible) {
-      this.visible = visible;
-   }
-
    public void setSuggestion(final @Nullable String suggestion) {
       this.suggestion = suggestion;
    }

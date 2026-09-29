@@ -7,21 +7,19 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class BlockMatchTest extends RuleTest {
+public record BlockMatchTest(Block block) implements RuleTest {
    public static final MapCodec<BlockMatchTest> CODEC;
-   private final Block block;
 
-   public BlockMatchTest(final Block block) {
+   public BlockMatchTest {
       super();
-      this.block = block;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState.is(this.block);
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.BLOCK_TEST;
+   public MapCodec<BlockMatchTest> codec() {
+      return CODEC;
    }
 
    static {

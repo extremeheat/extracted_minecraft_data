@@ -34,11 +34,11 @@ public abstract class TemplateStructurePiece extends StructurePiece {
    protected BlockPos templatePosition;
 
    public TemplateStructurePiece(final StructurePieceType type, final int genDepth, final StructureTemplateManager structureTemplateManager, final Identifier templateLocation, final String templateName, final StructurePlaceSettings placeSettings, final BlockPos position) {
-      super(type, genDepth, structureTemplateManager.getOrCreate(templateLocation).getBoundingBox(placeSettings, position));
+      super(type, genDepth, structureTemplateManager.getOrEmpty(templateLocation).getBoundingBox(placeSettings, position));
       this.setOrientation(Direction.NORTH);
       this.templateName = templateName;
       this.templatePosition = position;
-      this.template = structureTemplateManager.getOrCreate(templateLocation);
+      this.template = structureTemplateManager.getOrEmpty(templateLocation);
       this.placeSettings = placeSettings;
    }
 
@@ -48,7 +48,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.templateName = tag.getStringOr("Template", "");
       this.templatePosition = new BlockPos(tag.getIntOr("TPX", 0), tag.getIntOr("TPY", 0), tag.getIntOr("TPZ", 0));
       Identifier templateLocation = this.makeTemplateLocation();
-      this.template = structureTemplateManager.getOrCreate(templateLocation);
+      this.template = structureTemplateManager.getOrEmpty(templateLocation);
       this.placeSettings = (StructurePlaceSettings)structurePlaceSettingsSupplier.apply(templateLocation);
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
    }

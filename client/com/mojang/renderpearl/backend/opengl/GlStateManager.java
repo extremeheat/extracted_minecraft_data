@@ -1,14 +1,13 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.jtracy.Plot;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.util.PlatformUtil;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.IntStream;
-import net.minecraft.util.Util;
 import org.joml.Vector4fc;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL33C;
@@ -20,7 +19,6 @@ public class GlStateManager {
    private static int numTextures = 0;
    private static final Plot PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
    private static int numBuffers = 0;
-   private static final boolean IS_MACOS;
    private final BlendState blend = new BlendState();
    private final boolean[] blendEnable = new boolean[8];
    private final DepthState depth = new DepthState();
@@ -41,27 +39,22 @@ public class GlStateManager {
    }
 
    public void _disableScissorTest() {
-      RenderSystem.assertOnRenderThread();
       this.scissor.mode.disable();
    }
 
    public void _enableScissorTest() {
-      RenderSystem.assertOnRenderThread();
       this.scissor.mode.enable();
    }
 
    public void _disableDepthTest() {
-      RenderSystem.assertOnRenderThread();
       this.depth.mode.disable();
    }
 
    public void _enableDepthTest() {
-      RenderSystem.assertOnRenderThread();
       this.depth.mode.enable();
    }
 
    public void _depthFunc(final int func) {
-      RenderSystem.assertOnRenderThread();
       if (func != this.depth.func) {
          this.depth.func = func;
          GL33C.glDepthFunc(func);
@@ -70,7 +63,6 @@ public class GlStateManager {
    }
 
    public void _depthMask(final boolean mask) {
-      RenderSystem.assertOnRenderThread();
       if (mask != this.depth.mask) {
          this.depth.mask = mask;
          GL33C.glDepthMask(mask);
@@ -79,7 +71,6 @@ public class GlStateManager {
    }
 
    public void _disableBlend(final int index) {
-      RenderSystem.assertOnRenderThread();
       if (this.blendEnable[index]) {
          this.blendEnable[index] = false;
          GL33C.glDisablei(3042, index);
@@ -87,7 +78,6 @@ public class GlStateManager {
    }
 
    public void _enableBlend(final int index) {
-      RenderSystem.assertOnRenderThread();
       if (!this.blendEnable[index]) {
          this.blendEnable[index] = true;
          GL33C.glEnablei(3042, index);
@@ -95,7 +85,6 @@ public class GlStateManager {
    }
 
    public void _blendFuncSeparate(final int srcRgb, final int dstRgb, final int srcAlpha, final int dstAlpha) {
-      RenderSystem.assertOnRenderThread();
       if (srcRgb != this.blend.srcRgb || dstRgb != this.blend.dstRgb || srcAlpha != this.blend.srcAlpha || dstAlpha != this.blend.dstAlpha) {
          this.blend.srcRgb = srcRgb;
          this.blend.dstRgb = dstRgb;
@@ -107,7 +96,6 @@ public class GlStateManager {
    }
 
    public void _blendEquationSeparate(final int modeRgb, final int modeAlpha) {
-      RenderSystem.assertOnRenderThread();
       if (modeRgb != this.blend.modeRgb || modeAlpha != this.blend.modeAlpha) {
          this.blend.modeRgb = modeRgb;
          this.blend.modeAlpha = modeAlpha;
@@ -117,7 +105,6 @@ public class GlStateManager {
    }
 
    public void glShaderSource(final int shader, final String source) {
-      RenderSystem.assertOnRenderThread();
       byte[] encoded = source.getBytes(StandardCharsets.UTF_8);
       ByteBuffer buffer = MemoryUtil.memAlloc(encoded.length + 1);
       buffer.put(encoded);
@@ -158,13 +145,11 @@ public class GlStateManager {
    }
 
    public static int _glGenBuffers() {
-      RenderSystem.assertOnRenderThread();
       incrementTrackedBuffers();
       return GL33C.glGenBuffers();
    }
 
    public static void _glDeleteBuffers(final int buffer) {
-      RenderSystem.assertOnRenderThread();
       --numBuffers;
       PLOT_BUFFERS.setValue((double)numBuffers);
       GL33C.glDeleteBuffers(buffer);
@@ -192,7 +177,6 @@ public class GlStateManager {
    }
 
    public void _glDeleteFramebuffers(final int framebuffer) {
-      RenderSystem.assertOnRenderThread();
       GL33C.glDeleteFramebuffers(framebuffer);
       if (this.readFbo == framebuffer) {
          this.readFbo = 0;
@@ -205,27 +189,22 @@ public class GlStateManager {
    }
 
    public void _enableCull() {
-      RenderSystem.assertOnRenderThread();
       this.cull.enable.enable();
    }
 
    public void _disableCull() {
-      RenderSystem.assertOnRenderThread();
       this.cull.enable.disable();
    }
 
    public void _enablePolygonOffset() {
-      RenderSystem.assertOnRenderThread();
       this.polyOffset.fill.enable();
    }
 
    public void _disablePolygonOffset() {
-      RenderSystem.assertOnRenderThread();
       this.polyOffset.fill.disable();
    }
 
    public void _polygonOffset(final float factor, final float units) {
-      RenderSystem.assertOnRenderThread();
       if (factor != this.polyOffset.factor || units != this.polyOffset.units) {
          this.polyOffset.factor = factor;
          this.polyOffset.units = units;
@@ -235,7 +214,6 @@ public class GlStateManager {
    }
 
    public void _activeTexture(final int texture) {
-      RenderSystem.assertOnRenderThread();
       if (this.activeTexture != texture - '\u84c0') {
          this.activeTexture = texture - '\u84c0';
          GL33C.glActiveTexture(texture);
@@ -244,14 +222,12 @@ public class GlStateManager {
    }
 
    public int _genTexture() {
-      RenderSystem.assertOnRenderThread();
       ++numTextures;
       PLOT_TEXTURES.setValue((double)numTextures);
       return GL33C.glGenTextures();
    }
 
    public void _deleteTexture(final int id) {
-      RenderSystem.assertOnRenderThread();
       GL33C.glDeleteTextures(id);
 
       for(TextureState state : this.TEXTURES) {
@@ -265,7 +241,6 @@ public class GlStateManager {
    }
 
    public void _bindTexture(final int id) {
-      RenderSystem.assertOnRenderThread();
       if (id != this.TEXTURES[this.activeTexture].binding) {
          this.TEXTURES[this.activeTexture].binding = id;
          GL33C.glBindTexture(3553, id);
@@ -274,8 +249,6 @@ public class GlStateManager {
    }
 
    public void _colorMask(final @ColorTargetState.WriteMask int writeMask) {
-      RenderSystem.assertOnRenderThread();
-
       for(int i = 0; i < this.COLOR_MASK.length; ++i) {
          if (writeMask != this.COLOR_MASK[i]) {
             this.COLOR_MASK[i] = writeMask;
@@ -286,7 +259,6 @@ public class GlStateManager {
    }
 
    public void _colorMask(final int index, final @ColorTargetState.WriteMask int writeMask) {
-      RenderSystem.assertOnRenderThread();
       if (writeMask != this.COLOR_MASK[index]) {
          this.COLOR_MASK[index] = writeMask;
          GL33C.glColorMaski(index, (writeMask & 1) != 0, (writeMask & 2) != 0, (writeMask & 4) != 0, (writeMask & 8) != 0);
@@ -295,42 +267,33 @@ public class GlStateManager {
    }
 
    public static void _clear(final int mask) {
-      RenderSystem.assertOnRenderThread();
       GL33C.glClear(mask);
-      if (IS_MACOS) {
+      if (PlatformUtil.IS_MACOS) {
          GL33C.glGetError();
       }
 
    }
 
    public static void _clearBuffer(final int index, final Vector4fc clearColor) {
-      RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6144, index, new float[]{clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w()});
-      if (IS_MACOS) {
+      if (PlatformUtil.IS_MACOS) {
          GL33C.glGetError();
       }
 
    }
 
    public static void _clearBuffer(final double clearDepth) {
-      RenderSystem.assertOnRenderThread();
       GL33C.glClearBufferfv(6145, 0, new float[]{(float)clearDepth});
-      if (IS_MACOS) {
+      if (PlatformUtil.IS_MACOS) {
          GL33C.glGetError();
       }
 
    }
 
    public static void clearGlErrors() {
-      RenderSystem.assertOnRenderThread();
-
       while(GL33C.glGetError() != 0) {
       }
 
-   }
-
-   static {
-      IS_MACOS = Util.getPlatform() == Util.OS.OSX;
    }
 
    private static class TextureState {
@@ -408,7 +371,6 @@ public class GlStateManager {
       }
 
       public void setEnabled(final boolean enabled) {
-         RenderSystem.assertOnRenderThread();
          if (enabled != this.enabled) {
             this.enabled = enabled;
             if (enabled) {

@@ -44,7 +44,7 @@ public class MipmappedTexture extends ReloadableTexture {
       this.textureView = device.createTextureView(this.texture);
 
       for(int level = 0; level < mips.length; ++level) {
-         device.createCommandEncoder().writeToTexture(this.texture, mips[level], level, 0, 0, 0);
+         mips[level].writeToGpuTexture(device.createCommandEncoder(), this.texture, level, 0, 0, 0);
       }
 
       for(int level = 1; level < mips.length; ++level) {

@@ -15,7 +15,7 @@ public class DebugEntryDayCount implements DebugScreenEntry {
    public void display(final DebugScreenDisplayer displayer, final @Nullable Level serverOrClientLevel, final @Nullable LevelChunk clientChunk, final @Nullable LevelChunk serverChunk) {
       if (serverOrClientLevel != null) {
          ClockManager clockManager = serverOrClientLevel.clockManager();
-         serverOrClientLevel.registryAccess().get(Timelines.OVERWORLD_DAY).ifPresent((timeline) -> displayer.addLine("Day #" + ((Timeline)timeline.value()).getPeriodCount(clockManager)));
+         serverOrClientLevel.registryAccess().get(Timelines.OVERWORLD_DAY).ifPresent((timeline) -> displayer.addFactToGroup(DebugGroups.MISC, "Day", (fact) -> fact.value(((Timeline)timeline.value()).getPeriodCount(clockManager))));
       }
 
    }

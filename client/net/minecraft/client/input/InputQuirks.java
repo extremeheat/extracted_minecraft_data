@@ -11,7 +11,6 @@ public class InputQuirks {
    private static final boolean ON_OSX;
    public static final boolean REPLACE_CTRL_KEY_WITH_CMD_KEY;
    public static final int EDIT_SHORTCUT_KEY_MODIFIER;
-   public static final boolean SHIFT_INVERTS_SCROLL_AXIS;
    public static final boolean EMULATE_RIGHT_CLICK_WITH_CTRL_KEY;
    public static final boolean RESTORE_KEY_STATE_AFTER_MOUSE_GRAB;
    private static final Map<String, String> KEYBOARD_DISPLAY_OVERRIDES;
@@ -34,7 +33,6 @@ public class InputQuirks {
       ON_OSX = PLATFORM == Util.OS.OSX;
       REPLACE_CTRL_KEY_WITH_CMD_KEY = ON_OSX;
       EDIT_SHORTCUT_KEY_MODIFIER = REPLACE_CTRL_KEY_WITH_CMD_KEY ? 3072 : 192;
-      SHIFT_INVERTS_SCROLL_AXIS = ON_OSX;
       EMULATE_RIGHT_CLICK_WITH_CTRL_KEY = ON_OSX;
       RESTORE_KEY_STATE_AFTER_MOUSE_GRAB = !ON_OSX;
       Map var10000;

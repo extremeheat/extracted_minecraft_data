@@ -9,5 +9,13 @@ public interface MeshTransformer {
       return (mesh) -> mesh.transformed((pose) -> pose.scaled(factor).translated(0.0F, yOffset, 0.0F));
    }
 
+   static MeshTransformer scaled(final float factor) {
+      return (mesh) -> mesh.transformed((pose) -> pose.scaled(factor));
+   }
+
+   static MeshTransformer translating(final float dx, final float dy, final float dz) {
+      return (mesh) -> mesh.transformed((pose) -> pose.translated(dx, dy, dz));
+   }
+
    MeshDefinition apply(MeshDefinition mesh);
 }

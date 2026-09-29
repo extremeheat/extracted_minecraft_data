@@ -71,7 +71,12 @@ public class KeyBindsScreen extends OptionsSubScreen {
          if (event.isEscape()) {
             this.selectedKey.setKey(InputConstants.UNKNOWN);
          } else {
-            this.selectedKey.setKey(InputConstants.getKey(event));
+            InputConstants.Key key = InputConstants.getKey(event);
+            if (key.equals(InputConstants.UNKNOWN)) {
+               return true;
+            }
+
+            this.selectedKey.setKey(key);
          }
 
          this.selectedKey = null;

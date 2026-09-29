@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.CrafterMenu;
 import net.minecraft.world.inventory.CrafterSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
    private static final Identifier DISABLED_SLOT_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/disabled_slot");
@@ -33,7 +34,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   protected void slotClicked(final Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
+   protected void slotClicked(final @Nullable Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
       if (slot instanceof CrafterSlot && !slot.hasItem() && !this.player.isSpectator()) {
          switch (containerInput) {
             case PICKUP:

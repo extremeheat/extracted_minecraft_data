@@ -242,7 +242,7 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
    }
 
    public void uploadFirstFrame(final GpuTexture destination, final int level) {
-      RenderSystem.getDevice().createCommandEncoder().writeToTexture(destination, this.byMipLevel[level], level, 0, 0, 0);
+      this.byMipLevel[level].writeToGpuTexture(RenderSystem.getDevice().createCommandEncoder(), destination, level, 0, 0, 0);
    }
 
    private static record FrameInfo(int index, int time) {

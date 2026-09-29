@@ -304,7 +304,7 @@ public class WinScreen extends Screen {
          AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
          AbstractTexture portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
          TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
-         graphics.fill(RenderPipelines.END_PORTAL, textureSetup, 0, 0, this.width, this.height);
+         graphics.fill(RenderPipelines.END_PORTAL_GUI, textureSetup, 0, 0, this.width, this.height);
       } else {
          super.extractBackground(graphics, mouseX, mouseY, a);
       }

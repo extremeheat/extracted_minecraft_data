@@ -546,15 +546,6 @@ public class Util {
       }
    }
 
-   public static boolean isAarch64() {
-      String arch = System.getProperty("os.arch").toLowerCase(Locale.ROOT);
-      return arch.equals("aarch64");
-   }
-
-   public static boolean isAppleSiliconMac(final String renderer) {
-      return renderer.startsWith("Apple");
-   }
-
    public static URI parseAndValidateUntrustedUri(final String uri) throws URISyntaxException {
       URI parsedUri = new URI(uri);
       String scheme = parsedUri.getScheme();

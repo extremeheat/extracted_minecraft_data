@@ -1,7 +1,5 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.systems.ScissorState;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
@@ -16,6 +14,7 @@ import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.renderpearl.backend.api.CommandEncoderBackend;
 import com.mojang.renderpearl.backend.api.RenderPassBackend;
+import com.mojang.renderpearl.util.ScissorState;
 import com.mojang.renderpearl.util.TextureViewAndSampler;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.nio.ByteBuffer;
@@ -218,20 +217,6 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       this.stateManager._glBindFramebuffer(36160, 0);
    }
 
-   public void clearColorAndDepthTextures(final GpuTexture colorTexture, final Vector4fc clearColor, final GpuTexture depthTexture, final double clearDepth, final int regionX, final int regionY, final int regionWidth, final int regionHeight, final int mipLevel) {
-      this.device.ensureCurrent();
-      GL33C.glScissor(regionX, regionY, regionWidth, regionHeight);
-      this.stateManager._enableScissorTest();
-      GL33C.glClearDepth(clearDepth);
-      GL33C.glClearColor(clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w());
-      this.stateManager._depthMask(true);
-      this.stateManager._colorMask(15);
-      int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), Collections.singletonList((GlTexture)colorTexture), (GlTexture)depthTexture, mipLevel);
-      this.stateManager._glBindFramebuffer(36160, fbo);
-      GlStateManager._clear(16640);
-      this.stateManager._glBindFramebuffer(36160, 0);
-   }
-
    public void clearDepthTexture(final GpuTexture depthTexture, final double clearDepth) {
       this.device.ensureCurrent();
       GL33C.glClearDepth(clearDepth);
@@ -308,11 +293,7 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       GL33C.glBindBuffer(35052, 0);
    }
 
-   public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel) {
-      this.copyTextureToBuffer(source, destination, offset, callback, mipLevel, 0, 0, source.getWidth(mipLevel), source.getHeight(mipLevel));
-   }
-
-   public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final Runnable callback, final int mipLevel, final int x, final int y, final int width, final int height) {
+   public void copyTextureToBuffer(final GpuTexture source, final GpuBuffer destination, final long offset, final int mipLevel, final int x, final int y, final int width, final int height) {
       this.device.ensureCurrent();
       ((GlBuffer)destination).checkCanBeUsed();
       GlStateManager.clearGlErrors();
@@ -327,7 +308,6 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       }
 
       GL33C.glReadPixels(x, y, width, height, GlConst.toGlExternalId(source.getFormat()), GlConst.toGlType(source.getFormat()), offset);
-      RenderSystem.queueFencedTask(callback);
       GL33C.glFramebufferTexture2D(36008, isDepth ? '\u8d00' : '\u8ce0', 3553, 0, mipLevel);
       this.stateManager._glBindFramebuffer(36008, 0);
       GL33C.glBindBuffer(35051, 0);

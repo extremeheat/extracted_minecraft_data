@@ -4,18 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.TypedInstance;
-import net.minecraft.resources.Identifier;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -25,8 +23,6 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class DebugEntryLookingAt implements DebugScreenEntry {
    private static final int RANGE = 20;
-   private static final Identifier BLOCK_GROUP = Identifier.withDefaultNamespace("looking_at_block");
-   private static final Identifier FLUID_GROUP = Identifier.withDefaultNamespace("looking_at_fluid");
 
    public DebugEntryLookingAt() {
       super();
@@ -37,21 +33,24 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
       Level clientOrServerLevel = (Level)(SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES ? serverOrClientLevel : Minecraft.getInstance().level);
       if (cameraEntity != null && clientOrServerLevel != null) {
          HitResult block = this.getHitResult(cameraEntity);
-         List<String> result = new ArrayList();
+         List<String> tags = new ArrayList();
          if (block.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = ((BlockHitResult)block).getBlockPos();
-            this.extractInfo(result, clientOrServerLevel, pos);
+            this.extractInfo(displayer, tags, clientOrServerLevel, pos);
          }
 
-         displayer.addToGroup(this.group(), result);
+         if (!tags.isEmpty()) {
+            displayer.addToGroup(this.group(), tags);
+         }
+
       }
    }
 
    public abstract HitResult getHitResult(final Entity cameraEntity);
 
-   public abstract void extractInfo(List<String> result, Level level, BlockPos pos);
+   public abstract void extractInfo(final DebugScreenDisplayer displayer, List<String> result, Level level, BlockPos pos);
 
-   public abstract Identifier group();
+   public abstract DebugGroup group();
 
    public static void addTagEntries(final List<String> result, final TypedInstance<?> instance) {
       Stream var10000 = instance.tags().map((e) -> "#" + String.valueOf(e.location()));
@@ -60,39 +59,30 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
    }
 
    public abstract static class DebugEntryLookingAtState<OwnerType, StateType extends StateHolder<OwnerType, StateType> & TypedInstance<OwnerType>> extends DebugEntryLookingAt {
-      private final String prefix;
-
-      protected DebugEntryLookingAtState(final String prefix) {
+      protected DebugEntryLookingAtState() {
          super();
-         this.prefix = prefix;
       }
 
       protected abstract StateType getInstance(Level level, BlockPos pos);
 
-      public void extractInfo(final List<String> result, final Level level, final BlockPos pos) {
+      public void extractInfo(final DebugScreenDisplayer displayer, final List<String> result, final Level level, final BlockPos pos) {
          StateType stateInstance = this.getInstance(level, pos);
-         String var10001 = String.valueOf(ChatFormatting.UNDERLINE);
-         result.add(var10001 + this.prefix + ": " + pos.getX() + ", " + pos.getY() + ", " + pos.getZ());
-         result.add(((TypedInstance)stateInstance).typeHolder().getRegisteredName());
-         addStateProperties(result, stateInstance);
+         displayer.addFactToGroup(this.group(), "Coordinates", (fact) -> fact.value(pos.getX()).text(", ").value(pos.getY()).text(", ").value(pos.getZ()));
+         displayer.addFactToGroup(this.group(), "Type", (fact) -> fact.value(((TypedInstance)stateInstance).typeHolder().getRegisteredName()));
+         this.addStateProperties(displayer, stateInstance);
       }
 
-      private static void addStateProperties(final List<String> result, final StateHolder<?, ?> stateHolder) {
-         stateHolder.getValues().forEach((entry) -> result.add(getPropertyValueString(entry)));
-      }
+      private void addStateProperties(final DebugScreenDisplayer displayer, final StateHolder<?, ?> stateHolder) {
+         stateHolder.getValues().forEach((entry) -> displayer.addFactToGroup(this.group(), entry.property().getName(), (fact) -> {
+               if (Boolean.TRUE.equals(entry.value())) {
+                  fact.text((Component)Component.literal("true").withColor(-16711936));
+               } else if (Boolean.FALSE.equals(entry.value())) {
+                  fact.text((Component)Component.literal("false").withColor(-65536));
+               } else {
+                  fact.value(entry.valueName());
+               }
 
-      private static String getPropertyValueString(final Property.Value<?> entry) {
-         String valueString = entry.valueName();
-         if (Boolean.TRUE.equals(entry.value())) {
-            String var10000 = String.valueOf(ChatFormatting.GREEN);
-            valueString = var10000 + valueString;
-         } else if (Boolean.FALSE.equals(entry.value())) {
-            String var2 = String.valueOf(ChatFormatting.RED);
-            valueString = var2 + valueString;
-         }
-
-         String var3 = entry.property().getName();
-         return var3 + ": " + valueString;
+            }));
       }
    }
 
@@ -103,15 +93,15 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
 
       protected abstract T getInstance(Level level, BlockPos pos);
 
-      public void extractInfo(final List<String> result, final Level level, final BlockPos pos) {
+      public void extractInfo(final DebugScreenDisplayer displayer, final List<String> tags, final Level level, final BlockPos pos) {
          T instance = this.getInstance(level, pos);
-         addTagEntries(result, instance);
+         addTagEntries(tags, instance);
       }
    }
 
    public static class BlockStateInfo extends DebugEntryLookingAtState<Block, BlockState> {
       protected BlockStateInfo() {
-         super("Targeted Block");
+         super();
       }
 
       public HitResult getHitResult(final Entity cameraEntity) {
@@ -122,8 +112,8 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
          return level.getBlockState(pos);
       }
 
-      public Identifier group() {
-         return DebugEntryLookingAt.BLOCK_GROUP;
+      public DebugGroup group() {
+         return DebugGroups.LOOKING_AT_BLOCK;
       }
    }
 
@@ -140,14 +130,14 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
          return level.getBlockState(pos);
       }
 
-      public Identifier group() {
-         return DebugEntryLookingAt.BLOCK_GROUP;
+      public DebugGroup group() {
+         return DebugGroups.LOOKING_AT_BLOCK;
       }
    }
 
    public static class FluidStateInfo extends DebugEntryLookingAtState<Fluid, FluidState> {
       protected FluidStateInfo() {
-         super("Targeted Fluid");
+         super();
       }
 
       public HitResult getHitResult(final Entity cameraEntity) {
@@ -158,8 +148,8 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
          return level.getFluidState(pos);
       }
 
-      public Identifier group() {
-         return DebugEntryLookingAt.FLUID_GROUP;
+      public DebugGroup group() {
+         return DebugGroups.LOOKING_AT_FLUID;
       }
    }
 
@@ -176,8 +166,8 @@ public abstract class DebugEntryLookingAt implements DebugScreenEntry {
          return level.getFluidState(pos);
       }
 
-      public Identifier group() {
-         return DebugEntryLookingAt.FLUID_GROUP;
+      public DebugGroup group() {
+         return DebugGroups.LOOKING_AT_FLUID;
       }
    }
 }

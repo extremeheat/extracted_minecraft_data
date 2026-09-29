@@ -5,21 +5,19 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class NotRuleTest extends RuleTest {
+public record NotRuleTest(RuleTest rule) implements RuleTest {
    public static final MapCodec<NotRuleTest> CODEC;
-   private final RuleTest rule;
 
-   public NotRuleTest(final RuleTest rule) {
+   public NotRuleTest {
       super();
-      this.rule = rule;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return !this.rule.test(blockState, pos, random);
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.NOT_TEST;
+   public MapCodec<NotRuleTest> codec() {
+      return CODEC;
    }
 
    static {

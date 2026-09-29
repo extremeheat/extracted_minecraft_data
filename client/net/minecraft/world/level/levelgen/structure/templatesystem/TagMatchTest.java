@@ -8,21 +8,19 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class TagMatchTest extends RuleTest {
+public record TagMatchTest(TagKey<Block> tag) implements RuleTest {
    public static final MapCodec<TagMatchTest> CODEC;
-   private final TagKey<Block> tag;
 
-   public TagMatchTest(final TagKey<Block> tag) {
+   public TagMatchTest {
       super();
-      this.tag = tag;
    }
 
    public boolean test(final BlockState blockState, final BlockPos pos, final RandomSource random) {
       return blockState.is(this.tag);
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.TAG_TEST;
+   public MapCodec<TagMatchTest> codec() {
+      return CODEC;
    }
 
    static {

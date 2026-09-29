@@ -76,7 +76,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
    public void init() {
       this.backButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onBack()).build());
-      this.backButton.visible = false;
+      this.backButton.setVisible(false);
       this.cancelButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).build());
       if (!this.uploadStarted) {
          if (this.lastScreen.slot == -1) {
@@ -250,11 +250,11 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
             this.uploadFinished = true;
             this.showDots = false;
             if (this.backButton != null) {
-               this.backButton.visible = true;
+               this.backButton.setVisible(true);
             }
 
             if (this.cancelButton != null) {
-               this.cancelButton.visible = false;
+               this.cancelButton.setVisible(false);
             }
 
             this.currentUpload.set((Object)null);

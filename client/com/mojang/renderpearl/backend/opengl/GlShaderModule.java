@@ -1,6 +1,5 @@
 package com.mojang.renderpearl.backend.opengl;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import org.lwjgl.opengl.GL33C;
@@ -23,7 +22,6 @@ public class GlShaderModule implements UncheckedAutoCloseable {
       if (this.shaderId == -1) {
          throw new IllegalStateException("Already closed");
       } else {
-         RenderSystem.assertOnRenderThread();
          GL33C.glDeleteShader(this.shaderId);
          this.shaderId = -1;
       }

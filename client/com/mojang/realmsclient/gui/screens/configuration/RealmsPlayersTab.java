@@ -43,7 +43,7 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
    private final InvitedObjectSelectionList invitedList;
 
    public RealmsPlayersTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
-      super(TITLE);
+      super();
       this.configurationScreen = configurationScreen;
       this.minecraft = minecraft;
       this.font = configurationScreen.getFont();
@@ -180,12 +180,12 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
       }
 
       private void updateOpButtons() {
-         this.makeOpButton.visible = !this.playerInfo.operator;
-         this.removeOpButton.visible = !this.makeOpButton.visible;
+         this.makeOpButton.setVisible(!this.playerInfo.operator);
+         this.removeOpButton.setVisible(!this.makeOpButton.isVisible());
       }
 
       private Button activeOpButton() {
-         return this.makeOpButton.visible ? this.makeOpButton : this.removeOpButton;
+         return this.makeOpButton.isVisible() ? this.makeOpButton : this.removeOpButton;
       }
 
       public List<? extends GuiEventListener> children() {

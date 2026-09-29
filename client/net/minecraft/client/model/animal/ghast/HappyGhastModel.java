@@ -46,7 +46,8 @@ public class HappyGhastModel extends EntityModel<HappyGhastRenderState> {
       body.addOrReplaceChild(PartNames.tentacle(6), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, deformation), PartPose.offset(-3.75F, 7.0F, 5.0F));
       body.addOrReplaceChild(PartNames.tentacle(7), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 8.0F, 2.0F, deformation), PartPose.offset(1.25F, 7.0F, 5.0F));
       body.addOrReplaceChild(PartNames.tentacle(8), CubeListBuilder.create().texOffs(0, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 5.0F, 2.0F, deformation), PartPose.offset(6.25F, 7.0F, 5.0F));
-      return LayerDefinition.create(mesh, 64, 64).apply(MeshTransformer.scaling(4.0F));
+      LayerDefinition baseLayer = LayerDefinition.create(mesh, 64, 64).apply(MeshTransformer.scaling(4.0F));
+      return isBaby ? baseLayer.apply(BABY_TRANSFORMER) : baseLayer;
    }
 
    public void setupAnim(final HappyGhastRenderState state) {

@@ -7,7 +7,9 @@ import org.joml.Vector4fc;
 
 public class SkyRenderState {
    public DimensionType.Skybox skybox;
-   public boolean shouldRenderDarkDisc;
+   public boolean hasSkyOccluder;
+   public float occluderStartAngle;
+   public float occluderEndAngle;
    public float sunAngle;
    public float moonAngle;
    public float starAngle;
@@ -28,5 +30,6 @@ public class SkyRenderState {
 
    public void reset() {
       this.skybox = DimensionType.Skybox.NONE;
+      this.hasSkyOccluder = false;
    }
 }

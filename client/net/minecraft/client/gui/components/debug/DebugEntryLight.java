@@ -1,10 +1,8 @@
 package net.minecraft.client.gui.components.debug;
 
-import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -13,8 +11,6 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.jspecify.annotations.Nullable;
 
 public class DebugEntryLight implements DebugScreenEntry {
-   public static final Identifier GROUP = Identifier.withDefaultNamespace("light");
-
    public DebugEntryLight() {
       super();
    }
@@ -24,24 +20,23 @@ public class DebugEntryLight implements DebugScreenEntry {
       Entity entity = minecraft.getCameraEntity();
       if (entity != null && minecraft.level != null) {
          BlockPos feetPos = entity.blockPosition();
-         int rawBrightness = minecraft.level.getChunkSource().getLightEngine().getRawBrightness(feetPos, 0);
-         int sky = minecraft.level.getBrightness(LightLayer.SKY, feetPos);
-         int block = minecraft.level.getBrightness(LightLayer.BLOCK, feetPos);
-         String clientLight = "Client Light: " + rawBrightness + " (" + sky + " sky, " + block + " block)";
          if (SharedConstants.DEBUG_SHOW_SERVER_DEBUG_VALUES) {
-            String serverLight;
             if (serverChunk != null) {
                LevelLightEngine lightEngine = serverChunk.getLevel().getLightEngine();
-               serverLight = "Server Light: (" + lightEngine.getLayerListener(LightLayer.SKY).getLightValue(feetPos) + " sky, " + lightEngine.getLayerListener(LightLayer.BLOCK).getLightValue(feetPos) + " block)";
+               displayer.addFactToGroup(DebugGroups.LIGHT, "Server", (fact) -> fact.value(lightEngine.getLayerListener(LightLayer.SKY).getLightValue(feetPos)).text("sky, ").value(lightEngine.getLayerListener(LightLayer.BLOCK).getLightValue(feetPos)).text(" block)"));
             } else {
-               serverLight = "Server Light: (?? sky, ?? block)";
+               displayer.addFactToGroup(DebugGroups.LIGHT, "Server", (fact) -> fact.value("Unavailable"));
             }
 
-            displayer.addToGroup(GROUP, List.of(clientLight, serverLight));
+            displayer.addFactToGroup(DebugGroups.LIGHT, "Client", (fact) -> populateClientLightFact(fact, minecraft, feetPos));
          } else {
-            displayer.addToGroup(GROUP, clientLight);
+            displayer.addFactToGroup(DebugGroups.MISC, "Light", (fact) -> populateClientLightFact(fact, minecraft, feetPos));
          }
 
       }
+   }
+
+   private static DebugFact populateClientLightFact(final DebugFact fact, final Minecraft minecraft, final BlockPos feetPos) {
+      return fact.value(minecraft.level.getChunkSource().getLightEngine().getRawBrightness(feetPos, 0)).text(" (").value(minecraft.level.getBrightness(LightLayer.SKY, feetPos)).text(" sky, ").value(minecraft.level.getBrightness(LightLayer.BLOCK, feetPos)).text(" block)");
    }
 }

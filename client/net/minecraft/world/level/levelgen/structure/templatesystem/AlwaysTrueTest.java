@@ -6,11 +6,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class AlwaysTrueTest extends RuleTest {
+public record AlwaysTrueTest() implements RuleTest {
    public static final MapCodec<AlwaysTrueTest> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final AlwaysTrueTest INSTANCE = new AlwaysTrueTest();
 
-   private AlwaysTrueTest() {
+   public AlwaysTrueTest() {
       super();
    }
 
@@ -22,7 +22,7 @@ public class AlwaysTrueTest extends RuleTest {
       return true;
    }
 
-   protected RuleTestType<?> getType() {
-      return RuleTestType.ALWAYS_TRUE_TEST;
+   public MapCodec<AlwaysTrueTest> codec() {
+      return CODEC;
    }
 }

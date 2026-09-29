@@ -88,16 +88,16 @@ public class RecipeBookTabButton extends ImageButton {
 
    public boolean updateVisibility(final ClientRecipeBook book) {
       List<RecipeCollection> collections = book.getCollection(this.tabInfo.category());
-      this.visible = false;
+      this.setVisible(false);
 
       for(RecipeCollection collection : collections) {
          if (collection.hasAnySelected()) {
-            this.visible = true;
+            this.setVisible(true);
             break;
          }
       }
 
-      return this.visible;
+      return this.isVisible();
    }
 
    public void select() {
