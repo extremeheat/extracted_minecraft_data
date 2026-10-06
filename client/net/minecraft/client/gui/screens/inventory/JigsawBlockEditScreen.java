@@ -108,7 +108,7 @@ public class JigsawBlockEditScreen extends Screen {
       this.placementPriorityEdit.setTooltip(Tooltip.create(PLACEMENT_PRIORITY_TOOLTIP));
       this.addWidget(this.placementPriorityEdit);
       this.joint = this.jigsawEntity.getJoint();
-      this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName, this.joint).withValues(JigsawBlockEntity.JointType.values()).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (button, value) -> this.joint = value));
+      this.jointButton = (CycleButton)this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName, this.joint).withValues(JigsawBlockEntity.JointType.values())).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (button, value) -> this.joint = value));
       boolean vertical = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
       this.jointButton.active = vertical;
       this.jointButton.setVisible(vertical);

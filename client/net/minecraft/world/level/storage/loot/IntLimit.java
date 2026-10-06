@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.jspecify.annotations.Nullable;
@@ -26,7 +25,11 @@ public class IntLimit implements Validatable {
       if (min == null) {
          return max == null ? (var0, input) -> input : (context, input) -> Math.min(((ContextIntProvider)max.value()).getInt(context), input);
       } else {
-         return max == null ? (context, input) -> Math.max(((ContextIntProvider)min.value()).getInt(context), input) : (context, input) -> Mth.clamp(input, ((ContextIntProvider)min.value()).getInt(context), ((ContextIntProvider)max.value()).getInt(context));
+         return max == null ? (context, input) -> Math.max(((ContextIntProvider)min.value()).getInt(context), input) : (context, input) -> {
+            int actualMin = ((ContextIntProvider)min.value()).getInt(context);
+            int actualMax = ((ContextIntProvider)max.value()).getInt(context);
+            return Math.clamp((long)input, actualMin, Math.max(actualMax, actualMin));
+         };
       }
    }
 

@@ -17,7 +17,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
@@ -110,7 +110,7 @@ public class StructureUtils {
    }
 
    public static Stream<BlockPos> findTestBlocks(final BlockPos centerPos, final int searchRadius, final ServerLevel level) {
-      return level.getPoiManager().findAll((p) -> p.is(PoiTypes.TEST_INSTANCE), (p) -> true, centerPos, searchRadius, PoiManager.Occupancy.ANY).map(BlockPos::immutable);
+      return level.getPoiManager().findAll((p) -> p.is(PoiTypeIds.TEST_INSTANCE), (p) -> true, centerPos, searchRadius, PoiManager.Occupancy.ANY).map(BlockPos::immutable);
    }
 
    public static Stream<BlockPos> lookedAtTestPos(final BlockPos pos, final Entity camera, final ServerLevel level) {

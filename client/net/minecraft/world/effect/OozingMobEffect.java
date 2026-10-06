@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -28,7 +27,12 @@ class OozingMobEffect extends MobEffect {
 
    @VisibleForTesting
    protected static int numberOfSlimesToSpawn(final int maxEntityCramming, final NearbySlimes nearbySlimes, final int numberRequested) {
-      return maxEntityCramming < 1 ? numberRequested : Mth.clamp(0, maxEntityCramming - nearbySlimes.count(maxEntityCramming), numberRequested);
+      if (maxEntityCramming < 1) {
+         return numberRequested;
+      } else {
+         int maxCount = Math.max(0, maxEntityCramming - nearbySlimes.count(maxEntityCramming));
+         return Math.clamp((long)numberRequested, 0, maxCount);
+      }
    }
 
    public void onMobRemoved(final ServerLevel level, final LivingEntity mob, final int amplifier, final Entity.RemovalReason reason) {

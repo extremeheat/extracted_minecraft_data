@@ -60,7 +60,11 @@ public class StructurePiecesBuilder {
       this.offsetPiecesVertically(dy);
    }
 
-   public PiecesContainer build() {
+   public @Nullable PiecesContainer build() {
+      return this.pieces.isEmpty() ? null : this.buildOrThrow();
+   }
+
+   public PiecesContainer buildOrThrow() {
       return new PiecesContainer(this.pieces);
    }
 

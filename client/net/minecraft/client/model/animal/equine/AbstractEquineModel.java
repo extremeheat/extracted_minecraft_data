@@ -67,7 +67,7 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
 
    public void setupAnim(final T state) {
       super.setupAnim(state);
-      float clampedYRot = Mth.clamp(state.yRot, -20.0F, 20.0F);
+      float clampedYRot = Math.clamp(state.yRot, -20.0F, 20.0F);
       float headRotXRad = state.xRot * 0.017453292F;
       float animationSpeed = state.walkAnimationSpeed;
       float animationPos = state.walkAnimationPos;

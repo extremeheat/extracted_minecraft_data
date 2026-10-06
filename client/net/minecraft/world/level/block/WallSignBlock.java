@@ -26,7 +26,7 @@ public class WallSignBlock extends SignBlock implements PlainSignBlock {
    private static final Map<Direction, VoxelShape> SHAPES;
 
    public WallSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
-      super(type, properties.sound(type.soundType()));
+      super(type, properties.sound(type.blockSoundSet()));
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
 

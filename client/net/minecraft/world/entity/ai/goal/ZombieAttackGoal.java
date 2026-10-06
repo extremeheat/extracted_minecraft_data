@@ -11,6 +11,11 @@ public class ZombieAttackGoal extends MeleeAttackGoal {
       this.zombie = zombie;
    }
 
+   public ZombieAttackGoal(final Zombie zombie, final double speedModifier, final boolean trackTarget, final int attackInterval) {
+      super(zombie, speedModifier, trackTarget, attackInterval);
+      this.zombie = zombie;
+   }
+
    public void start() {
       super.start();
       this.raiseArmTicks = 0;

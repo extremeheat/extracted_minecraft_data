@@ -44,8 +44,8 @@ public class MinecartSoundInstance extends AbstractTickableSoundInstance {
          float speed = (float)this.minecart.getDeltaMovement().horizontalDistance();
          boolean offRail = !this.minecart.isOnRails() && this.minecart.getBehavior() instanceof NewMinecartBehavior;
          if (speed >= 0.01F && this.minecart.level().tickRateManager().runsNormally() && !offRail) {
-            this.pitch = Mth.clamp(this.pitch + 0.0025F, 0.0F, 1.0F);
-            this.volume = Mth.lerp(Mth.clamp(speed, 0.0F, 0.5F), 0.0F, 0.7F);
+            this.pitch = Math.clamp(this.pitch + 0.0025F, 0.0F, 1.0F);
+            this.volume = Mth.lerp(Math.clamp(speed, 0.0F, 0.5F), 0.0F, 0.7F);
          } else {
             this.pitch = 0.0F;
             this.volume = 0.0F;

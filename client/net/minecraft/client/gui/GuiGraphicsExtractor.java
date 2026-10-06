@@ -46,9 +46,9 @@ import net.minecraft.client.renderer.state.gui.pip.GuiBookModelRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiEntityRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiProfilerChartRenderState;
 import net.minecraft.client.renderer.state.gui.pip.GuiSkinRenderState;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
@@ -427,9 +427,9 @@ public class GuiGraphicsExtractor {
    private void blitTiledSprite(final RenderPipeline renderPipeline, final TextureAtlasSprite sprite, final int x, final int y, final int width, final int height, final int textureX, final int textureY, final int tileWidth, final int tileHeight, final int spriteWidth, final int spriteHeight, final int color) {
       if (width > 0 && height > 0) {
          if (tileWidth > 0 && tileHeight > 0) {
-            AbstractTexture spriteTexture = this.minecraft.getTextureManager().getTexture(sprite.atlasLocation());
-            GpuTextureView texture = spriteTexture.getTextureView();
-            this.innerTiledBlit(renderPipeline, texture, spriteTexture.getSampler(), tileWidth, tileHeight, x, y, x + width, y + height, sprite.getU((float)textureX / (float)spriteWidth), sprite.getU((float)(textureX + tileWidth) / (float)spriteWidth), sprite.getV((float)textureY / (float)spriteHeight), sprite.getV((float)(textureY + tileHeight) / (float)spriteHeight), color);
+            TextureHandle spriteTexture = this.minecraft.getTextureManager().getTexture(sprite.atlasLocation());
+            GpuTextureView texture = spriteTexture.textureView();
+            this.innerTiledBlit(renderPipeline, texture, spriteTexture.sampler(), tileWidth, tileHeight, x, y, x + width, y + height, sprite.getU((float)textureX / (float)spriteWidth), sprite.getU((float)(textureX + tileWidth) / (float)spriteWidth), sprite.getV((float)textureY / (float)spriteHeight), sprite.getV((float)(textureY + tileHeight) / (float)spriteHeight), color);
          } else {
             throw new IllegalArgumentException("Tile size must be positive, got " + tileWidth + "x" + tileHeight);
          }
@@ -437,8 +437,8 @@ public class GuiGraphicsExtractor {
    }
 
    private void innerBlit(final RenderPipeline renderPipeline, final Identifier location, final int x0, final int x1, final int y0, final int y1, final float u0, final float u1, final float v0, final float v1, final int color) {
-      AbstractTexture texture = this.minecraft.getTextureManager().getTexture(location);
-      this.innerBlit(renderPipeline, texture.getTextureView(), texture.getSampler(), x0, y0, x1, y1, u0, u1, v0, v1, color);
+      TextureHandle texture = this.minecraft.getTextureManager().getTexture(location);
+      this.innerBlit(renderPipeline, texture.textureView(), texture.sampler(), x0, y0, x1, y1, u0, u1, v0, v1, color);
    }
 
    private void innerBlit(final RenderPipeline pipeline, final GpuTextureView textureView, final GpuSampler sampler, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1, final int color) {
@@ -537,8 +537,8 @@ public class GuiGraphicsExtractor {
    public void map(final MapRenderState mapRenderState) {
       Minecraft minecraft = Minecraft.getInstance();
       TextureManager textureManager = minecraft.getTextureManager();
-      AbstractTexture texture = textureManager.getTexture(mapRenderState.texture);
-      this.innerBlit(RenderPipelines.GUI_TEXTURED, texture.getTextureView(), texture.getSampler(), 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
+      TextureHandle texture = textureManager.getTexture(mapRenderState.texture);
+      this.innerBlit(RenderPipelines.GUI_TEXTURED, texture.textureView(), texture.sampler(), 0, 0, 128, 128, 0.0F, 1.0F, 0.0F, 1.0F, -1);
 
       for(MapRenderState.MapDecorationRenderState decoration : mapRenderState.decorations) {
          if (decoration.renderOnFrame) {
@@ -549,8 +549,8 @@ public class GuiGraphicsExtractor {
             this.pose.translate(-0.125F, 0.125F);
             TextureAtlasSprite atlasSprite = decoration.atlasSprite;
             if (atlasSprite != null) {
-               AbstractTexture decorationTexture = textureManager.getTexture(atlasSprite.atlasLocation());
-               this.innerBlit(RenderPipelines.GUI_TEXTURED, decorationTexture.getTextureView(), decorationTexture.getSampler(), -1, -1, 1, 1, atlasSprite.getU0(), atlasSprite.getU1(), atlasSprite.getV1(), atlasSprite.getV0(), -1);
+               TextureHandle decorationTexture = textureManager.getTexture(atlasSprite.atlasLocation());
+               this.innerBlit(RenderPipelines.GUI_TEXTURED, decorationTexture.textureView(), decorationTexture.sampler(), -1, -1, 1, 1, atlasSprite.getU0(), atlasSprite.getU1(), atlasSprite.getV1(), atlasSprite.getV0(), -1);
             }
 
             this.pose.popMatrix();
@@ -559,7 +559,7 @@ public class GuiGraphicsExtractor {
                float width = (float)font.width((FormattedText)decoration.name);
                float var10000 = 25.0F / width;
                Objects.requireNonNull(font);
-               float scale = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
+               float scale = Math.clamp(var10000, 0.0F, 6.0F / 9.0F);
                this.pose.pushMatrix();
                this.pose.translate((float)decoration.x / 2.0F + 64.0F - width * scale / 2.0F, (float)decoration.y / 2.0F + 64.0F + 4.0F);
                this.pose.scale(scale, scale);
@@ -665,7 +665,7 @@ public class GuiGraphicsExtractor {
       }
    }
 
-   public void tooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, boolean extraSpaceAfterFirstLine) {
+   public void tooltip(final Font font, final List<ClientTooltipComponent> lines, final int xo, final int yo, final ClientTooltipPositioner positioner, final @Nullable Identifier style, final boolean extraSpaceAfterFirstLine) {
       int textWidth = 0;
       int tempHeight = extraSpaceAfterFirstLine && lines.size() != 1 ? 0 : -2;
 

@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
-import net.minecraft.util.Mth;
 
 public class EndermanModel<T extends EndermanRenderState> extends HumanoidModel<T> {
    public EndermanModel(final ModelPart root) {
@@ -42,10 +41,10 @@ public class EndermanModel<T extends EndermanRenderState> extends HumanoidModel<
       var10000 = this.leftLeg;
       var10000.xRot *= 0.5F;
       float max = 0.4F;
-      this.rightArm.xRot = Mth.clamp(this.rightArm.xRot, -0.4F, 0.4F);
-      this.leftArm.xRot = Mth.clamp(this.leftArm.xRot, -0.4F, 0.4F);
-      this.rightLeg.xRot = Mth.clamp(this.rightLeg.xRot, -0.4F, 0.4F);
-      this.leftLeg.xRot = Mth.clamp(this.leftLeg.xRot, -0.4F, 0.4F);
+      this.rightArm.xRot = Math.clamp(this.rightArm.xRot, -0.4F, 0.4F);
+      this.leftArm.xRot = Math.clamp(this.leftArm.xRot, -0.4F, 0.4F);
+      this.rightLeg.xRot = Math.clamp(this.rightLeg.xRot, -0.4F, 0.4F);
+      this.leftLeg.xRot = Math.clamp(this.leftLeg.xRot, -0.4F, 0.4F);
       if (!state.carriedBlock.isEmpty()) {
          this.rightArm.xRot = -0.5F;
          this.leftArm.xRot = -0.5F;

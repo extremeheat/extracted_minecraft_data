@@ -1,6 +1,7 @@
 package net.minecraft.client.resources.model.sprite;
 
 import com.mojang.logging.LogUtils;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +38,7 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Sp
       super();
 
       for(AtlasConfig info : KNOWN_ATLASES) {
-         TextureAtlas atlasTexture = new TextureAtlas(info.textureId);
-         textureManager.register(info.textureId, atlasTexture);
+         TextureAtlas atlasTexture = new TextureAtlas(textureManager, info.textureId);
          AtlasEntry atlasEntry = new AtlasEntry(atlasTexture, info);
          this.atlasByTexture.put(info.textureId, atlasEntry);
          this.atlasById.put(info.definitionLocation, atlasEntry);
@@ -69,6 +69,13 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Sp
       this.atlasById.values().forEach(AtlasEntry::close);
       this.atlasById.clear();
       this.atlasByTexture.clear();
+   }
+
+   public void tick() {
+      for(AtlasEntry entry : this.atlasByTexture.values()) {
+         entry.atlas.cycleAnimationFrames();
+      }
+
    }
 
    public TextureAtlasSprite get(final SpriteId sprite) {
@@ -129,6 +136,13 @@ public class AtlasManager implements AutoCloseable, PreparableReloadListener, Sp
          }
 
       });
+   }
+
+   public void dumpAllSprites(final Path targetDir) {
+      for(AtlasEntry entry : this.atlasByTexture.values()) {
+         entry.atlas.dumpSpriteNames(entry.config.textureId, targetDir);
+      }
+
    }
 
    static {

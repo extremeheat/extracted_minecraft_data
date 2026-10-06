@@ -212,7 +212,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             entity.cookingTimer = 0;
          }
       } else if (entity.cookingTimer > 0) {
-         entity.cookingTimer = Mth.clamp(entity.cookingTimer - 2, 0, entity.cookingTotalTime);
+         entity.cookingTimer = Math.clamp((long)(entity.cookingTimer - 2), 0, entity.cookingTotalTime);
       }
 
       if (wasLit != isLit) {

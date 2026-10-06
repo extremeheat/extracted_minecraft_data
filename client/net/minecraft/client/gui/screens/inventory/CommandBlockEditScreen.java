@@ -36,7 +36,7 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
    }
 
    protected void addExtraControls() {
-      this.modeButton = (CycleButton)this.addRenderableWidget(CycleButton.builder((mode) -> {
+      this.modeButton = (CycleButton)this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder((mode) -> {
          MutableComponent var10000;
          switch (mode) {
             case SEQUENCE -> var10000 = Component.translatable("advMode.mode.sequence");
@@ -46,7 +46,7 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
          }
 
          return var10000;
-      }, this.mode).withValues(CommandBlockEntity.Mode.values()).displayOnlyValue().create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (button, value) -> this.mode = value));
+      }, this.mode).withValues(CommandBlockEntity.Mode.values())).displayOnlyValue().create(this.width / 2 - 50 - 100 - 4, 165, 100, 20, Component.translatable("advMode.mode"), (button, value) -> this.mode = value));
       this.conditionalButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.conditional"), Component.translatable("advMode.mode.unconditional"), this.conditional).displayOnlyValue().create(this.width / 2 - 50, 165, 100, 20, Component.translatable("advMode.type"), (button, value) -> this.conditional = value));
       this.autoexecButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.translatable("advMode.mode.autoexec.bat"), Component.translatable("advMode.mode.redstoneTriggered"), this.autoexec).displayOnlyValue().create(this.width / 2 + 50 + 4, 165, 100, 20, Component.translatable("advMode.triggering"), (button, value) -> this.autoexec = value));
    }

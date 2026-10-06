@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 
 public class ManagementServer {
    private static final Logger LOGGER = LogUtils.getLogger();
+   static final long HANDSHAKE_TIMEOUT_MILLIS;
    private final HostAndPort hostAndPort;
    private final AuthenticationHandler authenticationHandler;
    private @Nullable Channel serverChannel;
@@ -113,7 +114,7 @@ public class ManagementServer {
                pipeline.addLast(new ChannelHandler[]{sslContext.newHandler(channel.alloc())});
             }
 
-            pipeline.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new WebSocketFrameAggregator(65536)}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(channel, ManagementServer.this, minecraftApi, jsonrpcLogger)});
+            pipeline.addLast(new ChannelHandler[]{new HttpServerCodec()}).addLast(new ChannelHandler[]{ManagementServer.this.authenticationHandler}).addLast(new ChannelHandler[]{new HttpObjectAggregator(65536)}).addLast(new ChannelHandler[]{new WebSocketServerProtocolHandler("/")}).addLast(new ChannelHandler[]{new HandshakeTimeoutHandler(ManagementServer.HANDSHAKE_TIMEOUT_MILLIS)}).addLast(new ChannelHandler[]{new WebSocketFrameAggregator(65536)}).addLast(new ChannelHandler[]{new WebSocketToJsonCodec()}).addLast(new ChannelHandler[]{new JsonToWebSocketEncoder()}).addLast(new ChannelHandler[]{new Connection(channel, ManagementServer.this, minecraftApi, jsonrpcLogger)});
          }
       }).group(this.eventLoopGroup).localAddress(this.hostAndPort.getHost(), this.hostAndPort.getPort())).bind();
       this.serverChannel = channel.channel();
@@ -146,5 +147,9 @@ public class ManagementServer {
       synchronized(this.connections) {
          this.connections.forEach(action);
       }
+   }
+
+   static {
+      HANDSHAKE_TIMEOUT_MILLIS = TimeUnit.SECONDS.toMillis(10L);
    }
 }

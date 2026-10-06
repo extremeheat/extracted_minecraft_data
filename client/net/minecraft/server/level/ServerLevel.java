@@ -105,6 +105,7 @@ import net.minecraft.world.entity.ai.village.ReputationEventType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.equine.SkeletonHorse;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -571,7 +572,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
    }
 
    private Optional<BlockPos> findLightningRod(final BlockPos center) {
-      Optional<BlockPos> nearbyLightningRod = this.getPoiManager().findClosest((p) -> p.is(PoiTypes.LIGHTNING_ROD), (lightningRodPos) -> lightningRodPos.getY() == this.getHeight(Heightmap.Types.WORLD_SURFACE, lightningRodPos.getX(), lightningRodPos.getZ()) - 1, center, 128, PoiManager.Occupancy.ANY);
+      Optional<BlockPos> nearbyLightningRod = this.getPoiManager().findClosest((p) -> p.is(PoiTypeIds.LIGHTNING_ROD), (lightningRodPos) -> lightningRodPos.getY() == this.getHeight(Heightmap.Types.WORLD_SURFACE, lightningRodPos.getX(), lightningRodPos.getZ()) - 1, center, 128, PoiManager.Occupancy.ANY);
       return nearbyLightningRod.map((blockPos) -> blockPos.above(1));
    }
 
@@ -718,7 +719,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
             this.thunderLevel -= 0.01F;
          }
 
-         this.thunderLevel = Mth.clamp(this.thunderLevel, 0.0F, 1.0F);
+         this.thunderLevel = Math.clamp(this.thunderLevel, 0.0F, 1.0F);
          this.oRainLevel = this.rainLevel;
          if (weatherData.isRaining()) {
             this.rainLevel += 0.01F;
@@ -726,7 +727,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
             this.rainLevel -= 0.01F;
          }
 
-         this.rainLevel = Mth.clamp(this.rainLevel, 0.0F, 1.0F);
+         this.rainLevel = Math.clamp(this.rainLevel, 0.0F, 1.0F);
       }
 
       if (this.oRainLevel != this.rainLevel) {

@@ -27,6 +27,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractCycleButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -568,19 +569,19 @@ public class CreateWorldScreen extends Screen {
          CreateWorldScreen.this.uiState.addListener((uiState) -> this.nameEdit.setTooltip(Tooltip.create(Component.translatable("selectWorld.targetFolder", Component.literal(uiState.getTargetFolder()).withStyle(ChatFormatting.ITALIC)))));
          CreateWorldScreen.this.setInitialFocus(this.nameEdit);
          helper.addChild(CommonLayouts.labeledElement(CreateWorldScreen.this.font, this.nameEdit, CreateWorldScreen.NAME_LABEL), helper.newCellSettings().alignHorizontallyCenter());
-         CycleButton<WorldCreationUiState.SelectedGameMode> gameModeButton = (CycleButton)helper.addChild(CycleButton.builder((selectedGameMode) -> selectedGameMode.displayName, CreateWorldScreen.this.uiState.getGameMode()).withValues(WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (button, gameMode) -> CreateWorldScreen.this.uiState.setGameMode(gameMode)), buttonLayoutSettings);
+         CycleButton<WorldCreationUiState.SelectedGameMode> gameModeButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.builder((selectedGameMode) -> selectedGameMode.displayName, CreateWorldScreen.this.uiState.getGameMode()).withValues(new WorldCreationUiState.SelectedGameMode[]{WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE})).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (button, gameMode) -> CreateWorldScreen.this.uiState.setGameMode(gameMode)), buttonLayoutSettings);
          CreateWorldScreen.this.uiState.addListener((data) -> {
             gameModeButton.setValue(data.getGameMode());
             gameModeButton.active = !data.isDebug();
             gameModeButton.setTooltip(Tooltip.create(data.getGameMode().getInfo()));
          });
-         CycleButton<Difficulty> difficultyButton = (CycleButton)helper.addChild(CycleButton.builder(Difficulty::getDisplayName, CreateWorldScreen.this.uiState.getDifficulty()).withValues(Difficulty.values()).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (button, value) -> CreateWorldScreen.this.uiState.setDifficulty(value)), buttonLayoutSettings);
+         CycleButton<Difficulty> difficultyButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.builder(Difficulty::getDisplayName, CreateWorldScreen.this.uiState.getDifficulty()).withValues(Difficulty.values())).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (button, value) -> CreateWorldScreen.this.uiState.setDifficulty(value)), buttonLayoutSettings);
          CreateWorldScreen.this.uiState.addListener((d) -> {
             difficultyButton.setValue(CreateWorldScreen.this.uiState.getDifficulty());
             difficultyButton.active = !CreateWorldScreen.this.uiState.isHardcore();
             difficultyButton.setTooltip(Tooltip.create(CreateWorldScreen.this.uiState.getDifficulty().getInfo()));
          });
-         CycleButton<Boolean> allowCommandsButton = (CycleButton)helper.addChild(CycleButton.onOffBuilder(CreateWorldScreen.this.uiState.isAllowCommands()).withTooltip((state) -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO)).create(0, 0, 210, 20, ALLOW_COMMANDS, (b, state) -> CreateWorldScreen.this.uiState.setAllowCommands(state)));
+         CycleButton<Boolean> allowCommandsButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.onOffBuilder(CreateWorldScreen.this.uiState.isAllowCommands()).withTooltip((state) -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO))).create(0, 0, 210, 20, ALLOW_COMMANDS, (b, state) -> CreateWorldScreen.this.uiState.setAllowCommands(state)));
          CreateWorldScreen.this.uiState.addListener((d) -> {
             allowCommandsButton.setValue(CreateWorldScreen.this.uiState.isAllowCommands());
             allowCommandsButton.active = !CreateWorldScreen.this.uiState.isDebug() && !CreateWorldScreen.this.uiState.isHardcore();
@@ -608,7 +609,7 @@ public class CreateWorldScreen extends Screen {
          Objects.requireNonNull(CreateWorldScreen.this);
          super();
          GridLayout.RowHelper helper = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
-         CycleButton<WorldCreationUiState.WorldTypeEntry> typeButton = (CycleButton)helper.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier()).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (button, newPreset) -> CreateWorldScreen.this.uiState.setWorldType(newPreset)));
+         CycleButton<WorldCreationUiState.WorldTypeEntry> typeButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset, CreateWorldScreen.this.uiState.getWorldType()).withValues(this.createWorldTypeValueSupplier())).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (button, newPreset) -> CreateWorldScreen.this.uiState.setWorldType(newPreset)));
          typeButton.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener((data) -> {
             WorldCreationUiState.WorldTypeEntry worldType = data.getWorldType();
@@ -664,14 +665,14 @@ public class CreateWorldScreen extends Screen {
 
       }
 
-      private CycleButton.ValueListSupplier<WorldCreationUiState.WorldTypeEntry> createWorldTypeValueSupplier() {
-         return new CycleButton.ValueListSupplier<WorldCreationUiState.WorldTypeEntry>() {
+      private AbstractCycleButton.ValueListSupplier<WorldCreationUiState.WorldTypeEntry> createWorldTypeValueSupplier() {
+         return new AbstractCycleButton.ValueListSupplier<WorldCreationUiState.WorldTypeEntry>() {
             {
                Objects.requireNonNull(WorldTab.this);
             }
 
             public List<WorldCreationUiState.WorldTypeEntry> getSelectedList() {
-               return CycleButton.DEFAULT_ALT_LIST_SELECTOR.getAsBoolean() ? CreateWorldScreen.this.uiState.getAltPresetList() : CreateWorldScreen.this.uiState.getNormalPresetList();
+               return AbstractCycleButton.DEFAULT_ALT_LIST_SELECTOR.getAsBoolean() ? CreateWorldScreen.this.uiState.getAltPresetList() : CreateWorldScreen.this.uiState.getNormalPresetList();
             }
 
             public List<WorldCreationUiState.WorldTypeEntry> getDefaultList() {

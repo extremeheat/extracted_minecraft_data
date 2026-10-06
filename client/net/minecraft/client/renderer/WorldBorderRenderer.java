@@ -17,9 +17,9 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.level.WorldBorderRenderState;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.MipmappedTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureProviderMipped2d;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -42,7 +42,7 @@ public class WorldBorderRenderer implements AutoCloseable {
    private double lastBorderMaxX;
    private double lastBorderMinZ;
    private double lastBorderMaxZ;
-   private @Nullable AbstractTexture texture;
+   private @Nullable TextureHandle texture;
    private final GpuBuffer worldBorderBuffer;
    private final RenderSystem.AutoStorageIndexBuffer indices;
    private final TextureManager textureManager;
@@ -53,7 +53,7 @@ public class WorldBorderRenderer implements AutoCloseable {
       this.indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       Minecraft minecraft = Minecraft.getInstance();
       this.textureManager = minecraft.getTextureManager();
-      this.textureManager.register(FORCEFIELD_LOCATION, new MipmappedTexture(FORCEFIELD_LOCATION, 4));
+      this.textureManager.registerProvider(FORCEFIELD_LOCATION, new TextureProviderMipped2d(4));
    }
 
    public void close() {
@@ -115,7 +115,7 @@ public class WorldBorderRenderer implements AutoCloseable {
       if ((!(cameraPos.x < state.maxX - renderDistance) || !(cameraPos.x > state.minX + renderDistance) || !(cameraPos.z < state.maxZ - renderDistance) || !(cameraPos.z > state.minZ + renderDistance)) && !(cameraPos.x < state.minX - renderDistance) && !(cameraPos.x > state.maxX + renderDistance) && !(cameraPos.z < state.minZ - renderDistance) && !(cameraPos.z > state.maxZ + renderDistance)) {
          state.alpha = 1.0 - border.getDistanceToBorder(cameraPos.x, cameraPos.z) / renderDistance;
          state.alpha = Math.pow(state.alpha, 4.0);
-         state.alpha = Mth.clamp(state.alpha, 0.0, 1.0);
+         state.alpha = Math.clamp(state.alpha, 0.0, 1.0);
          state.tint = border.getStatus().getColor();
       } else {
          state.alpha = 0.0;
@@ -171,11 +171,11 @@ public class WorldBorderRenderer implements AutoCloseable {
       return dynamicTransforms;
    }
 
-   private void prepareRenderPass(final RenderPass renderPass, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final AbstractTexture abstractTexture) {
+   private void prepareRenderPass(final RenderPass renderPass, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final TextureHandle textureHandle) {
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setIndexBuffer(indexBuffer, this.indices.type());
-      renderPass.setUniform("Sampler0", abstractTexture.getTextureView(), abstractTexture.getSampler());
+      renderPass.setUniform("Sampler0", textureHandle.textureView(), textureHandle.sampler());
       renderPass.setVertexBuffer(0, this.worldBorderBuffer.slice());
    }
 

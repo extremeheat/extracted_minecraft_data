@@ -170,6 +170,10 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       return false;
    }
 
+   protected boolean convertsWhenFreezing() {
+      return false;
+   }
+
    public boolean removeWhenFarAway(final double distSqr) {
       return !this.isConverting() && this.villagerXp == 0;
    }

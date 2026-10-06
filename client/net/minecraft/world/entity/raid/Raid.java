@@ -229,7 +229,7 @@ public class Raid {
          return false;
       } else {
          this.raidOmenLevel += effect.getAmplifier() + 1;
-         this.raidOmenLevel = Mth.clamp(this.raidOmenLevel, 0, this.getMaxRaidOmenLevel());
+         this.raidOmenLevel = Math.clamp((long)this.raidOmenLevel, 0, this.getMaxRaidOmenLevel());
          if (!this.hasFirstWaveSpawned()) {
             player.awardStat(Stats.RAID_TRIGGER);
             CriteriaTriggers.RAID_OMEN.trigger(player);
@@ -305,7 +305,7 @@ public class Raid {
                   }
 
                   --this.raidCooldownTicks;
-                  this.raidEvent.setProgress(Mth.clamp((float)(300 - this.raidCooldownTicks) / 300.0F, 0.0F, 1.0F));
+                  this.raidEvent.setProgress(Math.clamp((float)(300 - this.raidCooldownTicks) / 300.0F, 0.0F, 1.0F));
                }
             }
 
@@ -561,7 +561,7 @@ public class Raid {
    }
 
    public void updateBossbar() {
-      this.raidEvent.setProgress(Mth.clamp(this.getHealthOfLivingRaiders() / this.totalHealth, 0.0F, 1.0F));
+      this.raidEvent.setProgress(Math.clamp(this.getHealthOfLivingRaiders() / this.totalHealth, 0.0F, 1.0F));
    }
 
    public float getHealthOfLivingRaiders() {

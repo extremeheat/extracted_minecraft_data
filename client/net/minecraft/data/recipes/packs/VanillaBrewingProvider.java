@@ -29,6 +29,8 @@ public class VanillaBrewingProvider extends BrewingProvider {
       this.buildStartMix(Items.SLIME_BLOCK, Potions.OOZING);
       this.buildStartMix(Items.STONE, Potions.INFESTED);
       this.buildStartMix(Items.COBWEB, Potions.WEAVING);
+      this.buildStartMix(Items.ICE_BALL, Potions.FREEZING);
+      this.buildMix(Potions.FREEZING, Items.REDSTONE, Potions.LONG_FREEZING);
       this.buildMix(Potions.AWKWARD, Items.GOLDEN_CARROT, Potions.NIGHT_VISION);
       this.buildMix(Potions.NIGHT_VISION, Items.REDSTONE, Potions.LONG_NIGHT_VISION);
       this.buildMix(Potions.NIGHT_VISION, Items.FERMENTED_SPIDER_EYE, Potions.INVISIBILITY);

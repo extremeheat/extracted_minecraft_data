@@ -8,7 +8,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -48,7 +47,7 @@ public class FixedBiomeSource extends BiomeSource implements NoiseBiomeResolver 
    }
 
    public @Nullable Pair<BlockPos, Holder<Biome>> findClosestBiome3d(final BlockPos origin, final int searchRadius, final int sampleResolutionHorizontal, final int sampleResolutionVertical, final Predicate<Holder<Biome>> allowed, final RandomState randomState, final LevelReader level) {
-      return allowed.test(this.biome) ? Pair.of(origin.atY(Mth.clamp(origin.getY(), level.getMinY() + 1, level.getMaxY() + 1)), this.biome) : null;
+      return allowed.test(this.biome) ? Pair.of(origin.atY(Math.clamp((long)origin.getY(), level.getMinY() + 1, level.getMaxY() + 1)), this.biome) : null;
    }
 
    public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int radius) {

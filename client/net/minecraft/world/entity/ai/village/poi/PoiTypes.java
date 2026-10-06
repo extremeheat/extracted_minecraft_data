@@ -9,8 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.block.BedBlock;
@@ -20,31 +19,31 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
 public class PoiTypes {
-   public static final ResourceKey<PoiType> ARMORER = createKey("armorer");
-   public static final ResourceKey<PoiType> BUTCHER = createKey("butcher");
-   public static final ResourceKey<PoiType> CARTOGRAPHER = createKey("cartographer");
-   public static final ResourceKey<PoiType> CLERIC = createKey("cleric");
-   public static final ResourceKey<PoiType> FARMER = createKey("farmer");
-   public static final ResourceKey<PoiType> FISHERMAN = createKey("fisherman");
-   public static final ResourceKey<PoiType> FLETCHER = createKey("fletcher");
-   public static final ResourceKey<PoiType> LEATHERWORKER = createKey("leatherworker");
-   public static final ResourceKey<PoiType> LIBRARIAN = createKey("librarian");
-   public static final ResourceKey<PoiType> MASON = createKey("mason");
-   public static final ResourceKey<PoiType> SHEPHERD = createKey("shepherd");
-   public static final ResourceKey<PoiType> TOOLSMITH = createKey("toolsmith");
-   public static final ResourceKey<PoiType> WEAPONSMITH = createKey("weaponsmith");
-   public static final ResourceKey<PoiType> HOME = createKey("home");
-   public static final ResourceKey<PoiType> MEETING = createKey("meeting");
-   public static final ResourceKey<PoiType> BEEHIVE = createKey("beehive");
-   public static final ResourceKey<PoiType> BEE_NEST = createKey("bee_nest");
-   public static final ResourceKey<PoiType> NETHER_PORTAL = createKey("nether_portal");
-   public static final ResourceKey<PoiType> LODESTONE = createKey("lodestone");
-   public static final ResourceKey<PoiType> LIGHTNING_ROD = createKey("lightning_rod");
-   public static final ResourceKey<PoiType> TEST_INSTANCE = createKey("test_instance");
+   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE = Maps.newHashMap();
    private static final Set<BlockState> BEDS;
    private static final Set<BlockState> CAULDRONS;
    private static final Set<BlockState> LIGHTNING_RODS;
-   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE;
+   public static final Holder<PoiType> ARMORER;
+   public static final Holder<PoiType> BUTCHER;
+   public static final Holder<PoiType> CARTOGRAPHER;
+   public static final Holder<PoiType> CLERIC;
+   public static final Holder<PoiType> FARMER;
+   public static final Holder<PoiType> FISHERMAN;
+   public static final Holder<PoiType> FLETCHER;
+   public static final Holder<PoiType> LEATHERWORKER;
+   public static final Holder<PoiType> LIBRARIAN;
+   public static final Holder<PoiType> MASON;
+   public static final Holder<PoiType> SHEPHERD;
+   public static final Holder<PoiType> TOOLSMITH;
+   public static final Holder<PoiType> WEAPONSMITH;
+   public static final Holder<PoiType> HOME;
+   public static final Holder<PoiType> MEETING;
+   public static final Holder<PoiType> BEEHIVE;
+   public static final Holder<PoiType> BEE_NEST;
+   public static final Holder<PoiType> NETHER_PORTAL;
+   public static final Holder<PoiType> LODESTONE;
+   public static final Holder<PoiType> LIGHTNING_ROD;
+   public static final Holder<PoiType> TEST_INSTANCE;
 
    public PoiTypes() {
       super();
@@ -54,14 +53,10 @@ public class PoiTypes {
       return ImmutableSet.copyOf(block.getStateDefinition().getPossibleStates());
    }
 
-   private static ResourceKey<PoiType> createKey(final String name) {
-      return ResourceKey.create(Registries.POINT_OF_INTEREST_TYPE, Identifier.withDefaultNamespace(name));
-   }
-
-   private static PoiType register(final Registry<PoiType> registry, final ResourceKey<PoiType> id, final Set<BlockState> matchingStates, final int maxTickets, final int validRange) {
-      PoiType value = new PoiType(matchingStates, maxTickets, validRange);
-      Registry.register(registry, (ResourceKey)id, value);
-      registerBlockStates(registry.getOrThrow(id), matchingStates);
+   private static Holder<PoiType> register(final ResourceKey<PoiType> key, final Set<BlockState> matchingStates, final int maxTickets, final int validRange) {
+      PoiType poiType = new PoiType(matchingStates, maxTickets, validRange);
+      Holder.Reference<PoiType> value = Registry.registerForHolder(BuiltInRegistries.POINT_OF_INTEREST_TYPE, key, poiType);
+      registerBlockStates(value, matchingStates);
       return value;
    }
 
@@ -82,34 +77,34 @@ public class PoiTypes {
       return TYPE_BY_STATE.containsKey(state);
    }
 
-   public static PoiType bootstrap(final Registry<PoiType> registry) {
-      register(registry, ARMORER, getBlockStates(Blocks.BLAST_FURNACE), 1, 1);
-      register(registry, BUTCHER, getBlockStates(Blocks.SMOKER), 1, 1);
-      register(registry, CARTOGRAPHER, getBlockStates(Blocks.CARTOGRAPHY_TABLE), 1, 1);
-      register(registry, CLERIC, getBlockStates(Blocks.BREWING_STAND), 1, 1);
-      register(registry, FARMER, getBlockStates(Blocks.COMPOSTER), 1, 1);
-      register(registry, FISHERMAN, getBlockStates(Blocks.BARREL), 1, 1);
-      register(registry, FLETCHER, getBlockStates(Blocks.FLETCHING_TABLE), 1, 1);
-      register(registry, LEATHERWORKER, CAULDRONS, 1, 1);
-      register(registry, LIBRARIAN, getBlockStates(Blocks.LECTERN), 1, 1);
-      register(registry, MASON, getBlockStates(Blocks.STONECUTTER), 1, 1);
-      register(registry, SHEPHERD, getBlockStates(Blocks.LOOM), 1, 1);
-      register(registry, TOOLSMITH, getBlockStates(Blocks.SMITHING_TABLE), 1, 1);
-      register(registry, WEAPONSMITH, getBlockStates(Blocks.GRINDSTONE), 1, 1);
-      register(registry, HOME, BEDS, 1, 1);
-      register(registry, MEETING, getBlockStates(Blocks.BELL), 32, 6);
-      register(registry, BEEHIVE, getBlockStates(Blocks.BEEHIVE), 0, 1);
-      register(registry, BEE_NEST, getBlockStates(Blocks.BEE_NEST), 0, 1);
-      register(registry, NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
-      register(registry, LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
-      register(registry, TEST_INSTANCE, getBlockStates(Blocks.TEST_INSTANCE_BLOCK), 0, 1);
-      return register(registry, LIGHTNING_ROD, LIGHTNING_RODS, 0, 1);
+   public static Holder<PoiType> bootstrap(final Registry<PoiType> registry) {
+      return LIGHTNING_ROD;
    }
 
    static {
       BEDS = (Set)Blocks.BED.asList().stream().flatMap((block) -> block.getStateDefinition().getPossibleStates().stream()).filter((state) -> state.getValue(BedBlock.PART) == BedPart.HEAD).collect(ImmutableSet.toImmutableSet());
       CAULDRONS = (Set)ImmutableList.of(Blocks.CAULDRON, Blocks.LAVA_CAULDRON, Blocks.WATER_CAULDRON, Blocks.POWDER_SNOW_CAULDRON).stream().flatMap((block) -> block.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet());
       LIGHTNING_RODS = (Set)Blocks.LIGHTNING_ROD.asList().stream().flatMap((block) -> block.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet());
-      TYPE_BY_STATE = Maps.newHashMap();
+      ARMORER = register(PoiTypeIds.ARMORER, getBlockStates(Blocks.BLAST_FURNACE), 1, 1);
+      BUTCHER = register(PoiTypeIds.BUTCHER, getBlockStates(Blocks.SMOKER), 1, 1);
+      CARTOGRAPHER = register(PoiTypeIds.CARTOGRAPHER, getBlockStates(Blocks.CARTOGRAPHY_TABLE), 1, 1);
+      CLERIC = register(PoiTypeIds.CLERIC, getBlockStates(Blocks.BREWING_STAND), 1, 1);
+      FARMER = register(PoiTypeIds.FARMER, getBlockStates(Blocks.COMPOSTER), 1, 1);
+      FISHERMAN = register(PoiTypeIds.FISHERMAN, getBlockStates(Blocks.BARREL), 1, 1);
+      FLETCHER = register(PoiTypeIds.FLETCHER, getBlockStates(Blocks.FLETCHING_TABLE), 1, 1);
+      LEATHERWORKER = register(PoiTypeIds.LEATHERWORKER, CAULDRONS, 1, 1);
+      LIBRARIAN = register(PoiTypeIds.LIBRARIAN, getBlockStates(Blocks.LECTERN), 1, 1);
+      MASON = register(PoiTypeIds.MASON, getBlockStates(Blocks.STONECUTTER), 1, 1);
+      SHEPHERD = register(PoiTypeIds.SHEPHERD, getBlockStates(Blocks.LOOM), 1, 1);
+      TOOLSMITH = register(PoiTypeIds.TOOLSMITH, getBlockStates(Blocks.SMITHING_TABLE), 1, 1);
+      WEAPONSMITH = register(PoiTypeIds.WEAPONSMITH, getBlockStates(Blocks.GRINDSTONE), 1, 1);
+      HOME = register(PoiTypeIds.HOME, BEDS, 1, 1);
+      MEETING = register(PoiTypeIds.MEETING, getBlockStates(Blocks.BELL), 32, 6);
+      BEEHIVE = register(PoiTypeIds.BEEHIVE, getBlockStates(Blocks.BEEHIVE), 0, 1);
+      BEE_NEST = register(PoiTypeIds.BEE_NEST, getBlockStates(Blocks.BEE_NEST), 0, 1);
+      NETHER_PORTAL = register(PoiTypeIds.NETHER_PORTAL, getBlockStates(Blocks.NETHER_PORTAL), 0, 1);
+      LODESTONE = register(PoiTypeIds.LODESTONE, getBlockStates(Blocks.LODESTONE), 0, 1);
+      LIGHTNING_ROD = register(PoiTypeIds.LIGHTNING_ROD, LIGHTNING_RODS, 0, 1);
+      TEST_INSTANCE = register(PoiTypeIds.TEST_INSTANCE, getBlockStates(Blocks.TEST_INSTANCE_BLOCK), 0, 1);
    }
 }

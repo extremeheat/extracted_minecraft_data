@@ -219,7 +219,7 @@ public class BlockPos extends Vec3i {
    }
 
    public Vec3 clampLocationWithin(final Vec3 location) {
-      return new Vec3(Mth.clamp(location.x, (double)((float)this.getX() + 1.0E-5F), (double)this.getX() + 1.0 - 9.999999747378752E-6), Mth.clamp(location.y, (double)((float)this.getY() + 1.0E-5F), (double)this.getY() + 1.0 - 9.999999747378752E-6), Mth.clamp(location.z, (double)((float)this.getZ() + 1.0E-5F), (double)this.getZ() + 1.0 - 9.999999747378752E-6));
+      return new Vec3(Math.clamp(location.x, (double)((float)this.getX() + 1.0E-5F), (double)this.getX() + 1.0 - 9.999999747378752E-6), Math.clamp(location.y, (double)((float)this.getY() + 1.0E-5F), (double)this.getY() + 1.0 - 9.999999747378752E-6), Math.clamp(location.z, (double)((float)this.getZ() + 1.0E-5F), (double)this.getZ() + 1.0 - 9.999999747378752E-6));
    }
 
    public static Iterable<BlockPos> randomInCube(final RandomSource random, final int limit, final BlockPos center, final int sizeToScanInAllDirections) {
@@ -652,9 +652,9 @@ public class BlockPos extends Vec3i {
       public MutableBlockPos clamp(final Direction.Axis axis, final int minimum, final int maximum) {
          MutableBlockPos var10000;
          switch (axis) {
-            case X -> var10000 = this.set(Mth.clamp(this.getX(), minimum, maximum), this.getY(), this.getZ());
-            case Y -> var10000 = this.set(this.getX(), Mth.clamp(this.getY(), minimum, maximum), this.getZ());
-            case Z -> var10000 = this.set(this.getX(), this.getY(), Mth.clamp(this.getZ(), minimum, maximum));
+            case X -> var10000 = this.set(Math.clamp((long)this.getX(), minimum, maximum), this.getY(), this.getZ());
+            case Y -> var10000 = this.set(this.getX(), Math.clamp((long)this.getY(), minimum, maximum), this.getZ());
+            case Z -> var10000 = this.set(this.getX(), this.getY(), Math.clamp((long)this.getZ(), minimum, maximum));
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 

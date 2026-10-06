@@ -85,7 +85,7 @@ public class KeyframeAnimation {
          float keyframeTimeDelta = secondsSinceStart - previousFrame.timestamp();
          float lerpAlpha;
          if (next != prev) {
-            lerpAlpha = Mth.clamp(keyframeTimeDelta / (nextFrame.timestamp() - previousFrame.timestamp()), 0.0F, 1.0F);
+            lerpAlpha = Math.clamp(keyframeTimeDelta / (nextFrame.timestamp() - previousFrame.timestamp()), 0.0F, 1.0F);
          } else {
             lerpAlpha = 0.0F;
          }

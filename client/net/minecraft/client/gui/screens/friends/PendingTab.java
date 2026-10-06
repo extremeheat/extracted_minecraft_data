@@ -5,119 +5,133 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.ImageWidget;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
-import net.minecraft.client.gui.components.ScrollableLayout;
-import net.minecraft.client.gui.layouts.FrameLayout;
-import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.Nullable;
 
 class PendingTab extends AbstractFriendsTab {
    private static final Component RECEIVED_HEADER;
    private static final Component SENT_HEADER;
    private static final Component EMPTY_STATE;
+   private static final Component DISABLED_STATE;
+   private static final Component SEARCH;
+   private static final Component NO_SEARCH_RESULTS;
+   private static final int SEARCH_BAR_REQUEST_THRESHOLD = 15;
+   private static final int HEADER_VERTICAL_PADDING = 5;
    private final FriendsOverlayScreen screen;
-   private final LinearLayout layout;
-   private final LinearLayout pendingScrollableContent;
    private final LoadingDotsWidget loadingDotsWidget;
-   private final ScrollableLayout scrollableLayout;
-   private @Nullable FrameLayout contentFrame;
+   private boolean showingSearchBar;
+   private final FriendsListFilter friendsListFilter = new FriendsListFilter(this::updateListView);
 
-   PendingTab(final Minecraft minecraft, final LoadingDotsWidget loadingDotsWidget, final FriendsOverlayScreen screen, final int width, final int height) {
-      super(width, height);
+   public PendingTab(final Minecraft minecraft, final LoadingDotsWidget loadingDotsWidget, final FriendsOverlayScreen screen, final int width, final int height) {
+      super(minecraft, width, height);
       this.screen = screen;
-      this.layout = LinearLayout.vertical();
-      this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.loadingDotsWidget = loadingDotsWidget;
-      this.pendingScrollableContent = LinearLayout.vertical();
-      this.scrollableLayout = new ScrollableLayout(minecraft, this.pendingScrollableContent, height, ScrollableLayout.ReserveStrategy.BOTH);
-      this.scrollableLayout.setScrollbarSpacing(2);
-      this.scrollableLayout.setMaxHeight(height);
-      this.layout.addChild(this.scrollableLayout);
       this.rearrangeElements();
-   }
-
-   void rearrangeElements() {
-      this.scrollableLayout.setMinHeight(this.height);
-      this.scrollableLayout.setMaxHeight(this.height);
-      if (this.contentFrame != null) {
-         this.contentFrame.setMinHeight(this.height);
-      }
-
    }
 
    public Component getTabExtraNarration() {
       return Component.empty();
    }
 
-   public void visitChildren(final Consumer<AbstractWidget> childrenConsumer) {
-      this.layout.visitWidgets(childrenConsumer);
+   private void updateListView() {
+      this.screen.refreshLists();
    }
 
-   public void doLayout(final ScreenRectangle screenRectangle) {
-      this.layout.arrangeElements();
-      FrameLayout.alignInRectangle(this.layout, screenRectangle, 0.5F, 0.16666667F);
+   private void showSearchBar() {
+      if (!this.showingSearchBar) {
+         this.showingSearchBar = true;
+         LinearLayout header = (LinearLayout)this.headerFrame.addChild(LinearLayout.vertical());
+         EditBox searchBox = (EditBox)header.addChild(new EditBox(this.screen.getFont(), this.getListContentWidth(), 20, SEARCH), (Consumer)((settings) -> settings.padding(6, 5)));
+         searchBox.setHint(SEARCH);
+         searchBox.setResponder((value) -> this.friendsListFilter.updateSearchFilter(value.trim()));
+         header.addChild(ImageWidget.sprite(this.width, 2, LIST_SEPARATOR_TOP));
+      }
    }
 
-   public Layout getLayout() {
-      return this.layout;
+   private void hideSearchBar() {
+      if (this.showingSearchBar) {
+         this.showingSearchBar = false;
+         this.headerFrame.removeChildren();
+         this.friendsListFilter.updateSearchFilter("");
+      }
+
    }
 
    public void showLoading() {
-      this.pendingScrollableContent.removeChildren();
-      this.contentFrame = this.createCenteredFrame(this.loadingDotsWidget, this.getListContentWidth(), this.height);
-      this.pendingScrollableContent.addChild(this.contentFrame);
+      this.showCenteredContent(this.loadingDotsWidget);
    }
 
    public void showError(final Component message) {
-      this.pendingScrollableContent.removeChildren();
-      int maxWidth = this.getListContentWidth();
-      MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), maxWidth);
-      this.contentFrame = this.createCenteredFrame(text, maxWidth, this.height);
-      this.pendingScrollableContent.addChild(this.contentFrame);
+      MultiLineTextWidget text = this.createCenteredText(message.copy().withStyle(ChatFormatting.GRAY), this.screen.getFont(), this.getListContentWidth());
+      this.showCenteredContent(text);
    }
 
    public void updateEntries(final List<IncomingEntry> incomingEntries, final List<OutgoingEntry> outgoingEntries) {
-      this.pendingScrollableContent.removeChildren();
-      this.contentFrame = null;
-      if (!incomingEntries.isEmpty()) {
-         this.pendingScrollableContent.addChild(this.createText(RECEIVED_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
-         LinearLayout var10001 = this.pendingScrollableContent;
-         Objects.requireNonNull(var10001);
-         incomingEntries.forEach(var10001::addChild);
+      int totalRequestsCount = incomingEntries.size() + outgoingEntries.size();
+      if (totalRequestsCount < 15) {
+         this.hideSearchBar();
+      } else {
+         this.showSearchBar();
       }
 
-      if (!outgoingEntries.isEmpty()) {
-         this.pendingScrollableContent.addChild(this.createText(SENT_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
-         LinearLayout var3 = this.pendingScrollableContent;
-         Objects.requireNonNull(var3);
-         outgoingEntries.forEach(var3::addChild);
-      }
+      this.friendsListFilter.filter(incomingEntries);
+      this.friendsListFilter.filter(outgoingEntries);
+      if (incomingEntries.isEmpty() && outgoingEntries.isEmpty()) {
+         this.showEmpty(NO_SEARCH_RESULTS);
+      } else {
+         this.scrollableLayout.alignVerticallyTop();
+         this.scrollableContent.removeChildren();
+         if (!incomingEntries.isEmpty()) {
+            this.scrollableContent.addChild(this.createText(RECEIVED_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+            LinearLayout var10001 = this.scrollableContent;
+            Objects.requireNonNull(var10001);
+            incomingEntries.forEach(var10001::addChild);
+         }
 
+         if (!outgoingEntries.isEmpty()) {
+            this.scrollableContent.addChild(this.createText(SENT_HEADER, this.screen.getFont(), this.getListContentWidth()), (Consumer)(LayoutSettings::alignHorizontallyCenter));
+            LinearLayout var4 = this.scrollableContent;
+            Objects.requireNonNull(var4);
+            outgoingEntries.forEach(var4::addChild);
+         }
+
+      }
    }
 
-   protected Layout entriesContainer() {
-      return this.pendingScrollableContent;
+   private void showEmpty(final Component message) {
+      MultiLineTextWidget text = this.createCenteredText(message, this.screen.getFont(), this.getListContentWidth());
+      this.showCenteredContent(text);
    }
 
    public void showEmpty() {
-      this.pendingScrollableContent.removeChildren();
-      LinearLayout content = (new LinearLayout(0, 0, LinearLayout.Orientation.VERTICAL)).spacing(8);
-      content.defaultCellSetting().alignHorizontallyCenter().alignVerticallyMiddle();
-      int maxWidth = this.getListContentWidth();
-      content.addChild(this.createCenteredText(EMPTY_STATE, this.screen.getFont(), maxWidth));
-      this.contentFrame = this.createCenteredFrame(content, maxWidth, this.height);
-      this.pendingScrollableContent.addChild(this.contentFrame);
+      this.showEmpty(EMPTY_STATE);
+      this.hideSearchBar();
+   }
+
+   public void showDisabled() {
+      this.showEmpty(DISABLED_STATE);
+      this.hideSearchBar();
+   }
+
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      if (this.showingSearchBar) {
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_LIGHT_SPRITE, this.headerFrame.getX(), this.headerFrame.getY(), this.headerFrame.getWidth(), this.headerFrame.getHeight() - 2);
+      }
    }
 
    static {
       RECEIVED_HEADER = Component.translatable("gui.friends.pending.received").withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
       SENT_HEADER = Component.translatable("gui.friends.pending.sent").withStyle(ChatFormatting.BOLD, ChatFormatting.UNDERLINE);
       EMPTY_STATE = Component.translatable("gui.friends.pending.empty").withStyle(ChatFormatting.GRAY);
+      DISABLED_STATE = Component.translatable("gui.friends.pending.disabled").withStyle(ChatFormatting.GRAY);
+      SEARCH = Component.translatable("gui.friends.pending.search");
+      NO_SEARCH_RESULTS = Component.translatable("gui.friends.pending.search.no_results").withStyle(ChatFormatting.GRAY);
    }
 }

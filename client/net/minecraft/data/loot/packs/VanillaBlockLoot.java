@@ -490,6 +490,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       Blocks.CUT_COPPER.forEach((x$0) -> this.dropSelf(x$0));
       Blocks.CUT_COPPER_STAIRS.forEach((x$0) -> this.dropSelf(x$0));
       Blocks.LIGHTNING_ROD.forEach((x$0) -> this.dropSelf(x$0));
+      this.dropSelf(Blocks.ICICLE);
+      this.dropSelf(Blocks.ICE_CRYSTAL);
       this.dropSelf(Blocks.POINTED_DRIPSTONE);
       this.dropSelf(Blocks.SULFUR_SPIKE);
       this.dropSelf(Blocks.DRIPSTONE_BLOCK);

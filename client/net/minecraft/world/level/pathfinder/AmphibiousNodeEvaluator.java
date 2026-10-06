@@ -45,7 +45,7 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       PathType blockPathTypeAbove = this.getCachedPathType(pos.x, pos.y + 1, pos.z);
       PathType blockPathTypeCurrent = this.getCachedPathType(pos.x, pos.y, pos.z);
       int jumpSize;
-      if (this.mob.getPathfindingMalus(blockPathTypeAbove) >= 0.0F && blockPathTypeCurrent != PathType.STICKY_HONEY) {
+      if (this.mob.getPathfindingMalus(blockPathTypeAbove) >= 0.0F && blockPathTypeCurrent != PathType.STICKY) {
          jumpSize = Mth.floor(Math.max(1.0F, this.mob.maxUpStep()));
       } else {
          jumpSize = 0;
@@ -58,7 +58,7 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
          neighbors[numValidNeighbors++] = upNode;
       }
 
-      if (this.isVerticalNeighborValid(downNode, pos) && blockPathTypeCurrent != PathType.TRAPDOOR) {
+      if (this.isVerticalNeighborValid(downNode, pos) && blockPathTypeCurrent != PathType.DROP_DOWN) {
          neighbors[numValidNeighbors++] = downNode;
       }
 

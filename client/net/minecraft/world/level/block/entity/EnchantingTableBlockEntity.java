@@ -91,12 +91,12 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       }
 
       entity.rot += rotDir * 0.4F;
-      entity.open = Mth.clamp(entity.open, 0.0F, 1.0F);
+      entity.open = Math.clamp(entity.open, 0.0F, 1.0F);
       ++entity.time;
       entity.oFlip = entity.flip;
       float diff = (entity.flipT - entity.flip) * 0.4F;
       float max = 0.2F;
-      diff = Mth.clamp(diff, -0.2F, 0.2F);
+      diff = Math.clamp(diff, -0.2F, 0.2F);
       entity.flipA += (diff - entity.flipA) * 0.9F;
       entity.flip += entity.flipA;
    }

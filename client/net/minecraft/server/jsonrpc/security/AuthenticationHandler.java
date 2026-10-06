@@ -14,6 +14,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
+import io.netty.util.ReferenceCountUtil;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -46,6 +47,7 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
             this.LOGGER.debug("Authentication rejected for connection with ip {}: {}", clientIp, result.getReason());
             context.channel().attr(AUTHENTICATED_KEY).set(false);
             this.sendUnauthorizedResponse(context, result.getReason());
+            ReferenceCountUtil.release(msg);
             return;
          }
 
@@ -60,6 +62,7 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
          super.channelRead(context, msg);
       } else {
          this.LOGGER.debug("Dropping unauthenticated connection with ip {}", clientIp);
+         ReferenceCountUtil.release(msg);
          context.close();
       }
 

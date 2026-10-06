@@ -82,7 +82,7 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
          blockedDamage += reduction.resolve(source, dealtDamage, angle);
       }
 
-      return Mth.clamp(blockedDamage, 0.0F, dealtDamage);
+      return Math.clamp(blockedDamage, 0.0F, dealtDamage);
    }
 
    static {
@@ -101,7 +101,7 @@ public record BlocksAttacks(float blockDelaySeconds, float disableCooldownScale,
          if (angle > (double)(0.017453292F * this.horizontalBlockingAngle)) {
             return 0.0F;
          } else {
-            return this.type.isPresent() && !((HolderSet)this.type.get()).contains(source.typeHolder()) ? 0.0F : Mth.clamp(this.base + this.factor * dealtDamage, 0.0F, dealtDamage);
+            return this.type.isPresent() && !((HolderSet)this.type.get()).contains(source.typeHolder()) ? 0.0F : Math.clamp(this.base + this.factor * dealtDamage, 0.0F, dealtDamage);
          }
       }
 

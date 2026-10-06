@@ -20,7 +20,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -301,9 +301,9 @@ public class WinScreen extends Screen {
    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       if (this.poem) {
          TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-         AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
-         AbstractTexture portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
-         TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
+         TextureHandle skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+         TextureHandle portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+         TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.textureView(), skyTexture.sampler(), portalTexture.textureView(), portalTexture.sampler());
          graphics.fill(RenderPipelines.END_PORTAL_GUI, textureSetup, 0, 0, this.width, this.height);
       } else {
          super.extractBackground(graphics, mouseX, mouseY, a);

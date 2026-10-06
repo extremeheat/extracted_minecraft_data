@@ -204,12 +204,12 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       double forwardX = (double)Mth.sin((double)(yBodyRot * 0.017453292F));
       double forwardZ = (double)(-Mth.cos((double)(yBodyRot * 0.017453292F)));
       state.capeFlap = (float)deltaY * 10.0F;
-      state.capeFlap = Mth.clamp(state.capeFlap, -6.0F, 32.0F);
+      state.capeFlap = Math.clamp(state.capeFlap, -6.0F, 32.0F);
       state.capeLean = (float)(deltaX * forwardX + deltaZ * forwardZ) * 100.0F;
       state.capeLean *= 1.0F - state.fallFlyingScale();
-      state.capeLean = Mth.clamp(state.capeLean, 0.0F, 150.0F);
+      state.capeLean = Math.clamp(state.capeLean, 0.0F, 150.0F);
       state.capeLean2 = (float)(deltaX * forwardZ - deltaZ * forwardX) * 100.0F;
-      state.capeLean2 = Mth.clamp(state.capeLean2, -20.0F, 20.0F);
+      state.capeLean2 = Math.clamp(state.capeLean2, -20.0F, 20.0F);
       float pow = clientState.getInterpolatedBob(partialTicks);
       float walkDistance = clientState.getInterpolatedWalkDistance(partialTicks);
       state.capeFlap += Mth.sin((double)(walkDistance * 6.0F)) * 32.0F * pow;

@@ -2,7 +2,6 @@ package net.minecraft.core.particles;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.util.Mth;
 
 public abstract class ScalableParticleOptionsBase implements ParticleOptions {
    public static final float MIN_SCALE = 0.01F;
@@ -12,7 +11,7 @@ public abstract class ScalableParticleOptionsBase implements ParticleOptions {
 
    public ScalableParticleOptionsBase(final float scale) {
       super();
-      this.scale = Mth.clamp(scale, 0.01F, 4.0F);
+      this.scale = Math.clamp(scale, 0.01F, 4.0F);
    }
 
    public float getScale() {

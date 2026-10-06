@@ -17,7 +17,7 @@ public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
    private final List<Filterable<String>> pages;
    private final ListOperation pageOperation;
 
-   protected SetWritableBookPagesFunction(Optional<Holder<LootItemCondition>> condition, final List<Filterable<String>> pages, final ListOperation pageOperation) {
+   protected SetWritableBookPagesFunction(final Optional<Holder<LootItemCondition>> condition, final List<Filterable<String>> pages, final ListOperation pageOperation) {
       super(condition);
       this.pages = pages;
       this.pageOperation = pageOperation;

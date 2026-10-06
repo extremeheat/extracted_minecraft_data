@@ -25,7 +25,7 @@ public class Stitcher<T extends Stitcher.Entry> {
       this.mipLevel = mipLevel;
       this.maxWidth = maxWidth;
       this.maxHeight = maxHeight;
-      this.padding = 1 << mipLevel << Mth.clamp(anisotropyBit - 1, 0, 4);
+      this.padding = 1 << mipLevel << Math.clamp((long)(anisotropyBit - 1), 0, 4);
    }
 
    public int getWidth() {

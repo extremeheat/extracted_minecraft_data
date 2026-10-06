@@ -240,8 +240,8 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          if (belowType != PathType.FIRE && belowType != PathType.LAVA) {
             if (belowType == PathType.DAMAGING) {
                blockPathType = PathType.DAMAGING;
-            } else if (belowType == PathType.COCOA) {
-               blockPathType = PathType.COCOA;
+            } else if (belowType == PathType.AVOID_IN_AIR) {
+               blockPathType = PathType.AVOID_IN_AIR;
             } else if (belowType == PathType.FENCE) {
                if (!belowPos.equals(context.mobPosition())) {
                   blockPathType = PathType.FENCE;

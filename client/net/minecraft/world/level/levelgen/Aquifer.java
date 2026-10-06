@@ -453,7 +453,7 @@ public interface Aquifer {
             int distanceBelowSurface = this.adjustSurfaceLevel(lowestSurfaceLevel) - y;
             int floodednessMaxDepth = 64;
             double floodednessFactor = surfaceAtCenterIsUnderGlobalFluidLevel ? Mth.clampedMap((double)distanceBelowSurface, 0.0, 64.0, 1.0, 0.0) : 0.0;
-            double floodednessNoiseValue = Mth.clamp((double)this.fluidLevelFloodednessNoise.sampleValue(x, y, z), -1.0, 1.0);
+            double floodednessNoiseValue = Math.clamp((double)this.fluidLevelFloodednessNoise.sampleValue(x, y, z), -1.0, 1.0);
             double fullyFloodedThreshold = Mth.map(floodednessFactor, 1.0, 0.0, -0.3, 0.8);
             double partiallyFloodedThreshold = Mth.map(floodednessFactor, 1.0, 0.0, -0.8, 0.4);
             partiallyFloodedness = floodednessNoiseValue - partiallyFloodedThreshold;

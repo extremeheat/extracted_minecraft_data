@@ -84,7 +84,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    private void claimStructureAt(final ServerLevel level, final BlockPos pos) {
       StructureManager structureManager = level.structureManager();
       StructureStart start = structureManager.getStructureAt(pos, this.destination);
-      if (start.isValid() && start.canBeReferenced()) {
+      if (start != null && start.canBeReferenced()) {
          structureManager.addReference(start);
       }
 

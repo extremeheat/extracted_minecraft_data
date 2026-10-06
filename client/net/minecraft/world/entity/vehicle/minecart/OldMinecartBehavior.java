@@ -200,7 +200,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
       double scale = this.minecart.isVehicle() ? 0.75 : 1.0;
       double maxSpeed = this.minecart.getMaxSpeed(level);
       movement = this.getDeltaMovement();
-      this.minecart.move(MoverType.SELF, new Vec3(Mth.clamp(scale * movement.x, -maxSpeed, maxSpeed), 0.0, Mth.clamp(scale * movement.z, -maxSpeed, maxSpeed)));
+      this.minecart.move(MoverType.SELF, new Vec3(Math.clamp(scale * movement.x, -maxSpeed, maxSpeed), 0.0, Math.clamp(scale * movement.z, -maxSpeed, maxSpeed)));
       if (exit0.getY() != 0 && Mth.floor(this.minecart.getX()) - pos.getX() == exit0.getX() && Mth.floor(this.minecart.getZ()) - pos.getZ() == exit0.getZ()) {
          this.setPos(this.minecart.getX(), this.minecart.getY() + (double)exit0.getY(), this.minecart.getZ());
       } else if (exit1.getY() != 0 && Mth.floor(this.minecart.getX()) - pos.getX() == exit1.getX() && Mth.floor(this.minecart.getZ()) - pos.getZ() == exit1.getZ()) {
@@ -382,7 +382,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
    }
 
    public Vec3 getKnownMovement(final Vec3 knownMovement) {
-      return !Double.isNaN(knownMovement.x) && !Double.isNaN(knownMovement.y) && !Double.isNaN(knownMovement.z) ? new Vec3(Mth.clamp(knownMovement.x, -0.4, 0.4), knownMovement.y, Mth.clamp(knownMovement.z, -0.4, 0.4)) : Vec3.ZERO;
+      return !Double.isNaN(knownMovement.x) && !Double.isNaN(knownMovement.y) && !Double.isNaN(knownMovement.z) ? new Vec3(Math.clamp(knownMovement.x, -0.4, 0.4), knownMovement.y, Math.clamp(knownMovement.z, -0.4, 0.4)) : Vec3.ZERO;
    }
 
    public double getMaxSpeed(final ServerLevel level) {

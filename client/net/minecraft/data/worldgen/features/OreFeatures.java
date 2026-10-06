@@ -1,7 +1,9 @@
 package net.minecraft.data.worldgen.features;
 
 import java.util.List;
+import net.minecraft.core.HolderSet;
 import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
@@ -9,6 +11,7 @@ import net.minecraft.world.level.levelgen.feature.BlockReplacement;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.OreFeature;
 import net.minecraft.world.level.levelgen.feature.ScatteredOreFeature;
+import net.minecraft.world.level.levelgen.feature.SequenceFeature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.HeightMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
@@ -47,15 +50,38 @@ public class OreFeatures {
    public static final ResourceKey<Feature> ORE_COPPPER_SMALL = FeatureUtils.createKey("ore_copper_small");
    public static final ResourceKey<Feature> ORE_COPPER_LARGE = FeatureUtils.createKey("ore_copper_large");
    public static final ResourceKey<Feature> ORE_CLAY = FeatureUtils.createKey("ore_clay");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_COAL = FeatureUtils.createKey("ice_cave_ore_coal");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_COAL_BURIED = FeatureUtils.createKey("ice_cave_ore_coal_buried");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_COPPPER_SMALL = FeatureUtils.createKey("ice_cave_ore_copper_small");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_DIAMOND_SMALL = FeatureUtils.createKey("ice_cave_ore_diamond_small");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_DIAMOND_MEDIUM = FeatureUtils.createKey("ice_cave_ore_diamond_medium");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_DIAMOND_LARGE = FeatureUtils.createKey("ice_cave_ore_diamond_large");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_DIAMOND_BURIED = FeatureUtils.createKey("ice_cave_ore_diamond_buried");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_IRON = FeatureUtils.createKey("ice_cave_ore_iron");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_IRON_SMALL = FeatureUtils.createKey("ice_cave_ore_iron_small");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_GOLD_BURIED = FeatureUtils.createKey("ice_cave_ore_gold_buried");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_LAPIS = FeatureUtils.createKey("ice_cave_ore_lapis");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_LAPIS_BURIED = FeatureUtils.createKey("ice_cave_ore_lapis_buried");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_REDSTONE = FeatureUtils.createKey("ice_cave_ore_redstone");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_ANDESITE = FeatureUtils.createKey("ice_cave_ore_andesite");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_DIORITE = FeatureUtils.createKey("ice_cave_ore_diorite");
+   public static final ResourceKey<Feature> ICE_CAVE_ORE_GRAVEL = FeatureUtils.createKey("ice_cave_ore_gravel");
 
    public OreFeatures() {
       super();
    }
 
+   private static SequenceFeature hostedOre(final List<BlockReplacement> targetList, final OreFeature oreFeature) {
+      return new SequenceFeature(HolderSet.direct(PlacementUtils.inlinePlaced(new OreFeature(targetList, 20)), PlacementUtils.inlinePlaced(oreFeature)));
+   }
+
    public static void bootstrap(final BootstrapContext<Feature> context) {
       RuleTest naturalStone = new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD);
+      RuleTest naturalStoneOrIce = RuleTest.anyOf(naturalStone, new TagMatchTest(BlockTags.ICE_CAVE_ORE_REPLACEABLES));
       RuleTest stoneOreReplaceables = RuleTest.either(new TagMatchTest(BlockTags.HEIGHT_SPECIFIC_ORE_REPLACEABLES), HeightMatchTest.min(0), new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES));
       RuleTest deepslateOreReplaceables = RuleTest.either(new TagMatchTest(BlockTags.HEIGHT_SPECIFIC_ORE_REPLACEABLES), HeightMatchTest.max(8), new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES));
+      RuleTest iceCaveStoneOreReplaceables = RuleTest.anyOf(stoneOreReplaceables, RuleTest.allOf(HeightMatchTest.min(0), new TagMatchTest(BlockTags.ICE_CAVE_ORE_REPLACEABLES)));
+      RuleTest iceCaveDeepslateOreReplaceables = RuleTest.anyOf(deepslateOreReplaceables, RuleTest.allOf(HeightMatchTest.max(8), new TagMatchTest(BlockTags.ICE_CAVE_ORE_REPLACEABLES)));
       RuleTest netherrack = new BlockMatchTest(Blocks.NETHERRACK);
       RuleTest netherOreReplaceables = new TagMatchTest(BlockTags.BASE_STONE_NETHER);
       List<BlockReplacement> oreIronTargetList = List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.IRON_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_IRON_ORE.defaultBlockState()));
@@ -64,6 +90,21 @@ public class OreFeatures {
       List<BlockReplacement> oreLapisTargetList = List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.LAPIS_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_LAPIS_ORE.defaultBlockState()));
       List<BlockReplacement> oreCopperTargetList = List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.COPPER_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_COPPER_ORE.defaultBlockState()));
       List<BlockReplacement> oreCoalTargetList = List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.COAL_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_COAL_ORE.defaultBlockState()));
+      List<BlockReplacement> iceCavesTargetList = List.of(BlockReplacement.replace(iceCaveStoneOreReplaceables, Blocks.STONE.defaultBlockState()), BlockReplacement.replace(iceCaveDeepslateOreReplaceables, Blocks.DEEPSLATE.defaultBlockState()));
+      OreFeature oreCoalFeature = new OreFeature(oreCoalTargetList, 17);
+      OreFeature oreCoalBuriedFeature = new OreFeature(oreCoalTargetList, 17, 0.5F);
+      OreFeature oreIronFeature = new OreFeature(oreIronTargetList, 9);
+      OreFeature oreIronSmallFeature = new OreFeature(oreIronTargetList, 4);
+      OreFeature oreGoldFeature = new OreFeature(oreGoldTargetList, 9);
+      OreFeature oreGoldBuriedFeature = new OreFeature(oreGoldTargetList, 9, 0.5F);
+      OreFeature oreRedstoneFeature = new OreFeature(List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.REDSTONE_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_REDSTONE_ORE.defaultBlockState())), 8);
+      OreFeature oreDiamondSmallFeature = new OreFeature(oreDiamondTargetList, 4, 0.5F);
+      OreFeature oreDiamondLargeFeature = new OreFeature(oreDiamondTargetList, 12, 0.7F);
+      OreFeature oreDiamondBuriedFeature = new OreFeature(oreDiamondTargetList, 8, 1.0F);
+      OreFeature oreDiamondMediumFeature = new OreFeature(oreDiamondTargetList, 8, 0.5F);
+      OreFeature oreLapisFeature = new OreFeature(oreLapisTargetList, 7);
+      OreFeature oreLapisBuriedFeature = new OreFeature(oreLapisTargetList, 7, 1.0F);
+      OreFeature oreCopperSmallFeature = new OreFeature(oreCopperTargetList, 10);
       context.register(ORE_MAGMA, new OreFeature(netherrack, Blocks.MAGMA_BLOCK.defaultBlockState(), 33));
       context.register(ORE_SOUL_SAND, new OreFeature(netherrack, Blocks.SOUL_SAND.defaultBlockState(), 12));
       context.register(ORE_NETHER_GOLD, new OreFeature(netherrack, Blocks.NETHER_GOLD_ORE.defaultBlockState(), 10));
@@ -76,25 +117,41 @@ public class OreFeatures {
       context.register(ORE_DIORITE, new OreFeature(naturalStone, Blocks.DIORITE.defaultBlockState(), 64));
       context.register(ORE_ANDESITE, new OreFeature(naturalStone, Blocks.ANDESITE.defaultBlockState(), 64));
       context.register(ORE_TUFF, new OreFeature(naturalStone, Blocks.TUFF.defaultBlockState(), 64));
-      context.register(ORE_COAL, new OreFeature(oreCoalTargetList, 17));
-      context.register(ORE_COAL_BURIED, new OreFeature(oreCoalTargetList, 17, 0.5F));
-      context.register(ORE_IRON, new OreFeature(oreIronTargetList, 9));
-      context.register(ORE_IRON_SMALL, new OreFeature(oreIronTargetList, 4));
-      context.register(ORE_GOLD, new OreFeature(oreGoldTargetList, 9));
-      context.register(ORE_GOLD_BURIED, new OreFeature(oreGoldTargetList, 9, 0.5F));
-      context.register(ORE_REDSTONE, new OreFeature(List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.REDSTONE_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_REDSTONE_ORE.defaultBlockState())), 8));
-      context.register(ORE_DIAMOND_SMALL, new OreFeature(oreDiamondTargetList, 4, 0.5F));
-      context.register(ORE_DIAMOND_LARGE, new OreFeature(oreDiamondTargetList, 12, 0.7F));
-      context.register(ORE_DIAMOND_BURIED, new OreFeature(oreDiamondTargetList, 8, 1.0F));
-      context.register(ORE_DIAMOND_MEDIUM, new OreFeature(oreDiamondTargetList, 8, 0.5F));
-      context.register(ORE_LAPIS, new OreFeature(oreLapisTargetList, 7));
-      context.register(ORE_LAPIS_BURIED, new OreFeature(oreLapisTargetList, 7, 1.0F));
+      context.register(ORE_COAL, oreCoalFeature);
+      context.register(ORE_COAL_BURIED, oreCoalBuriedFeature);
+      context.register(ORE_IRON, oreIronFeature);
+      context.register(ORE_IRON_SMALL, oreIronSmallFeature);
+      context.register(ORE_GOLD, oreGoldFeature);
+      context.register(ORE_GOLD_BURIED, oreGoldBuriedFeature);
+      context.register(ORE_REDSTONE, oreRedstoneFeature);
+      context.register(ORE_DIAMOND_SMALL, oreDiamondSmallFeature);
+      context.register(ORE_DIAMOND_LARGE, oreDiamondLargeFeature);
+      context.register(ORE_DIAMOND_BURIED, oreDiamondBuriedFeature);
+      context.register(ORE_DIAMOND_MEDIUM, oreDiamondMediumFeature);
+      context.register(ORE_LAPIS, oreLapisFeature);
+      context.register(ORE_LAPIS_BURIED, oreLapisBuriedFeature);
       context.register(ORE_INFESTED, new OreFeature(List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.INFESTED_STONE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.INFESTED_DEEPSLATE.defaultBlockState())), 9));
       context.register(ORE_EMERALD, new OreFeature(List.of(BlockReplacement.replace(stoneOreReplaceables, Blocks.EMERALD_ORE.defaultBlockState()), BlockReplacement.replace(deepslateOreReplaceables, Blocks.DEEPSLATE_EMERALD_ORE.defaultBlockState())), 3));
       context.register(ORE_ANCIENT_DEBRIS_LARGE, new ScatteredOreFeature(netherOreReplaceables, Blocks.ANCIENT_DEBRIS.defaultBlockState(), 3, 1.0F));
       context.register(ORE_ANCIENT_DEBRIS_SMALL, new ScatteredOreFeature(netherOreReplaceables, Blocks.ANCIENT_DEBRIS.defaultBlockState(), 2, 1.0F));
-      context.register(ORE_COPPPER_SMALL, new OreFeature(oreCopperTargetList, 10));
+      context.register(ORE_COPPPER_SMALL, oreCopperSmallFeature);
       context.register(ORE_COPPER_LARGE, new OreFeature(oreCopperTargetList, 20));
       context.register(ORE_CLAY, new OreFeature(naturalStone, Blocks.CLAY.defaultBlockState(), 33));
+      context.register(ICE_CAVE_ORE_COAL, hostedOre(iceCavesTargetList, oreCoalFeature));
+      context.register(ICE_CAVE_ORE_COAL_BURIED, hostedOre(iceCavesTargetList, oreCoalBuriedFeature));
+      context.register(ICE_CAVE_ORE_COPPPER_SMALL, hostedOre(iceCavesTargetList, oreCopperSmallFeature));
+      context.register(ICE_CAVE_ORE_DIAMOND_SMALL, hostedOre(iceCavesTargetList, oreDiamondSmallFeature));
+      context.register(ICE_CAVE_ORE_DIAMOND_MEDIUM, hostedOre(iceCavesTargetList, oreDiamondMediumFeature));
+      context.register(ICE_CAVE_ORE_DIAMOND_LARGE, hostedOre(iceCavesTargetList, oreDiamondLargeFeature));
+      context.register(ICE_CAVE_ORE_DIAMOND_BURIED, hostedOre(iceCavesTargetList, oreDiamondBuriedFeature));
+      context.register(ICE_CAVE_ORE_IRON, hostedOre(iceCavesTargetList, oreIronFeature));
+      context.register(ICE_CAVE_ORE_IRON_SMALL, hostedOre(iceCavesTargetList, oreIronSmallFeature));
+      context.register(ICE_CAVE_ORE_GOLD_BURIED, hostedOre(iceCavesTargetList, oreGoldBuriedFeature));
+      context.register(ICE_CAVE_ORE_LAPIS, hostedOre(iceCavesTargetList, oreLapisFeature));
+      context.register(ICE_CAVE_ORE_LAPIS_BURIED, hostedOre(iceCavesTargetList, oreLapisBuriedFeature));
+      context.register(ICE_CAVE_ORE_REDSTONE, hostedOre(iceCavesTargetList, oreRedstoneFeature));
+      context.register(ICE_CAVE_ORE_ANDESITE, new OreFeature(naturalStoneOrIce, Blocks.ANDESITE.defaultBlockState(), 64));
+      context.register(ICE_CAVE_ORE_DIORITE, new OreFeature(naturalStoneOrIce, Blocks.DIORITE.defaultBlockState(), 64));
+      context.register(ICE_CAVE_ORE_GRAVEL, new OreFeature(naturalStoneOrIce, Blocks.GRAVEL.defaultBlockState(), 33));
    }
 }

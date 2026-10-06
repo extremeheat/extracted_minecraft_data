@@ -107,7 +107,7 @@ public class FrogAi {
             PathfindingContext context = new PathfindingContext(body.level(), body);
             PathType pathType = WalkNodeEvaluator.getPathTypeStatic(context, targetPos.mutable());
             PathType pathTypeBelow = WalkNodeEvaluator.getPathTypeStatic(context, below.mutable());
-            return pathType != PathType.TRAPDOOR && (!bs.isAir() || pathTypeBelow != PathType.TRAPDOOR) ? LongJumpToRandomPos.defaultAcceptableLandingSpot(body, targetPos) : true;
+            return pathType != PathType.DROP_DOWN && (!bs.isAir() || pathTypeBelow != PathType.DROP_DOWN) ? LongJumpToRandomPos.defaultAcceptableLandingSpot(body, targetPos) : true;
          } else {
             return true;
          }

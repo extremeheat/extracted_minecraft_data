@@ -197,7 +197,7 @@ public class Camera implements TrackedWaypoint.Camera {
 
       this.oldFovModifier = this.fovModifier;
       this.fovModifier += (targetFovModifier - this.fovModifier) * 0.5F;
-      this.fovModifier = Mth.clamp(this.fovModifier, 0.1F, 1.5F);
+      this.fovModifier = Math.clamp(this.fovModifier, 0.1F, 1.5F);
    }
 
    private Matrix4f createProjectionMatrixForCulling() {

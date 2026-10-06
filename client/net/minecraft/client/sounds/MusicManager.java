@@ -115,7 +115,7 @@ public class MusicManager {
          return true;
       } else {
          if (this.currentGain < volume) {
-            this.currentGain += Mth.clamp(this.currentGain, 5.0E-4F, 0.005F);
+            this.currentGain += Math.clamp(this.currentGain, 5.0E-4F, 0.005F);
             if (this.currentGain > volume) {
                this.currentGain = volume;
             }
@@ -126,7 +126,7 @@ public class MusicManager {
             }
          }
 
-         this.currentGain = Mth.clamp(this.currentGain, 0.0F, 1.0F);
+         this.currentGain = Math.clamp(this.currentGain, 0.0F, 1.0F);
          if (this.currentGain <= 1.0E-4F) {
             this.stopPlaying();
             return false;

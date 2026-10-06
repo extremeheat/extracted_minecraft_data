@@ -193,7 +193,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private static int getProgressBarFill(final Fraction weight) {
-      return Mth.clamp(Mth.mulAndTruncate(weight, 94), 0, 94);
+      return Math.clamp((long)Mth.mulAndTruncate(weight, 94), 0, 94);
    }
 
    private static Identifier getProgressBarTexture(final Fraction weight) {

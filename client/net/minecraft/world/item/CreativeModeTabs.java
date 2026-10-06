@@ -536,6 +536,7 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.DRIPSTONE_BLOCK);
          naturalBlocks.accept((ItemLike)Items.POINTED_DRIPSTONE);
          naturalBlocks.accept((ItemLike)Items.PRISMARINE);
+         naturalBlocks.accept((ItemLike)Items.ICICLE);
          naturalBlocks.accept((ItemLike)Items.CINNABAR);
          naturalBlocks.accept((ItemLike)Items.SULFUR);
          naturalBlocks.accept((ItemLike)Items.SULFUR_SPIKE);
@@ -582,6 +583,7 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.MEDIUM_AMETHYST_BUD);
          naturalBlocks.accept((ItemLike)Items.LARGE_AMETHYST_BUD);
          naturalBlocks.accept((ItemLike)Items.AMETHYST_CLUSTER);
+         naturalBlocks.accept((ItemLike)Items.ICE_CRYSTAL);
          naturalBlocks.accept((ItemLike)Items.OAK_LOG);
          naturalBlocks.accept((ItemLike)Items.SPRUCE_LOG);
          naturalBlocks.accept((ItemLike)Items.BIRCH_LOG);
@@ -1184,6 +1186,7 @@ public class CreativeModeTabs {
          combat.accept((ItemLike)Items.TNT);
          combat.accept((ItemLike)Items.END_CRYSTAL);
          combat.accept((ItemLike)Items.SNOWBALL);
+         combat.accept((ItemLike)Items.ICE_BALL);
          combat.accept((ItemLike)Items.EGG);
          combat.accept((ItemLike)Items.BROWN_EGG);
          combat.accept((ItemLike)Items.BLUE_EGG);
@@ -1274,6 +1277,7 @@ public class CreativeModeTabs {
          ingredients.accept((ItemLike)Items.STRING);
          ingredients.accept((ItemLike)Items.FEATHER);
          ingredients.accept((ItemLike)Items.SNOWBALL);
+         ingredients.accept((ItemLike)Items.ICE_BALL);
          ingredients.accept((ItemLike)Items.EGG);
          ingredients.accept((ItemLike)Items.BROWN_EGG);
          ingredients.accept((ItemLike)Items.BLUE_EGG);
@@ -1438,6 +1442,7 @@ public class CreativeModeTabs {
          spawnEggs.accept((ItemLike)Items.BOGGED_SPAWN_EGG);
          spawnEggs.accept((ItemLike)Items.CAMEL_HUSK_SPAWN_EGG);
          spawnEggs.accept((ItemLike)Items.DROWNED_SPAWN_EGG);
+         spawnEggs.accept((ItemLike)Items.FROSTBITE_SPAWN_EGG);
          spawnEggs.accept((ItemLike)Items.HUSK_SPAWN_EGG);
          spawnEggs.accept((ItemLike)Items.PARCHED_SPAWN_EGG);
          spawnEggs.accept((ItemLike)Items.SKELETON_SPAWN_EGG);

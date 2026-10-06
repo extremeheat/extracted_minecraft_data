@@ -13,8 +13,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
 
-class FriendsOverlayTabButton extends TabButton {
-   private final WidgetSprites sprites = new WidgetSprites(Identifier.withDefaultNamespace("friends/button"), Identifier.withDefaultNamespace("friends/button_disabled"), Identifier.withDefaultNamespace("friends/button_highlighted"), Identifier.withDefaultNamespace("friends/button_highlighted"));
+public class FriendsOverlayTabButton extends TabButton {
+   private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("friends/tab_selected"), Identifier.withDefaultNamespace("friends/tab"), Identifier.withDefaultNamespace("friends/tab_selected"), Identifier.withDefaultNamespace("friends/tab_highlighted"));
    private static final int SELECTED_OFFSET = 1;
    private static final int TEXT_MARGIN = 1;
    private static final int UNDERLINE_HEIGHT = 1;
@@ -26,7 +26,7 @@ class FriendsOverlayTabButton extends TabButton {
    }
 
    public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprites.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.isSelected(), this.isHoveredOrFocused()), this.getX(), this.getY(), this.width, this.height);
       Font font = Minecraft.getInstance().font;
       int underlineColor = this.active ? -1 : -6250336;
       if (this.isSelected()) {

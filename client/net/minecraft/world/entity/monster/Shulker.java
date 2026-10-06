@@ -218,9 +218,9 @@ public class Shulker extends AbstractGolem implements Enemy {
          return false;
       } else {
          if (this.currentPeekAmount > targetPeekAmount) {
-            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount - 0.05F, targetPeekAmount, 1.0F);
+            this.currentPeekAmount = Math.clamp(this.currentPeekAmount - 0.05F, targetPeekAmount, 1.0F);
          } else {
-            this.currentPeekAmount = Mth.clamp(this.currentPeekAmount + 0.05F, 0.0F, targetPeekAmount);
+            this.currentPeekAmount = Math.clamp(this.currentPeekAmount + 0.05F, 0.0F, targetPeekAmount);
          }
 
          return true;

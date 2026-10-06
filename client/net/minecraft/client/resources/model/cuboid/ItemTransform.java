@@ -9,7 +9,6 @@ import com.google.gson.JsonParseException;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.lang.reflect.Type;
 import net.minecraft.util.GsonHelper;
-import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
@@ -61,9 +60,9 @@ public record ItemTransform(Vector3fc rotation, Vector3fc translation, Vector3fc
          Vector3f rotation = getVector3f(object, "rotation", DEFAULT_ROTATION);
          Vector3f translation = getVector3f(object, "translation", DEFAULT_TRANSLATION);
          translation.mul(0.0625F);
-         translation.set(Mth.clamp(translation.x, -5.0F, 5.0F), Mth.clamp(translation.y, -5.0F, 5.0F), Mth.clamp(translation.z, -5.0F, 5.0F));
+         translation.set(Math.clamp(translation.x, -5.0F, 5.0F), Math.clamp(translation.y, -5.0F, 5.0F), Math.clamp(translation.z, -5.0F, 5.0F));
          Vector3f scale = getVector3f(object, "scale", DEFAULT_SCALE);
-         scale.set(Mth.clamp(scale.x, -4.0F, 4.0F), Mth.clamp(scale.y, -4.0F, 4.0F), Mth.clamp(scale.z, -4.0F, 4.0F));
+         scale.set(Math.clamp(scale.x, -4.0F, 4.0F), Math.clamp(scale.y, -4.0F, 4.0F), Math.clamp(scale.z, -4.0F, 4.0F));
          return new ItemTransform(rotation, translation, scale);
       }
 

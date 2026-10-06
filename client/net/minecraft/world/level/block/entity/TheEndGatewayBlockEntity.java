@@ -94,11 +94,11 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    public float getSpawnPercent(final float a) {
-      return Mth.clamp(((float)this.age + a) / 200.0F, 0.0F, 1.0F);
+      return Math.clamp(((float)this.age + a) / 200.0F, 0.0F, 1.0F);
    }
 
    public float getCooldownPercent(final float a) {
-      return 1.0F - Mth.clamp(((float)this.teleportCooldown - a) / 40.0F, 0.0F, 1.0F);
+      return 1.0F - Math.clamp(((float)this.teleportCooldown - a) / 40.0F, 0.0F, 1.0F);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

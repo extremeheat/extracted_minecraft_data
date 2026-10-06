@@ -5,7 +5,6 @@ import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.ArmadilloRenderState;
-import net.minecraft.util.Mth;
 
 public abstract class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
    private static final float MAX_DOWN_HEAD_ROTATION_EXTENT = 25.0F;
@@ -54,8 +53,8 @@ public abstract class ArmadilloModel extends EntityModel<ArmadilloRenderState> {
          this.rightHindLeg.visible = true;
          this.tail.visible = true;
          this.cube.visible = false;
-         this.head.xRot = Mth.clamp(state.xRot, -22.5F, 25.0F) * 0.017453292F;
-         this.head.yRot = Mth.clamp(state.yRot, -32.5F, 32.5F) * 0.017453292F;
+         this.head.xRot = Math.clamp(state.xRot, -22.5F, 25.0F) * 0.017453292F;
+         this.head.yRot = Math.clamp(state.yRot, -32.5F, 32.5F) * 0.017453292F;
       }
 
       if (!state.isHidingInShell) {

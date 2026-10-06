@@ -16,8 +16,8 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.WindowRenderState;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.CubeMapTexture;
+import net.minecraft.client.renderer.texture.CubemapTextureProvider;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -65,8 +65,8 @@ public class CubeMap implements AutoCloseable {
          renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, indices.type());
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-         AbstractTexture texture = minecraft.getTextureManager().getTexture(this.location);
-         renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
+         TextureHandle texture = minecraft.getTextureManager().getTexture(this.location);
+         renderPass.setUniform("Sampler0", texture.textureView(), texture.sampler());
          renderPass.drawIndexed(36, 1, 0, 0, 0);
       }
 
@@ -110,7 +110,7 @@ public class CubeMap implements AutoCloseable {
    }
 
    public void registerTextures(final TextureManager textureManager) {
-      textureManager.register(this.location, new CubeMapTexture(this.location));
+      textureManager.registerProvider(this.location, new CubemapTextureProvider());
    }
 
    public void close() {

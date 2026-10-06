@@ -48,7 +48,7 @@ public class DoorBlock extends Block {
    private final BlockSetType type;
 
    protected DoorBlock(final BlockSetType type, final BlockBehaviour.Properties properties) {
-      super(properties.sound(type.soundType()));
+      super(properties.sound(type.blockSoundSet()));
       this.type = type;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(OPEN, false)).setValue(HINGE, DoorHingeSide.LEFT)).setValue(POWERED, false)).setValue(HALF, DoubleBlockHalf.LOWER));
    }

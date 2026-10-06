@@ -24,6 +24,7 @@ import org.jspecify.annotations.Nullable;
 
 public class RestrictionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("restrictions_screen.title");
+   private static final String PERMISSION_KEY_PREFIX = "restrictions_screen.permission.";
    private final Screen previousScreen;
    private final ChatAbilities chatAbilities;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
@@ -52,7 +53,7 @@ public class RestrictionsScreen extends Screen {
       permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_SEND_MESSAGES, "send_messages"));
       permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_SEND_COMMANDS, "send_commands"));
       permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_RECEIVE_SYSTEM_MESSAGES, "receive_system_messages"));
-      permissionEntries.add(createPermissionStatus(this.chatAbilities, Permissions.CHAT_RECEIVE_PLAYER_MESSAGES, "receive_player_messages"));
+      permissionEntries.add(createPlayerChatPermissionStatus(this.chatAbilities, this.minecraft.allowChatOnlyWithFriend()));
       Component message = CommonComponents.joinLines((Collection)permissionEntries);
       body.addChild(FocusableTextWidget.builder(message, this.font).maxWidth(250).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build().setCentered(true));
       this.bodyScroll = new ScrollableLayout(this.minecraft, body, this.layout.getContentHeight());
@@ -65,8 +66,16 @@ public class RestrictionsScreen extends Screen {
 
    private static Component createPermissionStatus(final ChatAbilities abilities, final Permission permission, final String permissionId) {
       boolean isAllowed = abilities.permissions().hasPermission(permission);
-      String prefix = "restrictions_screen.permission." + permissionId;
-      return isAllowed ? Component.translatable(prefix + ".allowed").withStyle(ChatFormatting.GREEN) : Component.translatable(prefix + ".denied").withStyle(ChatFormatting.RED);
+      return isAllowed ? Component.translatable("restrictions_screen.permission." + permissionId + ".allowed").withStyle(ChatFormatting.GREEN) : Component.translatable("restrictions_screen.permission." + permissionId + ".denied").withStyle(ChatFormatting.RED);
+   }
+
+   private static Component createPlayerChatPermissionStatus(final ChatAbilities abilities, final boolean friendsOnly) {
+      boolean isAllowed = abilities.permissions().hasPermission(Permissions.CHAT_RECEIVE_PLAYER_MESSAGES);
+      if (isAllowed) {
+         return friendsOnly ? Component.translatable("restrictions_screen.permission.receive_player_messages.friends_only").withStyle(ChatFormatting.YELLOW) : Component.translatable("restrictions_screen.permission.receive_player_messages.allowed").withStyle(ChatFormatting.GREEN);
+      } else {
+         return Component.translatable("restrictions_screen.permission.receive_player_messages.denied").withStyle(ChatFormatting.RED);
+      }
    }
 
    public void onClose() {

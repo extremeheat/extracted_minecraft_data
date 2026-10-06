@@ -61,6 +61,6 @@ public interface SelectableSlotContainer {
    private static int getSection(final float relativeCoordinate, final int maxSections) {
       float targetedPixel = relativeCoordinate * 16.0F;
       float sectionSize = 16.0F / (float)maxSections;
-      return Mth.clamp(Mth.floor(targetedPixel / sectionSize), 0, maxSections - 1);
+      return Math.clamp((long)Mth.floor(targetedPixel / sectionSize), 0, maxSections - 1);
    }
 }

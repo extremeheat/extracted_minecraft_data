@@ -51,22 +51,18 @@ public class OceanMonumentStructure extends Structure {
    }
 
    public static PiecesContainer regeneratePiecesAfterLoad(final ChunkPos chunkPos, final long seed, final PiecesContainer savedPieces) {
-      if (savedPieces.isEmpty()) {
-         return savedPieces;
-      } else {
-         WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
-         random.setLargeFeatureSeed(seed, chunkPos.x(), chunkPos.z());
-         StructurePiece oldTopPiece = (StructurePiece)savedPieces.pieces().get(0);
-         BoundingBox oldBoundingBox = oldTopPiece.getBoundingBox();
-         int west = oldBoundingBox.minX();
-         int north = oldBoundingBox.minZ();
-         Direction defaultOrientation = Direction.Plane.HORIZONTAL.getRandomDirection(random);
-         Direction orientation = (Direction)Objects.requireNonNullElse(oldTopPiece.getOrientation(), defaultOrientation);
-         StructurePiece topPiece = new OceanMonumentPieces.MonumentBuilding(random, west, north, orientation);
-         StructurePiecesBuilder result = new StructurePiecesBuilder();
-         result.addPiece(topPiece);
-         return result.build();
-      }
+      WorldgenRandom random = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
+      random.setLargeFeatureSeed(seed, chunkPos.x(), chunkPos.z());
+      StructurePiece oldTopPiece = (StructurePiece)savedPieces.pieces().getFirst();
+      BoundingBox oldBoundingBox = oldTopPiece.getBoundingBox();
+      int west = oldBoundingBox.minX();
+      int north = oldBoundingBox.minZ();
+      Direction defaultOrientation = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+      Direction orientation = (Direction)Objects.requireNonNullElse(oldTopPiece.getOrientation(), defaultOrientation);
+      StructurePiece topPiece = new OceanMonumentPieces.MonumentBuilding(random, west, north, orientation);
+      StructurePiecesBuilder result = new StructurePiecesBuilder();
+      result.addPiece(topPiece);
+      return result.buildOrThrow();
    }
 
    public StructureType<?> type() {

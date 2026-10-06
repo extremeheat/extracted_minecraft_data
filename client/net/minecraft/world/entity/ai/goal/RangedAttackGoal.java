@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.function.IntSupplier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,16 +16,20 @@ public class RangedAttackGoal extends Goal {
    private int attackTime;
    private final double speedModifier;
    private int seeTime;
-   private final int attackIntervalMin;
-   private final int attackIntervalMax;
+   private final IntSupplier attackIntervalMin;
+   private final IntSupplier attackIntervalMax;
    private final float attackRadius;
    private final float attackRadiusSqr;
 
    public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final int attackInterval, final float attackRadius) {
+      this(mob, speedModifier, () -> attackInterval, () -> attackInterval, attackRadius);
+   }
+
+   public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final IntSupplier attackInterval, final float attackRadius) {
       this(mob, speedModifier, attackInterval, attackInterval, attackRadius);
    }
 
-   public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final int attackIntervalMin, final int attackIntervalMax, final float attackRadius) {
+   public RangedAttackGoal(final RangedAttackMob mob, final double speedModifier, final IntSupplier attackIntervalMin, final IntSupplier attackIntervalMax, final float attackRadius) {
       super();
       this.attackTime = -1;
       if (!(mob instanceof LivingEntity)) {
@@ -74,7 +79,8 @@ public class RangedAttackGoal extends Goal {
          this.seeTime = 0;
       }
 
-      if (!(targetDistSqr > (double)this.attackRadiusSqr) && this.seeTime >= 5) {
+      boolean targetIsOutOfRange = targetDistSqr > (double)this.attackRadiusSqr;
+      if (!targetIsOutOfRange && this.seeTime >= 5 && this.stopWhenInRange()) {
          this.mob.getNavigation().stop();
       } else {
          this.mob.getNavigation().moveTo((Entity)this.target, this.speedModifier);
@@ -82,17 +88,21 @@ public class RangedAttackGoal extends Goal {
 
       this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
       if (--this.attackTime == 0) {
-         if (!hasLineOfSight) {
+         if (!hasLineOfSight || targetIsOutOfRange) {
             return;
          }
 
          float dist = (float)Math.sqrt(targetDistSqr) / this.attackRadius;
-         float power = Mth.clamp(dist, 0.1F, 1.0F);
+         float power = Math.clamp(dist, 0.1F, 1.0F);
          this.rangedAttackMob.performRangedAttack(this.target, power);
-         this.attackTime = Mth.floor(dist * (float)(this.attackIntervalMax - this.attackIntervalMin) + (float)this.attackIntervalMin);
+         this.attackTime = Mth.floor(dist * (float)(this.attackIntervalMax.getAsInt() - this.attackIntervalMin.getAsInt()) + (float)this.attackIntervalMin.getAsInt());
       } else if (this.attackTime < 0) {
-         this.attackTime = Mth.floor(Mth.lerp(Math.sqrt(targetDistSqr) / (double)this.attackRadius, (double)this.attackIntervalMin, (double)this.attackIntervalMax));
+         this.attackTime = Mth.floor(Mth.lerp(Math.sqrt(targetDistSqr) / (double)this.attackRadius, (double)this.attackIntervalMin.getAsInt(), (double)this.attackIntervalMax.getAsInt()));
       }
 
+   }
+
+   protected boolean stopWhenInRange() {
+      return true;
    }
 }

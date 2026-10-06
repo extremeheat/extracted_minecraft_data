@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.input.PreeditEvent;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.sdl.SDLEvents;
 import org.lwjgl.sdl.SDLKeyboard;
 import org.lwjgl.sdl.SDL_Event;
@@ -114,9 +115,20 @@ public class SDLEventHandler {
 
    private void handleKeyEvent(final SDL_Event event) {
       SDL_KeyboardEvent keyEvent = event.key();
-      int action = event.type() == 769 ? 0 : (keyEvent.repeat() ? -1 : 1);
-      KeyEvent key = new KeyEvent(keyEvent.scancode(), keyEvent.key(), keyEvent.mod());
-      this.minecraft.execute(() -> this.minecraft.keyboardHandler.keyPress(getWindowHandle(event), action, key));
+      Integer action = getKeyAction(keyEvent);
+      if (action != null) {
+         KeyEvent key = new KeyEvent(keyEvent.scancode(), keyEvent.key(), keyEvent.mod());
+         this.minecraft.execute(() -> this.minecraft.keyboardHandler.keyPress(getWindowHandle(event), action, key));
+      }
+   }
+
+   private static @Nullable Integer getKeyAction(final SDL_KeyboardEvent event) {
+      boolean released = event.type() == 769;
+      if (MacosUtil.IS_MACOS && event.scancode() == 57) {
+         return released ? null : (event.mod() & 8192) != 0 ? 1 : 0;
+      } else {
+         return released ? 0 : (event.repeat() ? -1 : 1);
+      }
    }
 
    private void handleTextInputEvent(final SDL_Event event) {

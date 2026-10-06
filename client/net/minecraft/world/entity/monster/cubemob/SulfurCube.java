@@ -721,7 +721,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             Vec3 pushDirection = cubeToPusher.horizontal().normalize().scale(knockback);
             float pushSpeedScale = player.isPassenger() ? 0.16F : 0.3F;
             double playerSpeed = player.getKnownSpeed().length() * 2.0 * (double)pushSpeedScale;
-            playerSpeed = Mth.clamp(playerSpeed, 0.0, 0.5);
+            playerSpeed = Math.clamp(playerSpeed, 0.0, 0.5);
             Vec3 pushVelocity = (new Vec3(pushDirection.x, this.onGround() ? knockback * 0.30000001192092896 : 0.0, pushDirection.z)).scale(playerSpeed);
             this.needsSync = true;
             float push_sound_threshold = this.soundSettings.pushSoundImpulseThreshold();
@@ -803,8 +803,8 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          verticalPower *= (float)(1.0 - knockBackResistance);
          this.needsSync = true;
          horizontalPower *= 0.4F;
-         horizontalPower = Mth.clamp(horizontalPower, -128.0F, 128.0F);
-         verticalPower = Mth.clamp(verticalPower, -128.0F, 128.0F);
+         horizontalPower = Math.clamp(horizontalPower, -128.0F, 128.0F);
+         verticalPower = Math.clamp(verticalPower, -128.0F, 128.0F);
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
          this.addDeltaMovement(-horizontalKnockback.x, (double)verticalPower * 1.2, -horizontalKnockback.z);
          this.playSound(hitSound.value());

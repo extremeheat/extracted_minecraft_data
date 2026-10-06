@@ -278,6 +278,10 @@ public class SectionRenderDispatcher {
          return this.getSectionMesh().hasTranslucentGeometry();
       }
 
+      public boolean hasCompileTaskScheduled() {
+         return this.lastCompileTask != null && !this.lastCompileTask.isCompleted.get();
+      }
+
       public boolean transparencyResortingScheduled() {
          return this.lastResortTransparencyTask != null && !this.lastResortTransparencyTask.isCompleted.get();
       }

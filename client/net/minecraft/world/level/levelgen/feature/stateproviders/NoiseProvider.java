@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,7 +38,7 @@ public class NoiseProvider extends NoiseBasedStateProvider {
    }
 
    protected BlockState getRandomState(final List<BlockState> states, final float noiseValue) {
-      float placementValue = Mth.clamp((1.0F + noiseValue) / 2.0F, 0.0F, 0.9999F);
+      float placementValue = Math.clamp((1.0F + noiseValue) / 2.0F, 0.0F, 0.9999F);
       return (BlockState)states.get((int)(placementValue * (float)states.size()));
    }
 }

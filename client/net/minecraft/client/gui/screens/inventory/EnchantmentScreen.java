@@ -207,10 +207,10 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          this.open -= 0.2F;
       }
 
-      this.open = Mth.clamp(this.open, 0.0F, 1.0F);
+      this.open = Math.clamp(this.open, 0.0F, 1.0F);
       float diff = (this.flipT - this.flip) * 0.4F;
       float max = 0.2F;
-      diff = Mth.clamp(diff, -0.2F, 0.2F);
+      diff = Math.clamp(diff, -0.2F, 0.2F);
       this.flipA += (diff - this.flipA) * 0.9F;
       this.flip += this.flipA;
    }

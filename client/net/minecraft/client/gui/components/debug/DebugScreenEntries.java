@@ -20,7 +20,9 @@ public class DebugScreenEntries {
    public static final Identifier LOOKING_AT_ENTITY = register((String)"looking_at_entity", new DebugEntryLookingAtEntity());
    public static final Identifier LOOKING_AT_ENTITY_TAGS = register((String)"looking_at_entity_tags", new DebugEntryLookingAtEntityTags());
    public static final Identifier CHUNK_RENDER_STATS = register((String)"chunk_render_stats", new DebugEntryChunkRenderStats());
+   public static final Identifier CHUNK_SECTION_STATUS = register((String)"chunk_section_status", new DebugEntryChunkSectionStatus());
    public static final Identifier CHUNK_GENERATION_STATS = register((String)"chunk_generation_stats", new DebugEntryChunkGeneration());
+   public static final Identifier CHUNK_LOAD_STATUS = register((String)"chunk_load_status", new DebugEntryChunkLoadStatus());
    public static final Identifier ENTITY_RENDER_STATS = register((String)"entity_render_stats", new DebugEntryEntityRenderStats());
    public static final Identifier PARTICLE_RENDER_STATS = register((String)"particle_render_stats", new DebugEntryParticleRenderStats());
    public static final Identifier CHUNK_SOURCE_STATS = register((String)"chunk_source_stats", new DebugEntryChunkSourceStats());
@@ -28,6 +30,7 @@ public class DebugScreenEntries {
    public static final Identifier PLAYER_SECTION_POSITION = register((String)"player_section_position", new DebugEntrySectionPosition());
    public static final Identifier PLAYER_SPEED = register((String)"player_speed", new DebugEntryPlayerSpeed());
    public static final Identifier LIGHT_LEVELS = register((String)"light_levels", new DebugEntryLight());
+   public static final Identifier LIGHTMAP_TEXTURE = register((String)"lightmap_texture", new DebugEntryLightmapTexture());
    public static final Identifier HEIGHTMAP = register((String)"heightmap", new DebugEntryHeightmap());
    public static final Identifier BIOME = register((String)"biome", new DebugEntryBiome());
    public static final Identifier LOCAL_DIFFICULTY = register((String)"local_difficulty", new DebugEntryLocalDifficulty());

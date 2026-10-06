@@ -204,9 +204,9 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       if (this.level().isClientSide()) {
          this.holdingItemAnimationTicks0 = this.holdingItemAnimationTicks;
          if (this.hasItemInHand()) {
-            this.holdingItemAnimationTicks = Mth.clamp(this.holdingItemAnimationTicks + 1.0F, 0.0F, 5.0F);
+            this.holdingItemAnimationTicks = Math.clamp(this.holdingItemAnimationTicks + 1.0F, 0.0F, 5.0F);
          } else {
-            this.holdingItemAnimationTicks = Mth.clamp(this.holdingItemAnimationTicks - 1.0F, 0.0F, 5.0F);
+            this.holdingItemAnimationTicks = Math.clamp(this.holdingItemAnimationTicks - 1.0F, 0.0F, 5.0F);
          }
 
          if (this.isDancing()) {
@@ -218,7 +218,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
                --this.spinningAnimationTicks;
             }
 
-            this.spinningAnimationTicks = Mth.clamp(this.spinningAnimationTicks, 0.0F, 15.0F);
+            this.spinningAnimationTicks = Math.clamp(this.spinningAnimationTicks, 0.0F, 15.0F);
          } else {
             this.dancingAnimationTicks = 0.0F;
             this.spinningAnimationTicks = 0.0F;

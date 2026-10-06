@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -38,7 +39,7 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
          this.extractSlot(graphics, xo + 7, yo + 35);
       }
 
-      InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 18, xo + 78, yo + 70, 17, 0.25F, this.xMouse, this.yMouse, this.mount);
+      EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 18, xo + 78, yo + 70, 17.0F, 0.25F, this.xMouse, this.yMouse, this.mount);
    }
 
    protected void extractSlot(final GuiGraphicsExtractor graphics, final int x, final int y) {

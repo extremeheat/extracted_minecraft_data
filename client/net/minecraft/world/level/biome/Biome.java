@@ -21,7 +21,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.InclusiveRange;
-import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.world.attribute.EnvironmentAttribute;
@@ -252,8 +251,8 @@ public final class Biome {
    }
 
    private int getGrassColorFromTexture() {
-      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      double temp = (double)Math.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Math.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return GrassColor.get(temp, rain);
    }
 
@@ -262,8 +261,8 @@ public final class Biome {
    }
 
    private int getFoliageColorFromTexture() {
-      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      double temp = (double)Math.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Math.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return FoliageColor.get(temp, rain);
    }
 
@@ -272,8 +271,8 @@ public final class Biome {
    }
 
    private int getDryFoliageColorFromTexture() {
-      double temp = (double)Mth.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
-      double rain = (double)Mth.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
+      double temp = (double)Math.clamp(this.climateSettings.temperature, 0.0F, 1.0F);
+      double rain = (double)Math.clamp(this.climateSettings.downfall, 0.0F, 1.0F);
       return DryFoliageColor.get(temp, rain);
    }
 

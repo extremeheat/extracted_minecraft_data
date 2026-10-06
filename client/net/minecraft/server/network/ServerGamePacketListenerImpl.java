@@ -441,11 +441,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private static double clampHorizontal(final double value) {
-      return Mth.clamp(value, -3.0E7, 3.0E7);
+      return Math.clamp(value, -3.0E7, 3.0E7);
    }
 
    private static double clampVertical(final double value) {
-      return Mth.clamp(value, -2.0E7, 2.0E7);
+      return Math.clamp(value, -2.0E7, 2.0E7);
    }
 
    public void handleMoveVehicle(final ServerboundMoveVehiclePacket packet) {

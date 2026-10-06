@@ -24,7 +24,7 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb, Experie
    }
 
    protected int getBlockLightLevel(final ExperienceOrb entity, final BlockPos blockPos) {
-      return Mth.clamp(super.getBlockLightLevel(entity, blockPos) + 7, 0, 15);
+      return Math.clamp((long)(super.getBlockLightLevel(entity, blockPos) + 7), 0, 15);
    }
 
    public void submit(final ExperienceOrbRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {

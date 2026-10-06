@@ -93,6 +93,7 @@ public class BiomeTags {
    public static final TagKey<Biome> ALLOWS_SURFACE_SLIME_SPAWNS = create("allows_surface_slime_spawns");
    public static final TagKey<Biome> SPAWNS_SNOW_FOXES = create("spawns_snow_foxes");
    public static final TagKey<Biome> SPAWNS_CORAL_VARIANT_ZOMBIE_NAUTILUS = create("spawns_coral_variant_zombie_nautilus");
+   public static final TagKey<Biome> SPAWNS_STRAYS_WITHOUT_POWDER_SNOW = create("spawns_strays_without_powder_snow");
 
    private BiomeTags() {
       super();

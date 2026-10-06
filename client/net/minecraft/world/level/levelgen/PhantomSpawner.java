@@ -5,7 +5,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -40,7 +39,7 @@ public class PhantomSpawner implements CustomSpawner {
                            DifficultyInstance difficulty = level.getCurrentDifficultyAt(playerPos);
                            if (difficulty.isHarderThan(random.nextFloat() * 3.0F)) {
                               ServerStatsCounter stats = player.getStats();
-                              int value = Mth.clamp(stats.getValue(Stats.CUSTOM.get(Stats.TIME_SINCE_REST)), 1, 2147483647);
+                              int value = Math.clamp((long)stats.getValue(Stats.CUSTOM.get(Stats.TIME_SINCE_REST)), 1, 2147483647);
                               int dayLength = 24000;
                               if (random.nextInt(value) >= 72000) {
                                  BlockPos spawnPos = playerPos.above(20 + random.nextInt(15)).east(-10 + random.nextInt(21)).south(-10 + random.nextInt(21));

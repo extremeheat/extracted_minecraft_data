@@ -10,6 +10,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
+import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
@@ -75,6 +76,14 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(-1.9F, 12.0F + yOffset, 0.0F));
       root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).mirror().addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(1.9F, 12.0F + yOffset, 0.0F));
       return mesh;
+   }
+
+   public static LayerDefinition createBodyLayerWithCustomLeftArmsAndLegs(final CubeDeformation g) {
+      MeshDefinition mesh = createMesh(g, 0.0F);
+      PartDefinition root = mesh.getRoot();
+      root.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(5.0F, 2.0F, 0.0F));
+      root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(16, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, g), PartPose.offset(1.9F, 12.0F, 0.0F));
+      return LayerDefinition.create(mesh, 64, 64);
    }
 
    public static ArmorModelSet<MeshDefinition> createArmorMeshSet(final CubeDeformation innerDeformation, final CubeDeformation outerDeformation) {
@@ -280,11 +289,11 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, true);
             break;
          case 7:
-            this.rightArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
+            this.rightArm.xRot = Math.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
             this.rightArm.yRot = this.head.yRot - 0.2617994F;
             break;
          case 8:
-            this.rightArm.xRot = Mth.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
+            this.rightArm.xRot = Math.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
             this.rightArm.yRot = this.head.yRot - 0.5235988F;
             break;
          case 9:
@@ -326,11 +335,11 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             AnimationUtils.animateCrossbowHold(this.rightArm, this.leftArm, this.head, false);
             break;
          case 7:
-            this.leftArm.xRot = Mth.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
+            this.leftArm.xRot = Math.clamp(this.head.xRot - 1.9198622F - (state.isCrouching ? 0.2617994F : 0.0F), -2.4F, 3.3F);
             this.leftArm.yRot = this.head.yRot + 0.2617994F;
             break;
          case 8:
-            this.leftArm.xRot = Mth.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
+            this.leftArm.xRot = Math.clamp(this.head.xRot, -1.2F, 1.2F) - 1.4835298F;
             this.leftArm.yRot = this.head.yRot + 0.5235988F;
             break;
          case 9:
@@ -344,8 +353,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    }
 
    private void poseBlockingArm(final ModelPart arm, final boolean right) {
-      arm.xRot = arm.xRot * 0.5F - 0.9424779F + Mth.clamp(this.head.xRot, -1.3962634F, 0.43633232F);
-      arm.yRot = (right ? -30.0F : 30.0F) * 0.017453292F + Mth.clamp(this.head.yRot, -0.5235988F, 0.5235988F);
+      arm.xRot = arm.xRot * 0.5F - 0.9424779F + Math.clamp(this.head.xRot, -1.3962634F, 0.43633232F);
+      arm.yRot = (right ? -30.0F : 30.0F) * 0.017453292F + Math.clamp(this.head.yRot, -0.5235988F, 0.5235988F);
    }
 
    protected void setupAttackAnimation(final T state) {

@@ -208,7 +208,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
             Optional<R> section = Optional.ofNullable(packedChunk.sectionsByY.get(sectionY)).map((packed) -> this.unpacker.apply(packed, (Runnable)() -> this.setDirty(key)));
             this.storage.put(key, section);
             section.ifPresent((s) -> {
-               this.onSectionLoad(key);
+               this.onSectionLoad(s, key);
                if (versionChanged) {
                   this.setDirty(key);
                }
@@ -256,7 +256,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
       return SectionPos.asLong(chunkPos.x(), sectionY, chunkPos.z());
    }
 
-   protected void onSectionLoad(final long sectionPos) {
+   protected void onSectionLoad(final R r, final long sectionPos) {
    }
 
    protected void setDirty(final long sectionPos) {

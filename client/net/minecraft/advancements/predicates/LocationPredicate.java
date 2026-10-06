@@ -31,7 +31,7 @@ public record LocationPredicate(Optional<PositionPredicate> position, Optional<H
          BlockPos pos = BlockPos.containing(x, y, z);
          boolean loaded = level.isLoaded(pos);
          if (!this.biomes.isPresent() || loaded && ((HolderSet)this.biomes.get()).contains(level.getBiome(pos))) {
-            if (!this.structures.isPresent() || loaded && level.structureManager().getStructureWithPieceAt(pos, (HolderSet)this.structures.get()).isValid()) {
+            if (!this.structures.isPresent() || loaded && level.structureManager().getStructureWithPieceAt(pos, (HolderSet)this.structures.get()) != null) {
                if (!this.smokey.isPresent() || loaded && (Boolean)this.smokey.get() == CampfireBlock.isSmokeyPos(level, pos)) {
                   if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(level, pos)) {
                      return false;

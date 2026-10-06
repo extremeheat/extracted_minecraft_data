@@ -26,6 +26,7 @@ public class ScrollableLayout implements Layout {
    private int minWidth;
    private int minHeight;
    private int maxHeight;
+   private float yAlignment;
 
    public ScrollableLayout(final Minecraft minecraft, final Layout content, final int maxHeight) {
       this(minecraft, content, maxHeight, ScrollableLayout.ReserveStrategy.BOTH);
@@ -58,6 +59,22 @@ public class ScrollableLayout implements Layout {
       this.maxHeight = maxHeight;
       this.container.setHeight(Math.min(this.content.getHeight(), maxHeight));
       this.container.refreshScrollAmount();
+   }
+
+   public void alignVertically(final float yAlignment) {
+      this.yAlignment = yAlignment;
+   }
+
+   public void alignVerticallyTop() {
+      this.alignVertically(0.0F);
+   }
+
+   public void alignVerticallyMiddle() {
+      this.alignVertically(0.5F);
+   }
+
+   public void alignVerticallyBottom() {
+      this.alignVertically(1.0F);
    }
 
    public void arrangeElements() {
@@ -179,9 +196,14 @@ public class ScrollableLayout implements Layout {
          ScrollableLayout.this.content.setX(x + (ScrollableLayout.this.reserveStrategy == ScrollableLayout.ReserveStrategy.BOTH ? this.scrollbarReserve() : 0));
       }
 
+      private int verticalOffset() {
+         int remainingHeight = this.height - this.contentHeight();
+         return Math.round(ScrollableLayout.this.yAlignment * (float)remainingHeight) - (int)this.scrollAmount();
+      }
+
       public void setY(final int y) {
          super.setY(y);
-         ScrollableLayout.this.content.setY(y - (int)this.scrollAmount());
+         ScrollableLayout.this.content.setY(y + this.verticalOffset());
       }
 
       private int scrollbarReserve() {
@@ -190,7 +212,7 @@ public class ScrollableLayout implements Layout {
 
       public void setScrollAmount(final double scrollAmount) {
          super.setScrollAmount(scrollAmount);
-         ScrollableLayout.this.content.setY(this.getRectangle().top() - (int)this.scrollAmount());
+         ScrollableLayout.this.content.setY(this.getRectangle().top() + this.verticalOffset());
       }
 
       public List<? extends GuiEventListener> children() {

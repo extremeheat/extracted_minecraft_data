@@ -252,7 +252,7 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       double camY = cameraPos.y();
       double camZ = cameraPos.z();
       TickRateManager tickRateManager = this.minecraft.level.tickRateManager();
-      Entity.setViewScale(Mth.clamp((double)this.minecraft.options.getEffectiveRenderDistance() / 8.0, 1.0, 2.5) * (Double)this.minecraft.options.entityDistanceScaling().get());
+      Entity.setViewScale(Math.clamp((double)this.minecraft.options.getEffectiveRenderDistance() / 8.0, 1.0, 2.5) * (Double)this.minecraft.options.entityDistanceScaling().get());
       long chunkFadeDuration = Util.toMillis((Double)this.minecraft.options.chunkSectionFadeInTime().get());
 
       for(Entity entity : this.level.entitiesForRendering()) {

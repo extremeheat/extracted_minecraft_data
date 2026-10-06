@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -163,7 +163,7 @@ public class PostChain implements AutoCloseable {
                            var39 = var62;
                            if (true) {
                               boolean bilinear = (boolean)var39;
-                              AbstractTexture var42 = textureManager.getTexture(location.withPath((UnaryOperator)((path) -> "textures/effect/" + path + ".png")));
+                              TextureHandle var42 = textureManager.getTexture(location.withPath((UnaryOperator)((path) -> "textures/effect/" + path + ".png")));
                               inputs.add(new PostPass.TextureInput(samplerName, var42, width, height, bilinear));
                               continue label117;
                            }

@@ -112,6 +112,11 @@ public class ModelLayers {
    public static final ModelLayerLocation FOX = register("fox");
    public static final ModelLayerLocation FOX_BABY = register("fox_baby");
    public static final ModelLayerLocation FROG = register("frog");
+   public static final ModelLayerLocation FROSTBITE = register("frostbite");
+   public static final ModelLayerLocation FROSTBITE_BABY = register("frostbite_baby");
+   public static final ArmorModelSet<ModelLayerLocation> FROSTBITE_ARMOR = registerArmorSet("frostbite");
+   public static final ArmorModelSet<ModelLayerLocation> FROSTBITE_BABY_ARMOR = registerArmorSet("frostbite_baby");
+   public static final ModelLayerLocation FROSTBITE_OUTER_LAYER = register("frostbite", "outer");
    public static final ModelLayerLocation FURNACE_MINECART = register("furnace_minecart");
    public static final ModelLayerLocation GHAST = register("ghast");
    public static final ModelLayerLocation GIANT = register("giant");

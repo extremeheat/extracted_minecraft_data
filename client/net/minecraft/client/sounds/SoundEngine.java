@@ -33,7 +33,6 @@ import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -100,7 +99,7 @@ public class SoundEngine {
       ONLY_WARN_ONCE.clear();
 
       for(SoundEvent sound : BuiltInRegistries.SOUND_EVENT) {
-         if (sound != SoundEvents.EMPTY) {
+         if (sound != SoundEvents.EMPTY.value()) {
             Identifier location = sound.location();
             if (this.soundManager.getSoundEvent(location) == null) {
                LOGGER.warn("Missing sound for event: {}", BuiltInRegistries.SOUND_EVENT.getKey(sound));
@@ -173,7 +172,7 @@ public class SoundEngine {
    }
 
    public void updateCategoryVolume(final SoundSource source, final float gain) {
-      this.gainBySource.put(source, Mth.clamp(gain, 0.0F, 1.0F));
+      this.gainBySource.put(source, Math.clamp(gain, 0.0F, 1.0F));
       this.refreshCategoryVolume(source);
    }
 
@@ -495,7 +494,7 @@ public class SoundEngine {
    }
 
    private float calculatePitch(final SoundInstance instance) {
-      return Mth.clamp(instance.getPitch(), 0.5F, 2.0F);
+      return Math.clamp(instance.getPitch(), 0.5F, 2.0F);
    }
 
    private float calculateVolume(final SoundInstance instance) {
@@ -503,7 +502,7 @@ public class SoundEngine {
    }
 
    private float calculateVolume(final float volume, final SoundSource source) {
-      return Mth.clamp(volume, 0.0F, 1.0F) * Mth.clamp(this.options.getFinalSoundSourceVolume(source), 0.0F, 1.0F) * this.gainBySource.getFloat(source);
+      return Math.clamp(volume, 0.0F, 1.0F) * Math.clamp(this.options.getFinalSoundSourceVolume(source), 0.0F, 1.0F) * this.gainBySource.getFloat(source);
    }
 
    public void pauseAllExcept(final SoundSource... ignoredSources) {

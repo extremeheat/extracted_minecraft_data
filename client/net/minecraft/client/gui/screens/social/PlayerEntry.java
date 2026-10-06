@@ -1,220 +1,43 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.google.common.collect.ImmutableList;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.mojang.authlib.services.response.PresenceStatus;
 import java.util.UUID;
 import java.util.function.Supplier;
-import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.PlayerFaceExtractor;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
-import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.gui.screens.friends.FriendEntry;
+import net.minecraft.client.gui.screens.friends.FriendsListActions;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.PlayerSkin;
-import org.jspecify.annotations.Nullable;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry> {
-   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
-   private static final Duration TOOLTIP_DELAY = Duration.ofMillis(500L);
-   private static final WidgetSprites REPORT_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/report_button"), Identifier.withDefaultNamespace("social_interactions/report_button_disabled"), Identifier.withDefaultNamespace("social_interactions/report_button_highlighted"));
-   private static final WidgetSprites MUTE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/mute_button"), Identifier.withDefaultNamespace("social_interactions/mute_button_highlighted"));
-   private static final WidgetSprites UNMUTE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("social_interactions/unmute_button"), Identifier.withDefaultNamespace("social_interactions/unmute_button_highlighted"));
-   private final Minecraft minecraft;
-   private final List<AbstractWidget> children;
-   private final UUID id;
-   private final String playerName;
-   private final Supplier<PlayerSkin> skinGetter;
+public class PlayerEntry extends FriendEntry {
+   private final MutableBoolean hasRecentMessages;
    private boolean isRemoved;
-   private boolean hasRecentMessages;
-   private final boolean reportingEnabled;
-   private boolean hasDraftReport;
-   private final boolean chatReportable;
-   private @Nullable Button hideButton;
-   private @Nullable Button showButton;
-   private @Nullable Button reportButton;
-   private float tooltipHoverTime;
-   private static final Component HIDDEN;
-   private static final Component BLOCKED;
-   private static final Component OFFLINE;
-   private static final Component HIDDEN_OFFLINE;
-   private static final Component BLOCKED_OFFLINE;
-   private static final Component REPORT_DISABLED_TOOLTIP;
-   private static final Component HIDE_TEXT_TOOLTIP;
-   private static final Component SHOW_TEXT_TOOLTIP;
-   private static final Component REPORT_PLAYER_TOOLTIP;
-   private static final int SKIN_SIZE = 24;
-   private static final int PADDING = 4;
-   public static final int SKIN_SHADE;
-   private static final int CHAT_TOGGLE_ICON_SIZE = 20;
-   public static final int BG_FILL;
-   public static final int BG_FILL_REMOVED;
-   public static final int PLAYERNAME_COLOR;
-   public static final int PLAYER_STATUS_COLOR;
+   public static final int SKIN_SHADE = ARGB.color(190, 0, 0, 0);
 
-   public PlayerEntry(final Minecraft minecraft, final SocialInteractionsScreen socialInteractionsScreen, final UUID id, final String playerName, final Supplier<PlayerSkin> skinGetter, final boolean chatReportable) {
-      super();
-      this.minecraft = minecraft;
-      this.id = id;
-      this.playerName = playerName;
-      this.skinGetter = skinGetter;
-      ReportingContext reportingContext = minecraft.getReportingContext();
-      this.reportingEnabled = reportingContext.sender().isEnabled();
-      this.chatReportable = chatReportable;
-      this.refreshHasDraftReport(reportingContext);
-      Component hideNarration = Component.translatable("gui.socialInteractions.narration.hide", playerName);
-      Component showNarration = Component.translatable("gui.socialInteractions.narration.show", playerName);
-      PlayerSocialManager socialManager = minecraft.getPlayerSocialManager();
-      boolean chatDisabledOrBlocked = !minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(id);
-      boolean notLocalPlayer = !minecraft.player.getUUID().equals(id);
-      if (!SharedConstants.DEBUG_SOCIAL_INTERACTIONS && !notLocalPlayer) {
-         this.children = ImmutableList.of();
-      } else {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (button) -> reportingContext.draftReportHandled(minecraft, socialInteractionsScreen, () -> minecraft.gui.setScreen(new ReportPlayerScreen(socialInteractionsScreen, reportingContext, this, chatDisabledOrBlocked)), false), Component.translatable("gui.socialInteractions.report")) {
-            {
-               Objects.requireNonNull(PlayerEntry.this);
-            }
-
-            protected MutableComponent createNarrationMessage() {
-               return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
-            }
-         };
-         this.reportButton.active = this.reportingEnabled;
-         this.reportButton.setTooltip(this.createReportButtonTooltip());
-         this.reportButton.setTooltipDelay(TOOLTIP_DELAY);
-         this.hideButton = new ImageButton(0, 0, 20, 20, MUTE_BUTTON_SPRITES, (button) -> {
-            socialManager.hidePlayer(id);
-            this.onHiddenOrShown(true, Component.translatable("gui.socialInteractions.hidden_in_chat", playerName));
-         }, Component.translatable("gui.socialInteractions.hide")) {
-            {
-               Objects.requireNonNull(PlayerEntry.this);
-            }
-
-            protected MutableComponent createNarrationMessage() {
-               return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
-            }
-         };
-         this.hideButton.setTooltip(Tooltip.create(HIDE_TEXT_TOOLTIP, hideNarration));
-         this.hideButton.setTooltipDelay(TOOLTIP_DELAY);
-         this.showButton = new ImageButton(0, 0, 20, 20, UNMUTE_BUTTON_SPRITES, (button) -> {
-            socialManager.showPlayer(id);
-            this.onHiddenOrShown(false, Component.translatable("gui.socialInteractions.shown_in_chat", playerName));
-         }, Component.translatable("gui.socialInteractions.show")) {
-            {
-               Objects.requireNonNull(PlayerEntry.this);
-            }
-
-            protected MutableComponent createNarrationMessage() {
-               return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
-            }
-         };
-         this.showButton.setTooltip(Tooltip.create(SHOW_TEXT_TOOLTIP, showNarration));
-         this.showButton.setTooltipDelay(TOOLTIP_DELAY);
-         this.children = new ArrayList();
-         this.children.add(this.hideButton);
-         this.children.add(this.reportButton);
-         this.updateHideAndShowButton(socialManager.isHidden(this.id));
-      }
-
+   private PlayerEntry(final Minecraft minecraft, final SocialInteractionsScreen socialInteractionsScreen, final UUID id, final String playerName, final PlayerSocialManager.Visibility visibility, final Supplier<PlayerSkin> skinGetter, final boolean chatReportable, final MutableBoolean hasRecentMessages) {
+      super(minecraft, socialInteractionsScreen.getListContentWidth(), id, playerName, new PlayerStatus(PresenceStatus.ONLINE, visibility), () -> minecraft.gui.setScreen(new PlayerOptionsScreen(socialInteractionsScreen, id, playerName, new FriendsListActions(minecraft), skinGetter, true, chatReportable, hasRecentMessages.isTrue())));
+      this.hasRecentMessages = hasRecentMessages;
    }
 
-   public void refreshHasDraftReport(final ReportingContext reportingContext) {
-      this.hasDraftReport = reportingContext.hasDraftReportFor(this.id);
+   public PlayerEntry(final Minecraft minecraft, final SocialInteractionsScreen socialInteractionsScreen, final UUID id, final String playerName, final PlayerSocialManager.Visibility visibility, final Supplier<PlayerSkin> skinGetter, final boolean chatReportable) {
+      this(minecraft, socialInteractionsScreen, id, playerName, visibility, skinGetter, chatReportable, new MutableBoolean());
    }
 
-   private Tooltip createReportButtonTooltip() {
-      return !this.reportingEnabled ? Tooltip.create(REPORT_DISABLED_TOOLTIP) : Tooltip.create(REPORT_PLAYER_TOOLTIP, Component.translatable("gui.socialInteractions.narration.report", this.playerName));
-   }
-
-   public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
-      int skinX = this.getContentX() + 4;
-      int skinY = this.getContentY() + (this.getContentHeight() - 24) / 2;
-      int textStartX = skinX + 24 + 4;
-      Component status = this.getStatusComponent();
-      int textStartY;
-      if (status == CommonComponents.EMPTY) {
-         graphics.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL);
-         int var10000 = this.getContentY();
-         int var10001 = this.getContentHeight();
-         Objects.requireNonNull(this.minecraft.font);
-         textStartY = var10000 + (var10001 - 9) / 2;
-      } else {
-         graphics.fill(this.getContentX(), this.getContentY(), this.getContentRight(), this.getContentBottom(), BG_FILL_REMOVED);
-         int var12 = this.getContentY();
-         int var13 = this.getContentHeight();
-         Objects.requireNonNull(this.minecraft.font);
-         Objects.requireNonNull(this.minecraft.font);
-         textStartY = var12 + (var13 - (9 + 9)) / 2;
-         graphics.text(this.minecraft.font, status, textStartX, textStartY + 12, PLAYER_STATUS_COLOR);
-      }
-
-      PlayerFaceExtractor.extractRenderState(graphics, (PlayerSkin)((PlayerSkin)this.skinGetter.get()), skinX, skinY, 24);
-      graphics.text(this.minecraft.font, this.playerName, textStartX, textStartY, PLAYERNAME_COLOR);
+   protected void extractPlayerFace(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      super.extractPlayerFace(graphics, mouseX, mouseY, a);
       if (this.isRemoved) {
+         int skinX = this.playerFaceWidget.getX() + 1;
+         int skinY = this.playerFaceWidget.getY() + 1;
          graphics.fill(skinX, skinY, skinX + 24, skinY + 24, SKIN_SHADE);
       }
 
-      if (this.hideButton != null && this.showButton != null && this.reportButton != null) {
-         float lastHoverTime = this.tooltipHoverTime;
-         this.hideButton.setX(this.getContentX() + (this.getContentWidth() - this.hideButton.getWidth() - 4) - 20 - 4);
-         this.hideButton.setY(this.getContentY() + (this.getContentHeight() - this.hideButton.getHeight()) / 2);
-         this.hideButton.extractRenderState(graphics, mouseX, mouseY, a);
-         this.showButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4) - 20 - 4);
-         this.showButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.showButton.extractRenderState(graphics, mouseX, mouseY, a);
-         this.reportButton.setX(this.getContentX() + (this.getContentWidth() - this.showButton.getWidth() - 4));
-         this.reportButton.setY(this.getContentY() + (this.getContentHeight() - this.showButton.getHeight()) / 2);
-         this.reportButton.extractRenderState(graphics, mouseX, mouseY, a);
-         if (lastHoverTime == this.tooltipHoverTime) {
-            this.tooltipHoverTime = 0.0F;
-         }
-      }
-
-      if (this.hasDraftReport && this.reportButton != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.reportButton.getX() + 5, this.reportButton.getY() + 1, 15, 15);
-      }
-
-   }
-
-   public List<? extends GuiEventListener> children() {
-      return this.children;
-   }
-
-   public List<? extends NarratableEntry> narratables() {
-      return this.children;
-   }
-
-   public String getPlayerName() {
-      return this.playerName;
-   }
-
-   public UUID getPlayerId() {
-      return this.id;
-   }
-
-   public Supplier<PlayerSkin> getSkinGetter() {
-      return this.skinGetter;
    }
 
    public void setRemoved(final boolean isRemoved) {
       this.isRemoved = isRemoved;
+      this.statusWidget.applyPresence(isRemoved ? PresenceStatus.OFFLINE : PresenceStatus.ONLINE);
    }
 
    public boolean isRemoved() {
@@ -222,64 +45,14 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
    }
 
    public void setHasRecentMessages(final boolean hasRecentMessages) {
-      this.hasRecentMessages = hasRecentMessages;
+      this.hasRecentMessages.setValue(hasRecentMessages);
    }
 
-   public boolean hasRecentMessages() {
-      return this.hasRecentMessages;
-   }
-
-   public boolean isChatReportable() {
-      return this.chatReportable;
-   }
-
-   private void onHiddenOrShown(final boolean isHidden, final Component message) {
-      this.updateHideAndShowButton(isHidden);
-      this.minecraft.gui.hud.getChat().addClientSystemMessage(message);
-      this.minecraft.getNarrator().saySystemNow(message);
-   }
-
-   private void updateHideAndShowButton(final boolean isHidden) {
-      this.showButton.setVisible(isHidden);
-      this.hideButton.setVisible(!isHidden);
-      this.children.set(0, isHidden ? this.showButton : this.hideButton);
-   }
-
-   private MutableComponent getEntryNarationMessage(final MutableComponent buttonNarrationMessage) {
-      Component status = this.getStatusComponent();
-      return status == CommonComponents.EMPTY ? Component.literal(this.playerName).append(", ").append((Component)buttonNarrationMessage) : Component.literal(this.playerName).append(", ").append(status).append(", ").append((Component)buttonNarrationMessage);
-   }
-
-   private Component getStatusComponent() {
-      boolean isHidden = this.minecraft.getPlayerSocialManager().isHidden(this.id);
-      boolean isBlocked = this.minecraft.getPlayerSocialManager().isBlocked(this.id);
-      if (isBlocked && this.isRemoved) {
-         return BLOCKED_OFFLINE;
-      } else if (isHidden && this.isRemoved) {
-         return HIDDEN_OFFLINE;
-      } else if (isBlocked) {
-         return BLOCKED;
-      } else if (isHidden) {
-         return HIDDEN;
+   public int prioritySortOrder() {
+      if (this.minecraft.getReportingContext().hasDraftReportFor(this.playerId)) {
+         return 0;
       } else {
-         return this.isRemoved ? OFFLINE : CommonComponents.EMPTY;
+         return this.playerId.version() == 2 ? 2 : 1;
       }
-   }
-
-   static {
-      HIDDEN = Component.translatable("gui.socialInteractions.status_hidden").withStyle(ChatFormatting.ITALIC);
-      BLOCKED = Component.translatable("gui.socialInteractions.status_blocked").withStyle(ChatFormatting.ITALIC);
-      OFFLINE = Component.translatable("gui.socialInteractions.status_offline").withStyle(ChatFormatting.ITALIC);
-      HIDDEN_OFFLINE = Component.translatable("gui.socialInteractions.status_hidden_offline").withStyle(ChatFormatting.ITALIC);
-      BLOCKED_OFFLINE = Component.translatable("gui.socialInteractions.status_blocked_offline").withStyle(ChatFormatting.ITALIC);
-      REPORT_DISABLED_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.report.disabled");
-      HIDE_TEXT_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.hide");
-      SHOW_TEXT_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.show");
-      REPORT_PLAYER_TOOLTIP = Component.translatable("gui.socialInteractions.tooltip.report");
-      SKIN_SHADE = ARGB.color(190, 0, 0, 0);
-      BG_FILL = ARGB.color(255, 74, 74, 74);
-      BG_FILL_REMOVED = ARGB.color(255, 48, 48, 48);
-      PLAYERNAME_COLOR = ARGB.color(255, 255, 255, 255);
-      PLAYER_STATUS_COLOR = ARGB.color(140, 255, 255, 255);
    }
 }

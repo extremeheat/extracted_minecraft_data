@@ -4,7 +4,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Interval;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
@@ -62,13 +61,13 @@ public record ClampFunction(DensityFunction input, float min, float max) impleme
          this.input.sampleVolume(context, outputBuffer, volume);
 
          for(int i = 0; i < outputBuffer.size(); ++i) {
-            outputBuffer.set(i, Mth.clamp(outputBuffer.get(i), this.min, this.max));
+            outputBuffer.set(i, Math.clamp(outputBuffer.get(i), this.min, this.max));
          }
 
       }
 
       public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
-         return Mth.clamp(this.input.sampleValue(context, blockX, blockY, blockZ), this.min, this.max);
+         return Math.clamp(this.input.sampleValue(context, blockX, blockY, blockZ), this.min, this.max);
       }
    }
 }

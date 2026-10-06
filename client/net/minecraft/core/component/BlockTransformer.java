@@ -9,7 +9,6 @@ import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -116,7 +115,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
    }
 
    public static record BlockTransformData(Holder<BlockStateProvider> blockStateProvider, Holder<SoundEvent> sound, TransformParticle particle, List<Direction> disallowedFaces, Optional<ResourceKey<LootTable>> loot, DropStrategy dropStrategy, boolean updateFromNeighbors, TransformType transformType, boolean consumeOnUse, int itemDamagePerUse) {
-      public static final Codec<BlockTransformData> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter(BlockTransformData::blockStateProvider), SoundEvent.CODEC.optionalFieldOf("sound", BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY)).forGetter(BlockTransformData::sound), BlockTransformer.TransformParticle.CODEC.optionalFieldOf("particle", BlockTransformer.TransformParticle.NONE).forGetter(BlockTransformData::particle), Direction.CODEC.listOf().optionalFieldOf("disallowed_faces", List.of()).forGetter(BlockTransformData::disallowedFaces), LootTable.KEY_CODEC.optionalFieldOf("loot").forGetter(BlockTransformData::loot), BlockTransformer.DropStrategy.CODEC.optionalFieldOf("drop_strategy", BlockTransformer.DropStrategy.FROM_MIDDLE).forGetter(BlockTransformData::dropStrategy), Codec.BOOL.optionalFieldOf("update_from_neighbors", true).forGetter(BlockTransformData::updateFromNeighbors), BlockTransformer.TransformType.CODEC.optionalFieldOf("transform_type", BlockTransformer.TransformType.SINGLE_BLOCK).forGetter(BlockTransformData::transformType), Codec.BOOL.optionalFieldOf("consume_on_use", true).forGetter(BlockTransformData::consumeOnUse), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("item_damage_per_use", 0).forGetter(BlockTransformData::itemDamagePerUse)).apply(i, BlockTransformData::new));
+      public static final Codec<BlockTransformData> CODEC = RecordCodecBuilder.create((i) -> i.group(BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter(BlockTransformData::blockStateProvider), SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.EMPTY).forGetter(BlockTransformData::sound), BlockTransformer.TransformParticle.CODEC.optionalFieldOf("particle", BlockTransformer.TransformParticle.NONE).forGetter(BlockTransformData::particle), Direction.CODEC.listOf().optionalFieldOf("disallowed_faces", List.of()).forGetter(BlockTransformData::disallowedFaces), LootTable.KEY_CODEC.optionalFieldOf("loot").forGetter(BlockTransformData::loot), BlockTransformer.DropStrategy.CODEC.optionalFieldOf("drop_strategy", BlockTransformer.DropStrategy.FROM_MIDDLE).forGetter(BlockTransformData::dropStrategy), Codec.BOOL.optionalFieldOf("update_from_neighbors", true).forGetter(BlockTransformData::updateFromNeighbors), BlockTransformer.TransformType.CODEC.optionalFieldOf("transform_type", BlockTransformer.TransformType.SINGLE_BLOCK).forGetter(BlockTransformData::transformType), Codec.BOOL.optionalFieldOf("consume_on_use", true).forGetter(BlockTransformData::consumeOnUse), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("item_damage_per_use", 0).forGetter(BlockTransformData::itemDamagePerUse)).apply(i, BlockTransformData::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, BlockTransformData> STREAM_CODEC;
 
       public BlockTransformData {
@@ -153,7 +152,7 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
 
          private Builder(final Holder<BlockStateProvider> targetStateProvider) {
             super();
-            this.sound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.EMPTY);
+            this.sound = SoundEvents.EMPTY;
             this.particle = BlockTransformer.TransformParticle.NONE;
             this.disallowedFaces = List.of();
             this.loot = Optional.empty();

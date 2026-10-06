@@ -59,6 +59,7 @@ public class Noises {
    public static final ResourceKey<NormalNoise> ICEBERG_PILLAR = createKey("iceberg_pillar");
    public static final ResourceKey<NormalNoise> ICEBERG_PILLAR_ROOF = createKey("iceberg_pillar_roof");
    public static final ResourceKey<NormalNoise> ICEBERG_SURFACE = createKey("iceberg_surface");
+   public static final ResourceKey<NormalNoise> ICE_CAVE_GRADIENT = createKey("ice_cave_gradient");
    public static final ResourceKey<NormalNoise> SULFUR_CAVE_GRADIENT = createKey("sulfur_cave_gradient");
    public static final ResourceKey<NormalNoise> SWAMP = createKey("surface_swamp");
    public static final ResourceKey<NormalNoise> CALCITE = createKey("calcite");

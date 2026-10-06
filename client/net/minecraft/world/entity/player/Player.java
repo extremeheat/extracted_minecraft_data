@@ -250,8 +250,8 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.updateIsUnderwater();
       super.tick();
       int maxPositionOffset = 29999999;
-      double nx = Mth.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
-      double nz = Mth.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
+      double nx = Math.clamp(this.getX(), -2.9999999E7, 2.9999999E7);
+      double nz = Math.clamp(this.getZ(), -2.9999999E7, 2.9999999E7);
       if (nx != this.getX() || nz != this.getZ()) {
          this.setPos(nx, this.getY(), nz);
       }
@@ -674,7 +674,14 @@ public abstract class Player extends Avatar implements ContainerUser {
                }
             }
 
-            return damage == 0.0F ? false : super.hurtServer(level, source, damage);
+            if (damage == 0.0F) {
+               ItemStack item = source.getWeaponItem();
+               if (item == null || !item.is(ItemTags.KNOCKS_BACK_PLAYERS_EVEN_WITH_ZERO_DAMAGE)) {
+                  return false;
+               }
+            }
+
+            return super.hurtServer(level, source, damage);
          }
       }
    }
@@ -1409,7 +1416,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    public void giveExperiencePoints(final int i) {
       this.increaseScore(i);
       this.experienceProgress += (float)i / (float)this.getXpNeededForNextLevel();
-      this.totalExperience = Mth.clamp(this.totalExperience + i, 0, 2147483647);
+      this.totalExperience = Math.clamp((long)(this.totalExperience + i), 0, 2147483647);
 
       while(this.experienceProgress < 0.0F) {
          float remaining = this.experienceProgress * (float)this.getXpNeededForNextLevel();
@@ -1692,11 +1699,11 @@ public abstract class Player extends Avatar implements ContainerUser {
    }
 
    public float getAttackStrengthScale(final float a) {
-      return Mth.clamp(((float)this.attackStrengthTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
+      return Math.clamp(((float)this.attackStrengthTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
    }
 
    public float getItemSwapScale(final float a) {
-      return Mth.clamp(((float)this.itemSwapTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
+      return Math.clamp(((float)this.itemSwapTicker + a) / this.getCurrentItemAttackStrengthDelay(), 0.0F, 1.0F);
    }
 
    public void resetAttackStrengthTicker() {

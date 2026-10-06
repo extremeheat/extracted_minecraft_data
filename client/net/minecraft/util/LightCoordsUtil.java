@@ -43,8 +43,8 @@ public class LightCoordsUtil {
    }
 
    public static int addSmoothBlockEmission(final int lightCoords, float blockLightEmission) {
-      blockLightEmission = Mth.clamp(blockLightEmission, 0.0F, 1.0F);
-      int emittedBlock = (int)(Mth.clamp(blockLightEmission, 0.0F, 1.0F) * 240.0F);
+      blockLightEmission = Math.clamp(blockLightEmission, 0.0F, 1.0F);
+      int emittedBlock = (int)(Math.clamp(blockLightEmission, 0.0F, 1.0F) * 240.0F);
       int block = Math.min(smoothBlock(lightCoords) + emittedBlock, 240);
       return smoothPack(block, smoothSky(lightCoords));
    }

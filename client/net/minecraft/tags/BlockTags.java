@@ -128,6 +128,7 @@ public final class BlockTags {
    public static final TagKey<Block> STONE_ORE_REPLACEABLES;
    public static final TagKey<Block> HEIGHT_SPECIFIC_ORE_REPLACEABLES;
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES;
+   public static final TagKey<Block> ICE_CAVE_ORE_REPLACEABLES;
    public static final TagKey<Block> BASE_STONE_NETHER;
    public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE;
    public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE;
@@ -150,6 +151,7 @@ public final class BlockTags {
    public static final TagKey<Block> LUSH_GROUND_REPLACEABLE;
    public static final TagKey<Block> AZALEA_ROOT_REPLACEABLE;
    public static final TagKey<Block> ICE_SPIKE_REPLACEABLE;
+   public static final TagKey<Block> LARGE_ICICLE_REPLACEABLE;
    public static final TagKey<Block> FOREST_ROCK_CAN_PLACE_ON;
    public static final TagKey<Block> HUGE_BROWN_MUSHROOM_CAN_PLACE_ON;
    public static final TagKey<Block> HUGE_RED_MUSHROOM_CAN_PLACE_ON;
@@ -282,12 +284,23 @@ public final class BlockTags {
    public static final TagKey<Block> ENTITIES_CAN_TELEPORT_TO;
    public static final TagKey<Block> BLOCKS_DOLPHIN_JUMP;
    public static final TagKey<Block> ICE_MELTS_WHEN_DESTROYED_ABOVE;
+   public static final TagKey<Block> MELTS_ICICLE_ABOVE;
    public static final TagKey<Block> CAUSES_SUFFOCATION;
    public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP;
    public static final TagKey<Block> BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES;
    public static final TagKey<Block> BLOCKS_LAVA_FIRE_SPREAD;
    public static final TagKey<Block> BLOCKS_FLUID_FLOW;
    public static final TagKey<Block> WASHED_AWAY_BY_FLUIDS;
+   public static final TagKey<Block> DROP_DOWN;
+   public static final TagKey<Block> PATHFINDING_AVOID_IN_AIR;
+   public static final TagKey<Block> PATHFINDING_DAMAGE_CAUTIOUS;
+   public static final TagKey<Block> PATHFINDING_DAMAGING;
+   public static final TagKey<Block> PATHFINDING_DROP_DOWN;
+   public static final TagKey<Block> PATHFINDING_LEAVES;
+   public static final TagKey<Block> PATHFINDING_OPEN;
+   public static final TagKey<Block> PATHFINDING_POWDER_SNOW;
+   public static final TagKey<Block> PATHFINDING_RAILS;
+   public static final TagKey<Block> PATHFINDING_STICKY;
    public static final TagKey<Block> AIR;
 
    private BlockTags() {
@@ -422,6 +435,7 @@ public final class BlockTags {
       STONE_ORE_REPLACEABLES = create("stone_ore_replaceables");
       HEIGHT_SPECIFIC_ORE_REPLACEABLES = create("height_specific_ore_replaceables");
       DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
+      ICE_CAVE_ORE_REPLACEABLES = create("ice_cave_ore_replaceables");
       BASE_STONE_NETHER = create("base_stone_nether");
       BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
       BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");
@@ -444,6 +458,7 @@ public final class BlockTags {
       LUSH_GROUND_REPLACEABLE = create("lush_ground_replaceable");
       AZALEA_ROOT_REPLACEABLE = create("azalea_root_replaceable");
       ICE_SPIKE_REPLACEABLE = create("ice_spike_replaceable");
+      LARGE_ICICLE_REPLACEABLE = create("large_icicle_replaceable");
       FOREST_ROCK_CAN_PLACE_ON = create("forest_rock_can_place_on");
       HUGE_BROWN_MUSHROOM_CAN_PLACE_ON = create("huge_brown_mushroom_can_place_on");
       HUGE_RED_MUSHROOM_CAN_PLACE_ON = create("huge_red_mushroom_can_place_on");
@@ -576,12 +591,23 @@ public final class BlockTags {
       ENTITIES_CAN_TELEPORT_TO = create("entities_can_teleport_to");
       BLOCKS_DOLPHIN_JUMP = create("blocks_dolphin_jump");
       ICE_MELTS_WHEN_DESTROYED_ABOVE = create("ice_melts_when_destroyed_above");
+      MELTS_ICICLE_ABOVE = create("melts_icicle_above");
       CAUSES_SUFFOCATION = create("causes_suffocation");
       BLOCKS_MOTION_IN_HEIGHTMAP = create("blocks_motion_in_heightmap");
       BLOCKS_MOTION_IN_HEIGHTMAP_NO_LEAVES = create("blocks_motion_in_heightmap_no_leaves");
       BLOCKS_LAVA_FIRE_SPREAD = create("blocks_lava_fire_spread");
       BLOCKS_FLUID_FLOW = create("blocks_fluid_flow");
       WASHED_AWAY_BY_FLUIDS = create("washed_away_by_fluids");
+      DROP_DOWN = create("drop_down");
+      PATHFINDING_AVOID_IN_AIR = create("pathfinding/avoid_in_air");
+      PATHFINDING_DAMAGE_CAUTIOUS = create("pathfinding/damage_cautious");
+      PATHFINDING_DAMAGING = create("pathfinding/damaging");
+      PATHFINDING_DROP_DOWN = create("pathfinding/drop_down");
+      PATHFINDING_LEAVES = create("pathfinding/leaves");
+      PATHFINDING_OPEN = create("pathfinding/open");
+      PATHFINDING_POWDER_SNOW = create("pathfinding/powder_snow");
+      PATHFINDING_RAILS = create("pathfinding/rails");
+      PATHFINDING_STICKY = create("pathfinding/sticky");
       AIR = create("air");
    }
 }

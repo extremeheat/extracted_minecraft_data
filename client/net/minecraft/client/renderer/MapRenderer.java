@@ -14,7 +14,6 @@ import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -66,7 +65,7 @@ public class MapRenderer {
                float width = (float)font.width((FormattedText)decoration.name);
                float var10000 = 25.0F / width;
                Objects.requireNonNull(font);
-               float scale = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
+               float scale = Math.clamp(var10000, 0.0F, 6.0F / 9.0F);
                poseStack.pushPose();
                poseStack.translate((float)decoration.x / 2.0F + 64.0F - width * scale / 2.0F, (float)decoration.y / 2.0F + 64.0F + 4.0F, -0.025F);
                poseStack.scale(scale, scale, -1.0F);

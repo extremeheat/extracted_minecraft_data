@@ -97,7 +97,7 @@ public class WorldBorder extends SavedData {
    }
 
    public Vec3 clampVec3ToBound(final double x, final double y, final double z) {
-      return new Vec3(Mth.clamp(x, this.getMinX(), this.getMaxX() - 9.999999747378752E-6), y, Mth.clamp(z, this.getMinZ(), this.getMaxZ() - 9.999999747378752E-6));
+      return new Vec3(Math.clamp(x, this.getMinX(), this.getMaxX() - 9.999999747378752E-6), y, Math.clamp(z, this.getMinZ(), this.getMaxZ() - 9.999999747378752E-6));
    }
 
    public double getDistanceToBorder(final Entity entity) {
@@ -344,19 +344,19 @@ public class WorldBorder extends SavedData {
       }
 
       public double getMinX(final float deltaPartialTick) {
-         return Mth.clamp(WorldBorder.this.getCenterX() - Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         return Math.clamp(WorldBorder.this.getCenterX() - Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
       public double getMinZ(final float deltaPartialTick) {
-         return Mth.clamp(WorldBorder.this.getCenterZ() - Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         return Math.clamp(WorldBorder.this.getCenterZ() - Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
       public double getMaxX(final float deltaPartialTick) {
-         return Mth.clamp(WorldBorder.this.getCenterX() + Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         return Math.clamp(WorldBorder.this.getCenterX() + Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
       public double getMaxZ(final float deltaPartialTick) {
-         return Mth.clamp(WorldBorder.this.getCenterZ() + Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         return Math.clamp(WorldBorder.this.getCenterZ() + Mth.lerp((double)deltaPartialTick, this.getPreviousSize(), this.getSize()) / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
       }
 
       public double getSize() {
@@ -459,10 +459,10 @@ public class WorldBorder extends SavedData {
       }
 
       private void updateBox() {
-         this.minX = Mth.clamp(WorldBorder.this.getCenterX() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
-         this.minZ = Mth.clamp(WorldBorder.this.getCenterZ() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
-         this.maxX = Mth.clamp(WorldBorder.this.getCenterX() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
-         this.maxZ = Mth.clamp(WorldBorder.this.getCenterZ() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.minX = Math.clamp(WorldBorder.this.getCenterX() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.minZ = Math.clamp(WorldBorder.this.getCenterZ() - this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.maxX = Math.clamp(WorldBorder.this.getCenterX() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
+         this.maxZ = Math.clamp(WorldBorder.this.getCenterZ() + this.size / 2.0, (double)(-WorldBorder.this.absoluteMaxSize), (double)WorldBorder.this.absoluteMaxSize);
          this.shape = Shapes.join(Shapes.INFINITY, Shapes.box(Math.floor(this.getMinX(0.0F)), -1.0 / 0.0, Math.floor(this.getMinZ(0.0F)), Math.ceil(this.getMaxX(0.0F)), 1.0 / 0.0, Math.ceil(this.getMaxZ(0.0F))), BooleanOp.ONLY_FIRST);
       }
 

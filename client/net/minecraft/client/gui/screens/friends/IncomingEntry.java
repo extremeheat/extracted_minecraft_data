@@ -4,36 +4,35 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-class IncomingEntry extends AbstractFriendsEntryContainerWidget {
-   private static final WidgetSprites ACCEPT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/accept"), Identifier.withDefaultNamespace("friends/accept_highlighted"));
-   private static final WidgetSprites REJECT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/reject"), Identifier.withDefaultNamespace("friends/reject_highlighted"));
-   private static final Component ACCEPT_INVITE = Component.translatable("gui.friends.accept");
-   private static final Component REJECT_INVITE = Component.translatable("gui.friends.decline");
+public class IncomingEntry extends AbstractFriendsEntryContainerWidget {
+   public static final WidgetSprites ACCEPT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/accept"), Identifier.withDefaultNamespace("friends/accept_highlighted"));
+   public static final WidgetSprites REJECT_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/reject"), Identifier.withDefaultNamespace("friends/reject_highlighted"));
+   public static final int SPRITE_TEXTURE_SIZE = 18;
+   private static final int BUTTON_SPACING = 4;
+   public static final Component ACCEPT = Component.translatable("gui.friends.accept");
+   public static final Component REJECT = Component.translatable("gui.friends.decline");
+   public static final Tooltip ACCEPT_TOOLTIP = Tooltip.create(Component.translatable("gui.friends.accept.tooltip"));
+   public static final Tooltip REJECT_TOOLTIP = Tooltip.create(Component.translatable("gui.friends.decline.tooltip"));
    private final SpriteIconButton acceptButton;
    private final SpriteIconButton rejectButton;
 
-   public IncomingEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final Runnable acceptAction, final Runnable declineAction) {
-      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 16, 28, playerData);
+   public IncomingEntry(final Minecraft minecraft, final int width, final FriendsListActions friendsListActions, final PlayerSocialManager.PlayerData playerData) {
+      super(minecraft, width, playerData.id(), playerData.name());
       Button.CreateNarration acceptNarration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.accept", playerData.name()));
       Button.CreateNarration rejectNarration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.decline", playerData.name()));
-      this.acceptButton = SpriteIconButton.builder(ACCEPT_INVITE, (var2) -> {
-         screen.startFriendAction();
-         acceptAction.run();
-      }, true).size(20, 20).sprite((WidgetSprites)ACCEPT_SPRITE, 18, 18).tooltip(ACCEPT_INVITE).narration(acceptNarration).switchToLoadingAfterPress().build();
+      this.acceptButton = ((SpriteIconButton.Builder)((SpriteIconButton.Builder)((SpriteIconButton.Builder)((SpriteIconButton.Builder)SpriteIconButton.builder(ACCEPT, (var2) -> friendsListActions.acceptIncomingFriendRequest(this.playerId), true).size(20, 20)).sprite((WidgetSprites)ACCEPT_SPRITE, 18, 18).tooltip(ACCEPT_TOOLTIP)).createNarration(acceptNarration)).switchToLoadingAfterPress()).build();
       this.addChild(this.acceptButton);
-      this.rejectButton = SpriteIconButton.builder(REJECT_INVITE, (var2) -> {
-         screen.startFriendAction();
-         declineAction.run();
-      }, true).size(20, 20).sprite((WidgetSprites)REJECT_SPRITE, 18, 18).tooltip(REJECT_INVITE).narration(rejectNarration).switchToLoadingAfterPress().build();
+      this.rejectButton = ((SpriteIconButton.Builder)((SpriteIconButton.Builder)((SpriteIconButton.Builder)((SpriteIconButton.Builder)SpriteIconButton.builder(REJECT, (var2) -> friendsListActions.declineIncomingFriendRequest(this.playerId), true).size(20, 20)).sprite((WidgetSprites)REJECT_SPRITE, 18, 18).tooltip(REJECT_TOOLTIP)).createNarration(rejectNarration)).switchToLoadingAfterPress()).build();
       this.addChild(this.rejectButton);
    }
 
-   void disable() {
+   public void disable() {
       this.acceptButton.active = false;
       this.rejectButton.active = false;
    }

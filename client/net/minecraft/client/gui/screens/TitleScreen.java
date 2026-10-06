@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens;
 
+import com.google.common.base.Predicates;
 import com.mojang.authlib.minecraft.BanDetails;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
@@ -25,9 +26,11 @@ import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen;
 import net.minecraft.client.gui.screens.options.LanguageSelectScreen;
 import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.minecraft.client.gui.screens.reporting.DraftIconButton;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.renderer.Panorama;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
@@ -118,7 +121,7 @@ public class TitleScreen extends Screen {
       int numberOfButtons = 3;
       int currentButton = 0;
       topPos += 24;
-      this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode()));
+      this.friends = (FriendsButton)this.addRenderableWidget(CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this.minecraft, this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode()));
       ++currentButton;
       this.friends.setPosition(this.getHorizontalPosition(currentButton, 3, 20), topPos);
       SpriteIconButton language = (SpriteIconButton)this.addRenderableWidget(CommonButtons.language(20, (var1) -> this.minecraft.gui.setScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), true));
@@ -131,7 +134,13 @@ public class TitleScreen extends Screen {
       int var10002 = this.width / 2 - 100;
       topPos += 24;
       this.addRenderableWidget(var10001.bounds(var10002, topPos, 98, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("menu.quit"), (var1) -> this.minecraft.stop()).bounds(this.width / 2 + 2, topPos, 98, 20).build());
+      this.addRenderableWidget(new DraftIconButton(this.width / 2 + 2, topPos, 98, 20, Component.translatable("menu.quit"), (var1) -> {
+         ReportingContext var10000 = this.minecraft.getReportingContext();
+         Minecraft var10001 = this.minecraft;
+         Minecraft var10003 = this.minecraft;
+         Objects.requireNonNull(var10003);
+         var10000.draftReportHandled(var10001, this, var10003::stop, true);
+      }, PauseScreen.DRAFT_REPORT_TOOLTIP, Predicates.alwaysTrue()));
       this.addRenderableWidget(new PlainTextButton(copyrightX, this.height - 10, copyrightWidth, 10, COPYRIGHT_TEXT, (var1) -> this.minecraft.gui.setScreen(new CreditsAndAttributionScreen(this)), this.font));
       if (this.realmsNotificationsScreen == null) {
          this.realmsNotificationsScreen = new RealmsNotificationsScreen();
@@ -230,7 +239,7 @@ public class TitleScreen extends Screen {
          if (fade > 1.0F) {
             this.fading = false;
          } else {
-            fade = Mth.clamp(fade, 0.0F, 1.0F);
+            fade = Math.clamp(fade, 0.0F, 1.0F);
             widgetFade = Mth.clampedMap(fade, 0.5F, 1.0F, 0.0F, 1.0F);
          }
 

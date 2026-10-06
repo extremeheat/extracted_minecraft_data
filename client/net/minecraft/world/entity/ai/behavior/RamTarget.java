@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
@@ -79,7 +78,7 @@ public class RamTarget extends Behavior<Goat> {
          int movementSpeedLevel = body.hasEffect(MobEffects.SPEED) ? body.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
          int movementSlowdownLevel = body.hasEffect(MobEffects.SLOWNESS) ? body.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
          float speedBoostPower = 0.25F * (float)(movementSpeedLevel - movementSlowdownLevel);
-         float speedFactor = Mth.clamp(body.getSpeed() * 1.65F, 0.2F, 3.0F) + speedBoostPower;
+         float speedFactor = Math.clamp(body.getSpeed() * 1.65F, 0.2F, 3.0F) + speedBoostPower;
          DamageSource source = level.damageSources().mobAttack(body);
          float blockedDamage = ramTarget.applyItemBlocking(level, source, damage);
          float blockingFactor = blockedDamage > 0.0F ? 0.5F : 1.0F;

@@ -1,7 +1,6 @@
 package net.minecraft.world.phys.shapes;
 
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 
 public final class SubShape extends DiscreteVoxelShape {
    private final DiscreteVoxelShape parent;
@@ -42,6 +41,6 @@ public final class SubShape extends DiscreteVoxelShape {
    private int clampToShape(final Direction.Axis axis, final int parentResult) {
       int start = axis.choose(this.startX, this.startY, this.startZ);
       int end = axis.choose(this.endX, this.endY, this.endZ);
-      return Mth.clamp(parentResult, start, end) - start;
+      return Math.clamp((long)parentResult, start, end) - start;
    }
 }

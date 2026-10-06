@@ -6,10 +6,7 @@ import net.minecraft.world.level.block.BaseFireBlock;
 public enum InsideBlockEffectType {
    FREEZE((entity) -> {
       entity.setIsInPowderSnow(true);
-      if (entity.canFreeze()) {
-         entity.setTicksFrozen(Math.min(entity.getTicksRequiredToFreeze(), entity.getTicksFrozen() + 1));
-      }
-
+      entity.freezeForTicks(1);
    }),
    CLEAR_FREEZE(Entity::clearFreeze),
    FIRE_IGNITE(BaseFireBlock::fireIgnite),

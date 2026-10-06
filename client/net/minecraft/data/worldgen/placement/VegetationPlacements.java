@@ -11,6 +11,7 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Util;
 import net.minecraft.util.valueproviders.ClampedInt;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -153,7 +154,7 @@ public class VegetationPlacements {
       builder.add(BiomeFilter.biome());
       builder.add(CountPlacement.of(96));
       builder.add(OffsetPlacement.ofTriangle(7, 3));
-      builder.add(BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.belowHeightmap(Heightmap.Types.MOTION_BLOCKING))));
+      builder.add(BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.anyOf(BlockPredicate.belowHeightmap(Heightmap.Types.MOTION_BLOCKING), BlockPredicate.matchesTag((Directional)Direction.DOWN, BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)))));
       return builder.build();
    }
 

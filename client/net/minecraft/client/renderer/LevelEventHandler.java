@@ -42,10 +42,10 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.PointedDripstoneBlock;
 import net.minecraft.world.level.block.SculkShriekerBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
 import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
@@ -214,6 +214,15 @@ public class LevelEventHandler {
          case 1054:
             this.level.playLocalSound(pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, random.nextFloat() * 0.1F + 0.9F, false);
             break;
+         case 1055:
+            this.level.playLocalSound(pos, SoundEvents.ICICLE_LAND, SoundSource.BLOCKS, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
+         case 1056:
+            this.level.playLocalSound(pos, SoundEvents.ZOMBIE_CONVERTED_TO_FROSTBITE, SoundSource.HOSTILE, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
+         case 1057:
+            this.level.playLocalSound(pos, SoundEvents.FROSTBITE_CONVERTED_TO_ZOMBIE, SoundSource.HOSTILE, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
          case 1500:
             ComposterBlock.handleFill(this.level, pos, data > 0);
             break;
@@ -257,8 +266,8 @@ public class LevelEventHandler {
          case 2001:
             BlockState blockState = Block.stateById(data);
             if (!blockState.isAir()) {
-               SoundType soundType = blockState.getSoundType();
-               this.level.playLocalSound(pos, soundType.getBreakSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F, false);
+               BlockSoundSet blockSoundSet = blockState.getSounds(this.level);
+               blockSoundSet.breakSound().ifPresent((breakSound) -> this.level.playLocalSound(pos, breakSound, SoundSource.BLOCKS, (blockSoundSet.volume() + 1.0F) / 2.0F, blockSoundSet.pitch() * 0.8F, false));
             }
 
             this.level.addDestroyBlockEffect(pos, blockState);
@@ -361,7 +370,7 @@ public class LevelEventHandler {
          case 2019:
          case 2020:
             Direction[] directions = Direction.values();
-            int ordinal = Mth.clamp(data, 0, directions.length - 1);
+            int ordinal = Math.clamp((long)data, 0, directions.length - 1);
             this.level.addBreakingBlockEffects(pos, directions[ordinal], eventType == 2020);
             break;
          case 3000:

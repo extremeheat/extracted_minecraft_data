@@ -15,7 +15,6 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 
 public class CustomBossEvent extends ServerBossEvent {
@@ -72,13 +71,13 @@ public class CustomBossEvent extends ServerBossEvent {
 
    public void setValue(final int value) {
       this.value = value;
-      this.setProgress(Mth.clamp((float)value / (float)this.max, 0.0F, 1.0F));
+      this.setProgress(Math.clamp((float)value / (float)this.max, 0.0F, 1.0F));
       this.setDirty();
    }
 
    public void setMax(final int max) {
       this.max = max;
-      this.setProgress(Mth.clamp((float)this.value / (float)max, 0.0F, 1.0F));
+      this.setProgress(Math.clamp((float)this.value / (float)max, 0.0F, 1.0F));
       this.setDirty();
    }
 

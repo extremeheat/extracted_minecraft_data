@@ -282,7 +282,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             this.bubbleMultiplier -= 0.1F;
          }
 
-         this.bubbleMultiplier = Mth.clamp(this.bubbleMultiplier, 0.0F, 1.0F);
+         this.bubbleMultiplier = Math.clamp(this.bubbleMultiplier, 0.0F, 1.0F);
          this.bubbleAngleO = this.bubbleAngle;
          this.bubbleAngle = 10.0F * (float)Math.sin(0.5 * (double)this.tickCount) * this.bubbleMultiplier;
       } else {
@@ -677,7 +677,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       } else {
          float delta = Mth.wrapDegrees(passenger.getYRot() - passengerBodyYRot);
          float maxHeadRotation = 105.0F;
-         float targetDelta = Mth.clamp(delta, -105.0F, 105.0F);
+         float targetDelta = Math.clamp(delta, -105.0F, 105.0F);
          passenger.setYRot(passenger.getYRot() + targetDelta - delta);
          return targetDelta - delta;
       }

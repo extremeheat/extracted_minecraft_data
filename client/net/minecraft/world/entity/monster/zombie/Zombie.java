@@ -81,6 +81,10 @@ public class Zombie extends Monster {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID;
    private static final EntityDataAccessor<Integer> DATA_SPECIAL_TYPE_ID;
    private static final EntityDataAccessor<Boolean> DATA_DROWNED_CONVERSION_ID;
+   private static final EntityDataAccessor<Boolean> DATA_FROSTBITE_CONVERSION_ID;
+   public static final int DROWNING_AFFLICTION_TICKS = 600;
+   public static final int DROWNING_CONVERSION_TICKS = 300;
+   public static final int FREEZING_CONVERSION_TICKS = 300;
    public static final float ZOMBIE_LEADER_CHANCE = 0.05F;
    public static final int REINFORCEMENT_ATTEMPTS = 50;
    public static final int REINFORCEMENT_RANGE_MAX = 40;
@@ -93,12 +97,14 @@ public class Zombie extends Monster {
    private final BreakDoorGoal breakDoorGoal;
    private boolean canBreakDoors;
    private final ConversionTracker<Zombie> drowningTracker;
+   private final ConversionTracker<Zombie> freezingTracker;
 
    public Zombie(final EntityType<? extends Zombie> type, final Level level) {
       super(type, level);
       this.breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
       this.canBreakDoors = false;
       this.drowningTracker = new ConversionTracker<Zombie>(this, DATA_DROWNED_CONVERSION_ID, this::convertsToWhenDrowning, this::getConversionSound, () -> this.isEyeInFluid(FluidTags.WATER), "InWaterTime", 600, "DrownedConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
+      this.freezingTracker = new ConversionTracker<Zombie>(this, DATA_FROSTBITE_CONVERSION_ID, this::convertsToWhenFreezing, this::getFreezingConversionSound, () -> this.isInPowderSnow, "FreezingTime", 140, "FrostbiteConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
    }
 
    public Zombie(final Level level) {
@@ -133,6 +139,7 @@ public class Zombie extends Monster {
       entityData.define(DATA_BABY_ID, false);
       entityData.define(DATA_SPECIAL_TYPE_ID, 0);
       entityData.define(DATA_DROWNED_CONVERSION_ID, false);
+      entityData.define(DATA_FROSTBITE_CONVERSION_ID, false);
    }
 
    public boolean isUnderWaterConverting() {
@@ -197,10 +204,18 @@ public class Zombie extends Monster {
       return true;
    }
 
+   protected boolean convertsWhenFreezing() {
+      return true;
+   }
+
    public void tick() {
       super.tick();
       if (this.convertsInWater()) {
          this.drowningTracker.tick();
+      }
+
+      if (this.convertsWhenFreezing()) {
+         this.freezingTracker.tick();
       }
 
    }
@@ -308,6 +323,14 @@ public class Zombie extends Monster {
       return EntityTypes.DROWNED;
    }
 
+   protected EntityType<? extends Zombie> convertsToWhenFreezing() {
+      return EntityTypes.FROSTBITE;
+   }
+
+   protected @LevelEvent.Value int getFreezingConversionSound() {
+      return 1056;
+   }
+
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       this.playSound(this.getStepSound(), 0.15F, 1.0F);
    }
@@ -340,6 +363,7 @@ public class Zombie extends Monster {
       output.putBoolean("IsBaby", this.isBaby());
       output.putBoolean("CanBreakDoors", this.canBreakDoors());
       this.drowningTracker.addAdditionalSaveData(output);
+      this.freezingTracker.addAdditionalSaveData(output);
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
@@ -347,6 +371,7 @@ public class Zombie extends Monster {
       this.setBaby(input.getBooleanOr("IsBaby", false));
       this.setCanBreakDoors(input.getBooleanOr("CanBreakDoors", false));
       this.drowningTracker.readAdditionalSaveData(input);
+      this.freezingTracker.readAdditionalSaveData(input);
    }
 
    public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
@@ -484,6 +509,7 @@ public class Zombie extends Monster {
       DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       DATA_SPECIAL_TYPE_ID = SynchedEntityData.<Integer>defineId(Zombie.class, EntityDataSerializers.INT);
       DATA_DROWNED_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
+      DATA_FROSTBITE_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       BABY_DIMENSIONS = EntityDimensions.scalable(0.49F, 0.98F).withEyeHeight(0.775F).withAttachments(EntityAttachments.builder().attach(EntityAttachment.VEHICLE, 0.0F, 0.1875F, 0.0F));
       DOOR_BREAKING_PREDICATE = (d) -> d == Difficulty.HARD;
    }

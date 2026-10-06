@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.ai.attributes;
 
-import net.minecraft.util.Mth;
-
 public class RangedAttribute extends Attribute {
    private final double minValue;
    private final double maxValue;
@@ -28,6 +26,6 @@ public class RangedAttribute extends Attribute {
    }
 
    public double sanitizeValue(final double value) {
-      return Double.isNaN(value) ? this.minValue : Mth.clamp(value, this.minValue, this.maxValue);
+      return Double.isNaN(value) ? this.minValue : Math.clamp(value, this.minValue, this.maxValue);
    }
 }

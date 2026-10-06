@@ -91,6 +91,8 @@ public class ModelTemplates {
    public static final ModelTemplate CROSS;
    public static final ModelTemplate TINTED_CROSS;
    public static final ModelTemplate CROSS_EMISSIVE;
+   public static final ModelTemplate ICICLE;
+   public static final ModelTemplate ICICLE_BASE;
    public static final ModelTemplate FLOWER_POT_CROSS;
    public static final ModelTemplate TINTED_FLOWER_POT_CROSS;
    public static final ModelTemplate FLOWER_POT_CROSS_EMISSIVE;
@@ -308,6 +310,8 @@ public class ModelTemplates {
       CROSS = create("cross", TextureSlot.CROSS);
       TINTED_CROSS = create("tinted_cross", TextureSlot.CROSS);
       CROSS_EMISSIVE = create("cross_emissive", TextureSlot.CROSS, TextureSlot.CROSS_EMISSIVE);
+      ICICLE = create("icicle", TextureSlot.CROSS);
+      ICICLE_BASE = create("icicle_base", TextureSlot.CROSS, TextureSlot.TOP, TextureSlot.SIDE);
       FLOWER_POT_CROSS = create("flower_pot_cross", TextureSlot.PLANT);
       TINTED_FLOWER_POT_CROSS = create("tinted_flower_pot_cross", TextureSlot.PLANT);
       FLOWER_POT_CROSS_EMISSIVE = create("flower_pot_cross_emissive", TextureSlot.PLANT, TextureSlot.CROSS_EMISSIVE);

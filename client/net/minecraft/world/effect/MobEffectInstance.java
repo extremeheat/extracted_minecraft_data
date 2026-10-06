@@ -63,7 +63,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       this.blendState = new BlendState();
       this.effect = effect;
       this.duration = duration;
-      this.amplifier = Mth.clamp(amplifier, 0, 255);
+      this.amplifier = Math.clamp((long)amplifier, 0, 255);
       this.ambient = ambient;
       this.visible = visible;
       this.showIcon = showIcon;
@@ -370,7 +370,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
                this.factor = target;
             } else {
                float maxDeltaPerTick = 1.0F / (float)blendDuration;
-               this.factor += Mth.clamp(target - this.factor, -maxDeltaPerTick, maxDeltaPerTick);
+               this.factor += Math.clamp(target - this.factor, -maxDeltaPerTick, maxDeltaPerTick);
             }
 
          }

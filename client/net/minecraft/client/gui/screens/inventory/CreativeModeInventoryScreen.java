@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -629,7 +630,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          int yscr = this.topPos + 18;
          int yscr2 = yscr + 112;
          this.scrollOffs = ((float)event.y() - (float)yscr - 7.5F) / ((float)(yscr2 - yscr) - 15.0F);
-         this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+         this.scrollOffs = Math.clamp(this.scrollOffs, 0.0F, 1.0F);
          ((ItemPickerMenu)this.menu).scrollTo(this.scrollOffs);
          return true;
       } else {
@@ -720,7 +721,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
       this.extractTabButton(graphics, mouseX, mouseY, selectedTab);
       if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-         InventoryScreen.extractEntityInInventoryFollowsMouse(graphics, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20, 0.0625F, (float)mouseX, (float)mouseY, this.minecraft.player);
+         EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, this.leftPos + 73, this.topPos + 6, this.leftPos + 105, this.topPos + 49, 20.0F, 0.0625F, (float)mouseX, (float)mouseY, this.minecraft.player);
       }
 
    }
@@ -781,7 +782,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          graphics.requestCursor(CursorTypes.POINTING_HAND);
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprites[Mth.clamp(pos, 0, sprites.length)], x, y, 26, 32);
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprites[Math.clamp((long)pos, 0, sprites.length)], x, y, 26, 32);
       int iconX = x + 13 - 8;
       int iconY = y + 16 - 8 + (isTop ? 1 : -1);
       graphics.item(tab.getIconItem(), iconX, iconY);
@@ -850,11 +851,11 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       protected float getScrollForRowIndex(final int rowIndex) {
-         return Mth.clamp((float)rowIndex / (float)this.calculateRowCount(), 0.0F, 1.0F);
+         return Math.clamp((float)rowIndex / (float)this.calculateRowCount(), 0.0F, 1.0F);
       }
 
       protected float subtractInputFromScroll(final float scrollOffs, final double input) {
-         return Mth.clamp(scrollOffs - (float)(input / (double)this.calculateRowCount()), 0.0F, 1.0F);
+         return Math.clamp(scrollOffs - (float)(input / (double)this.calculateRowCount()), 0.0F, 1.0F);
       }
 
       public void scrollTo(final float scrollOffs) {

@@ -16,7 +16,6 @@ import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
@@ -235,7 +234,7 @@ public class ToastManager {
       }
 
       private void calculateVisiblePortion(final long now) {
-         float animationProgress = Mth.clamp((float)(now - this.animationStartTime) / 600.0F, 0.0F, 1.0F);
+         float animationProgress = Math.clamp((float)(now - this.animationStartTime) / 600.0F, 0.0F, 1.0F);
          animationProgress *= animationProgress;
          if (this.visibility == Toast.Visibility.HIDE) {
             this.visiblePortion = 1.0F - animationProgress;

@@ -20,7 +20,7 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, Cr
    protected void scale(final CreeperRenderState state, final PoseStack poseStack) {
       float g = state.swelling;
       float wobble = 1.0F + Mth.sin((double)(g * 100.0F)) * g * 0.01F;
-      g = Mth.clamp(g, 0.0F, 1.0F);
+      g = Math.clamp(g, 0.0F, 1.0F);
       g *= g;
       g *= g;
       float s = (1.0F + g * 0.4F) * wobble;
@@ -30,7 +30,7 @@ public class CreeperRenderer extends MobRenderer<Creeper, CreeperRenderState, Cr
 
    protected float getWhiteOverlayProgress(final CreeperRenderState state) {
       float step = state.swelling;
-      return (int)(step * 10.0F) % 2 == 0 ? 0.0F : Mth.clamp(step, 0.5F, 1.0F);
+      return (int)(step * 10.0F) % 2 == 0 ? 0.0F : Math.clamp(step, 0.5F, 1.0F);
    }
 
    public Identifier getTextureLocation(final CreeperRenderState state) {

@@ -85,7 +85,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    private MapItemSavedData(final ResourceKey<Level> dimension, final int centerX, final int centerZ, final byte scale, final ByteBuffer colors, final boolean trackingPosition, final boolean unlimitedTracking, final boolean locked, final List<MapBanner> banners, final List<MapFrame> frames) {
-      this(centerX, centerZ, (byte)Mth.clamp(scale, 0, 4), trackingPosition, unlimitedTracking, locked, dimension);
+      this(centerX, centerZ, (byte)Math.clamp((long)scale, 0, 4), trackingPosition, unlimitedTracking, locked, dimension);
       if (colors.array().length == 16384) {
          this.colors = colors.array();
       }
@@ -125,7 +125,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    public MapItemSavedData scaled() {
-      return createFresh((double)this.centerX, (double)this.centerZ, (byte)Mth.clamp(this.scale + 1, 0, 4), this.trackingPosition, this.unlimitedTracking, this.dimension);
+      return createFresh((double)this.centerX, (double)this.centerZ, (byte)Math.clamp((long)(this.scale + 1), 0, 4), this.trackingPosition, this.unlimitedTracking, this.dimension);
    }
 
    private static Predicate<ItemStack> mapMatcher(final ItemStack mapStack) {

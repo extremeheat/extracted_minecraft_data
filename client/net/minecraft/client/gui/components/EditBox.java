@@ -264,7 +264,7 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setCursorPosition(final int pos) {
-      this.cursorPos = Mth.clamp(pos, 0, this.value.length());
+      this.cursorPos = Math.clamp((long)pos, 0, this.value.length());
       this.scrollTo(this.cursorPos);
    }
 
@@ -422,7 +422,7 @@ public class EditBox extends AbstractWidget {
          boolean cursorOnScreen = relCursorPos >= 0 && relCursorPos <= displayed.length();
          boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime) && cursorOnScreen;
          int drawX = this.textX;
-         int relHighlightPos = Mth.clamp(this.highlightPos - this.displayPos, 0, displayed.length());
+         int relHighlightPos = Math.clamp((long)(this.highlightPos - this.displayPos), 0, displayed.length());
          if (!displayed.isEmpty()) {
             String half = cursorOnScreen ? displayed.substring(0, relCursorPos) : displayed;
             FormattedCharSequence charSequence = this.applyFormat(half, this.displayPos);
@@ -593,7 +593,7 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setHighlightPos(final int pos) {
-      this.highlightPos = Mth.clamp(pos, 0, this.value.length());
+      this.highlightPos = Math.clamp((long)pos, 0, this.value.length());
       this.scrollTo(this.highlightPos);
    }
 
@@ -613,7 +613,7 @@ public class EditBox extends AbstractWidget {
             this.displayPos -= this.displayPos - pos;
          }
 
-         this.displayPos = Mth.clamp(this.displayPos, 0, this.value.length());
+         this.displayPos = Math.clamp((long)this.displayPos, 0, this.value.length());
       }
    }
 

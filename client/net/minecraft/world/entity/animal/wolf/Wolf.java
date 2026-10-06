@@ -19,6 +19,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.ItemTags;
@@ -32,6 +33,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
@@ -424,22 +426,30 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          if (this.isFood(itemStack) && this.getHealth() < this.getMaxHealth()) {
             this.feed(player, hand, itemStack, 2.0F, 2.0F);
             return InteractionResult.SUCCESS;
-         }
+         } else {
+            if (itemStack.is(ItemTags.WOLF_COLLAR_DYES) && this.isOwnedBy(player)) {
+               DyeColor color = (DyeColor)itemStack.get(DataComponents.DYE);
+               if (color != null && color != this.getCollarColor()) {
+                  this.level().playSound(player, (Entity)this, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                  this.setCollarColor(color);
+                  itemStack.consume(1, player);
+                  return InteractionResult.SUCCESS;
+               }
+            } else {
+               if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(player) && !this.isBaby()) {
+                  this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, itemStack.copyWithCount(1));
+                  itemStack.consume(1, player);
+                  return InteractionResult.SUCCESS;
+               }
 
-         if (!itemStack.is(ItemTags.WOLF_COLLAR_DYES) || !this.isOwnedBy(player)) {
-            if (this.isEquippableInSlot(itemStack, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(player) && !this.isBaby()) {
-               this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, itemStack.copyWithCount(1));
-               itemStack.consume(1, player);
-               return InteractionResult.SUCCESS;
-            }
-
-            if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(player) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(itemStack)) {
-               itemStack.shrink(1);
-               this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
-               ItemStack armor = this.getBodyArmorItem();
-               int repairUnit = (int)((float)armor.getMaxDamage() * 0.125F);
-               armor.setDamageValue(Math.max(0, armor.getDamageValue() - repairUnit));
-               return InteractionResult.SUCCESS;
+               if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(player) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(itemStack)) {
+                  itemStack.shrink(1);
+                  this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
+                  ItemStack armor = this.getBodyArmorItem();
+                  int repairUnit = (int)((float)armor.getMaxDamage() * 0.125F);
+                  armor.setDamageValue(Math.max(0, armor.getDamageValue() - repairUnit));
+                  return InteractionResult.SUCCESS;
+               }
             }
 
             InteractionResult interactionResult = super.mobInteract(player, hand);
@@ -449,24 +459,17 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                this.navigation.stop();
                this.setTarget((LivingEntity)null);
                return InteractionResult.SUCCESS.withoutItem();
+            } else {
+               return interactionResult;
             }
-
-            return interactionResult;
-         }
-
-         DyeColor color = (DyeColor)itemStack.get(DataComponents.DYE);
-         if (color != null && color != this.getCollarColor()) {
-            this.setCollarColor(color);
-            itemStack.consume(1, player);
-            return InteractionResult.SUCCESS;
          }
       } else if (!this.level().isClientSide() && itemStack.is(Items.BONE) && !this.isAngry()) {
          itemStack.consume(1, player);
          this.tryToTame(player);
          return InteractionResult.SUCCESS_SERVER;
+      } else {
+         return super.mobInteract(player, hand);
       }
-
-      return super.mobInteract(player, hand);
    }
 
    private void tryToTame(final Player player) {

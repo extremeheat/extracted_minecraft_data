@@ -20,10 +20,11 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.state.level.SkyRenderState;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
@@ -75,7 +76,7 @@ public class SkyRenderer implements AutoCloseable {
    private final GpuBuffer sunriseBuffer;
    private final GpuBuffer endFlashBuffer;
    private final RenderSystem.AutoStorageIndexBuffer quadIndices;
-   private final AbstractTexture endSkyTexture;
+   private final TextureHandle endSkyTexture;
    private int starIndexCount;
    private float lastOccluderStartAngle;
    private float lastOccluderEndAngle;
@@ -261,7 +262,8 @@ public class SkyRenderer implements AutoCloseable {
       renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.CELESTIAL_WITH_DEPTH_ATTACHMENT : RenderPipelines.CELESTIAL));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-      renderPass.setUniform("Sampler0", this.celestialsAtlas.getTextureView(), this.celestialsAtlas.getSampler());
+      TextureResources texture = this.celestialsAtlas.getTexture();
+      renderPass.setUniform("Sampler0", texture.textureView(), texture.sampler());
       renderPass.setVertexBuffer(0, vertexBuffer.slice());
       renderPass.setIndexBuffer(indexBuffer, this.quadIndices.type());
       renderPass.drawIndexed(6, 1, 0, baseVertex, 0);
@@ -317,7 +319,7 @@ public class SkyRenderer implements AutoCloseable {
       renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.END_SKY_WITH_DEPTH_ATTACHMENT : RenderPipelines.END_SKY));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
-      renderPass.setUniform("Sampler0", this.endSkyTexture.getTextureView(), this.endSkyTexture.getSampler());
+      renderPass.setUniform("Sampler0", this.endSkyTexture.textureView(), this.endSkyTexture.sampler());
       renderPass.setVertexBuffer(0, this.endSkyBuffer.slice());
       renderPass.setIndexBuffer(indexBuffer, autoIndices.type());
       renderPass.drawIndexed(36, 1, 0, 0, 0);
@@ -332,7 +334,7 @@ public class SkyRenderer implements AutoCloseable {
       return camera.getFogType() == FogType.WATER;
    }
 
-   private AbstractTexture getTexture(final TextureManager textureManager, final Identifier location) {
+   private TextureHandle getTexture(final TextureManager textureManager, final Identifier location) {
       return textureManager.getTexture(location);
    }
 

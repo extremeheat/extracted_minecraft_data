@@ -10,7 +10,7 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
@@ -39,7 +39,7 @@ public class CatSpawner implements CustomSpawner {
                if (SpawnPlacements.isSpawnPositionOk(EntityTypes.CAT, level, spawnPos)) {
                   if (level.isCloseToVillage(spawnPos, 2)) {
                      this.spawnInVillage(level, spawnPos);
-                  } else if (level.structureManager().getStructureWithPieceAt(spawnPos, StructureTags.CATS_SPAWN_IN).isValid()) {
+                  } else if (level.structureManager().getStructureWithPieceAt(spawnPos, StructureTags.CATS_SPAWN_IN) != null) {
                      this.spawnInHut(level, spawnPos);
                   }
                }
@@ -51,7 +51,7 @@ public class CatSpawner implements CustomSpawner {
 
    private void spawnInVillage(final ServerLevel serverLevel, final BlockPos spawnPos) {
       int radius = 48;
-      if (serverLevel.getPoiManager().getCountInRange((p) -> p.is(PoiTypes.HOME), spawnPos, 48, PoiManager.Occupancy.IS_OCCUPIED) > 4L) {
+      if (serverLevel.getPoiManager().getCountInRange((p) -> p.is(PoiTypeIds.HOME), spawnPos, 48, PoiManager.Occupancy.IS_OCCUPIED) > 4L) {
          List<Cat> cats = serverLevel.getEntitiesOfClass(Cat.class, (new AABB(spawnPos)).inflate(48.0, 8.0, 48.0));
          if (cats.size() < 5) {
             this.spawnCat(spawnPos, serverLevel, false);

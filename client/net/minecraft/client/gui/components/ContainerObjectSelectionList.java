@@ -15,7 +15,6 @@ import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
@@ -176,7 +175,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
                return null;
             }
 
-            int index = Mth.clamp(delta + this.children().indexOf(this.getFocused()), 0, this.children().size() - 1);
+            int index = Math.clamp((long)(delta + this.children().indexOf(this.getFocused())), 0, this.children().size() - 1);
 
             for(int i = index; i >= 0 && i < this.children().size(); i += delta) {
                GuiEventListener child = (GuiEventListener)this.children().get(i);

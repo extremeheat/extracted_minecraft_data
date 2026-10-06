@@ -37,7 +37,7 @@ public class TestBlockEditScreen extends Screen {
       this.messageEdit.setValue(this.message);
       this.addRenderableWidget(this.messageEdit);
       this.updateMode(this.mode);
-      this.addRenderableWidget(CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (button, value) -> this.updateMode(value)));
+      this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder(TestBlockMode::getDisplayName, this.mode).withValues(MODES)).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, TITLE, (button, value) -> this.updateMode(value)));
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
    }

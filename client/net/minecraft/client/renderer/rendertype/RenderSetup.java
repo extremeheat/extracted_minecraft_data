@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.client.renderer.oit.OitPipelineSet;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -70,9 +70,9 @@ public final class RenderSetup {
          }
 
          for(Map.Entry<String, TextureBinding> entry : this.textures.entrySet()) {
-            AbstractTexture texture = textureManager.getTexture(((TextureBinding)entry.getValue()).location);
+            TextureHandle texture = textureManager.getTexture(((TextureBinding)entry.getValue()).location);
             GpuSampler samplerOverride = (GpuSampler)((TextureBinding)entry.getValue()).sampler().get();
-            textures.add(new PreparedRenderType.Texture((String)entry.getKey(), texture.getTextureView(), samplerOverride != null ? samplerOverride : texture.getSampler()));
+            textures.add(new PreparedRenderType.Texture((String)entry.getKey(), texture.textureView(), samplerOverride != null ? samplerOverride : texture.sampler()));
          }
 
          return textures.build();

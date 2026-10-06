@@ -3,7 +3,6 @@ package net.minecraft.gizmos;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 
 public class SimpleGizmoCollector implements GizmoCollector {
@@ -69,7 +68,7 @@ public class SimpleGizmoCollector implements GizmoCollector {
          if (this.shouldFadeOut) {
             long duration = this.expireTimeMillis - this.startTimeMillis;
             long timeSinceStart = currentMillis - this.startTimeMillis;
-            return 1.0F - Mth.clamp((float)timeSinceStart / (float)duration, 0.0F, 1.0F);
+            return 1.0F - Math.clamp((float)timeSinceStart / (float)duration, 0.0F, 1.0F);
          } else {
             return 1.0F;
          }

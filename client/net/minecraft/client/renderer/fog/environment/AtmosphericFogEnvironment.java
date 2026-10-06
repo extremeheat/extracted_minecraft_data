@@ -92,7 +92,7 @@ public class AtmosphericFogEnvironment extends FogEnvironment {
       float deltaTicks = deltaTracker.getGameTimeDeltaTicks();
       float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
       boolean rainsInBiome = biome.hasPrecipitation();
-      float skyLightLevelMultiplier = Mth.clamp(((float)level.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(blockPos) - 8.0F) / 7.0F, 0.0F, 1.0F);
+      float skyLightLevelMultiplier = Math.clamp(((float)level.getLightEngine().getLayerListener(LightLayer.SKY).getLightValue(blockPos) - 8.0F) / 7.0F, 0.0F, 1.0F);
       float targetRainFogMultiplier = level.getRainLevel(partialTicks) * skyLightLevelMultiplier * (rainsInBiome ? 1.0F : 0.5F);
       this.rainFogMultiplier += (targetRainFogMultiplier - this.rainFogMultiplier) * deltaTicks * 0.2F;
    }

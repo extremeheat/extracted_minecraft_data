@@ -921,6 +921,7 @@ public class Items {
    public static final Item LAVA_BUCKET;
    public static final Item POWDER_SNOW_BUCKET;
    public static final Item SNOWBALL;
+   public static final Item ICE_BALL;
    public static final Item LEATHER;
    public static final Item MILK_BUCKET;
    public static final Item PUFFERFISH_BUCKET;
@@ -1054,6 +1055,7 @@ public class Items {
    public static final Item BOGGED_SPAWN_EGG;
    public static final Item CAMEL_HUSK_SPAWN_EGG;
    public static final Item DROWNED_SPAWN_EGG;
+   public static final Item FROSTBITE_SPAWN_EGG;
    public static final Item HUSK_SPAWN_EGG;
    public static final Item PARCHED_SPAWN_EGG;
    public static final Item SKELETON_SPAWN_EGG;
@@ -1262,6 +1264,8 @@ public class Items {
    public static final Item MEDIUM_AMETHYST_BUD;
    public static final Item LARGE_AMETHYST_BUD;
    public static final Item AMETHYST_CLUSTER;
+   public static final Item ICE_CRYSTAL;
+   public static final Item ICICLE;
    public static final Item POINTED_DRIPSTONE;
    public static final Item SULFUR_SPIKE;
    public static final Item OCHRE_FROGLIGHT;
@@ -2261,6 +2265,7 @@ public class Items {
       LAVA_BUCKET = registerItem((ResourceKey)ItemIds.LAVA_BUCKET, (p) -> new BucketItem(Fluids.LAVA, p), (new Item.Properties()).craftRemainder(BUCKET).cookingFuel(ContextIntProviders.COOKING_TIME_LAVA_BUCKET).stacksTo(1));
       POWDER_SNOW_BUCKET = registerItem(BlockItemIds.POWDER_SNOW, (p) -> new SolidBucketItem(Blocks.POWDER_SNOW, SoundEvents.BUCKET_EMPTY_POWDER_SNOW, p), (new Item.Properties()).stacksTo(1).useItemDescriptionPrefix());
       SNOWBALL = registerItem(ItemIds.SNOWBALL, SnowballItem::new, (new Item.Properties()).stacksTo(16));
+      ICE_BALL = registerItem(ItemIds.ICE_BALL, IceBallItem::new, (new Item.Properties()).stacksTo(16));
       LEATHER = registerItem(ItemIds.LEATHER);
       MILK_BUCKET = registerItem(ItemIds.MILK_BUCKET, (new Item.Properties()).craftRemainder(BUCKET).component(DataComponents.CONSUMABLE, Consumables.MILK_BUCKET).usingConvertsTo(BUCKET).stacksTo(1));
       PUFFERFISH_BUCKET = registerItem((ResourceKey)ItemIds.PUFFERFISH_BUCKET, (p) -> new MobBucketItem(EntityTypes.PUFFERFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.PUFFERFISH));
@@ -2394,6 +2399,7 @@ public class Items {
       BOGGED_SPAWN_EGG = registerSpawnEgg(ItemIds.BOGGED_SPAWN_EGG, EntityTypes.BOGGED);
       CAMEL_HUSK_SPAWN_EGG = registerSpawnEgg(ItemIds.CAMEL_HUSK_SPAWN_EGG, EntityTypes.CAMEL_HUSK);
       DROWNED_SPAWN_EGG = registerSpawnEgg(ItemIds.DROWNED_SPAWN_EGG, EntityTypes.DROWNED);
+      FROSTBITE_SPAWN_EGG = registerSpawnEgg(ItemIds.FROSTBITE_SPAWN_EGG, EntityTypes.FROSTBITE);
       HUSK_SPAWN_EGG = registerSpawnEgg(ItemIds.HUSK_SPAWN_EGG, EntityTypes.HUSK);
       PARCHED_SPAWN_EGG = registerSpawnEgg(ItemIds.PARCHED_SPAWN_EGG, EntityTypes.PARCHED);
       SKELETON_SPAWN_EGG = registerSpawnEgg(ItemIds.SKELETON_SPAWN_EGG, EntityTypes.SKELETON);
@@ -2602,6 +2608,8 @@ public class Items {
       MEDIUM_AMETHYST_BUD = registerBlock(BlockItemIds.MEDIUM_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD);
       LARGE_AMETHYST_BUD = registerBlock(BlockItemIds.LARGE_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD);
       AMETHYST_CLUSTER = registerBlock(BlockItemIds.AMETHYST_CLUSTER, Blocks.AMETHYST_CLUSTER);
+      ICE_CRYSTAL = registerBlock(BlockItemIds.ICE_CRYSTAL, Blocks.ICE_CRYSTAL);
+      ICICLE = registerBlock(BlockItemIds.ICICLE, Blocks.ICICLE);
       POINTED_DRIPSTONE = registerBlock(BlockItemIds.POINTED_DRIPSTONE, Blocks.POINTED_DRIPSTONE);
       SULFUR_SPIKE = registerBlock(BlockItemIds.SULFUR_SPIKE, Blocks.SULFUR_SPIKE);
       OCHRE_FROGLIGHT = registerBlock(BlockItemIds.OCHRE_FROGLIGHT, Blocks.OCHRE_FROGLIGHT);

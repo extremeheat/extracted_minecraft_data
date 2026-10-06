@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.chunk;
 
 import java.util.Objects;
 import net.minecraft.core.SectionPos;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 public final class TranslucencyPointOfView {
@@ -27,7 +26,7 @@ public final class TranslucencyPointOfView {
 
    private static int getCoordinate(final double cameraCoordinate, final int section) {
       int relativeSection = SectionPos.blockToSectionCoord(cameraCoordinate) - section;
-      return Mth.clamp(relativeSection, -1, 1);
+      return Math.clamp((long)relativeSection, -1, 1);
    }
 
    public boolean isAxisAligned() {

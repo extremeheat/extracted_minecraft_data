@@ -136,9 +136,9 @@ public abstract class VoxelShape {
       } else {
          MutableObject<Vec3> closest = new MutableObject();
          this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> {
-            double x = Mth.clamp(point.x(), x1, x2);
-            double y = Mth.clamp(point.y(), y1, y2);
-            double z = Mth.clamp(point.z(), z1, z2);
+            double x = Math.clamp(point.x(), x1, x2);
+            double y = Math.clamp(point.y(), y1, y2);
+            double z = Math.clamp(point.z(), z1, z2);
             Vec3 currentClosest = (Vec3)closest.get();
             if (currentClosest == null || point.distanceToSqr(x, y, z) < point.distanceToSqr(currentClosest)) {
                closest.setValue(new Vec3(x, y, z));

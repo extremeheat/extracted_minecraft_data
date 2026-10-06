@@ -92,9 +92,9 @@ public class AdvancementTab {
       }
 
       if (hovering) {
-         this.fade = Mth.clamp(this.fade + 0.06F, 0.0F, 0.3F);
+         this.fade = Math.clamp(this.fade + 0.06F, 0.0F, 0.3F);
       } else {
-         this.fade = Mth.clamp(this.fade - 0.12F, 0.0F, 1.0F);
+         this.fade = Math.clamp(this.fade - 0.12F, 0.0F, 1.0F);
          if (this.hovered != null) {
             this.hovered = null;
          }
@@ -184,11 +184,11 @@ public class AdvancementTab {
 
    public void scroll(final double x, final double y) {
       if (this.canScrollHorizontally()) {
-         this.scrollX = Mth.clamp(this.scrollX + x, (double)(-(this.maxX - 234)), 0.0);
+         this.scrollX = Math.clamp(this.scrollX + x, (double)(-(this.maxX - 234)), 0.0);
       }
 
       if (this.canScrollVertically()) {
-         this.scrollY = Mth.clamp(this.scrollY + y, (double)(-(this.maxY - 113)), 0.0);
+         this.scrollY = Math.clamp(this.scrollY + y, (double)(-(this.maxY - 113)), 0.0);
       }
 
    }

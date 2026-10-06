@@ -72,7 +72,7 @@ public interface ActiveTextCollector {
          Parameters localParameters = parameters.withScissor(left, right, top, bottom);
          this.accept(TextAlignment.LEFT, left - (int)pos, textTop, localParameters, message.getVisualOrderText());
       } else {
-         int textX = Mth.clamp(centerX, left + lineWidth / 2, right - lineWidth / 2);
+         int textX = Math.clamp((long)centerX, left + lineWidth / 2, right - lineWidth / 2);
          this.accept(TextAlignment.CENTER, textX, textTop, message);
       }
 

@@ -114,7 +114,7 @@ public interface LevelBasedValue {
       }
 
       public float calculate(final int level) {
-         return Mth.clamp(this.value.calculate(level), this.min, this.max);
+         return Math.clamp(this.value.calculate(level), this.min, this.max);
       }
 
       public MapCodec<Clamped> codec() {

@@ -129,8 +129,8 @@ public class OreFeature extends AbstractOreFeature {
             double zz = data[i * 4 + 2];
             int xMin = Math.max(Mth.floor(xx - r), xStart);
             int zMin = Math.max(Mth.floor(zz - r), zStart);
-            int xMax = Mth.clamp(Mth.floor(xx + r), xMin, gridMaxX);
-            int zMax = Mth.clamp(Mth.floor(zz + r), zMin, gridMaxZ);
+            int xMax = Math.clamp((long)Mth.floor(xx + r), xMin, gridMaxX);
+            int zMax = Math.clamp((long)Mth.floor(zz + r), zMin, gridMaxZ);
             touchedMinX = Math.min(touchedMinX, xMin - xStart);
             touchedMaxX = Math.max(touchedMaxX, xMax - xStart);
             touchedMinZ = Math.min(touchedMinZ, zMin - zStart);

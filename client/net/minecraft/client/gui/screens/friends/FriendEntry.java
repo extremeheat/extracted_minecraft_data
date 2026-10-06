@@ -1,64 +1,54 @@
 package net.minecraft.client.gui.screens.friends;
 
+import com.mojang.authlib.services.response.PresenceResponse;
 import com.mojang.authlib.services.response.PresenceStatus;
-import com.mojang.authlib.services.response.PresenceStatusDto;
-import java.util.Locale;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.PopupScreen;
-import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.gui.screens.social.PlayerStatus;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.util.ARGB;
 
-class FriendEntry extends AbstractFriendsEntryContainerWidget {
-   private static final WidgetSprites REMOVE_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/remove"));
-   private static final Component UNFRIEND = Component.translatable("gui.friends.unfriend");
-   private static final Component CONFIRM_TITLE = Component.translatable("gui.friends.confirm_title");
-   private static final Component CONFIRM_UNFRIEND = Component.translatable("gui.friends.confirm_unfriend");
-   private static final Component PRESENCE_OFFLINE = Component.translatable("gui.friends.presence.status.offline").withColor(-6250336);
-   private final SpriteIconButton removeButton;
-   private final StringWidget statusWidget;
-   private @Nullable PresenceStatusDto presence;
+public class FriendEntry extends AbstractFriendsEntryContainerWidget {
+   private static final WidgetSprites PROFILE_SPRITE = new WidgetSprites(Identifier.withDefaultNamespace("friends/profile"), Identifier.withDefaultNamespace("friends/profile_highlighted"));
+   private static final Tooltip PLAYER_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("gui.friends.player_options"));
+   private static final int NAME_RIGHT_PADDING = 2;
+   public static final Comparator<FriendEntry> ALPHABETICAL_COMPARATOR;
+   public static final Comparator<FriendEntry> PRESENCE_COMPARATOR;
+   private final Button profileButton;
+   protected final PresenceStatusWidget statusWidget;
 
-   public FriendEntry(final Minecraft minecraft, final FriendsOverlayScreen screen, final PlayerSocialManager.PlayerData playerData, final @Nullable PresenceStatusDto presence, final boolean initiallyLoading, final Runnable onAction) {
-      super(minecraft, screen, 0, 0, screen.getOverlayWidth() - 16, 28, playerData, true);
-      this.presence = presence;
-      this.statusWidget = new StringWidget(presenceStatusComponent(presence), minecraft.font);
+   public FriendEntry(final Minecraft minecraft, final int width, final UUID playerId, final String playerName, final PlayerStatus playerStatus, final Runnable openPlayerOptions) {
+      super(minecraft, width, playerId, playerName);
+      this.statusWidget = new PresenceStatusWidget(playerStatus, minecraft.font);
+      this.profileButton = new ImageButton(24, 24, PROFILE_SPRITE, (var1) -> openPlayerOptions.run(), Component.translatable("gui.friends.narration.button.player_options", playerName));
+      this.profileButton.setTooltip(PLAYER_OPTIONS_TOOLTIP);
       this.addChild(this.statusWidget);
-      Button.CreateNarration narration = getSpriteIconNarration(Component.translatable("gui.friends.narration.button.unfriend", playerData.name()));
-      this.removeButton = SpriteIconButton.builder(UNFRIEND, (var2) -> this.confirmRemoveFriend(onAction), true).size(20, 20).sprite((WidgetSprites)REMOVE_SPRITE, 13, 11).tooltip(UNFRIEND).narration(narration).build();
-      if (initiallyLoading) {
-         this.removeButton.setLoading(true);
-      }
-
-      this.addChild(this.removeButton);
+      this.addChild(this.profileButton);
    }
 
-   private static Component presenceStatusComponent(final @Nullable PresenceStatusDto presence) {
-      if (presence != null && presence.status() != PresenceStatus.OFFLINE) {
-         String var10000 = presence.status().toString();
-         String key = "gui.friends.presence.status." + var10000.toLowerCase(Locale.ROOT);
-         return Component.translatable(key).withColor(-16711936);
-      } else {
-         return PRESENCE_OFFLINE;
-      }
+   public FriendEntry(final Minecraft minecraft, final int width, final UUID playerId, final String playerName, final PresenceResponse latestPresence, final PlayerSocialManager.Visibility visibility, final Runnable openPlayerOptions) {
+      this(minecraft, width, playerId, playerName, new PlayerStatus(PresenceStatus.OFFLINE, visibility), openPlayerOptions);
+      this.applyPresence(latestPresence);
    }
 
-   void applyPresence(final @Nullable PresenceStatusDto newPresence) {
-      this.presence = newPresence;
-      this.statusWidget.setMessage(presenceStatusComponent(newPresence));
+   public void applyPresence(final PresenceResponse latestPresence) {
+      this.statusWidget.applyPresenceForProfile(latestPresence, this.playerId);
    }
 
    public int presenceStatusSortOrder() {
-      PresenceStatus status = this.presence == null ? PresenceStatus.OFFLINE : this.presence.status();
       byte var10000;
-      switch (status) {
+      switch (this.statusWidget.status().presence()) {
          case PLAYING_HOSTED_SERVER -> var10000 = 0;
          case PLAYING_SERVER -> var10000 = 1;
          case PLAYING_REALMS -> var10000 = 2;
@@ -71,33 +61,52 @@ class FriendEntry extends AbstractFriendsEntryContainerWidget {
       return var10000;
    }
 
-   void disable() {
-      this.removeButton.active = false;
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (super.mouseClicked(event, doubleClick)) {
+         return true;
+      } else if (event.button() == 1 && !this.profileButton.isFocused()) {
+         this.setFocused(this.profileButton);
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public void disable() {
    }
 
    protected Component getEntryNarration() {
       return Component.translatable("gui.friends.narration.entry.friend", this.playerName);
    }
 
+   protected int getProfileInfoHeight() {
+      Objects.requireNonNull(this.minecraft.font);
+      return 9 * 2 + 2;
+   }
+
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
-      int verticalCenter = this.getY() + (this.getHeight() - 20) / 2;
-      int removeX = this.getX() + this.getWidth() - 20;
-      this.removeButton.setPosition(removeX, verticalCenter);
-      this.removeButton.extractRenderState(graphics, mouseX, mouseY, a);
-      int statusWidgetX = this.playerFaceWidget.getRight() + 4;
-      int statusWidth = removeX - statusWidgetX - 2;
+      int x = this.playerFaceWidget.getX() + 1;
+      int y = this.playerFaceWidget.getY() + 1;
+      this.profileButton.setPosition(x, y);
+      if (this.isHoveredOrFocused()) {
+         graphics.fill(x, y, x + this.profileButton.getWidth(), y + this.profileButton.getHeight(), -1601138544);
+         this.profileButton.extractRenderState(graphics, mouseX, mouseY, a);
+      }
+
+      int statusWidgetX = this.playerFaceWidget.getRight() + 5;
+      int statusWidth = this.getRight() - statusWidgetX - 2;
       this.statusWidget.setMaxWidth(statusWidth, StringWidget.TextOverflow.SCROLLING);
       this.statusWidget.setPosition(statusWidgetX, this.nameWidget.getBottom() + 2);
       this.statusWidget.extractRenderState(graphics, mouseX, mouseY, a);
+      if (this.profileButton.isFocused()) {
+         graphics.outline(this.getX() - 1, this.getY(), this.getWidth() + 1, this.getHeight() - 1, ARGB.white(this.alpha));
+      }
+
    }
 
-   private void confirmRemoveFriend(final Runnable action) {
-      this.minecraft.gui.setScreen((new PopupScreen.Builder(this.screen, CONFIRM_TITLE)).addMessage(CONFIRM_UNFRIEND).addButton(CommonComponents.GUI_REMOVE, (var2) -> {
-         this.removeButton.setLoading(true);
-         this.screen.startFriendAction();
-         action.run();
-         this.minecraft.gui.setScreen(this.screen);
-      }).addButton(CommonComponents.GUI_CANCEL, (var1) -> this.minecraft.gui.setScreen(this.screen)).build());
+   static {
+      ALPHABETICAL_COMPARATOR = Comparator.comparing(AbstractFriendsEntryContainerWidget::playerName, String.CASE_INSENSITIVE_ORDER);
+      PRESENCE_COMPARATOR = Comparator.comparingInt(FriendEntry::presenceStatusSortOrder);
    }
 }

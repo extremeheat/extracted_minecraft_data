@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal.equine;
 
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -17,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockSoundSetTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -69,7 +71,7 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
@@ -255,7 +257,7 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
    }
 
    public int modifyTemper(final int amount) {
-      int temper = Mth.clamp(this.getTemper() + amount, 0, this.getMaxTemper());
+      int temper = Math.clamp((long)(this.getTemper() + amount), 0, this.getMaxTemper());
       this.setTemper(temper);
       return temper;
    }
@@ -339,33 +341,27 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       if (!blockState.liquid()) {
          BlockState aboveState = this.level().getBlockState(pos.above());
-         SoundType soundType = blockState.getSoundType();
-         if (aboveState.is(Blocks.SNOW)) {
-            soundType = aboveState.getSoundType();
-         }
-
+         BlockState stepSoundBlockState = aboveState.is(Blocks.SNOW) ? aboveState : blockState;
+         Optional<Holder<BlockSoundSet>> blockSoundSetHolder = stepSoundBlockState.getSoundsAsHolder(this.level());
+         BlockSoundSet blockSoundSet = (BlockSoundSet)blockSoundSetHolder.map(Holder::value).orElse(BlockSoundSet.EMPTY);
          if (this.isVehicle() && this.canGallop) {
             ++this.gallopSoundCounter;
             if (this.gallopSoundCounter > 5 && this.gallopSoundCounter % 3 == 0) {
-               this.playGallopSound(soundType);
+               this.playGallopSound(blockSoundSet);
             } else if (this.gallopSoundCounter <= 5) {
-               this.playSound(SoundEvents.HORSE_STEP_WOOD, soundType.getVolume() * 0.15F, soundType.getPitch());
+               this.playSound(SoundEvents.HORSE_STEP_WOOD, blockSoundSet.volume() * 0.15F, blockSoundSet.pitch());
             }
-         } else if (this.isWoodSoundType(soundType)) {
-            this.playSound(SoundEvents.HORSE_STEP_WOOD, soundType.getVolume() * 0.15F, soundType.getPitch());
+         } else if (blockSoundSetHolder.isPresent() && ((Holder)blockSoundSetHolder.get()).is(BlockSoundSetTags.SOUNDS_WOODEN)) {
+            this.playSound(SoundEvents.HORSE_STEP_WOOD, blockSoundSet.volume() * 0.15F, blockSoundSet.pitch());
          } else {
-            this.playSound(this.isBaby() ? SoundEvents.HORSE_STEP_BABY : SoundEvents.HORSE_STEP, soundType.getVolume() * 0.15F, soundType.getPitch());
+            this.playSound(this.isBaby() ? SoundEvents.HORSE_STEP_BABY : SoundEvents.HORSE_STEP, blockSoundSet.volume() * 0.15F, blockSoundSet.pitch());
          }
 
       }
    }
 
-   private boolean isWoodSoundType(final SoundType soundType) {
-      return soundType == SoundType.WOOD || soundType == SoundType.NETHER_WOOD || soundType == SoundType.STEM || soundType == SoundType.CHERRY_WOOD || soundType == SoundType.BAMBOO_WOOD;
-   }
-
-   protected void playGallopSound(final SoundType soundType) {
-      this.playSound(SoundEvents.HORSE_GALLOP, soundType.getVolume() * 0.15F, soundType.getPitch());
+   protected void playGallopSound(final BlockSoundSet blockSoundSet) {
+      this.playSound(SoundEvents.HORSE_GALLOP, blockSoundSet.volume() * 0.15F, blockSoundSet.pitch());
    }
 
    public static AttributeSupplier.Builder createBaseHorseAttributes() {
@@ -817,8 +813,8 @@ public abstract class AbstractHorse extends Animal implements PlayerRideableJump
       if (attributeRangeMax <= attributeRangeMin) {
          throw new IllegalArgumentException("Incorrect range for an attribute");
       } else {
-         parentAValue = Mth.clamp(parentAValue, attributeRangeMin, attributeRangeMax);
-         parentBValue = Mth.clamp(parentBValue, attributeRangeMin, attributeRangeMax);
+         parentAValue = Math.clamp(parentAValue, attributeRangeMin, attributeRangeMax);
+         parentBValue = Math.clamp(parentBValue, attributeRangeMin, attributeRangeMax);
          double margin = 0.15 * (attributeRangeMax - attributeRangeMin);
          double range = Math.abs(parentAValue - parentBValue) + margin * 2.0;
          double average = (parentAValue + parentBValue) / 2.0;

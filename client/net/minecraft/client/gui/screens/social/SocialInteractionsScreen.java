@@ -1,267 +1,281 @@
 package net.minecraft.client.gui.screens.social;
 
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.SpriteIconCycleButton;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.tabs.Tab;
+import net.minecraft.client.gui.components.tabs.TabManager;
+import net.minecraft.client.gui.components.tabs.TabNavigationBar;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
-import net.minecraft.client.gui.screens.ConfirmLinkScreen;
+import net.minecraft.client.gui.layouts.LayoutSettings;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.friends.AbstractFriendsTab;
+import net.minecraft.client.gui.screens.friends.FriendsListFilter;
+import net.minecraft.client.gui.screens.friends.FriendsListOrder;
+import net.minecraft.client.gui.screens.friends.FriendsOverlayTabButton;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 
 public class SocialInteractionsScreen extends Screen {
-   private static final Component TITLE = Component.translatable("gui.socialInteractions.title");
-   private static final Identifier BACKGROUND_SPRITE = Identifier.withDefaultNamespace("social_interactions/background");
-   private static final Identifier SEARCH_SPRITE = Identifier.withDefaultNamespace("icon/search");
-   private static final Component TAB_ALL = Component.translatable("gui.socialInteractions.tab_all");
-   private static final Component TAB_HIDDEN = Component.translatable("gui.socialInteractions.tab_hidden");
-   private static final Component TAB_BLOCKED = Component.translatable("gui.socialInteractions.tab_blocked");
-   private static final Component TAB_ALL_SELECTED;
-   private static final Component TAB_HIDDEN_SELECTED;
-   private static final Component TAB_BLOCKED_SELECTED;
-   private static final Component SEARCH_HINT;
-   private static final Component EMPTY_SEARCH;
-   private static final Component EMPTY_HIDDEN;
-   private static final Component EMPTY_BLOCKED;
-   private static final Component BLOCKING_HINT;
-   private static final int BG_BORDER_SIZE = 8;
-   private static final int BG_WIDTH = 236;
-   private static final int SEARCH_HEIGHT = 16;
-   private static final int MARGIN_Y = 64;
-   public static final int SEARCH_START = 72;
-   public static final int LIST_START = 88;
-   private static final int IMAGE_WIDTH = 238;
-   private static final int BUTTON_HEIGHT = 20;
-   private static final int ITEM_HEIGHT = 36;
-   private final HeaderAndFooterLayout layout;
-   private final @Nullable Screen lastScreen;
-   private @Nullable SocialInteractionsPlayerList socialInteractionsPlayerList;
+   private static final Component TITLE;
+   private static final Identifier BACKGROUND_SPRITE;
+   private static final Component TAB_MUTED;
+   private static final Component TAB_BLOCKED;
+   private static final Component SORT_LIST;
+   private static final Component SEARCH;
+   private static final int HEADER_HEIGHT = 21;
+   private static final int HEADER_CONTENT_MARGIN = -2;
+   private static final int FOOTER_MARGIN = 10;
+   private static final int BG_BORDER_WIDTH = 8;
+   private static final int OVERLAY_WIDTH = 220;
+   private static final int TAB_BUTTON_WIDTH = 73;
+   private static final int TAB_BUTTON_WIDTH_2 = 74;
+   private static final int TAB_BUTTON_HEIGHT = 20;
+   private static final int WIDGET_SPACING = 3;
+   private static final int BUTTON_SIZE = 20;
+   private final @Nullable Screen backgroundScreen;
+   private final SocialInteractionsPlayerList socialInteractionsPlayerList;
    private EditBox searchBox;
-   private String lastSearch;
    private Page page;
-   private Button allButton;
-   private Button hiddenButton;
-   private Button blockedButton;
-   private Button blockingHintButton;
-   private @Nullable Component serverLabel;
+   private PlayerInteractionsTab allTab;
+   private PlayerInteractionsTab mutedTab;
+   private PlayerInteractionsTab blockedTab;
+   private TabNavigationBar tabNavigationBar;
+   private LinearLayout contentLayout;
+   private FriendsOverlayTabButton allTabButton;
+   private final HeaderAndFooterLayout layout;
+   private final TabManager tabManager;
+   private final StringWidget titleWidget;
+   private final FriendsListFilter friendsListFilter;
+   private final FriendsListOrder friendsListOrder;
    private int playerCount;
 
    public SocialInteractionsScreen() {
       this((Screen)null);
    }
 
-   public SocialInteractionsScreen(final @Nullable Screen lastScreen) {
+   public SocialInteractionsScreen(final @Nullable Screen backgroundScreen) {
       super(TITLE);
-      this.layout = new HeaderAndFooterLayout(this);
-      this.lastSearch = "";
       this.page = SocialInteractionsScreen.Page.ALL;
-      this.lastScreen = lastScreen;
-      this.updateServerLabel(Minecraft.getInstance());
-   }
-
-   private int windowHeight() {
-      return Math.max(52, this.height - 128 - 16);
-   }
-
-   private int listEnd() {
-      return 80 + this.windowHeight() - 8;
-   }
-
-   private int marginX() {
-      return (this.width - 238) / 2;
-   }
-
-   public Component getNarrationMessage() {
-      return (Component)(this.serverLabel != null ? CommonComponents.joinForNarration(super.getNarrationMessage(), this.serverLabel) : super.getNarrationMessage());
-   }
-
-   protected void init() {
-      this.layout.addTitleHeader(TITLE, this.font);
-      this.socialInteractionsPlayerList = new SocialInteractionsPlayerList(this, this.minecraft, this.width, this.listEnd() - 88, 88, 36);
-      int buttonWidth = this.socialInteractionsPlayerList.getRowWidth() / 3;
-      int buttonLeft = this.socialInteractionsPlayerList.getRowLeft();
-      int buttonRight = this.socialInteractionsPlayerList.getRowRight();
-      this.allButton = (Button)this.addRenderableWidget(Button.builder(TAB_ALL, (button) -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(buttonLeft, 45, buttonWidth, 20).build());
-      this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (button) -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((buttonLeft + buttonRight - buttonWidth) / 2 + 1, 45, buttonWidth, 20).build());
-      this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (button) -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(buttonRight - buttonWidth + 1, 45, buttonWidth, 20).build());
-      String oldEdit = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = (EditBox)this.addRenderableWidget(new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
-         {
-            Objects.requireNonNull(SocialInteractionsScreen.this);
-         }
-
-         protected MutableComponent createNarrationMessage() {
-            return !SocialInteractionsScreen.this.searchBox.getValue().isEmpty() && SocialInteractionsScreen.this.socialInteractionsPlayerList.isEmpty() ? super.createNarrationMessage().append(", ").append(SocialInteractionsScreen.EMPTY_SEARCH) : super.createNarrationMessage();
-         }
-      });
-      this.searchBox.setMaxLength(16);
-      this.searchBox.setVisible(true);
-      this.searchBox.setTextColor(-1);
-      this.searchBox.setValue(oldEdit);
-      this.searchBox.setHint(SEARCH_HINT);
-      this.searchBox.setResponder(this::checkSearchStringUpdate);
-      this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
-      this.addWidget(this.socialInteractionsPlayerList);
-      this.showPage(this.page);
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).width(200).build());
-      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
-      this.repositionElements();
+      this.layout = new HeaderAndFooterLayout(this, 21, 0);
+      this.friendsListFilter = new FriendsListFilter(this::refreshLists);
+      this.friendsListOrder = new FriendsListOrder(this::refreshLists);
+      this.backgroundScreen = backgroundScreen;
+      this.socialInteractionsPlayerList = new SocialInteractionsPlayerList(Minecraft.getInstance(), this, this.friendsListFilter, this.friendsListOrder);
+      this.tabManager = new TabManager((x$0) -> this.addRenderableWidget(x$0), (x$0) -> this.removeWidget(x$0), this::selectTab, this::deselectTab);
+      this.titleWidget = new StringWidget(TITLE, this.getFont());
    }
 
    public void added() {
-      if (this.socialInteractionsPlayerList != null) {
-         this.socialInteractionsPlayerList.refreshHasDraftReport();
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.clearFocus();
+      }
+
+      if (this.isInitialized()) {
+         this.refreshLists();
       }
 
    }
 
-   protected void repositionElements() {
-      this.layout.arrangeElements();
-      this.socialInteractionsPlayerList.updateSizeAndPosition(this.width, this.listEnd() - 88, 88);
-      this.searchBox.setPosition(this.marginX() + 28, 74);
-      int buttonLeft = this.socialInteractionsPlayerList.getRowLeft();
-      int buttonRight = this.socialInteractionsPlayerList.getRowRight();
-      int buttonWidth = this.socialInteractionsPlayerList.getRowWidth() / 3;
-      this.allButton.setPosition(buttonLeft, 45);
-      this.hiddenButton.setPosition((buttonLeft + buttonRight - buttonWidth) / 2 + 1, 45);
-      this.blockedButton.setPosition(buttonRight - buttonWidth + 1, 45);
-      this.blockingHintButton.setPosition(this.width / 2 - 100, 64 + this.windowHeight());
+   public Component getNarrationMessage() {
+      return this.titleWidget.getMessage();
    }
 
-   protected void setInitialFocus() {
-      this.setInitialFocus(this.searchBox);
+   protected void init() {
+      this.layout.setContentMarginTop(-2);
+      this.layout.addToHeader(this.titleWidget);
+      LinearLayout widgets = this.initTabWidgets();
+      int scrollableMaxHeight = this.getTabContentHeight();
+      this.allTab = new PlayerInteractionsTab(this.minecraft, this, SocialInteractionsScreen.Page.ALL, 220, scrollableMaxHeight, widgets);
+      this.mutedTab = new PlayerInteractionsTab(this.minecraft, this, SocialInteractionsScreen.Page.MUTED, 220, scrollableMaxHeight, widgets);
+      this.blockedTab = new PlayerInteractionsTab(this.minecraft, this, SocialInteractionsScreen.Page.BLOCKED, 220, scrollableMaxHeight, widgets);
+      this.allTabButton = new FriendsOverlayTabButton(this.tabManager, this.allTab, 74, 20, Component.translatable("gui.player_interactions.tab_all", 0));
+      this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, 0, 0, 220, 20).addTab(this.allTabButton, this.allTab).addTab(new FriendsOverlayTabButton(this.tabManager, this.mutedTab, 73, 20, TAB_MUTED), this.mutedTab).addTab(new FriendsOverlayTabButton(this.tabManager, this.blockedTab, 73, 20, TAB_BLOCKED), this.blockedTab).build();
+      this.contentLayout = LinearLayout.vertical();
+      this.tabManager.setCurrentTab(this.allTab, false, false);
+      LinearLayout contentAndTabs = LinearLayout.vertical().spacing(8);
+      contentAndTabs.addChild(this.tabNavigationBar);
+      contentAndTabs.addChild(this.contentLayout);
+      this.layout.addToContents(contentAndTabs, LayoutSettings::alignHorizontallyCenter);
+      this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
+      this.showPage();
+      this.updateServerLabel();
+      this.repositionElements();
+   }
+
+   private LinearLayout initTabWidgets() {
+      AbstractButton button = ((SpriteIconCycleButton.Builder)((SpriteIconCycleButton.Builder)SpriteIconCycleButton.builder(SORT_LIST, FriendsListOrder.SortBy::getTranslation, FriendsListOrder.DEFAULT_SORTING).withValues(FriendsListOrder.SortBy.values())).sprite(FriendsListOrder.SortBy::getSprites).size(20, 20).withTooltip()).build((var1, sorting) -> this.friendsListOrder.updateSorting(sorting));
+      this.searchBox = new EditBox(this.minecraft.font, this.getListContentWidth() - 20 - 3, 20, SEARCH);
+      this.searchBox.setResponder((value) -> this.friendsListFilter.updateSearchFilter(value.trim()));
+      this.searchBox.setHint(SEARCH);
+      LinearLayout widgets = LinearLayout.horizontal().spacing(3);
+      widgets.addChild(button);
+      widgets.addChild(this.searchBox);
+      return widgets;
+   }
+
+   private int getTabContentHeight() {
+      return this.height - 21 - -2 - 10 - 20 - 16;
+   }
+
+   int getListContentWidth() {
+      return 208;
+   }
+
+   protected void repositionElements() {
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.resize(this.width, this.height);
+      }
+
+      int tabHeight = this.getTabContentHeight();
+      this.allTab.setHeight(tabHeight);
+      this.mutedTab.setHeight(tabHeight);
+      this.blockedTab.setHeight(tabHeight);
+      this.layout.arrangeElements();
+      this.tabNavigationBar.arrangeElements(this.width);
+   }
+
+   public void tick() {
+      this.updateServerLabel();
+   }
+
+   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.extractBackground(graphics, mouseX, mouseY, a);
+         graphics.nextStratum();
+         this.backgroundScreen.extractRenderState(graphics, -1, -1, a);
+         graphics.nextStratum();
+         this.extractBlurredBackground(graphics);
+      } else {
+         super.extractBackground(graphics, mouseX, mouseY, a);
+      }
+
+      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
+      Tab var6 = this.tabManager.getCurrentTab();
+      if (var6 instanceof AbstractFriendsTab tab) {
+         tab.extractBackground(graphics, mouseX, mouseY, a);
+      }
+
+   }
+
+   private void selectTab(final Tab tab) {
+      if (tab instanceof PlayerInteractionsTab interactionsTab) {
+         this.socialInteractionsPlayerList.setActiveTab(interactionsTab);
+         this.page = interactionsTab.getPage();
+         this.showPage();
+      }
+
+      if (this.contentLayout != null) {
+         this.contentLayout.addChild(tab.getLayout());
+         this.repositionElements();
+      }
+
+   }
+
+   private void deselectTab(final Tab tab) {
+      if (this.contentLayout != null) {
+         this.contentLayout.removeChildren();
+      }
+
+   }
+
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      if (super.mouseClicked(event, doubleClick)) {
+         return true;
+      } else if (this.contentLayout != null && !this.contentLayout.getRectangle().expandInAllDirections(8).containsPoint((int)event.x(), (int)event.y())) {
+         this.minecraft.gui.setScreen(this.backgroundScreen);
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public boolean keyPressed(final KeyEvent event) {
+      if (!this.isInputCaptured() && this.minecraft.options.keyOtherPlayers.matches(event)) {
+         this.onClose();
+         return true;
+      } else {
+         return this.tabNavigationBar != null && this.tabNavigationBar.keyPressed(event) ? true : super.keyPressed(event);
+      }
    }
 
    public void onClose() {
-      this.minecraft.gui.setScreen(this.lastScreen);
+      this.minecraft.gui.setScreen(this.backgroundScreen);
    }
 
-   private void showPage(final Page page) {
-      this.page = page;
-      this.allButton.setMessage(TAB_ALL);
-      this.hiddenButton.setMessage(TAB_HIDDEN);
-      this.blockedButton.setMessage(TAB_BLOCKED);
+   public void refreshLists() {
+      this.showPage();
+      this.contentLayout.arrangeElements();
+   }
+
+   private void showPage() {
       boolean isEmpty = false;
-      switch (page.ordinal()) {
+      switch (this.page.ordinal()) {
          case 0:
-            this.allButton.setMessage(TAB_ALL_SELECTED);
             Collection<UUID> onlinePlayerIds = this.minecraft.player.connection.getOnlinePlayerIds();
-            this.socialInteractionsPlayerList.updatePlayerList(onlinePlayerIds, this.socialInteractionsPlayerList.scrollAmount(), true);
+            this.socialInteractionsPlayerList.updatePlayerList(onlinePlayerIds, true);
             break;
          case 1:
-            this.hiddenButton.setMessage(TAB_HIDDEN_SELECTED);
             Set<UUID> hiddenPlayers = this.minecraft.getPlayerSocialManager().getHiddenPlayers();
             isEmpty = hiddenPlayers.isEmpty();
-            this.socialInteractionsPlayerList.updatePlayerList(hiddenPlayers, this.socialInteractionsPlayerList.scrollAmount(), false);
+            this.socialInteractionsPlayerList.updatePlayerList(hiddenPlayers, false);
             break;
          case 2:
-            this.blockedButton.setMessage(TAB_BLOCKED_SELECTED);
             PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
             Stream var10000 = this.minecraft.player.connection.getOnlinePlayerIds().stream();
             Objects.requireNonNull(socialManager);
             Set<UUID> blockedPlayers = (Set)var10000.filter(socialManager::isBlocked).collect(Collectors.toSet());
             isEmpty = blockedPlayers.isEmpty();
-            this.socialInteractionsPlayerList.updatePlayerList(blockedPlayers, this.socialInteractionsPlayerList.scrollAmount(), false);
+            this.socialInteractionsPlayerList.updatePlayerList(blockedPlayers, false);
       }
 
       GameNarrator narrator = this.minecraft.getNarrator();
       if (!this.searchBox.getValue().isEmpty() && this.socialInteractionsPlayerList.isEmpty() && !this.searchBox.isFocused()) {
-         narrator.saySystemNow(EMPTY_SEARCH);
+         narrator.saySystemNow(PlayerInteractionsTab.EMPTY_SEARCH);
       } else if (isEmpty) {
-         if (page == SocialInteractionsScreen.Page.HIDDEN) {
-            narrator.saySystemNow(EMPTY_HIDDEN);
-         } else if (page == SocialInteractionsScreen.Page.BLOCKED) {
-            narrator.saySystemNow(EMPTY_BLOCKED);
+         if (this.page == SocialInteractionsScreen.Page.MUTED) {
+            narrator.saySystemNow(PlayerInteractionsTab.EMPTY_MUTED);
+         } else if (this.page == SocialInteractionsScreen.Page.BLOCKED) {
+            narrator.saySystemNow(PlayerInteractionsTab.EMPTY_BLOCKED);
          }
       }
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
-      int marginX = this.marginX() + 3;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, marginX, 64, 236, this.windowHeight() + 16);
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SEARCH_SPRITE, marginX + 10, 76, 12, 12);
-   }
-
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
-      this.updateServerLabel(this.minecraft);
-      if (this.serverLabel != null) {
-         graphics.text(this.minecraft.font, (Component)this.serverLabel, this.marginX() + 8, 35, -1);
-      }
-
-      if (!this.socialInteractionsPlayerList.isEmpty()) {
-         this.socialInteractionsPlayerList.extractRenderState(graphics, mouseX, mouseY, a);
-      } else if (!this.searchBox.getValue().isEmpty()) {
-         graphics.centeredText(this.minecraft.font, (Component)EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
-      } else if (this.page == SocialInteractionsScreen.Page.HIDDEN) {
-         graphics.centeredText(this.minecraft.font, (Component)EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
-      } else if (this.page == SocialInteractionsScreen.Page.BLOCKED) {
-         graphics.centeredText(this.minecraft.font, (Component)EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
-      }
-
-      this.blockingHintButton.setVisible(this.page == SocialInteractionsScreen.Page.BLOCKED);
-   }
-
-   public boolean keyPressed(final KeyEvent event) {
-      if (!this.isInputCaptured() && this.minecraft.options.keySocialInteractions.matches(event)) {
-         this.onClose();
-         return true;
-      } else {
-         return super.keyPressed(event);
-      }
-   }
-
-   public boolean isPauseScreen() {
-      return false;
-   }
-
-   private void checkSearchStringUpdate(String searchText) {
-      searchText = searchText.toLowerCase(Locale.ROOT);
-      if (!searchText.equals(this.lastSearch)) {
-         this.socialInteractionsPlayerList.setFilter(searchText);
-         this.lastSearch = searchText;
-         this.showPage(this.page);
-      }
-
-   }
-
-   private void updateServerLabel(final Minecraft minecraft) {
-      int playerCount = minecraft.getConnection().getOnlinePlayers().size();
+   private void updateServerLabel() {
+      int playerCount = this.minecraft.getConnection().getOnlinePlayers().size();
       if (this.playerCount != playerCount) {
-         String serverName = "";
-         ServerData currentServer = minecraft.getCurrentServer();
-         if (minecraft.isLocalServer()) {
-            serverName = minecraft.getSingleplayerServer().getMotd();
-         } else if (currentServer != null) {
-            serverName = currentServer.name;
-         }
-
-         if (playerCount > 1) {
-            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.multiple", serverName, playerCount);
+         if (this.minecraft.isLocalServer()) {
+            String serverName = this.minecraft.getSingleplayerServer().getMotd();
+            this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", serverName));
          } else {
-            this.serverLabel = Component.translatable("gui.socialInteractions.server_label.single", serverName, playerCount);
+            ServerData currentServer = this.minecraft.getCurrentServer();
+            if (currentServer != null) {
+               this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", currentServer.name));
+            } else {
+               this.titleWidget.setMessage(TITLE);
+            }
          }
 
+         this.allTabButton.setMessage(Component.translatable("gui.player_interactions.tab_all", playerCount - 1));
          this.playerCount = playerCount;
       }
 
@@ -276,19 +290,17 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    static {
-      TAB_ALL_SELECTED = TAB_ALL.plainCopy().withStyle(ChatFormatting.UNDERLINE);
-      TAB_HIDDEN_SELECTED = TAB_HIDDEN.plainCopy().withStyle(ChatFormatting.UNDERLINE);
-      TAB_BLOCKED_SELECTED = TAB_BLOCKED.plainCopy().withStyle(ChatFormatting.UNDERLINE);
-      SEARCH_HINT = Component.translatable("gui.socialInteractions.search_hint").withStyle(EditBox.SEARCH_HINT_STYLE);
-      EMPTY_SEARCH = Component.translatable("gui.socialInteractions.search_empty").withStyle(ChatFormatting.GRAY);
-      EMPTY_HIDDEN = Component.translatable("gui.socialInteractions.empty_hidden").withStyle(ChatFormatting.GRAY);
-      EMPTY_BLOCKED = Component.translatable("gui.socialInteractions.empty_blocked").withStyle(ChatFormatting.GRAY);
-      BLOCKING_HINT = Component.translatable("gui.socialInteractions.blocking_hint");
+      TITLE = Component.translatable("gui.player_interactions.title", CommonComponents.EMPTY);
+      BACKGROUND_SPRITE = Identifier.withDefaultNamespace("friends/background");
+      TAB_MUTED = Component.translatable("gui.player_interactions.tab_muted");
+      TAB_BLOCKED = Component.translatable("gui.player_interactions.tab_blocked");
+      SORT_LIST = Component.translatable("gui.friends.sort");
+      SEARCH = Component.translatable("gui.player_interactions.search");
    }
 
    public static enum Page {
       ALL,
-      HIDDEN,
+      MUTED,
       BLOCKED;
 
       private Page() {
@@ -296,7 +308,7 @@ public class SocialInteractionsScreen extends Screen {
 
       // $FF: synthetic method
       private static Page[] $values() {
-         return new Page[]{ALL, HIDDEN, BLOCKED};
+         return new Page[]{ALL, MUTED, BLOCKED};
       }
    }
 }

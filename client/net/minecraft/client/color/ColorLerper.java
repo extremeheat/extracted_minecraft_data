@@ -28,7 +28,7 @@ public class ColorLerper {
    }
 
    private static int getModifiedColor(final DyeColor color, final int src, final float brightness) {
-      return color == DyeColor.WHITE ? -1644826 : ARGB.color(255, Mth.clamp(Mth.floor((float)ARGB.red(src) * brightness), 0, 255), Mth.clamp(Mth.floor((float)ARGB.green(src) * brightness), 0, 255), Mth.clamp(Mth.floor((float)ARGB.blue(src) * brightness), 0, 255));
+      return color == DyeColor.WHITE ? -1644826 : ARGB.color(255, Math.clamp((long)Mth.floor((float)ARGB.red(src) * brightness), 0, 255), Math.clamp((long)Mth.floor((float)ARGB.green(src) * brightness), 0, 255), Math.clamp((long)Mth.floor((float)ARGB.blue(src) * brightness), 0, 255));
    }
 
    static {

@@ -49,7 +49,7 @@ public class BodyRotationControl implements Control {
 
    private void rotateHeadTowardsFront() {
       int timeSinceStartingToFaceForward = this.headStableTime - 10;
-      float faceForwardFraction = Mth.clamp((float)timeSinceStartingToFaceForward / 10.0F, 0.0F, 1.0F);
+      float faceForwardFraction = Math.clamp((float)timeSinceStartingToFaceForward / 10.0F, 0.0F, 1.0F);
       float angleRemainingUntilFacingForward = (float)this.mob.getMaxHeadYRot() * (1.0F - faceForwardFraction);
       this.mob.yBodyRot = Mth.rotateIfNecessary(this.mob.yBodyRot, this.mob.yHeadRot, angleRemainingUntilFacingForward);
    }

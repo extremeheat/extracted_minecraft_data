@@ -6,15 +6,14 @@ import java.util.Objects;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.multiplayer.LevelLoadTracker;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.progress.ChunkLoadStatusView;
@@ -99,7 +98,7 @@ public class LevelLoadingScreen extends Screen {
       int textTop;
       if (statusView != null) {
          int size = 2;
-         extractChunksForRendering(graphics, xCenter, yCenter, 2, 0, statusView);
+         extractChunksForRendering(graphics, xCenter, yCenter, 2, 0, statusView, false);
          int var10000 = yCenter - statusView.radius() * 2;
          Objects.requireNonNull(this.font);
          textTop = var10000 - 9 * 3;
@@ -121,13 +120,13 @@ public class LevelLoadingScreen extends Screen {
       graphics.fill(left, top, left + Math.round(progress * (float)width), top + height, -16711936);
    }
 
-   public static void extractChunksForRendering(final GuiGraphicsExtractor graphics, final int xCenter, final int yCenter, final int size, final int margin, final ChunkLoadStatusView statusView) {
+   public static void extractChunksForRendering(final GuiGraphicsExtractor graphics, final int xCenter, final int yCenter, final int size, final int margin, final ChunkLoadStatusView statusView, final boolean showCenter) {
       int width = size + margin;
       int diameter = statusView.radius() * 2 + 1;
       int totalWidth = diameter * width - margin;
       int xStart = xCenter - totalWidth / 2;
       int yStart = yCenter - totalWidth / 2;
-      if (Minecraft.getInstance().debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_CHUNKS_ON_SERVER)) {
+      if (showCenter) {
          int centerWidth = width / 2 + 1;
          graphics.fill(xCenter - centerWidth, yCenter - centerWidth, xCenter + centerWidth, yCenter + centerWidth, -65536);
       }
@@ -150,9 +149,9 @@ public class LevelLoadingScreen extends Screen {
             break;
          case 1:
             TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-            AbstractTexture skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
-            AbstractTexture portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
-            TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.getTextureView(), skyTexture.getSampler(), portalTexture.getTextureView(), portalTexture.getSampler());
+            TextureHandle skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
+            TextureHandle portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
+            TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.textureView(), skyTexture.sampler(), portalTexture.textureView(), portalTexture.sampler());
             graphics.fill(RenderPipelines.END_PORTAL_GUI, textureSetup, 0, 0, this.width, this.height);
             break;
          case 2:

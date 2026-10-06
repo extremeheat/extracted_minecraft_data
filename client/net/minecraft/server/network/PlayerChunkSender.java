@@ -116,7 +116,7 @@ public class PlayerChunkSender {
          this.unacknowledgedBatches = 0;
       }
 
-      this.desiredChunksPerTick = Double.isNaN((double)desiredChunksPerTick) ? 0.01F : Mth.clamp(desiredChunksPerTick, 0.01F, 64.0F);
+      this.desiredChunksPerTick = Double.isNaN((double)desiredChunksPerTick) ? 0.01F : Math.clamp(desiredChunksPerTick, 0.01F, 64.0F);
       if (this.unacknowledgedBatches == 0) {
          this.batchQuota = 1.0F;
       }

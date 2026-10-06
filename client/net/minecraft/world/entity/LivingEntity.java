@@ -117,8 +117,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HoneyBlock;
 import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.PowderSnowBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TrapDoorBlock;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -481,37 +481,24 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private static float computeModifiedFriction(final float friction, final float modifier) {
-      return Mth.clamp(1.0F - (1.0F - friction) * modifier, 0.0F, 1.0F);
+      return Math.clamp(1.0F - (1.0F - friction) * modifier, 0.0F, 1.0F);
    }
 
    public float getLuck() {
       return 0.0F;
    }
 
-   protected void removeFrost() {
+   private void updateFrozenEffectMovementSpeedPenalty() {
       AttributeInstance speed = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (speed != null) {
-         if (speed.getModifier(SPEED_MODIFIER_POWDER_SNOW_ID) != null) {
+         if (this.getTicksFrozen() > 0) {
+            float slowAmount = -0.05F * this.getPercentFrozen();
+            speed.addOrUpdateTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, (double)slowAmount, AttributeModifier.Operation.ADD_VALUE));
+         } else {
             speed.removeModifier(SPEED_MODIFIER_POWDER_SNOW_ID);
          }
 
       }
-   }
-
-   protected void tryAddFrost() {
-      if (!this.getBlockStateOnLegacy().isAir()) {
-         int ticksFrozen = this.getTicksFrozen();
-         if (ticksFrozen > 0) {
-            AttributeInstance speed = this.getAttribute(Attributes.MOVEMENT_SPEED);
-            if (speed == null) {
-               return;
-            }
-
-            float slowAmount = -0.05F * this.getPercentFrozen();
-            speed.addTransientModifier(new AttributeModifier(SPEED_MODIFIER_POWDER_SNOW_ID, (double)slowAmount, AttributeModifier.Operation.ADD_VALUE));
-         }
-      }
-
    }
 
    protected void onChangedBlock(final ServerLevel level, final BlockPos pos) {
@@ -902,7 +889,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
       }
 
-      return Mth.clamp(visibilityPercent, 0.0, 10.0);
+      return Math.clamp(visibilityPercent, 0.0, 10.0);
    }
 
    public boolean canAttack(final LivingEntity target) {
@@ -1135,7 +1122,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void setHealth(final float health) {
-      this.entityData.set(DATA_HEALTH_ID, Mth.clamp(health, 0.0F, this.getMaxHealth()));
+      this.entityData.set(DATA_HEALTH_ID, Math.clamp(health, 0.0F, this.getMaxHealth()));
    }
 
    public boolean isDeadOrDying() {
@@ -1800,8 +1787,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          int zz = Mth.floor(this.getZ());
          BlockState state = this.level().getBlockState(new BlockPos(xx, yy, zz));
          if (!state.isAir()) {
-            SoundType soundType = state.getSoundType();
-            this.playSound(soundType.getFallSound(), soundType.getVolume() * 0.5F, soundType.getPitch() * 0.75F);
+            BlockSoundSet blockSoundSet = state.getSounds(this.level());
+            blockSoundSet.fallSound().ifPresent((fallSound) -> this.playSound(fallSound, blockSoundSet.volume() * 0.5F, blockSoundSet.pitch() * 0.75F));
          }
 
       }
@@ -2626,8 +2613,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (this.onClimbable()) {
          this.resetFallDistance();
          float max = 0.15F;
-         double xd = Mth.clamp(delta.x, -0.15000000596046448, 0.15000000596046448);
-         double zd = Mth.clamp(delta.z, -0.15000000596046448, 0.15000000596046448);
+         double xd = Math.clamp(delta.x, -0.15000000596046448, 0.15000000596046448);
+         double zd = Math.clamp(delta.z, -0.15000000596046448, 0.15000000596046448);
          double yd = Math.max(delta.y, -0.15000000596046448);
          if (yd < 0.0 && !this.getInBlockState().is(Blocks.SCAFFOLDING) && this.isSuppressingSlidingDownLadder() && this instanceof Player) {
             yd = 0.0;
@@ -3049,12 +3036,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          this.resetFallDistance();
       }
 
-      label123: {
-         LivingEntity var18 = this.getControllingPassenger();
-         if (var18 instanceof Player controller) {
+      label131: {
+         LivingEntity damage = this.getControllingPassenger();
+         if (damage instanceof Player controller) {
             if (this.isAlive()) {
                this.travelRidden(controller, input);
-               break label123;
+               break label131;
             }
          }
 
@@ -3075,14 +3062,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       Level var19 = this.level();
       if (var19 instanceof ServerLevel serverLevel) {
          profiler.push("freezing");
-         if (!this.isInPowderSnow || !this.canFreeze()) {
+         if (!this.canFreeze() || !this.isInPowderSnow && !this.hasEffect(MobEffects.FREEZING)) {
             this.setTicksFrozen(Math.max(0, this.getTicksFrozen() - 2));
          }
 
-         this.removeFrost();
-         this.tryAddFrost();
+         this.updateFrozenEffectMovementSpeedPenalty();
          if (this.tickCount % 40 == 0 && this.isFullyFrozen() && this.canFreeze()) {
-            this.hurtServer(serverLevel, this.damageSources().freeze(), 1.0F);
+            float damage = this.hasEffect(MobEffects.FREEZING) ? 1.5F : 1.0F;
+            this.hurtServer(serverLevel, this.damageSources().freeze(), damage);
          }
 
          profiler.pop();
@@ -3342,7 +3329,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public final void setAbsorptionAmount(final float absorptionAmount) {
-      this.internalSetAbsorptionAmount(Mth.clamp(absorptionAmount, 0.0F, this.getMaxAbsorption()));
+      this.internalSetAbsorptionAmount(Math.clamp(absorptionAmount, 0.0F, this.getMaxAbsorption()));
    }
 
    protected void internalSetAbsorptionAmount(final float absorptionAmount) {

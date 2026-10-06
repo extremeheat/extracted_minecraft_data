@@ -11,7 +11,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.NautilusRenderState;
-import net.minecraft.util.Mth;
 
 public class NautilusModel extends EntityModel<NautilusRenderState> {
    private static final float SWIM_ANIMATION_SPEED_MAX = 2.0F;
@@ -64,8 +63,8 @@ public class NautilusModel extends EntityModel<NautilusRenderState> {
    }
 
    private void applyBodyRotation(float yRot, float xRot) {
-      yRot = Mth.clamp(yRot, -10.0F, 10.0F);
-      xRot = Mth.clamp(xRot, -10.0F, 10.0F);
+      yRot = Math.clamp(yRot, -10.0F, 10.0F);
+      xRot = Math.clamp(xRot, -10.0F, 10.0F);
       this.body.yRot = yRot * 0.017453292F;
       this.body.xRot = xRot * 0.017453292F;
    }

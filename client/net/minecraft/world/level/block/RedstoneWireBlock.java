@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.InteractionResult;
@@ -442,8 +441,8 @@ public class RedstoneWireBlock extends Block {
          for(int i = 0; i <= 15; ++i) {
             float power = (float)i / 15.0F;
             float red = power * 0.6F + (power > 0.0F ? 0.4F : 0.3F);
-            float green = Mth.clamp(power * power * 0.7F - 0.5F, 0.0F, 1.0F);
-            float blue = Mth.clamp(power * power * 0.6F - 0.7F, 0.0F, 1.0F);
+            float green = Math.clamp(power * power * 0.7F - 0.5F, 0.0F, 1.0F);
+            float blue = Math.clamp(power * power * 0.6F - 0.7F, 0.0F, 1.0F);
             list[i] = ARGB.colorFromFloat(1.0F, red, green, blue);
          }
 

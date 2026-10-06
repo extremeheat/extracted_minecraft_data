@@ -115,14 +115,4 @@ public class BreakingItemParticle extends SingleQuadParticle {
          return new BreakingItemParticle(level, x, y, z, this.getSprite(new ItemStackTemplate(Items.COBWEB), level, random));
       }
    }
-
-   public static class SnowballProvider extends ItemParticleProvider<SimpleParticleType> {
-      public SnowballProvider() {
-         super();
-      }
-
-      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
-         return new BreakingItemParticle(level, x, y, z, this.getSprite(new ItemStackTemplate(Items.SNOWBALL), level, random));
-      }
-   }
 }

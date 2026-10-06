@@ -64,7 +64,7 @@ public class Breeze extends Monster {
 
    public Breeze(final EntityType<? extends Monster> type, final Level level) {
       super(type, level);
-      this.setPathfindingMalus(PathType.ON_TOP_OF_TRAPDOOR, -1.0F);
+      this.setPathfindingMalus(PathType.ON_TOP_OF_DROP_DOWN, -1.0F);
       this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.xpReward = 10;
    }

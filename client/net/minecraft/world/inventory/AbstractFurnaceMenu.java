@@ -6,7 +6,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -130,7 +129,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    public float getBurnProgress() {
       int current = this.data.get(2);
       int total = this.data.get(3);
-      return total != 0 && current != 0 ? Mth.clamp((float)current / (float)total, 0.0F, 1.0F) : 0.0F;
+      return total != 0 && current != 0 ? Math.clamp((float)current / (float)total, 0.0F, 1.0F) : 0.0F;
    }
 
    public float getLitProgress() {
@@ -139,7 +138,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
          litDuration = 200;
       }
 
-      return Mth.clamp((float)this.data.get(0) / (float)litDuration, 0.0F, 1.0F);
+      return Math.clamp((float)this.data.get(0) / (float)litDuration, 0.0F, 1.0F);
    }
 
    public boolean isLit() {

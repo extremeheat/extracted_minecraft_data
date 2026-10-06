@@ -12,7 +12,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -193,9 +192,9 @@ public class ShulkerBullet extends Projectile {
          if (finalTarget == null || !finalTarget.isAlive() || finalTarget instanceof Player && finalTarget.isSpectator()) {
             this.applyGravity();
          } else {
-            this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
-            this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
-            this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
+            this.targetDeltaX = Math.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
+            this.targetDeltaY = Math.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
+            this.targetDeltaZ = Math.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
             Vec3 movement = this.getDeltaMovement();
             this.addDeltaMovement((this.targetDeltaX - movement.x) * 0.2, (this.targetDeltaY - movement.y) * 0.2, (this.targetDeltaZ - movement.z) * 0.2);
          }

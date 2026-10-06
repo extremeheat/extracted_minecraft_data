@@ -4,7 +4,6 @@ import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
@@ -22,13 +21,8 @@ public class GlyphStitcher implements AutoCloseable {
    }
 
    public void reset() {
-      int textureCount = this.textures.size();
+      this.textures.forEach(FontTexture::close);
       this.textures.clear();
-
-      for(int i = 0; i < textureCount; ++i) {
-         this.textureManager.release(this.textureName(i));
-      }
-
    }
 
    public void close() {
@@ -47,10 +41,8 @@ public class GlyphStitcher implements AutoCloseable {
       Identifier name = this.textureName(nextIndex);
       boolean isColored = glyphBitmap.isColored();
       GlyphRenderTypes renderTypes = isColored ? GlyphRenderTypes.createForColorTexture(name) : GlyphRenderTypes.createForGrayscaleTexture(name);
-      Objects.requireNonNull(name);
-      FontTexture texture = new FontTexture(name::toString, renderTypes, isColored);
+      FontTexture texture = new FontTexture(this.textureManager, name, renderTypes, isColored);
       this.textures.add(texture);
-      this.textureManager.register(name, texture);
       return texture.add(info, glyphBitmap);
    }
 

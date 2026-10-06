@@ -67,7 +67,7 @@ public class TargetBlock extends Block {
          distance = Math.max(distY, distZ);
       }
 
-      return Math.max(1, Mth.ceil(15.0 * Mth.clamp((0.5 - distance) / 0.5, 0.0, 1.0)));
+      return Math.max(1, Mth.ceil(15.0 * Math.clamp((0.5 - distance) / 0.5, 0.0, 1.0)));
    }
 
    private static void setOutputPower(final LevelAccessor level, final BlockState state, final int outputStrength, final BlockPos pos, final int duration) {

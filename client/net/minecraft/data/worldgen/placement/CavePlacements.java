@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.valueproviders.ClampedNormalInt;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
@@ -32,7 +33,9 @@ public class CavePlacements {
    public static final ResourceKey<PlacedFeature> FOSSIL_LOWER = PlacementUtils.createKey("fossil_lower");
    public static final ResourceKey<PlacedFeature> DRIPSTONE_CLUSTER = PlacementUtils.createKey("dripstone_cluster");
    public static final ResourceKey<PlacedFeature> SULFUR_SPIKE_CLUSTER = PlacementUtils.createKey("sulfur_spike_cluster");
+   public static final ResourceKey<PlacedFeature> ICICLE_CLUSTER = PlacementUtils.createKey("icicle_cluster");
    public static final ResourceKey<PlacedFeature> LARGE_DRIPSTONE = PlacementUtils.createKey("large_dripstone");
+   public static final ResourceKey<PlacedFeature> LARGE_ICICLE = PlacementUtils.createKey("large_icicle");
    public static final ResourceKey<PlacedFeature> POINTED_DRIPSTONE = PlacementUtils.createKey("pointed_dripstone");
    public static final ResourceKey<PlacedFeature> SULFUR_SPIKE = PlacementUtils.createKey("sulfur_spike");
    public static final ResourceKey<PlacedFeature> UNDERWATER_MAGMA = PlacementUtils.createKey("underwater_magma");
@@ -46,6 +49,8 @@ public class CavePlacements {
    public static final ResourceKey<PlacedFeature> SPORE_BLOSSOM = PlacementUtils.createKey("spore_blossom");
    public static final ResourceKey<PlacedFeature> CLASSIC_VINES = PlacementUtils.createKey("classic_vines_cave_feature");
    public static final ResourceKey<PlacedFeature> AMETHYST_GEODE = PlacementUtils.createKey("amethyst_geode");
+   public static final ResourceKey<PlacedFeature> SNOW_LAYERS = PlacementUtils.createKey("snow_layers");
+   public static final ResourceKey<PlacedFeature> ICE_CRYSTALS = PlacementUtils.createKey("ice_crystals");
    public static final ResourceKey<PlacedFeature> SCULK_PATCH_DEEP_DARK = PlacementUtils.createKey("sculk_patch_deep_dark");
    public static final ResourceKey<PlacedFeature> SCULK_PATCH_ANCIENT_CITY = PlacementUtils.createKey("sculk_patch_ancient_city");
    public static final ResourceKey<PlacedFeature> SCULK_VEIN = PlacementUtils.createKey("sculk_vein");
@@ -61,9 +66,13 @@ public class CavePlacements {
       Holder<Feature> fossilDiamonds = configuredFeatures.getOrThrow(CaveFeatures.FOSSIL_DIAMONDS);
       Holder<Feature> dripstoneCluster = configuredFeatures.getOrThrow(CaveFeatures.DRIPSTONE_CLUSTER);
       Holder<Feature> sulfurSpikeCluster = configuredFeatures.getOrThrow(CaveFeatures.SULFUR_SPIKE_CLUSTER);
+      Holder<Feature> icicleCluster = configuredFeatures.getOrThrow(CaveFeatures.ICICLE_CLUSTER);
       Holder<Feature> largeDripstone = configuredFeatures.getOrThrow(CaveFeatures.LARGE_DRIPSTONE);
+      Holder<Feature> largeIcicle = configuredFeatures.getOrThrow(CaveFeatures.LARGE_ICICLE);
       Holder<Feature> pointedDripstone = configuredFeatures.getOrThrow(CaveFeatures.POINTED_DRIPSTONE);
       Holder<Feature> sulfurSpike = configuredFeatures.getOrThrow(CaveFeatures.SULFUR_SPIKE);
+      Holder<Feature> snowLayer = configuredFeatures.getOrThrow(CaveFeatures.SNOW_LAYER);
+      Holder<Feature> iceCrystal = configuredFeatures.getOrThrow(CaveFeatures.ICE_CRYSTAL);
       Holder<Feature> underwaterMagma = configuredFeatures.getOrThrow(CaveFeatures.UNDERWATER_MAGMA);
       Holder<Feature> glowLichen = configuredFeatures.getOrThrow(CaveFeatures.GLOW_LICHEN);
       Holder<Feature> rootedAzaleaTree = configuredFeatures.getOrThrow(CaveFeatures.ROOTED_AZALEA_TREE);
@@ -84,6 +93,7 @@ public class CavePlacements {
       PlacementUtils.register(context, FOSSIL_LOWER, fossilDiamonds, RarityFilter.onAverageOnceEvery(64), InSquarePlacement.spread(), HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(-8)), BiomeFilter.biome());
       PlacementUtils.register(context, DRIPSTONE_CLUSTER, dripstoneCluster, CountPlacement.of(UniformInt.of(48, 96)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, SULFUR_SPIKE_CLUSTER, sulfurSpikeCluster, CountPlacement.of(UniformInt.of(48, 96)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
+      PlacementUtils.register(context, ICICLE_CLUSTER, icicleCluster, CountPlacement.of(UniformInt.of(24, 64)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, LARGE_DRIPSTONE, largeDripstone, CountPlacement.of(UniformInt.of(10, 48)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, POINTED_DRIPSTONE, pointedDripstone, CountPlacement.of(UniformInt.of(192, 256)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(UniformInt.of(1, 5)), OffsetPlacement.of(ClampedNormalInt.of(0.0F, 3.0F, -10, 10), ClampedNormalInt.of(0.0F, 0.6F, -2, 2)), BiomeFilter.biome());
       PlacementUtils.register(context, SULFUR_SPIKE, sulfurSpike, CountPlacement.of(UniformInt.of(192, 256)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(UniformInt.of(1, 5)), OffsetPlacement.of(ClampedNormalInt.of(0.0F, 3.0F, -10, 10), ClampedNormalInt.of(0.0F, 0.6F, -2, 2)), BiomeFilter.biome());
@@ -101,5 +111,8 @@ public class CavePlacements {
       PlacementUtils.register(context, SCULK_PATCH_DEEP_DARK, sculkPatchDeepDark, CountPlacement.of(ConstantInt.of(256)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
       PlacementUtils.register(context, SCULK_PATCH_ANCIENT_CITY, sculkPatchAncientCity);
       PlacementUtils.register(context, SCULK_VEIN, sculkVein, CountPlacement.of(UniformInt.of(204, 250)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
+      PlacementUtils.register(context, SNOW_LAYERS, snowLayer, CountPlacement.of(UniformInt.of(16, 24)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(32), OffsetPlacement.ofTriangle(4, 0), EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.solid(), BlockPredicate.ONLY_IN_AIR_PREDICATE, 32), OffsetPlacement.vertical(ConstantInt.of(1)), BiomeFilter.biome());
+      PlacementUtils.register(context, ICE_CRYSTALS, iceCrystal, CountPlacement.of(UniformInt.of(48, 64)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, CountPlacement.of(2), OffsetPlacement.ofTriangle(2, 0), EnvironmentScanPlacement.scanningFor(Direction.DOWN, BlockPredicate.matchesBlocks(Blocks.PACKED_ICE), BlockPredicate.ONLY_IN_AIR_PREDICATE, 32), OffsetPlacement.vertical(ConstantInt.of(1)), BiomeFilter.biome());
+      PlacementUtils.register(context, LARGE_ICICLE, largeIcicle, CountPlacement.of(UniformInt.of(48, 64)), InSquarePlacement.spread(), PlacementUtils.RANGE_BOTTOM_TO_MAX_TERRAIN_HEIGHT, BiomeFilter.biome());
    }
 }

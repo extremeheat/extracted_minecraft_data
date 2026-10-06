@@ -1,7 +1,6 @@
 package net.minecraft.world;
 
 import javax.annotation.concurrent.Immutable;
-import net.minecraft.util.Mth;
 
 @Immutable
 public class DifficultyInstance {
@@ -47,11 +46,11 @@ public class DifficultyInstance {
       } else {
          boolean isHard = base == Difficulty.HARD;
          float scale = 0.75F;
-         float globalScale = Mth.clamp(((float)totalGameTime + -72000.0F) / 1440000.0F, 0.0F, 1.0F) * 0.25F;
+         float globalScale = Math.clamp(((float)totalGameTime + -72000.0F) / 1440000.0F, 0.0F, 1.0F) * 0.25F;
          scale += globalScale;
          float localScale = 0.0F;
-         localScale += Mth.clamp((float)localGameTime / 3600000.0F, 0.0F, 1.0F) * (isHard ? 1.0F : 0.75F);
-         localScale += Mth.clamp(moonBrightness * 0.25F, 0.0F, globalScale);
+         localScale += Math.clamp((float)localGameTime / 3600000.0F, 0.0F, 1.0F) * (isHard ? 1.0F : 0.75F);
+         localScale += Math.clamp(moonBrightness * 0.25F, 0.0F, globalScale);
          if (base == Difficulty.EASY) {
             localScale *= 0.5F;
          }

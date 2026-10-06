@@ -280,7 +280,7 @@ public class PlayerTabOverlay {
       if (fullHearts > 0) {
          int widthPerHeart = Mth.floor(Math.min((float)(right - left - 4) / (float)heartsToRender, 9.0F));
          if (widthPerHeart <= 3) {
-            float pct = Mth.clamp((float)score / 20.0F, 0.0F, 1.0F);
+            float pct = Math.clamp((float)score / 20.0F, 0.0F, 1.0F);
             int color = (int)((1.0F - pct) * 255.0F) << 16 | (int)(pct * 255.0F) << 8;
             float hearts = (float)score / 2.0F;
             Component hpText = Component.translatable("multiplayer.player.list.hp", hearts);

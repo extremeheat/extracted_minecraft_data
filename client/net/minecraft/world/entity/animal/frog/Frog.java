@@ -84,7 +84,7 @@ public class Frog extends Animal {
       super(type, level);
       this.lookControl = new FrogLookControl(this);
       this.setPathfindingMalus(PathType.WATER, 4.0F);
-      this.setPathfindingMalus(PathType.TRAPDOOR, -1.0F);
+      this.setPathfindingMalus(PathType.DROP_DOWN, -1.0F);
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
    }
 

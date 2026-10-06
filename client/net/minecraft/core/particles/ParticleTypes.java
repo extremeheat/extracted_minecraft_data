@@ -42,6 +42,7 @@ public class ParticleTypes {
    public static final ParticleType<ColorParticleOption> ENTITY_EFFECT = register("entity_effect", false, ColorParticleOption::codec, ColorParticleOption::streamCodec);
    public static final SimpleParticleType EXPLOSION_EMITTER = register("explosion_emitter", true);
    public static final SimpleParticleType EXPLOSION = register("explosion", true);
+   public static final SimpleParticleType FREEZING = register("freezing", false);
    public static final SimpleParticleType GUST = register("gust", true);
    public static final SimpleParticleType SMALL_GUST = register("small_gust", false);
    public static final SimpleParticleType GUST_EMITTER_LARGE = register("gust_emitter_large", true);
@@ -75,7 +76,6 @@ public class ParticleTypes {
    public static final SimpleParticleType RESET_MOB_GROWTH = register("reset_mob_growth", false);
    public static final SimpleParticleType ITEM_SLIME = register("item_slime", false);
    public static final SimpleParticleType ITEM_COBWEB = register("item_cobweb", false);
-   public static final SimpleParticleType ITEM_SNOWBALL = register("item_snowball", false);
    public static final SimpleParticleType LARGE_SMOKE = register("large_smoke", false);
    public static final SimpleParticleType LAVA = register("lava", false);
    public static final SimpleParticleType MYCELIUM = register("mycelium", false);

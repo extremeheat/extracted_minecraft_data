@@ -138,8 +138,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          this.realmOwnerName = (new StringWidget(Component.literal(pendingInvite.realmOwnerName()).withColor(-6250336), RealmsPendingInvitesScreen.this.font)).setMaxWidth(maxTextWidth);
          this.inviteDate = (new StringWidget(ComponentUtils.mergeStyles(RealmsUtil.convertToAgePresentationFromInstant(pendingInvite.date()), Style.EMPTY.withColor(-6250336)), RealmsPendingInvitesScreen.this.font)).setMaxWidth(maxTextWidth);
          Button.CreateNarration narration = this.getCreateNarration(pendingInvite);
-         this.acceptButton = SpriteIconButton.builder(ACCEPT_INVITE, (button) -> this.handleInvitation(true), false).sprite((WidgetSprites)ACCEPT_SPRITE, 18, 18).size(21, 21).narration(narration).withTootip().build();
-         this.rejectButton = SpriteIconButton.builder(REJECT_INVITE, (button) -> this.handleInvitation(false), false).sprite((WidgetSprites)REJECT_SPRITE, 18, 18).size(21, 21).narration(narration).withTootip().build();
+         this.acceptButton = ((SpriteIconButton.Builder)((SpriteIconButton.Builder)SpriteIconButton.builder(ACCEPT_INVITE, (var1) -> this.handleInvitation(true), false).sprite((WidgetSprites)ACCEPT_SPRITE, 18, 18).size(21, 21)).createNarration(narration)).withTootip().build();
+         this.rejectButton = ((SpriteIconButton.Builder)((SpriteIconButton.Builder)SpriteIconButton.builder(REJECT_INVITE, (var1) -> this.handleInvitation(false), false).sprite((WidgetSprites)REJECT_SPRITE, 18, 18).size(21, 21)).createNarration(narration)).withTootip().build();
          this.children.addAll(List.of(this.acceptButton, this.rejectButton));
       }
 

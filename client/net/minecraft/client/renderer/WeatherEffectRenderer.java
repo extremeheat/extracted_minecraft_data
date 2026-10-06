@@ -20,7 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.state.level.WeatherRenderState;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -43,8 +43,8 @@ public class WeatherEffectRenderer implements AutoCloseable {
    private final float[] columnSizeZ = new float[1024];
    private final GameRenderer gameRenderer;
    private final TextureManager textureManager;
-   private @Nullable AbstractTexture rainTexture;
-   private @Nullable AbstractTexture snowTexture;
+   private @Nullable TextureHandle rainTexture;
+   private @Nullable TextureHandle snowTexture;
    private @Nullable GpuBuffer vertexBuffer;
    private @Nullable PrimitiveTopology primitiveTopology;
    private int indexCount;
@@ -102,8 +102,8 @@ public class WeatherEffectRenderer implements AutoCloseable {
       }
    }
 
-   private void renderWeather(final RenderPass renderPass, final AbstractTexture texture, final int startColumn, final int columnCount) {
-      renderPass.setUniform("Sampler0", texture.getTextureView(), texture.getSampler());
+   private void renderWeather(final RenderPass renderPass, final TextureHandle texture, final int startColumn, final int columnCount) {
+      renderPass.setUniform("Sampler0", texture.textureView(), texture.sampler());
       renderPass.drawIndexed(columnCount * 6, 1, startColumn * 6, 0, 0);
    }
 

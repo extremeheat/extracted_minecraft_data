@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.TrailParticleOption;
@@ -236,7 +237,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
                   for(int i = 0; i < numberOfClumps; ++i) {
                      this.spreadResin(serverLevel).ifPresent((blockPos) -> {
-                        this.level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.RESIN_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                        this.level.playSound((Entity)null, (BlockPos)blockPos, (Holder)SoundEvents.RESIN_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
                         this.level.gameEvent(GameEvent.BLOCK_PLACE, blockPos, GameEvent.Context.of(this.getBlockState()));
                      });
                   }

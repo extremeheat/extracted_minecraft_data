@@ -3,7 +3,6 @@ package net.minecraft.client.resources.sounds;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 
 public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
    public static final int DELAY = 20;
@@ -26,7 +25,7 @@ public class ElytraOnPlayerSoundInstance extends AbstractTickableSoundInstance {
          this.z = (double)((float)this.player.getZ());
          float speed = (float)this.player.getDeltaMovement().lengthSqr();
          if ((double)speed >= 1.0E-7) {
-            this.volume = Mth.clamp(speed / 4.0F, 0.0F, 1.0F);
+            this.volume = Math.clamp(speed / 4.0F, 0.0F, 1.0F);
          } else {
             this.volume = 0.0F;
          }

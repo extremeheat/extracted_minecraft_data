@@ -29,7 +29,7 @@ import net.minecraft.world.entity.ai.goal.PathfindToRaidGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.monster.illager.AbstractIllager;
@@ -487,7 +487,7 @@ public abstract class Raider extends PatrollingMonster {
       private boolean hasSuitablePoi() {
          ServerLevel level = (ServerLevel)this.raider.level();
          BlockPos pos = this.raider.blockPosition();
-         Optional<BlockPos> homePos = level.getPoiManager().getRandom((p) -> p.is(PoiTypes.HOME), this::hasNotVisited, PoiManager.Occupancy.ANY, pos, 48, this.raider.random);
+         Optional<BlockPos> homePos = level.getPoiManager().getRandom((p) -> p.is(PoiTypeIds.HOME), this::hasNotVisited, PoiManager.Occupancy.ANY, pos, 48, this.raider.random);
          if (homePos.isEmpty()) {
             return false;
          } else {

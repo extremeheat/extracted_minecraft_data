@@ -47,7 +47,7 @@ public class PoplarFoliagePlacer extends FoliagePlacer {
 
       this.replaceLeavesWithLog(level, foliageSetter, tree, random, foliagePos, currentRadius, foliageHeightWithOffset - 4, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
       this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, currentRadius - 1, 0, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
-      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, Mth.clamp(currentRadius - 2, 1, 2), -1, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
+      this.placeLeavesRow(level, foliageSetter, random, tree, foliagePos, Math.clamp((long)(currentRadius - 2), 1, 2), -1, doubleTrunk, foliageHeightWithOffset, flipRhombusShape);
    }
 
    private void replaceLeavesWithLog(final WorldGenLevel level, final FoliagePlacer.FoliageSetter foliageSetter, final TreeFeature tree, final RandomSource random, final BlockPos origin, final int currentRadius, final int y, final boolean doubleTrunk, final int foliageHeight, final boolean flipRhombusShape) {

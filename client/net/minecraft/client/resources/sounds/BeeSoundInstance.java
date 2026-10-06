@@ -37,8 +37,8 @@ public abstract class BeeSoundInstance extends AbstractTickableSoundInstance {
          this.z = (double)((float)this.bee.getZ());
          float speed = (float)this.bee.getDeltaMovement().horizontalDistance();
          if (speed >= 0.01F) {
-            this.pitch = Mth.lerp(Mth.clamp(speed, this.getMinPitch(), this.getMaxPitch()), this.getMinPitch(), this.getMaxPitch());
-            this.volume = Mth.lerp(Mth.clamp(speed, 0.0F, 0.5F), 0.0F, 1.2F);
+            this.pitch = Mth.lerp(Math.clamp(speed, this.getMinPitch(), this.getMaxPitch()), this.getMinPitch(), this.getMaxPitch());
+            this.volume = Mth.lerp(Math.clamp(speed, 0.0F, 0.5F), 0.0F, 1.2F);
          } else {
             this.pitch = 0.0F;
             this.volume = 0.0F;

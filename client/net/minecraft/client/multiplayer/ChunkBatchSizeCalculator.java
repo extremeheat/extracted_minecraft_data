@@ -1,6 +1,5 @@
 package net.minecraft.client.multiplayer;
 
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 
 public class ChunkBatchSizeCalculator {
@@ -22,7 +21,7 @@ public class ChunkBatchSizeCalculator {
       if (batchSize > 0) {
          double batchDuration = (double)(Util.getNanos() - this.chunkBatchStartTime);
          double nanosPerChunk = batchDuration / (double)batchSize;
-         double clampedNanosPerChunk = Mth.clamp(nanosPerChunk, this.aggregatedNanosPerChunk / 3.0, this.aggregatedNanosPerChunk * 3.0);
+         double clampedNanosPerChunk = Math.clamp(nanosPerChunk, this.aggregatedNanosPerChunk / 3.0, this.aggregatedNanosPerChunk * 3.0);
          this.aggregatedNanosPerChunk = (this.aggregatedNanosPerChunk * (double)this.oldSamplesWeight + clampedNanosPerChunk) / (double)(this.oldSamplesWeight + 1);
          this.oldSamplesWeight = Math.min(49, this.oldSamplesWeight + 1);
       }

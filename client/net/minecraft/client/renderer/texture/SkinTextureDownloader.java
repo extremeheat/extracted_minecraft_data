@@ -117,10 +117,30 @@ public class SkinTextureDownloader {
 
    private CompletableFuture<ClientAsset.Texture> registerTextureInManager(final ClientAsset.Texture textureId, final NativeImage contents) {
       return CompletableFuture.supplyAsync(() -> {
-         Identifier var10002 = textureId.texturePath();
-         Objects.requireNonNull(var10002);
-         DynamicTexture texture = new DynamicTexture(var10002::toString, contents);
-         this.textureManager.register(textureId.texturePath(), texture);
+         NativeImage twrVar0$ = contents;
+
+         try {
+            TextureManager var10000 = this.textureManager;
+            Identifier var10001 = textureId.texturePath();
+            Identifier var10002 = textureId.texturePath();
+            Objects.requireNonNull(var10002);
+            var10000.register(var10001, TextureResources.from2dImage(var10002::toString, contents));
+         } catch (Throwable var7) {
+            if (contents != null) {
+               try {
+                  twrVar0$.close();
+               } catch (Throwable x2) {
+                  var7.addSuppressed(x2);
+               }
+            }
+
+            throw var7;
+         }
+
+         if (contents != null) {
+            contents.close();
+         }
+
          return textureId;
       }, this.mainThreadExecutor);
    }

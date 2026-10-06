@@ -247,7 +247,7 @@ public class Item implements ItemLike, FeatureElement {
    }
 
    public int getBarWidth(final ItemStack stack) {
-      return Mth.clamp(Math.round(13.0F - (float)stack.getDamageValue() * 13.0F / (float)stack.getMaxDamage()), 0, 13);
+      return Math.clamp((long)Math.round(13.0F - (float)stack.getDamageValue() * 13.0F / (float)stack.getMaxDamage()), 0, 13);
    }
 
    public int getBarColor(final ItemStack stack) {

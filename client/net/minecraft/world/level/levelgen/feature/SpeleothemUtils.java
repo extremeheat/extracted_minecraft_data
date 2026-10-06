@@ -1,16 +1,20 @@
 package net.minecraft.world.level.levelgen.feature;
 
+import com.mojang.serialization.Codec;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderSet;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PointedDripstoneBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.SpeleothemThickness;
 
 public class SpeleothemUtils {
@@ -79,7 +83,31 @@ public class SpeleothemUtils {
 
    }
 
+   protected static void buildBaseToTipColumn(final Direction direction, final int totalLength, final boolean mergedTip, final Consumer<BlockState> consumer, final Block pointedBlock, final BaseBlockTransformer baseBlockTransformer) {
+      for(int remainingLength = totalLength; remainingLength > 0; --remainingLength) {
+         boolean isColumnBase = remainingLength == totalLength;
+         SpeleothemThickness thickness;
+         if (remainingLength == 2) {
+            thickness = SpeleothemThickness.FRUSTUM;
+         } else if (remainingLength == 1) {
+            thickness = mergedTip ? SpeleothemThickness.TIP_MERGE : SpeleothemThickness.TIP;
+         } else if (isColumnBase) {
+            thickness = SpeleothemThickness.BASE;
+         } else {
+            thickness = SpeleothemThickness.MIDDLE;
+         }
+
+         BlockState state = createPointedBlock(direction, thickness, pointedBlock);
+         consumer.accept(isColumnBase ? baseBlockTransformer.transform(state) : state);
+      }
+
+   }
+
    protected static void growSpeleothem(final LevelAccessor level, final BlockPos startPos, final Direction tipDirection, final int height, final boolean mergedTip, final Block baseBlock, final Block pointedBlock, final HolderSet<Block> replaceableBlocks) {
+      growSpeleothem(level, startPos, tipDirection, height, mergedTip, baseBlock, pointedBlock, replaceableBlocks, SpeleothemUtils.BaseBlockTransformer.NONE);
+   }
+
+   protected static void growSpeleothem(final LevelAccessor level, final BlockPos startPos, final Direction tipDirection, final int height, final boolean mergedTip, final Block baseBlock, final Block pointedBlock, final HolderSet<Block> replaceableBlocks, final BaseBlockTransformer baseBlockTransformer) {
       if (isBase(level.getBlockState(startPos.relative(tipDirection.getOpposite())), baseBlock, replaceableBlocks)) {
          BlockPos.MutableBlockPos pos = startPos.mutable();
          buildBaseToTipColumn(tipDirection, height, mergedTip, (state) -> {
@@ -89,7 +117,7 @@ public class SpeleothemUtils {
 
             level.setBlock(pos, state, 2);
             pos.move(tipDirection);
-         }, pointedBlock);
+         }, pointedBlock, baseBlockTransformer);
       }
    }
 
@@ -125,5 +153,32 @@ public class SpeleothemUtils {
 
    public static boolean isEmptyOrWaterOrLava(final BlockState state) {
       return state.isAir() || state.is(Blocks.WATER) || state.is(Blocks.LAVA);
+   }
+
+   public static enum BaseBlockTransformer implements StringRepresentable {
+      NONE("none", UnaryOperator.identity()),
+      SET_ATTACHED("set_attached", (state) -> (BlockState)state.trySetValue(BlockStateProperties.ATTACHED, true));
+
+      public static final Codec<BaseBlockTransformer> CODEC = StringRepresentable.<BaseBlockTransformer>fromEnum(BaseBlockTransformer::values);
+      private final String name;
+      private final UnaryOperator<BlockState> transformer;
+
+      private BaseBlockTransformer(final String name, final UnaryOperator<BlockState> transformer) {
+         this.name = name;
+         this.transformer = transformer;
+      }
+
+      public BlockState transform(final BlockState state) {
+         return (BlockState)this.transformer.apply(state);
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static BaseBlockTransformer[] $values() {
+         return new BaseBlockTransformer[]{NONE, SET_ATTACHED};
+      }
    }
 }

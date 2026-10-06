@@ -24,6 +24,7 @@ import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -55,9 +56,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public static final Identifier MENU_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_background.png");
    public static final Identifier HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/header_separator.png");
    public static final Identifier FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/footer_separator.png");
+   public static final Identifier MENU_LIST_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/menu_list_background.png");
    private static final Identifier INWORLD_MENU_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/inworld_menu_background.png");
-   public static final Identifier INWORLD_HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_header_separator.png");
-   public static final Identifier INWORLD_FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
+   private static final Identifier INWORLD_HEADER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_header_separator.png");
+   private static final Identifier INWORLD_FOOTER_SEPARATOR = Identifier.withDefaultNamespace("textures/gui/inworld_footer_separator.png");
+   public static final Identifier INWORLD_MENU_LIST_BACKGROUND = Identifier.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
    protected static final float FADE_IN_TIME = 2000.0F;
    protected final Component title;
    private final List<GuiEventListener> children;
@@ -396,6 +399,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       player.connection.sendUnattendedCommand(Commands.trimOptionalPrefix(command), screenAfterCommand);
    }
 
+   protected final boolean isInitialized() {
+      return this.initialized;
+   }
+
    public final void init(final int width, final int height) {
       this.width = width;
       this.height = height;
@@ -490,6 +497,19 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void extractTransparentBackground(final GuiGraphicsExtractor graphics) {
       graphics.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+   }
+
+   public void extractListSeparators(final GuiGraphicsExtractor graphics, final HeaderAndFooterLayout layout, final int separatorHeight) {
+      int top = layout.getHeaderHeight();
+      int bottom = this.height - layout.getFooterHeight();
+      extractListSeparators(graphics, 0, top, bottom, this.width, separatorHeight, this.minecraft.level != null);
+   }
+
+   public static void extractListSeparators(final GuiGraphicsExtractor graphics, final int left, final int top, final int bottom, final int width, final int separatorHeight, final boolean inWorld) {
+      Identifier headerSeparator = inWorld ? INWORLD_HEADER_SEPARATOR : HEADER_SEPARATOR;
+      Identifier footerSeparator = inWorld ? INWORLD_FOOTER_SEPARATOR : FOOTER_SEPARATOR;
+      graphics.blit(RenderPipelines.GUI_TEXTURED, headerSeparator, left, top - 2, 0.0F, 0.0F, width, separatorHeight, 32, separatorHeight);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, footerSeparator, left, bottom, 0.0F, 0.0F, width, separatorHeight, 32, separatorHeight);
    }
 
    public boolean isPauseScreen() {

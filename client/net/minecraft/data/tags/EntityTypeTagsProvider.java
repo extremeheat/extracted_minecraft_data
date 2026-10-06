@@ -15,17 +15,17 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
 
    protected void addTags(final HolderLookup.Provider registries) {
       this.tag(EntityTypeTags.SKELETONS).add(EntityTypeIds.SKELETON, EntityTypeIds.STRAY, EntityTypeIds.WITHER_SKELETON, EntityTypeIds.SKELETON_HORSE, EntityTypeIds.BOGGED, EntityTypeIds.PARCHED);
-      this.tag(EntityTypeTags.ZOMBIES).add(EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.CAMEL_HUSK, EntityTypeIds.ZOMBIE, EntityTypeIds.ZOMBIE_VILLAGER, EntityTypeIds.ZOMBIFIED_PIGLIN, EntityTypeIds.ZOGLIN, EntityTypeIds.DROWNED, EntityTypeIds.HUSK, EntityTypeIds.ZOMBIE_NAUTILUS);
+      this.tag(EntityTypeTags.ZOMBIES).add(EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.CAMEL_HUSK, EntityTypeIds.ZOMBIE, EntityTypeIds.ZOMBIE_VILLAGER, EntityTypeIds.ZOMBIFIED_PIGLIN, EntityTypeIds.ZOGLIN, EntityTypeIds.DROWNED, EntityTypeIds.HUSK, EntityTypeIds.ZOMBIE_NAUTILUS, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.RAIDERS).add(EntityTypeIds.EVOKER, EntityTypeIds.PILLAGER, EntityTypeIds.RAVAGER, EntityTypeIds.VINDICATOR, EntityTypeIds.ILLUSIONER, EntityTypeIds.WITCH);
       this.tag(EntityTypeTags.UNDEAD).addTag(EntityTypeTags.SKELETONS).addTag(EntityTypeTags.ZOMBIES).add(EntityTypeIds.WITHER).add(EntityTypeIds.PHANTOM);
-      this.tag(EntityTypeTags.BURN_IN_DAYLIGHT).add(EntityTypeIds.SKELETON, EntityTypeIds.STRAY, EntityTypeIds.WITHER_SKELETON, EntityTypeIds.BOGGED).add(EntityTypeIds.ZOMBIE, EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.ZOMBIE_VILLAGER, EntityTypeIds.DROWNED, EntityTypeIds.ZOMBIE_NAUTILUS).add(EntityTypeIds.PHANTOM);
+      this.tag(EntityTypeTags.BURN_IN_DAYLIGHT).add(EntityTypeIds.SKELETON, EntityTypeIds.STRAY, EntityTypeIds.WITHER_SKELETON, EntityTypeIds.BOGGED).add(EntityTypeIds.ZOMBIE, EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.ZOMBIE_VILLAGER, EntityTypeIds.DROWNED, EntityTypeIds.ZOMBIE_NAUTILUS, EntityTypeIds.FROSTBITE).add(EntityTypeIds.PHANTOM);
       this.tag(EntityTypeTags.BEEHIVE_INHABITORS).add(EntityTypeIds.BEE);
       this.tag(EntityTypeTags.ARROWS).add(EntityTypeIds.ARROW, EntityTypeIds.SPECTRAL_ARROW);
-      this.tag(EntityTypeTags.IMPACT_PROJECTILES).addTag(EntityTypeTags.ARROWS).add(EntityTypeIds.FIREWORK_ROCKET).add(EntityTypeIds.SNOWBALL, EntityTypeIds.FIREBALL, EntityTypeIds.SMALL_FIREBALL, EntityTypeIds.EGG, EntityTypeIds.TRIDENT, EntityTypeIds.DRAGON_FIREBALL, EntityTypeIds.WITHER_SKULL, EntityTypeIds.WIND_CHARGE, EntityTypeIds.BREEZE_WIND_CHARGE);
-      this.tag(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS).add(EntityTypeIds.RABBIT, EntityTypeIds.ENDERMITE, EntityTypeIds.SILVERFISH, EntityTypeIds.FOX);
+      this.tag(EntityTypeTags.IMPACT_PROJECTILES).addTag(EntityTypeTags.ARROWS).add(EntityTypeIds.FIREWORK_ROCKET).add(EntityTypeIds.ICE_BALL, EntityTypeIds.SNOWBALL, EntityTypeIds.FIREBALL, EntityTypeIds.SMALL_FIREBALL, EntityTypeIds.EGG, EntityTypeIds.TRIDENT, EntityTypeIds.DRAGON_FIREBALL, EntityTypeIds.WITHER_SKULL, EntityTypeIds.WIND_CHARGE, EntityTypeIds.BREEZE_WIND_CHARGE);
+      this.tag(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS).add(EntityTypeIds.RABBIT, EntityTypeIds.ENDERMITE, EntityTypeIds.SILVERFISH, EntityTypeIds.FOX, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.AXOLOTL_HUNT_TARGETS).add(EntityTypeIds.TROPICAL_FISH, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.COD, EntityTypeIds.SQUID, EntityTypeIds.GLOW_SQUID, EntityTypeIds.TADPOLE);
       this.tag(EntityTypeTags.AXOLOTL_ALWAYS_HOSTILES).add(EntityTypeIds.DROWNED, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN);
-      this.tag(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES).add(EntityTypeIds.STRAY, EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM, EntityTypeIds.WITHER);
+      this.tag(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES).add(EntityTypeIds.STRAY, EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM, EntityTypeIds.WITHER, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(EntityTypeIds.STRIDER, EntityTypeIds.BLAZE, EntityTypeIds.MAGMA_CUBE);
       this.tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).addTag(EntityTypeTags.UNDEAD).add(EntityTypeIds.AXOLOTL, EntityTypeIds.FROG, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN, EntityTypeIds.TURTLE, EntityTypeIds.GLOW_SQUID, EntityTypeIds.COD, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.SQUID, EntityTypeIds.TROPICAL_FISH, EntityTypeIds.TADPOLE, EntityTypeIds.ARMOR_STAND, EntityTypeIds.COPPER_GOLEM, EntityTypeIds.NAUTILUS);
       this.tag(EntityTypeTags.FROG_FOOD).add(EntityTypeIds.SLIME, EntityTypeIds.MAGMA_CUBE);
@@ -46,7 +46,7 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.REDIRECTABLE_PROJECTILE).add(EntityTypeIds.FIREBALL, EntityTypeIds.WIND_CHARGE, EntityTypeIds.BREEZE_WIND_CHARGE);
       this.tag(EntityTypeTags.DEFLECTS_PROJECTILES).add(EntityTypeIds.BREEZE);
       this.tag(EntityTypeTags.CAN_TURN_IN_BOATS).add(EntityTypeIds.BREEZE);
-      this.tag(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE).add(EntityTypeIds.BREEZE, EntityTypeIds.SKELETON, EntityTypeIds.BOGGED, EntityTypeIds.STRAY, EntityTypeIds.ZOMBIE, EntityTypeIds.HUSK, EntityTypeIds.SPIDER, EntityTypeIds.CAVE_SPIDER, EntityTypeIds.SLIME);
+      this.tag(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE).add(EntityTypeIds.BREEZE, EntityTypeIds.SKELETON, EntityTypeIds.BOGGED, EntityTypeIds.STRAY, EntityTypeIds.ZOMBIE, EntityTypeIds.HUSK, EntityTypeIds.SPIDER, EntityTypeIds.CAVE_SPIDER, EntityTypeIds.SLIME, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add(EntityTypeIds.SILVERFISH);
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityTypeIds.SLIME);
       this.tag(EntityTypeTags.BOAT).add(EntityTypeIds.OAK_BOAT, EntityTypeIds.SPRUCE_BOAT, EntityTypeIds.BIRCH_BOAT, EntityTypeIds.JUNGLE_BOAT, EntityTypeIds.ACACIA_BOAT, EntityTypeIds.CHERRY_BOAT, EntityTypeIds.DARK_OAK_BOAT, EntityTypeIds.PALE_OAK_BOAT, EntityTypeIds.MANGROVE_BOAT, EntityTypeIds.BAMBOO_RAFT, EntityTypeIds.POPLAR_BOAT);

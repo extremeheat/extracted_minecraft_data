@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -72,7 +71,7 @@ public class EntityAttachments {
       if (points.isEmpty()) {
          throw new IllegalStateException("Had no attachment points of type: " + String.valueOf(attachment));
       } else {
-         Vec3 point = (Vec3)points.get(Mth.clamp(index, 0, points.size() - 1));
+         Vec3 point = (Vec3)points.get(Math.clamp((long)index, 0, points.size() - 1));
          return transformPoint(point, rotY);
       }
    }

@@ -75,7 +75,7 @@ public abstract class AbstractCubeMob extends AgeableMob {
 
    @VisibleForTesting
    public void setSize(final int size, final boolean updateHealth) {
-      int actualSize = Mth.clamp(size, 1, 127);
+      int actualSize = Math.clamp((long)size, 1, 127);
       this.entityData.set(ID_SIZE, actualSize);
       this.reapplyPosition();
       this.refreshDimensions();

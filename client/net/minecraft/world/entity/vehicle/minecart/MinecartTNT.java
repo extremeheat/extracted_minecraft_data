@@ -7,7 +7,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
@@ -178,8 +177,8 @@ public class MinecartTNT extends AbstractMinecart {
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       this.fuse = input.getIntOr("fuse", -1);
-      this.explosionPowerBase = Mth.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
-      this.explosionSpeedFactor = Mth.clamp(input.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
+      this.explosionPowerBase = Math.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.explosionSpeedFactor = Math.clamp(input.getFloatOr("explosion_speed_factor", 1.0F), 0.0F, 128.0F);
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {

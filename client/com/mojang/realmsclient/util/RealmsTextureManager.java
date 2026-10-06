@@ -9,9 +9,9 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -35,18 +35,19 @@ public class RealmsTextureManager {
       if (texture != null && texture.image().equals(encodedImage)) {
          return texture.textureId;
       } else {
-         NativeImage image = loadImage(encodedImage);
-         if (image == null) {
-            Identifier missingTexture = MissingTextureAtlasSprite.getLocation();
-            TEXTURES.put(id, new RealmsTexture(encodedImage, missingTexture));
-            return missingTexture;
-         } else {
-            Identifier textureId = Identifier.fromNamespaceAndPath("realms", "dynamic/" + id);
-            TextureManager var10000 = Minecraft.getInstance().getTextureManager();
-            Objects.requireNonNull(textureId);
-            var10000.register(textureId, new DynamicTexture(textureId::toString, image));
-            TEXTURES.put(id, new RealmsTexture(encodedImage, textureId));
-            return textureId;
+         try (NativeImage image = loadImage(encodedImage)) {
+            if (image == null) {
+               Identifier missingTexture = MissingTextureAtlasSprite.getLocation();
+               TEXTURES.put(id, new RealmsTexture(encodedImage, missingTexture));
+               return missingTexture;
+            } else {
+               Identifier textureId = Identifier.fromNamespaceAndPath("realms", "dynamic/" + id);
+               TextureManager var10000 = Minecraft.getInstance().getTextureManager();
+               Objects.requireNonNull(textureId);
+               var10000.register(textureId, TextureResources.from2dImage(textureId::toString, image));
+               TEXTURES.put(id, new RealmsTexture(encodedImage, textureId));
+               return textureId;
+            }
          }
       }
    }

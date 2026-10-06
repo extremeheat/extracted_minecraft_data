@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.gizmos.DrawableGizmoPrimitives;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.gizmos.TextGizmo;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -104,7 +103,7 @@ public class GizmoFeatureRenderer extends RenderTypeFeatureRenderer<Submit> {
                      continue;
                   }
 
-                  float intersection = Mth.clamp((-0.05F - startViewSpace.z) / denom, 0.0F, 1.0F);
+                  float intersection = Math.clamp((-0.05F - startViewSpace.z) / denom, 0.0F, 1.0F);
                   start.lerp(end, intersection, intersectionInWorld);
                   if (startIsBehindCamera) {
                      start.set(intersectionInWorld);

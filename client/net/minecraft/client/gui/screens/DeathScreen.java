@@ -8,20 +8,19 @@ import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.reporting.DraftIconButton;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.chat.report.Report;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class DeathScreen extends Screen {
    private static final int TITLE_SCALE = 2;
-   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
    private int delayTicker;
    private final @Nullable Component causeOfDeath;
    private final boolean hardcore;
@@ -47,7 +46,7 @@ public class DeathScreen extends Screen {
          this.player.respawn();
          button.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()));
-      this.exitToTitleButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("deathScreen.titleScreen"), (button) -> this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true)).bounds(this.width / 2 - 100, this.height / 4 + 96, 200, 20).build());
+      this.exitToTitleButton = (Button)this.addRenderableWidget(new DraftIconButton(this.width / 2 - 100, this.height / 4 + 96, 200, 20, Component.translatable("deathScreen.titleScreen"), (var1) -> this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true, Report::isUnreportableLater), PauseScreen.DRAFT_REPORT_TOOLTIP, Report::isUnreportableLater));
       this.exitButtons.add(this.exitToTitleButton);
       this.setButtonsActive(false);
    }
@@ -86,10 +85,6 @@ public class DeathScreen extends Screen {
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       super.extractRenderState(graphics, mouseX, mouseY, a);
       this.visitText(graphics.textRenderer(GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR));
-      if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
-      }
-
    }
 
    private void visitText(final ActiveTextCollector output) {

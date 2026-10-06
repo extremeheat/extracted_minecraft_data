@@ -124,7 +124,7 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.entity.EntityAccess;
@@ -520,10 +520,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       float yDelta = (float)xo * 0.15F;
       this.setXRot(this.getXRot() + xDelta);
       this.setYRot(this.getYRot() + yDelta);
-      this.setXRot(Mth.clamp(this.getXRot(), -90.0F, 90.0F));
+      this.setXRot(Math.clamp(this.getXRot(), -90.0F, 90.0F));
       this.xRotO += xDelta;
       this.yRotO += yDelta;
-      this.xRotO = Mth.clamp(this.xRotO, -90.0F, 90.0F);
+      this.xRotO = Math.clamp(this.xRotO, -90.0F, 90.0F);
       if (this.vehicle != null) {
          this.vehicle.onPassengerTurned(this);
       }
@@ -1169,7 +1169,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    private double applyPistonMovementRestriction(final Direction.Axis axis, double amount) {
       int ordinal = axis.ordinal();
-      double min = Mth.clamp(amount + this.pistonDeltas[ordinal], -0.51, 0.51);
+      double min = Math.clamp(amount + this.pistonDeltas[ordinal], -0.51, 0.51);
       amount = min - this.pistonDeltas[ordinal];
       this.pistonDeltas[ordinal] = min;
       return amount;
@@ -1487,19 +1487,19 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    protected void playCombinationStepSounds(final BlockState primaryStepSound, final BlockState secondaryStepSound) {
-      SoundType primaryStepSoundType = primaryStepSound.getSoundType();
-      this.playSound(primaryStepSoundType.getStepSound(), primaryStepSoundType.getVolume() * 0.15F, primaryStepSoundType.getPitch());
+      BlockSoundSet primaryStepSoundSet = primaryStepSound.getSounds(this.level());
+      primaryStepSoundSet.stepSound().ifPresent((stepSound) -> this.playSound(stepSound, primaryStepSoundSet.volume() * 0.15F, primaryStepSoundSet.pitch()));
       this.playMuffledStepSound(secondaryStepSound);
    }
 
    protected void playMuffledStepSound(final BlockState blockState) {
-      SoundType secondaryStepSoundType = blockState.getSoundType();
-      this.playSound(secondaryStepSoundType.getStepSound(), secondaryStepSoundType.getVolume() * 0.05F, secondaryStepSoundType.getPitch() * 0.8F);
+      BlockSoundSet secondaryStepSoundSet = blockState.getSounds(this.level());
+      secondaryStepSoundSet.stepSound().ifPresent((stepSound) -> this.playSound(stepSound, secondaryStepSoundSet.volume() * 0.05F, secondaryStepSoundSet.pitch() * 0.8F));
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      SoundType soundType = blockState.getSoundType();
-      this.playSound(soundType.getStepSound(), soundType.getVolume() * 0.15F, soundType.getPitch());
+      BlockSoundSet blockSoundSet = blockState.getSounds(this.level());
+      blockSoundSet.stepSound().ifPresent((stepSound) -> this.playSound(stepSound, blockSoundSet.volume() * 0.15F, blockSoundSet.pitch()));
    }
 
    private boolean shouldPlayAmethystStepSound(final BlockState affectingState) {
@@ -1531,6 +1531,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), volume, pitch);
       }
 
+   }
+
+   public void playSound(final Holder<SoundEvent> sound, final float volume, final float pitch) {
+      this.playSound(sound.value(), volume, pitch);
    }
 
    public void playSound(final SoundEvent sound) {
@@ -1760,11 +1764,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          double x = this.getX() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
          double z = this.getZ() + (this.random.nextDouble() - 0.5) * (double)this.dimensions.width();
          if (entityPosition.getX() != pos.getX()) {
-            x = Mth.clamp(x, (double)pos.getX(), (double)pos.getX() + 1.0);
+            x = Math.clamp(x, (double)pos.getX(), (double)pos.getX() + 1.0);
          }
 
          if (entityPosition.getZ() != pos.getZ()) {
-            z = Mth.clamp(z, (double)pos.getZ(), (double)pos.getZ() + 1.0);
+            z = Math.clamp(z, (double)pos.getZ(), (double)pos.getZ() + 1.0);
          }
 
          this.level().addParticle(new BlockParticleOption(ParticleTypes.BLOCK, blockState), x, this.getY() + 0.1, z, movement.x * -4.0, 1.5, movement.z * -4.0);
@@ -1810,14 +1814,14 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void absSnapRotationTo(final float yRot, final float xRot) {
       this.setYRot(yRot % 360.0F);
-      this.setXRot(Mth.clamp(xRot, -90.0F, 90.0F) % 360.0F);
+      this.setXRot(Math.clamp(xRot, -90.0F, 90.0F) % 360.0F);
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
    }
 
    public void absSnapTo(final double x, final double y, final double z) {
-      double cx = Mth.clamp(x, -3.0E7, 3.0E7);
-      double cz = Mth.clamp(z, -3.0E7, 3.0E7);
+      double cx = Math.clamp(x, -3.0E7, 3.0E7);
+      double cz = Math.clamp(z, -3.0E7, 3.0E7);
       this.xo = cx;
       this.yo = y;
       this.zo = cz;
@@ -2213,7 +2217,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.setDeltaMovement(Math.abs(motion.x) > 10.0 ? 0.0 : motion.x, Math.abs(motion.y) > 10.0 ? 0.0 : motion.y, Math.abs(motion.z) > 10.0 ? 0.0 : motion.z);
          this.needsSync = true;
          double maxHorizontalPosition = 3.0000512E7;
-         this.setPosRaw(Mth.clamp(pos.x, -3.0000512E7, 3.0000512E7), Mth.clamp(pos.y, -2.0E7, 2.0E7), Mth.clamp(pos.z, -3.0000512E7, 3.0000512E7));
+         this.setPosRaw(Math.clamp(pos.x, -3.0000512E7, 3.0000512E7), Math.clamp(pos.y, -2.0E7, 2.0E7), Math.clamp(pos.z, -3.0000512E7, 3.0000512E7));
          this.setYRot(rotation.x);
          this.setXRot(rotation.y);
          this.setOldPosAndRot();
@@ -2942,6 +2946,13 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void setTicksFrozen(final int ticks) {
       this.entityData.set(DATA_TICKS_FROZEN, ticks);
+   }
+
+   public void freezeForTicks(final int numberOfTicks) {
+      if (this.canFreeze()) {
+         this.setTicksFrozen(Math.min(this.getTicksRequiredToFreeze(), this.getTicksFrozen() + numberOfTicks));
+      }
+
    }
 
    public float getPercentFrozen() {

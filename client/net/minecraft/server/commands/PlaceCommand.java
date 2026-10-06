@@ -102,8 +102,8 @@ public class PlaceCommand {
       Structure structure = structureHolder.value();
       ChunkGenerator chunkGenerator = level.getChunkSource().getGenerator();
       RandomState randomState = level.getChunkSource().randomState();
-      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, chunkGenerator.getBiomeSource(), randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED), randomState, level.getStructureTemplateManager(), level.getSeed(), ChunkPos.containing(pos), 0, level, (b) -> true);
-      if (!start.isValid()) {
+      StructureStart start = structure.generate(structureHolder, level.dimension(), source.registryAccess(), chunkGenerator, chunkGenerator.getBiomeSource(), randomState.createClimateSampler(SamplerContext.EMPTY_UNCACHED), randomState, level.getStructureTemplateManager(), level.getSeed(), ChunkPos.containing(pos), level, (b) -> true);
+      if (start == null) {
          throw ERROR_STRUCTURE_FAILED.create();
       } else {
          BoundingBox boundingBox = start.getBoundingBox();

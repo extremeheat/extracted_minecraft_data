@@ -72,6 +72,7 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerProjectileBehavior(Items.BLUE_EGG);
       DispenserBlock.registerProjectileBehavior(Items.BROWN_EGG);
       DispenserBlock.registerProjectileBehavior(Items.SNOWBALL);
+      DispenserBlock.registerProjectileBehavior(Items.ICE_BALL);
       DispenserBlock.registerProjectileBehavior(Items.EXPERIENCE_BOTTLE);
       DispenserBlock.registerProjectileBehavior(Items.SPLASH_POTION);
       DispenserBlock.registerProjectileBehavior(Items.LINGERING_POTION);

@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.block.BlockModelResolver;
 import net.minecraft.client.renderer.block.model.BlockDisplayContext;
 import net.minecraft.client.renderer.entity.state.TntRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
@@ -42,7 +41,7 @@ public class TntRenderer extends EntityRenderer<PrimedTnt, TntRenderState> {
 
    public static float getSwellAmount(final float fuse) {
       float g = 1.0F - fuse / 10.0F;
-      g = Mth.clamp(g, 0.0F, 1.0F);
+      g = Math.clamp(g, 0.0F, 1.0F);
       g *= g;
       g *= g;
       return g * 0.3F;

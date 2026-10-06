@@ -220,7 +220,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          int yscr = this.topPos + 13;
          int yscr2 = yscr + 56;
          this.scrollOffs = ((float)event.y() - (float)yscr - 7.5F) / ((float)(yscr2 - yscr) - 15.0F);
-         this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+         this.scrollOffs = Math.clamp(this.scrollOffs, 0.0F, 1.0F);
          this.startRow = Math.max((int)((double)(this.scrollOffs * (float)offscreenRows) + 0.5), 0);
          return true;
       } else {
@@ -240,7 +240,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          int offscreenRows = this.totalRowCount() - 4;
          if (this.displayPatterns && offscreenRows > 0) {
             float scrolledDelta = (float)scrollY / (float)offscreenRows;
-            this.scrollOffs = Mth.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
+            this.scrollOffs = Math.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
             this.startRow = Math.max((int)(this.scrollOffs * (float)offscreenRows + 0.5F), 0);
          }
 

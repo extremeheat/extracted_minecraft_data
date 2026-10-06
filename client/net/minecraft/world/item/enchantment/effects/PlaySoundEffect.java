@@ -7,7 +7,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.util.valueproviders.FloatProviders;
@@ -25,7 +24,7 @@ public record PlaySoundEffect(List<Holder<SoundEvent>> soundEvents, FloatProvide
    public void apply(final ServerLevel serverLevel, final int enchantmentLevel, final EnchantedItemInUse item, final Entity entity, final Vec3 position) {
       if (!entity.isSilent()) {
          RandomSource random = entity.getRandom();
-         int index = Mth.clamp(enchantmentLevel - 1, 0, this.soundEvents.size() - 1);
+         int index = Math.clamp((long)(enchantmentLevel - 1), 0, this.soundEvents.size() - 1);
          serverLevel.playSound((Entity)null, position.x(), position.y(), position.z(), (Holder)this.soundEvents.get(index), entity.getSoundSource(), this.volume.sample(random), this.pitch.sample(random));
       }
    }

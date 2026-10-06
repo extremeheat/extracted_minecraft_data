@@ -29,7 +29,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Continuation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -416,7 +415,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
 
    public Holder<Biome> getBiome(final int x, final int y, final int z) {
       try {
-         int clampedY = Mth.clamp(y, this.getMinY(), this.getMaxY());
+         int clampedY = Math.clamp((long)y, this.getMinY(), this.getMaxY());
          int sectionIndex = this.getSectionIndex(clampedY);
          return this.sections[sectionIndex].getBiome(SectionPos.sectionRelative(x), SectionPos.sectionRelative(clampedY), SectionPos.sectionRelative(z));
       } catch (Throwable t) {

@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentExactPredicate;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -29,7 +28,7 @@ public record TradeCost(Holder<Item> item, Holder<ContextIntProvider> count, Dat
    }
 
    public ItemCost toItemCost(final LootContext lootContext, final int additionalCost) {
-      int count = Mth.clamp(((ContextIntProvider)this.count().value()).getInt(lootContext) + additionalCost, 0, ((Item)this.item().value()).getDefaultMaxStackSize());
+      int count = Math.clamp((long)(((ContextIntProvider)this.count().value()).getInt(lootContext) + additionalCost), 0, ((Item)this.item().value()).getDefaultMaxStackSize());
       return new ItemCost(this.item(), count, this.components());
    }
 

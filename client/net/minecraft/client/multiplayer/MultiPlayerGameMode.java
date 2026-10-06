@@ -41,7 +41,6 @@ import net.minecraft.network.protocol.game.ServerboundSpectatorActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.stats.StatsCounter;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -254,7 +253,7 @@ public class MultiPlayerGameMode {
             return false;
          } else {
             this.destroyProgress += state.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), pos);
-            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, pos, state, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
+            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, pos, state, Math.clamp(this.destroyProgress, 0.0F, 1.0F));
             if (this.destroyProgress >= 1.0F) {
                this.isDestroying = false;
                if (SharedConstants.DEBUG_BLOCK_BREAK) {

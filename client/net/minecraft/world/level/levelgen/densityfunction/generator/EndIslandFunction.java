@@ -36,7 +36,7 @@ public record EndIslandFunction() implements DensityFunction {
                float xd = (float)(subSectionX - xo * 2);
                float zd = (float)(subSectionZ - zo * 2);
                float newDoffs = 100.0F - Mth.sqrt(xd * xd + zd * zd) * islandSize;
-               newDoffs = Mth.clamp(newDoffs, -100.0F, 80.0F);
+               newDoffs = Math.clamp(newDoffs, -100.0F, 80.0F);
                doffs = Math.max(doffs, newDoffs);
             }
          }

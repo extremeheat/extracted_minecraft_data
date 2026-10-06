@@ -46,7 +46,7 @@ public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlo
    private static final Map<Integer, VoxelShape> SHAPES;
 
    public CeilingHangingSignBlock(final WoodType type, final BlockBehaviour.Properties properties) {
-      super(type, properties.sound(type.hangingSignSoundType()));
+      super(type, properties.sound(type.hangingSignSoundSet()));
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(ROTATION, 8)).setValue(ATTACHED, false)).setValue(WATERLOGGED, false));
    }
 

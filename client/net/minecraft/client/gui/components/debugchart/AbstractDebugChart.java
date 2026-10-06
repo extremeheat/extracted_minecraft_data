@@ -4,7 +4,6 @@ import java.util.Objects;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public abstract class AbstractDebugChart {
@@ -113,7 +112,7 @@ public abstract class AbstractDebugChart {
    protected abstract int getSampleColor(long sample);
 
    protected int getSampleColor(double sample, final double min, final int minColor, final double mid, final int midColor, final double max, final int maxColor) {
-      sample = Mth.clamp(sample, min, max);
+      sample = Math.clamp(sample, min, max);
       return sample < mid ? ARGB.srgbLerp((float)((sample - min) / (mid - min)), minColor, midColor) : ARGB.srgbLerp((float)((sample - mid) / (max - mid)), midColor, maxColor);
    }
 }

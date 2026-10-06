@@ -332,6 +332,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_RED_SAND;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_POINTED_DRIPSTONE;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_SULFUR_SPIKE;
+   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_ICICLE;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_ROOTED_DIRT;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_MOSS_BLOCK;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_PALE_MOSS_BLOCK;
@@ -340,6 +341,7 @@ public class VillagerTrades {
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_FIREFLY_BUSH;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_NAME_TAG;
    public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_SHELF_MUSHROOM;
+   public static final ResourceKey<VillagerTrade> WANDERING_TRADER_EMERALD_ICE_CRYSTAL;
 
    public VillagerTrades() {
       super();
@@ -562,12 +564,14 @@ public class VillagerTrades {
       context.register(WANDERING_TRADER_EMERALD_RED_SAND, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.RED_SAND, 4), 6, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_POINTED_DRIPSTONE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.POINTED_DRIPSTONE, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_SULFUR_SPIKE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SULFUR_SPIKE, 2), 5, 1, 0.05F).build());
+      context.register(WANDERING_TRADER_EMERALD_ICICLE, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.ICICLE, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_ROOTED_DIRT, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.ROOTED_DIRT, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_MOSS_BLOCK, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.MOSS_BLOCK, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_PALE_MOSS_BLOCK, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.PALE_MOSS_BLOCK, 2), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_FIREFLY_BUSH, VillagerTrade.builder(new TradeCost(Items.EMERALD, 3), new ItemStackTemplate(Items.FIREFLY_BUSH), 12, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_NAME_TAG, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.NAME_TAG), 5, 1, 0.05F).build());
       context.register(WANDERING_TRADER_EMERALD_SHELF_MUSHROOM, VillagerTrade.builder(new TradeCost(Items.EMERALD, 1), new ItemStackTemplate(Items.SHELF_MUSHROOM, 3), 12, 1, 0.05F).build());
+      context.register(WANDERING_TRADER_EMERALD_ICE_CRYSTAL, VillagerTrade.builder(new TradeCost(Items.EMERALD, 2), new ItemStackTemplate(Items.ICE_CRYSTAL), 5, 1, 0.05F).build());
    }
 
    private static VillagerTrade createWanderingTraderCoralBlockSell(final Item item) {
@@ -1073,6 +1077,7 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_RED_SAND = resourceKey("wandering_trader/emerald_red_sand");
       WANDERING_TRADER_EMERALD_POINTED_DRIPSTONE = resourceKey("wandering_trader/emerald_pointed_dripstone");
       WANDERING_TRADER_EMERALD_SULFUR_SPIKE = resourceKey("wandering_trader/emerald_sulfur_spike");
+      WANDERING_TRADER_EMERALD_ICICLE = resourceKey("wandering_trader/emerald_icicle");
       WANDERING_TRADER_EMERALD_ROOTED_DIRT = resourceKey("wandering_trader/emerald_rooted_dirt");
       WANDERING_TRADER_EMERALD_MOSS_BLOCK = resourceKey("wandering_trader/emerald_moss_block");
       WANDERING_TRADER_EMERALD_PALE_MOSS_BLOCK = resourceKey("wandering_trader/emerald_pale_moss_block");
@@ -1081,5 +1086,6 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_FIREFLY_BUSH = resourceKey("wandering_trader/emerald_firefly_bush");
       WANDERING_TRADER_EMERALD_NAME_TAG = resourceKey("wandering_trader/emerald_name_tag");
       WANDERING_TRADER_EMERALD_SHELF_MUSHROOM = resourceKey("wandering_trader/emerald_shelf_mushroom");
+      WANDERING_TRADER_EMERALD_ICE_CRYSTAL = resourceKey("wandering_trader/emerald_ice_crystal");
    }
 }

@@ -28,8 +28,8 @@ public class GuiBookModelRenderer extends PictureInPictureRenderer<GuiBookModelR
       poseStack.rotateDegrees(Axis.YP, -(1.0F - open) * 90.0F - 90.0F);
       poseStack.rotateDegrees(Axis.XP, 180.0F);
       float flip = bookModelState.flip();
-      float pageFlip1 = Mth.clamp(Mth.frac(flip + 0.25F) * 1.6F - 0.3F, 0.0F, 1.0F);
-      float pageFlip2 = Mth.clamp(Mth.frac(flip + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
+      float pageFlip1 = Math.clamp(Mth.frac(flip + 0.25F) * 1.6F - 0.3F, 0.0F, 1.0F);
+      float pageFlip2 = Math.clamp(Mth.frac(flip + 0.75F) * 1.6F - 0.3F, 0.0F, 1.0F);
       BookModel.State state = BookModel.State.forAnimation(0.0F, pageFlip1, pageFlip2, open);
       submitNodeCollector.submitModel(bookModelState.bookModel(), state, poseStack, bookModelState.texture(), 15728880, OverlayTexture.NO_OVERLAY, 0);
    }

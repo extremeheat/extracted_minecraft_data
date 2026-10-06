@@ -17,7 +17,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -113,7 +112,7 @@ public class Chicken extends Animal {
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
       this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
-      this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
+      this.flapSpeed = Math.clamp(this.flapSpeed, 0.0F, 1.0F);
       if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
       }

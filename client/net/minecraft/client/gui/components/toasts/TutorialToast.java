@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -116,7 +117,7 @@ public class TutorialToast implements Toast {
       TREE(Identifier.withDefaultNamespace("toast/tree")),
       RECIPE_BOOK(Identifier.withDefaultNamespace("toast/recipe_book")),
       WOODEN_PLANKS(Identifier.withDefaultNamespace("toast/wooden_planks")),
-      SOCIAL_INTERACTIONS(Identifier.withDefaultNamespace("toast/social_interactions")),
+      SOCIAL_INTERACTIONS(PauseScreen.OTHER_PLAYERS_SPRITE),
       RIGHT_CLICK(Identifier.withDefaultNamespace("toast/right_click"));
 
       private final Identifier sprite;

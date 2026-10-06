@@ -344,6 +344,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final RealmsDataFetcher realmsDataFetcher;
    private final QuickPlayLog quickPlayLog;
    private final Services services;
+   private final ProfileResolver localProfileResolver;
    private final PlayerSkinRenderCache playerSkinRenderCache;
    private final TimerQuery timerQuery;
    public @Nullable MultiPlayerGameMode gameMode;
@@ -489,11 +490,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             device = backendToTry.createDevice("Minecraft Java Edition", SharedConstants.getCurrentVersion().dataVersion().version(), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation, SharedConstants.IS_RENDERDOC_ATTACHED, SharedConstants.IS_RUNNING_IN_IDE));
             backend = backendToTry;
             break;
-         } catch (BackendCreationException var32) {
-            LOGGER.error("Failed to create backend {}", backendToTry.getName(), var32);
-            errorMsgBuilder.append("\n\n- Tried ").append(backendToTry.getName()).append(": \n  ").append(var32.getMessage());
-            if (this.backendCreationException == null || var32.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
-               this.backendCreationException = var32;
+         } catch (BackendCreationException var31) {
+            LOGGER.error("Failed to create backend {}", backendToTry.getName(), var31);
+            errorMsgBuilder.append("\n\n- Tried ").append(backendToTry.getName()).append(": \n  ").append(var31.getMessage());
+            if (this.backendCreationException == null || var31.getReason() != BackendCreationException.Reason.OPENGL_MISSING) {
+               this.backendCreationException = var31;
             }
 
             if (libraryLoaded) {
@@ -515,7 +516,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          LOGGER.info("Using graphics device: {} ({})", deviceInfo.name(), deviceInfo.vendorName());
          LOGGER.info("Using graphics device extensions: {}", String.join(", ", deviceInfo.underlyingExtensions()));
          int maxSize = deviceInfo.limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
-         this.window = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend, maxSize);
+         this.window = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend, device, maxSize);
 
          try {
             this.window.setIcon(this.vanillaPackResources.fullResources(), SharedConstants.getCurrentVersion().stable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
@@ -571,8 +572,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.resourceManager.registerReloadListener(this.soundManager);
          this.atlasManager = new AtlasManager(this.textureManager, (Integer)this.options.mipmapLevels().get());
          this.resourceManager.registerReloadListener(this.atlasManager);
-         ProfileResolver localProfileResolver = new LocalPlayerResolver(this, this.services.profileResolver());
-         this.playerSkinRenderCache = new PlayerSkinRenderCache(this.textureManager, this.skinManager, localProfileResolver);
+         this.localProfileResolver = new LocalPlayerResolver(this, this.services.profileResolver());
+         this.playerSkinRenderCache = new PlayerSkinRenderCache(this.textureManager, this.skinManager, this.localProfileResolver);
          ClientMannequin.registerOverrides(this.playerSkinRenderCache);
          this.fontManager = new FontManager(this.textureManager, this.atlasManager, this.playerSkinRenderCache);
          this.font = this.fontManager.createFont();
@@ -629,15 +630,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.realmsDataFetcher = new RealmsDataFetcher(realmsClient);
          RenderTarget mainRenderTarget = this.gameRenderer.mainRenderTarget();
          if (mainRenderTarget.width != this.window.getWidth() || mainRenderTarget.height != this.window.getHeight()) {
-            int var42 = this.window.getWidth();
-            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var42 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
+            int var41 = this.window.getWidth();
+            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var41 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
 
             try {
                List<String> messages = device.getLastDebugMessages();
                if (!messages.isEmpty()) {
                   message.append("\n\nReported GL debug messages:\n").append(String.join("\n", messages));
                }
-            } catch (Throwable var30) {
+            } catch (Throwable var29) {
             }
 
             this.window.setWindowed(mainRenderTarget.width, mainRenderTarget.height);
@@ -678,11 +679,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }), false));
          this.quickPlayLog = QuickPlayLog.of(gameConfig.quickPlay.logPath());
          this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
-         TimeSource.NanoTimeSource var43 = Util.timeSource();
+         TimeSource.NanoTimeSource var42 = Util.timeSource();
          IntSupplier var10004 = () -> this.fpsPieRenderTicks;
          FramerateLimitTracker var10005 = this.framerateLimitTracker;
          Objects.requireNonNull(var10005);
-         this.fpsPieProfiler = new ContinuousProfiler(var43, var10004, var10005::isHeavilyThrottled);
+         this.fpsPieProfiler = new ContinuousProfiler(var42, var10004, var10005::isHeavilyThrottled);
          if (TracyClient.isAvailable() && gameConfig.game.captureTracyImages) {
             this.tracyFrameCapture = new TracyFrameCapture();
          } else {
@@ -1141,7 +1142,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          profiler.push("tick");
          if (ticksToDo > 0 && this.isLevelRunningNormally()) {
             profiler.push("textures");
-            this.textureManager.tick();
+            this.atlasManager.tick();
             profiler.pop();
          }
 
@@ -1397,6 +1398,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public void fullscreenStateChanged(final boolean fullscreen) {
       if ((Boolean)this.options.fullscreen().get() != fullscreen) {
+         if (fullscreen && this.window != null) {
+            this.options.exclusiveFullscreen().set(this.window.isExclusiveFullscreen());
+         }
+
          this.options.fullscreen().set(fullscreen);
          this.options.save();
          if (this.gui != null) {
@@ -2276,7 +2281,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } else if (current != null && !(current instanceof TitleScreen) && !(current instanceof PauseScreen)) {
             return false;
          } else {
-            OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(current)), current);
+            OnlineOptionsScreen.confirmFriendsListEnabled(this, () -> this.gui.setScreen(new FriendsOverlayScreen(this, current)), current);
             return true;
          }
       } else {
@@ -2904,6 +2909,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    public PlayerSkinRenderCache playerSkinRenderCache() {
       return this.playerSkinRenderCache;
+   }
+
+   public ProfileResolver localProfileResolver() {
+      return this.localProfileResolver;
    }
 
    private float getTickTargetMillis(final float defaultTickTargetMillis) {

@@ -7,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -45,9 +44,9 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
 
       EnchantmentHelper.updateEnchantments(itemStack, (enchantments) -> {
          if (this.add) {
-            this.enchantments.forEach((enchantment, levelProvider) -> enchantments.set(enchantment, Mth.clamp(enchantments.getLevel(enchantment) + ((ContextIntProvider)levelProvider.value()).getInt(context), 0, 255)));
+            this.enchantments.forEach((enchantment, levelProvider) -> enchantments.set(enchantment, Math.clamp((long)(enchantments.getLevel(enchantment) + ((ContextIntProvider)levelProvider.value()).getInt(context)), 0, 255)));
          } else {
-            this.enchantments.forEach((enchantment, levelProvider) -> enchantments.set(enchantment, Mth.clamp(((ContextIntProvider)levelProvider.value()).getInt(context), 0, 255)));
+            this.enchantments.forEach((enchantment, levelProvider) -> enchantments.set(enchantment, Math.clamp((long)((ContextIntProvider)levelProvider.value()).getInt(context), 0, 255)));
          }
 
       });

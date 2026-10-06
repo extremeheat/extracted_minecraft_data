@@ -128,12 +128,12 @@ public class BlockUtil {
    }
 
    public static int clampedPackDifferenceInPosition(final BlockPos pos, final BlockPos testPos, final int xRadius, final int yRadius, final int zRadius) {
-      int clampedXRadius = Mth.clamp(xRadius, 0, 127);
-      int clampedYRadius = Mth.clamp(yRadius, 0, 127);
-      int clampedZRadius = Mth.clamp(zRadius, 0, 127);
-      int xDiff = Mth.clamp(testPos.getX() - pos.getX(), -127, 127);
-      int yDiff = Mth.clamp(testPos.getY() - pos.getY(), -127, 127);
-      int zDiff = Mth.clamp(testPos.getZ() - pos.getZ(), -127, 127);
+      int clampedXRadius = Math.clamp((long)xRadius, 0, 127);
+      int clampedYRadius = Math.clamp((long)yRadius, 0, 127);
+      int clampedZRadius = Math.clamp((long)zRadius, 0, 127);
+      int xDiff = Math.clamp((long)(testPos.getX() - pos.getX()), -127, 127);
+      int yDiff = Math.clamp((long)(testPos.getY() - pos.getY()), -127, 127);
+      int zDiff = Math.clamp((long)(testPos.getZ() - pos.getZ()), -127, 127);
       return packDifferenceInPositionInternal(clampedXRadius, clampedYRadius, clampedZRadius, xDiff, yDiff, zDiff);
    }
 

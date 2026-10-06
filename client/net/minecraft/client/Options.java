@@ -250,7 +250,7 @@ public class Options {
    public final KeyMapping keyPlayerList;
    public final KeyMapping keyCommand;
    public final KeyMapping keyFriends;
-   public final KeyMapping keySocialInteractions;
+   public final KeyMapping keyOtherPlayers;
    public final KeyMapping keyScreenshot;
    public final KeyMapping keyTogglePerspective;
    public final KeyMapping keySmoothCamera;
@@ -999,7 +999,7 @@ public class Options {
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, OptionInstance.NO_ACTION);
       this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", OptionInstance.noTooltip(), false, (var0) -> Minecraft.getInstance().debugEntries.rebuildCurrentList());
       this.inGameNotification = OptionInstance.createBoolean("options.inGameNotification", OptionInstance.cachedConstantTooltip(IN_GAME_NOTIFICATION_TOOLTIP), false);
-      this.sharePresence = new OptionInstance<PresenceSharing>("options.sharePresence", (value) -> Tooltip.create(value.getTooltip()), (var0, value) -> value.getTranslation(), new OptionInstance.Enum(List.of(PresenceSharing.values()), PresenceSharing.CODEC), PresenceSharing.CODEC, PresenceSharing.ALL, (var0) -> {
+      this.sharePresence = new OptionInstance<PresenceSharing>("options.sharePresence", (value) -> Tooltip.create(value.getTooltip()), (var0, value) -> value.getTranslation(), new OptionInstance.Enum(List.of(PresenceSharing.values()), PresenceSharing.CODEC, (valueSet) -> OptionInstance.ButtonFactory.iconCycleButton(valueSet, PresenceSharing::getSprites)), PresenceSharing.CODEC, PresenceSharing.ALL, (var0) -> {
       });
       this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (source) -> this.createSoundSliderOptionInstance("soundCategory." + source.getName(), source));
       this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", OptionInstance.cachedConstantTooltip(CLOSED_CAPTIONS_TOOLTIP), false);
@@ -1059,7 +1059,7 @@ public class Options {
       this.keyPlayerList = new KeyMapping("key.playerlist", 43, KeyMapping.Category.MULTIPLAYER);
       this.keyCommand = new KeyMapping("key.command", 56, KeyMapping.Category.MULTIPLAYER);
       this.keyFriends = new KeyMapping("key.friends", 18, KeyMapping.Category.MULTIPLAYER);
-      this.keySocialInteractions = new KeyMapping("key.socialInteractions", 19, KeyMapping.Category.MULTIPLAYER);
+      this.keyOtherPlayers = new KeyMapping("key.otherPlayers", 19, KeyMapping.Category.MULTIPLAYER);
       this.keyScreenshot = new KeyMapping("key.screenshot", 59, KeyMapping.Category.MISC);
       this.keyTogglePerspective = new KeyMapping("key.togglePerspective", 62, KeyMapping.Category.MISC);
       this.keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
@@ -1097,7 +1097,7 @@ public class Options {
       this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYBOARD, 33, KeyMapping.Category.DEBUG, 4);
       this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYBOARD, 27, KeyMapping.Category.DEBUG);
       this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode};
-      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keySocialInteractions, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
+      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keyOtherPlayers, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (caption, value) -> {

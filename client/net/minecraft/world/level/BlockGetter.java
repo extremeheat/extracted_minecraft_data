@@ -237,9 +237,9 @@ public interface BlockGetter extends LevelHeightAccessor {
          if (!hitPointOpt.isEmpty()) {
             ++iterations;
             Vec3 hitPoint = (Vec3)hitPointOpt.get();
-            double cornerHitX = Mth.clamp(hitPoint.x, (double)cornerVisitedBlockX + 9.999999747378752E-6, (double)cornerVisitedBlockX + 1.0 - 9.999999747378752E-6);
-            double cornerHitY = Mth.clamp(hitPoint.y, (double)cornerVisitedBlockY + 9.999999747378752E-6, (double)cornerVisitedBlockY + 1.0 - 9.999999747378752E-6);
-            double cornerHitZ = Mth.clamp(hitPoint.z, (double)cornerVisitedBlockZ + 9.999999747378752E-6, (double)cornerVisitedBlockZ + 1.0 - 9.999999747378752E-6);
+            double cornerHitX = Math.clamp(hitPoint.x, (double)cornerVisitedBlockX + 9.999999747378752E-6, (double)cornerVisitedBlockX + 1.0 - 9.999999747378752E-6);
+            double cornerHitY = Math.clamp(hitPoint.y, (double)cornerVisitedBlockY + 9.999999747378752E-6, (double)cornerVisitedBlockY + 1.0 - 9.999999747378752E-6);
+            double cornerHitZ = Math.clamp(hitPoint.z, (double)cornerVisitedBlockZ + 9.999999747378752E-6, (double)cornerVisitedBlockZ + 1.0 - 9.999999747378752E-6);
             int oppositeCornerX = Mth.floor(cornerHitX - boxSizeX * (double)cornerDir.getX());
             int oppositeCornerY = Mth.floor(cornerHitY - boxSizeY * (double)cornerDir.getY());
             int oppositeCornerZ = Mth.floor(cornerHitZ - boxSizeZ * (double)cornerDir.getZ());

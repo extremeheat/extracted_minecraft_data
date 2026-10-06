@@ -68,10 +68,10 @@ public class AdvancementToast implements Toast {
             int unlockTextTime = 1500;
             float unlockFadeTime = 300.0F;
             if (fullyVisibleForMs < 1500L) {
-               int alpha = Mth.floor(Mth.clamp((float)(1500L - fullyVisibleForMs) / 300.0F, 0.0F, 1.0F) * 255.0F);
+               int alpha = Mth.floor(Math.clamp((float)(1500L - fullyVisibleForMs) / 300.0F, 0.0F, 1.0F) * 255.0F);
                graphics.text(font, (Component)display.type().getDisplayName(), 30, 11, ARGB.color(alpha, titleColor), false);
             } else {
-               int alpha = Mth.floor(Mth.clamp((float)(fullyVisibleForMs - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
+               int alpha = Mth.floor(Math.clamp((float)(fullyVisibleForMs - 1500L) / 300.0F, 0.0F, 1.0F) * 252.0F);
                int var10000 = this.height() / 2;
                int var10001 = lines.size();
                Objects.requireNonNull(font);

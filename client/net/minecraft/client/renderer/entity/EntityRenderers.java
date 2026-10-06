@@ -121,6 +121,7 @@ public class EntityRenderers {
       register(EntityTypes.FISHING_BOBBER, FishingHookRenderer::new);
       register(EntityTypes.FOX, FoxRenderer::new);
       register(EntityTypes.FROG, FrogRenderer::new);
+      register(EntityTypes.FROSTBITE, FrostbiteRenderer::new);
       register(EntityTypes.FURNACE_MINECART, (context) -> new MinecartRenderer(context, ModelLayers.FURNACE_MINECART));
       register(EntityTypes.GHAST, GhastRenderer::new);
       register(EntityTypes.HAPPY_GHAST, HappyGhastRenderer::new);
@@ -133,6 +134,7 @@ public class EntityRenderers {
       register(EntityTypes.HOPPER_MINECART, (context) -> new MinecartRenderer(context, ModelLayers.HOPPER_MINECART));
       register(EntityTypes.HORSE, HorseRenderer::new);
       register(EntityTypes.HUSK, HuskRenderer::new);
+      register(EntityTypes.ICE_BALL, ThrownItemRenderer::new);
       register(EntityTypes.ILLUSIONER, IllusionerRenderer::new);
       register(EntityTypes.INTERACTION, NoopRenderer::new);
       register(EntityTypes.IRON_GOLEM, IronGolemRenderer::new);

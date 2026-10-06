@@ -159,7 +159,7 @@ public class Bee extends Animal implements NeutralMob {
       this.setPathfindingMalus(PathType.FIRE, -1.0F);
       this.setPathfindingMalus(PathType.WATER, -1.0F);
       this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
-      this.setPathfindingMalus(PathType.COCOA, -1.0F);
+      this.setPathfindingMalus(PathType.AVOID_IN_AIR, -1.0F);
       this.setPathfindingMalus(PathType.FENCE, -1.0F);
    }
 
@@ -366,7 +366,7 @@ public class Bee extends Animal implements NeutralMob {
 
       if (hasStung) {
          ++this.timeSinceSting;
-         if (this.timeSinceSting % 5 == 0 && this.random.nextInt(Mth.clamp(1200 - this.timeSinceSting, 1, 1200)) == 0) {
+         if (this.timeSinceSting % 5 == 0 && this.random.nextInt(Math.clamp((long)(1200 - this.timeSinceSting), 1, 1200)) == 0) {
             this.hurtServer(level, this.damageSources().generic(), this.getHealth());
          }
       }

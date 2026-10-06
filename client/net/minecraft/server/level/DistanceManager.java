@@ -73,7 +73,18 @@ public abstract class DistanceManager {
          LOGGER.debug("DMU {}", updates);
       }
 
-      if (!this.chunksToUpdateFutures.isEmpty()) {
+      if (this.updateChunkFutures(scheduler)) {
+         return true;
+      } else {
+         this.releaseTickets(scheduler);
+         return updated;
+      }
+   }
+
+   private boolean updateChunkFutures(final ChunkMap scheduler) {
+      if (this.chunksToUpdateFutures.isEmpty()) {
+         return false;
+      } else {
          for(ChunkHolder chunksToUpdateFuture : this.chunksToUpdateFutures) {
             chunksToUpdateFuture.updateHighestAllowedStatus(scheduler);
          }
@@ -84,29 +95,30 @@ public abstract class DistanceManager {
 
          this.chunksToUpdateFutures.clear();
          return true;
-      } else {
-         if (!this.ticketsToRelease.isEmpty()) {
-            LongIterator iterator = this.ticketsToRelease.iterator();
+      }
+   }
 
-            while(iterator.hasNext()) {
-               long pos = iterator.nextLong();
-               if (this.ticketStorage.getTickets(pos).stream().anyMatch((t) -> t.getType() == TicketType.PLAYER_LOADING)) {
-                  ChunkHolder chunk = scheduler.getUpdatingChunkIfPresent(pos);
-                  if (chunk == null) {
-                     throw new IllegalStateException();
-                  }
+   private void releaseTickets(final ChunkMap scheduler) {
+      if (!this.ticketsToRelease.isEmpty()) {
+         LongIterator iterator = this.ticketsToRelease.iterator();
 
-                  CompletableFuture<ChunkResult<LevelChunk>> future = chunk.getEntityTickingChunkFuture();
-                  future.thenAccept((c) -> this.mainThreadExecutor.execute(() -> this.ticketDispatcher.release(pos, () -> {
-                        }, false)));
+         while(iterator.hasNext()) {
+            long pos = iterator.nextLong();
+            if (this.ticketStorage.getTickets(pos).stream().anyMatch((t) -> t.getType() == TicketType.PLAYER_LOADING)) {
+               ChunkHolder chunk = scheduler.getUpdatingChunkIfPresent(pos);
+               if (chunk == null) {
+                  throw new IllegalStateException();
                }
-            }
 
-            this.ticketsToRelease.clear();
+               CompletableFuture<ChunkResult<LevelChunk>> future = chunk.getEntityTickingChunkFuture();
+               future.thenAccept((c) -> this.mainThreadExecutor.execute(() -> this.ticketDispatcher.release(pos, () -> {
+                     }, false)));
+            }
          }
 
-         return updated;
+         this.ticketsToRelease.clear();
       }
+
    }
 
    public void addPlayer(final SectionPos pos, final ServerPlayer player) {

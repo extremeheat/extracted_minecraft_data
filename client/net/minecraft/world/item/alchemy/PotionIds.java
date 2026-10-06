@@ -51,6 +51,8 @@ public class PotionIds {
    public static final ResourceKey<Potion> WEAVING = register("weaving");
    public static final ResourceKey<Potion> OOZING = register("oozing");
    public static final ResourceKey<Potion> INFESTED = register("infested");
+   public static final ResourceKey<Potion> FREEZING = register("freezing");
+   public static final ResourceKey<Potion> LONG_FREEZING = register("long_freezing");
 
    public PotionIds() {
       super();

@@ -51,6 +51,9 @@ public class LevelEvent {
    public static final int SOUND_SULFUR_SPIKE_LAND = 1052;
    public static final int SOUND_SPELL_POTION_SPLASH = 1053;
    public static final int SOUND_INSTANT_POTION_SPLASH = 1054;
+   public static final int SOUND_ICICLE_LAND = 1055;
+   public static final int SOUND_ZOMBIE_TO_FROSTBITE = 1056;
+   public static final int SOUND_FROSTBITE_TO_ZOMBIE = 1057;
    public static final int COMPOSTER_FILL = 1500;
    public static final int LAVA_FIZZ = 1501;
    public static final int REDSTONE_TORCH_BURNOUT = 1502;

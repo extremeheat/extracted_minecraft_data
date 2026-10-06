@@ -18,15 +18,20 @@ public class MeleeAttackGoal extends Goal {
    private double pathedTargetZ;
    private int ticksUntilNextPathRecalculation;
    private int ticksUntilNextAttack;
-   private final int attackInterval = 20;
+   private final int attackInterval;
    private long lastCanUseCheck;
    private static final long COOLDOWN_BETWEEN_CAN_USE_CHECKS = 20L;
 
    public MeleeAttackGoal(final PathfinderMob mob, final double speedModifier, final boolean followingTargetEvenIfNotSeen) {
+      this(mob, speedModifier, followingTargetEvenIfNotSeen, 20);
+   }
+
+   public MeleeAttackGoal(final PathfinderMob mob, final double speedModifier, final boolean followingTargetEvenIfNotSeen, final int attackInterval) {
       super();
       this.mob = mob;
       this.speedModifier = speedModifier;
       this.followingTargetEvenIfNotSeen = followingTargetEvenIfNotSeen;
+      this.attackInterval = attackInterval;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
    }
 
@@ -134,7 +139,7 @@ public class MeleeAttackGoal extends Goal {
    }
 
    protected void resetAttackCooldown() {
-      this.ticksUntilNextAttack = this.adjustedTickDelay(20);
+      this.ticksUntilNextAttack = this.adjustedTickDelay(this.attackInterval);
    }
 
    protected boolean isTimeToAttack() {
@@ -150,6 +155,6 @@ public class MeleeAttackGoal extends Goal {
    }
 
    protected int getAttackInterval() {
-      return this.adjustedTickDelay(20);
+      return this.adjustedTickDelay(this.attackInterval);
    }
 }

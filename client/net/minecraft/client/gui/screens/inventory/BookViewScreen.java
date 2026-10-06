@@ -22,7 +22,6 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
@@ -74,13 +73,13 @@ public class BookViewScreen extends Screen {
 
    public void setBookAccess(final BookAccess bookAccess) {
       this.bookAccess = bookAccess;
-      this.currentPage = Mth.clamp(this.currentPage, 0, bookAccess.getPageCount());
+      this.currentPage = this.getPageInRange(this.currentPage);
       this.updateButtonVisibility();
       this.cachedPage = -1;
    }
 
    public boolean setPage(final int page) {
-      int clampedPage = Mth.clamp(page, 0, this.bookAccess.getPageCount() - 1);
+      int clampedPage = this.getPageInRange(page);
       if (clampedPage != this.currentPage) {
          this.currentPage = clampedPage;
          this.updateButtonVisibility();
@@ -89,6 +88,10 @@ public class BookViewScreen extends Screen {
       } else {
          return false;
       }
+   }
+
+   private int getPageInRange(final int page) {
+      return Math.clamp((long)page, 0, Math.max(this.bookAccess.getPageCount() - 1, 0));
    }
 
    protected boolean forcePage(final int page) {

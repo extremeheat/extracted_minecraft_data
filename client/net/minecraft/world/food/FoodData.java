@@ -2,7 +2,6 @@ package net.minecraft.world.food;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
@@ -21,8 +20,8 @@ public class FoodData {
    }
 
    private void add(final int food, final float saturation) {
-      this.foodLevel = Mth.clamp(food + this.foodLevel, 0, 20);
-      this.saturationLevel = Mth.clamp(saturation + this.saturationLevel, 0.0F, (float)this.foodLevel);
+      this.foodLevel = Math.clamp((long)(food + this.foodLevel), 0, 20);
+      this.saturationLevel = Math.clamp(saturation + this.saturationLevel, 0.0F, (float)this.foodLevel);
    }
 
    public void eat(final int food, final float saturationModifier) {

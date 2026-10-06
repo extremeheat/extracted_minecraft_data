@@ -44,14 +44,14 @@ public class FirstPersonHandsAndItems {
       }
 
       if (player.isHandsBusy()) {
-         this.mainHandHeight = Mth.clamp(this.mainHandHeight - 0.4F, 0.0F, 1.0F);
-         this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
+         this.mainHandHeight = Math.clamp(this.mainHandHeight - 0.4F, 0.0F, 1.0F);
+         this.offHandHeight = Math.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
       } else {
          float attackAnim = player.getItemSwapScale(1.0F);
          float mainHandTargetHeight = this.mainHandItem != nextMainHand ? 0.0F : attackAnim * attackAnim * attackAnim;
          float offHandTargetHeight = this.offHandItem != nextOffHand ? 0.0F : 1.0F;
-         this.mainHandHeight += Mth.clamp(mainHandTargetHeight - this.mainHandHeight, -0.4F, 0.4F);
-         this.offHandHeight += Mth.clamp(offHandTargetHeight - this.offHandHeight, -0.4F, 0.4F);
+         this.mainHandHeight += Math.clamp(mainHandTargetHeight - this.mainHandHeight, -0.4F, 0.4F);
+         this.offHandHeight += Math.clamp(offHandTargetHeight - this.offHandHeight, -0.4F, 0.4F);
       }
 
       if (this.mainHandHeight < 0.1F) {

@@ -128,4 +128,8 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       float maxY = Math.max(Math.max(topLeft.y(), bottomLeft.y()), Math.max(topRight.y(), bottomRight.y()));
       return new ScreenRectangle(Mth.floor(minX), Mth.floor(minY), Mth.ceil(maxX - minX), Mth.ceil(maxY - minY));
    }
+
+   public ScreenRectangle expandInAllDirections(final int amount) {
+      return new ScreenRectangle(this.position.x() - amount, this.position.y() - amount, this.width + amount * 2, this.height + amount * 2);
+   }
 }

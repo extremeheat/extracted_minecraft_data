@@ -15,7 +15,7 @@ public record StructureCheck(HolderSet<Structure> requiredStructures) implements
    }
 
    public boolean test(final SpawnContext context) {
-      return context.level().getLevel().structureManager().getStructureWithPieceAt(context.pos(), this.requiredStructures).isValid();
+      return context.level().getLevel().structureManager().getStructureWithPieceAt(context.pos(), this.requiredStructures) != null;
    }
 
    public MapCodec<StructureCheck> codec() {

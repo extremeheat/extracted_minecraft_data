@@ -28,7 +28,6 @@ import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
 public class TabNavigationBar extends AbstractContainerWidget {
@@ -186,7 +185,7 @@ public class TabNavigationBar extends AbstractContainerWidget {
       if (event.hasControlDownWithQuirk()) {
          int tabIndex = this.getNextTabIndex(event);
          if (tabIndex != -1) {
-            this.selectTab(Mth.clamp(tabIndex, 0, this.tabs.size() - 1), true);
+            this.selectTab(Math.clamp((long)tabIndex, 0, this.tabs.size() - 1), true);
             return true;
          }
       }

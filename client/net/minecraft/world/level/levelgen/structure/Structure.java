@@ -43,6 +43,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Structure {
    public static final Codec<Structure> DIRECT_CODEC;
@@ -82,14 +83,15 @@ public abstract class Structure {
       return this.terrainAdaptation() != TerrainAdjustment.NONE ? boundingBox.inflatedBy(12) : boundingBox;
    }
 
-   public StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final int references, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
+   public @Nullable StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
       ProfiledDuration profiled = JvmProfiler.INSTANCE.onStructureGenerate(sourceChunkPos, dimension, selected);
       GenerationContext context = new GenerationContext(registryAccess, chunkGenerator, biomeSource, climateSampler, randomState, structureTemplateManager, seed, sourceChunkPos, heightAccessor, validBiome);
       Optional<GenerationStub> generation = this.findValidGenerationPoint(context);
       if (generation.isPresent()) {
          StructurePiecesBuilder builder = ((GenerationStub)generation.get()).getPiecesBuilder();
-         StructureStart testStart = new StructureStart(this, sourceChunkPos, references, builder.build());
-         if (testStart.isValid()) {
+         PiecesContainer pieces = builder.build();
+         if (pieces != null) {
+            StructureStart testStart = new StructureStart(this, sourceChunkPos, 0, pieces);
             if (profiled != null) {
                profiled.finish(true);
             }
@@ -102,7 +104,7 @@ public abstract class Structure {
          profiled.finish(false);
       }
 
-      return StructureStart.INVALID_START;
+      return null;
    }
 
    protected static Optional<GenerationStub> onTopOfChunkCenter(final GenerationContext context, final Heightmap.Types heightmap, final Consumer<StructurePiecesBuilder> generator) {

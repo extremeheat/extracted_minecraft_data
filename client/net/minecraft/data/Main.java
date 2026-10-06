@@ -29,6 +29,7 @@ import net.minecraft.data.structures.SnbtToNbt;
 import net.minecraft.data.structures.StructureUpdater;
 import net.minecraft.data.tags.BannerPatternTagsProvider;
 import net.minecraft.data.tags.BiomeTagsProvider;
+import net.minecraft.data.tags.BlockSoundSetTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.data.tags.DialogTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
@@ -135,6 +136,7 @@ public class Main {
       serverVanillaPack.addProvider(bindRegistries(PotionTagsProvider::new, vanillaWorldRegistries));
       serverVanillaPack.addProvider(bindRegistries(VillagerTradesTagsProvider::new, vanillaWorldRegistries));
       serverVanillaPack.addProvider(bindRegistries(FeatureTagsProvider::new, vanillaWorldRegistries));
+      serverVanillaPack.addProvider(bindRegistries(BlockSoundSetTagsProvider::new, vanillaWorldRegistries));
       serverVanillaPack = generator.getVanillaPack(reports);
       serverVanillaPack.addProvider(bindRegistries(BiomeParametersDumpReport::new, vanillaWorldRegistries));
       serverVanillaPack.addProvider(bindRegistries(RegistryComponentsReport::new, vanillaWorldRegistries));

@@ -52,6 +52,7 @@ public class MobEffects {
    public static final Holder<MobEffect> OOZING;
    public static final Holder<MobEffect> INFESTED;
    public static final Holder<MobEffect> BREATH_OF_THE_NAUTILUS;
+   public static final Holder<MobEffect> FREEZING;
 
    public MobEffects() {
       super();
@@ -106,5 +107,6 @@ public class MobEffects {
       OOZING = register("oozing", new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (random) -> 2));
       INFESTED = register("infested", new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (random) -> Mth.randomBetweenInclusive(random, 1, 2)));
       BREATH_OF_THE_NAUTILUS = register("breath_of_the_nautilus", new MobEffect(MobEffectCategory.BENEFICIAL, 65518));
+      FREEZING = register("freezing", (new FreezingMobEffect(MobEffectCategory.HARMFUL, 10415854)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_FREEZING));
    }
 }

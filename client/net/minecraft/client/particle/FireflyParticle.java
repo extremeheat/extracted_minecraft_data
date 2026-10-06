@@ -4,7 +4,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class FireflyParticle extends SingleQuadParticle {
@@ -47,7 +46,7 @@ public class FireflyParticle extends SingleQuadParticle {
    }
 
    private float getLifetimeProgress(final float currentAge) {
-      return Mth.clamp(currentAge / (float)this.lifetime, 0.0F, 1.0F);
+      return Math.clamp(currentAge / (float)this.lifetime, 0.0F, 1.0F);
    }
 
    private static float getFadeAmount(final float lifetimeProgress, final float fadeInTime, final float fadeOutTime) {

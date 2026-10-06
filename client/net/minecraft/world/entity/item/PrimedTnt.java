@@ -7,7 +7,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -131,7 +130,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    protected void readAdditionalSaveData(final ValueInput input) {
       this.setFuse(input.getShortOr("fuse", (short)80));
       this.setBlockState((BlockState)input.read("block_state", BlockState.CODEC).orElse(DEFAULT_BLOCK_STATE));
-      this.explosionPower = Mth.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
+      this.explosionPower = Math.clamp(input.getFloatOr("explosion_power", 4.0F), 0.0F, 128.0F);
       this.owner = EntityReference.<LivingEntity>read(input, "owner");
    }
 

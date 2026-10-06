@@ -55,6 +55,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    private final VulkanQueue computeQueue;
    private final VulkanQueue transferQueue;
    private final boolean isIntegratedIntelMoltenVK;
+   private final boolean useDXGISwapchain;
    private final FeatureSet enabledFeatures;
    private final VulkanCommandEncoder commandEncoder;
    private final CheckpointExtension checkpointExtension;
@@ -68,6 +69,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       this.enabledFeatures = enabledFeatureSet;
       this.checkpointExtension = checkpointExtension;
       this.renderPassCache = new RenderPassCache(this);
+      this.useDXGISwapchain = D3D12GpuSurface.available(vkDevice.getPhysicalDevice(), enabledFeatureSet);
       Set<String> extensionNames = new HashSet();
 
       for(String name : instance.getEnabledExtensions()) {
@@ -81,7 +83,7 @@ public class VulkanDevice implements GpuDeviceBackend {
       VkPhysicalDeviceLimits limits = physicalDevice.vkPhysicalDeviceProperties().limits();
       VkPhysicalDeviceVulkan11Properties vk11Properties = physicalDevice.vkPhysicalDeviceVulkan11Properties();
       int indirectDrawCount = Integer.compareUnsigned(limits.maxDrawIndirectCount(), 2147483647) > 0 ? 2147483647 : limits.maxDrawIndirectCount();
-      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments(), indirectDrawCount), new DeviceFeatures(enabledFeatureSet.contains(VulkanFeatureSets.WIREFRAME_FEATURESET), true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(false, false, PlatformUtil.isAppleSiliconMac(physicalDevice.deviceName()), false), physicalDevice.deviceType());
+      this.deviceInfo = new DeviceInfo(physicalDevice.deviceName(), physicalDevice.vendorName(), physicalDevice.driverInfo(), true, "Vulkan", limits.timestampPeriod(), new DeviceLimits((int)limits.maxSamplerAnisotropy(), (int)limits.minUniformBufferOffsetAlignment(), limits.maxImageDimension2D(), vk11Properties.maxMemoryAllocationSize() < 0L ? 9223372036854775807L : vk11Properties.maxMemoryAllocationSize(), physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount() < 0 ? 2147483647 : physicalDevice.vkPhysicalDeviceMultiDrawPropertiesEXT().maxMultiDrawCount(), limits.maxColorAttachments(), indirectDrawCount), new DeviceFeatures(enabledFeatureSet.contains(VulkanFeatureSets.WIREFRAME_FEATURESET), true, enabledFeatureSet.contains(VulkanFeatureSets.MULTI_DRAW_FEATURESET), false, true, true, true, true), Collections.unmodifiableSet(extensionNames), new HintsAndWorkarounds(PlatformUtil.IS_WINDOWS && !this.useDXGISwapchain, false, false, PlatformUtil.isAppleSiliconMac(physicalDevice.deviceName()), false), physicalDevice.deviceType());
       IntIntPair graphicsQueueFamily = physicalDevice.graphicsQueueFamilyAndIndex();
 
       assert graphicsQueueFamily != null;
@@ -144,7 +146,7 @@ public class VulkanDevice implements GpuDeviceBackend {
    }
 
    public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified) {
-      return new VulkanGpuSurface(this, windowHandle);
+      return (GpuSurfaceBackend)(this.useDXGISwapchain ? new D3D12GpuSurface(this, windowHandle) : new VulkanGpuSurface(this, windowHandle));
    }
 
    public VulkanCommandEncoder createCommandEncoder() {

@@ -50,6 +50,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private static final String TAG_LEFT_OWNER = "LeftOwner";
    private static final String TAG_HAS_BEEN_SHOT = "HasBeenShot";
    private static final String TAG_CAN_BREAK = "can_break";
+   private static final double TRAJECTORY_RISE_COEFFICIENT = 4.0;
    protected @Nullable EntityReference<Entity> owner;
    private @Nullable AdventureModePredicate canBreak;
    private boolean leftOwner = false;
@@ -411,6 +412,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    public MoveSimulationType getMoveSimulationType() {
       return MoveSimulationType.SERVER_AND_CLIENT;
+   }
+
+   public double getTrajectoryCorrectionFactor() {
+      return this.getGravity() * 4.0;
    }
 
    @FunctionalInterface

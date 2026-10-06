@@ -175,7 +175,7 @@ public record IcebergFeature(BlockState state) implements Feature {
    }
 
    private double signedDistanceCircle(final int xo, final int zo, final BlockPos origin, final int radius, final RandomSource random) {
-      float off = 10.0F * Mth.clamp(random.nextFloat(), 0.2F, 0.8F) / (float)radius;
+      float off = 10.0F * Math.clamp(random.nextFloat(), 0.2F, 0.8F) / (float)radius;
       return (double)off + Math.pow((double)(xo - origin.getX()), 2.0) + Math.pow((double)(zo - origin.getZ()), 2.0) - Math.pow((double)radius, 2.0);
    }
 

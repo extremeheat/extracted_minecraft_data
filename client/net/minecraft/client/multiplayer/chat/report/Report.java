@@ -5,6 +5,7 @@ import com.mojang.authlib.minecraft.report.AbuseReportLimits;
 import com.mojang.datafixers.util.Either;
 import java.time.Instant;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -27,6 +28,10 @@ public abstract class Report {
 
    public boolean isReportedPlayer(final UUID playerId) {
       return playerId.equals(this.reportedProfileId);
+   }
+
+   public boolean isUnreportableLater() {
+      return !Minecraft.getInstance().getPlayerSocialManager().isFriend(this.reportedProfileId);
    }
 
    public abstract Report copy();

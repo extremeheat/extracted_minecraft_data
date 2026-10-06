@@ -81,7 +81,7 @@ public class ByIdMap {
             var10000 = (id) -> sortedValues[Mth.positiveModulo(id, length)];
             break;
          case 2:
-            var10000 = (id) -> sortedValues[Mth.clamp(id, 0, length - 1)];
+            var10000 = (id) -> sortedValues[Math.clamp((long)id, 0, length - 1)];
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);

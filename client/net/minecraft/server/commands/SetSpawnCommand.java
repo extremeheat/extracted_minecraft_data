@@ -38,7 +38,7 @@ public class SetSpawnCommand {
       ResourceKey<Level> dimension = source.getLevel().dimension();
       Vec2 rotationVector = rotation.getRotation(source);
       float yaw = Mth.wrapDegrees(rotationVector.y);
-      float pitch = Mth.clamp(rotationVector.x, -90.0F, 90.0F);
+      float pitch = Math.clamp(rotationVector.x, -90.0F, 90.0F);
       LevelData.RespawnData respawnData = LevelData.RespawnData.of(dimension, pos, yaw, pitch);
       ServerPlayer.RespawnConfig respawnConfig = new ServerPlayer.RespawnConfig(respawnData, true);
 

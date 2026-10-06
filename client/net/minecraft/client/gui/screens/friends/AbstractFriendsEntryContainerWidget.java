@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.friends;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -15,52 +16,44 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.social.PlayerSocialManager;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.component.ResolvableProfile;
 
-abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidget {
-   static final int SPRITE_TEXTURE_SIZE = 18;
-   static final int BUTTON_SIZE = 20;
-   static final int FACE_SIZE = 24;
-   static final int PADDING = 4;
-   private static final int BACKGROUND_MARGIN = 4;
+public abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidget {
+   public static final int BUTTON_SIZE = 20;
+   public static final int VERTICAL_PADDING = 3;
    protected final Minecraft minecraft;
-   protected final FriendsOverlayScreen screen;
    protected final PlayerFaceWidget playerFaceWidget;
    protected final StringWidget nameWidget;
    protected final String playerName;
    protected final UUID playerId;
-   protected final boolean showingStatus;
-   private final List<AbstractWidget> children;
+   private final List<AbstractWidget> children = new ArrayList();
 
-   public AbstractFriendsEntryContainerWidget(final Minecraft minecraft, final FriendsOverlayScreen screen, final int x, final int y, final int width, final int height, final PlayerSocialManager.PlayerData playerData) {
-      this(minecraft, screen, x, y, width, height, playerData, false);
-   }
-
-   public AbstractFriendsEntryContainerWidget(final Minecraft minecraft, final FriendsOverlayScreen screen, final int x, final int y, final int width, final int height, final PlayerSocialManager.PlayerData playerData, final boolean showingStatus) {
-      super(x, y, width, height, Component.empty());
-      this.children = new ArrayList();
+   public AbstractFriendsEntryContainerWidget(final Minecraft minecraft, final int width, final UUID playerId, final String playerName) {
+      super(0, 0, width, 29, CommonComponents.EMPTY);
       this.minecraft = minecraft;
-      this.screen = screen;
-      this.playerName = playerData.name();
-      this.playerId = playerData.id();
-      this.playerFaceWidget = new PlayerFaceWidget(24, ResolvableProfile.createUnresolved(this.playerId));
-      this.nameWidget = new StringWidget(Component.literal(this.playerName), minecraft.font);
+      this.playerName = playerName;
+      this.playerId = playerId;
+      this.playerFaceWidget = new PlayerFaceWidget(24, 1, ResolvableProfile.createUnresolved(playerId));
+      this.nameWidget = new StringWidget(Component.literal(playerName), minecraft.font);
       this.addChild(this.playerFaceWidget);
       this.addChild(this.nameWidget);
-      this.showingStatus = showingStatus;
    }
 
-   abstract void disable();
+   public abstract void disable();
 
-   UUID playerId() {
+   public UUID playerId() {
       return this.playerId;
+   }
+
+   public String playerName() {
+      return this.playerName;
    }
 
    protected abstract Component getEntryNarration();
 
-   static Button.CreateNarration getSpriteIconNarration(final Component actionDescription) {
+   protected static Button.CreateNarration getSpriteIconNarration(final Component actionDescription) {
       return (var1) -> Component.translatable("narrator.select", actionDescription);
    }
 
@@ -86,13 +79,6 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
       this.children.add(child);
    }
 
-   protected final void removeChild(final AbstractWidget child) {
-      if (this.children.remove(child) && this.getFocused() == child) {
-         this.setFocused((GuiEventListener)null);
-      }
-
-   }
-
    public List<? extends GuiEventListener> children() {
       return this.children;
    }
@@ -101,15 +87,20 @@ abstract class AbstractFriendsEntryContainerWidget extends AbstractContainerWidg
       return this.height;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      if ((Boolean)this.minecraft.options.highContrast().get()) {
-         graphics.fill(this.getX() - 4, this.getY(), this.getX() + this.getWidth() + 4, this.getY() + this.getHeight(), -16777216);
-      }
+   protected int getProfileInfoHeight() {
+      Objects.requireNonNull(this.minecraft.font);
+      return 9;
+   }
 
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      this.extractPlayerFace(graphics, mouseX, mouseY, a);
+      int nameX = this.playerFaceWidget.getRight() + 5;
+      this.nameWidget.setPosition(nameX, this.getY() + (this.getHeight() - this.getProfileInfoHeight()) / 2 + 1);
+      this.nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
+   }
+
+   protected void extractPlayerFace(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
       this.playerFaceWidget.setPosition(this.getX(), this.getY() + (this.getHeight() - this.playerFaceWidget.getHeight()) / 2);
       this.playerFaceWidget.extractRenderState(graphics, mouseX, mouseY, a);
-      int nameY = this.getY() + this.getHeight() / (this.showingStatus ? 3 : 2) - this.nameWidget.getHeight() / 2;
-      this.nameWidget.setPosition(this.playerFaceWidget.getRight() + 4, nameY);
-      this.nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
    }
 }

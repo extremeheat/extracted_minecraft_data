@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 
@@ -38,7 +37,7 @@ public class PlayerItemInHandLayer<S extends AvatarRenderState, M extends Entity
       this.getParentModel().root().translateAndRotate(poseStack);
       ModelPart head = ((HeadedModel)this.getParentModel()).getHead();
       float previousXRot = head.xRot;
-      head.xRot = Mth.clamp(head.xRot, -0.5235988F, 1.5707964F);
+      head.xRot = Math.clamp(head.xRot, -0.5235988F, 1.5707964F);
       head.translateAndRotate(poseStack);
       head.xRot = previousXRot;
       CustomHeadLayer.translateToHead(poseStack, CustomHeadLayer.Transforms.DEFAULT);

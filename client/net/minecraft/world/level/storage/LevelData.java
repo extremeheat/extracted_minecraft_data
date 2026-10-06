@@ -42,7 +42,7 @@ public interface LevelData {
       }
 
       public static RespawnData of(final ResourceKey<Level> dimension, final BlockPos pos, final float yaw, final float pitch) {
-         return new RespawnData(GlobalPos.of(dimension, pos.immutable()), Mth.wrapDegrees(yaw), Mth.clamp(pitch, -90.0F, 90.0F));
+         return new RespawnData(GlobalPos.of(dimension, pos.immutable()), Mth.wrapDegrees(yaw), Math.clamp(pitch, -90.0F, 90.0F));
       }
 
       public ResourceKey<Level> dimension() {

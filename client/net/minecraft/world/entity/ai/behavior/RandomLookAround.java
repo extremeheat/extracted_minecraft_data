@@ -30,7 +30,7 @@ public class RandomLookAround extends Behavior<Mob> {
 
    protected void start(final ServerLevel level, final Mob body, final long timestamp) {
       RandomSource random = body.getRandom();
-      float pitch = Mth.clamp(random.nextFloat() * this.pitchRange + this.minPitch, -90.0F, 90.0F);
+      float pitch = Math.clamp(random.nextFloat() * this.pitchRange + this.minPitch, -90.0F, 90.0F);
       float rotation = Mth.wrapDegrees(body.getYRot() + 2.0F * random.nextFloat() * this.maxYaw - this.maxYaw);
       Vec3 newLookVec = Vec3.directionFromRotation(pitch, rotation);
       body.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(body.getEyePosition().add(newLookVec)));

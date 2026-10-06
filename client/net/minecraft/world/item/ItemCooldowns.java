@@ -6,7 +6,6 @@ import java.util.Map;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.component.UseCooldown;
 
 public class ItemCooldowns {
@@ -27,7 +26,7 @@ public class ItemCooldowns {
       if (cooldown != null) {
          float duration = (float)(cooldown.endTime - cooldown.startTime);
          float remaining = (float)cooldown.endTime - ((float)this.tickCount + a);
-         return Mth.clamp(remaining / duration, 0.0F, 1.0F);
+         return Math.clamp(remaining / duration, 0.0F, 1.0F);
       } else {
          return 0.0F;
       }

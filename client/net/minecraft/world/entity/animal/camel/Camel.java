@@ -479,7 +479,7 @@ public class Camel extends AbstractHorse {
             flexPointOffset = isFront ? 0.6F : 0.35F;
          }
 
-         float poseTime = Mth.clamp((float)this.getPoseTime() + partialTicks, 0.0F, (float)animationDuration);
+         float poseTime = Math.clamp((float)this.getPoseTime() + partialTicks, 0.0F, (float)animationDuration);
          boolean isFirstPart = poseTime < (float)halfPoint;
          float part = isFirstPart ? poseTime / (float)halfPoint : (poseTime - (float)halfPoint) / (float)(animationDuration - halfPoint);
          float flexPoint = sittingHeightDifference - flexPointOffset * verticalDrop;

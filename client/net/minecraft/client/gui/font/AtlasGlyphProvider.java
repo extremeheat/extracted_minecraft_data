@@ -53,7 +53,7 @@ public class AtlasGlyphProvider {
          }
 
          public TextRenderable.Styled createGlyph(final float x, final float y, final int color, final int shadowColor, final Style style, final float boldOffset, final float shadowOffset) {
-            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTextureView(), sprite, x, y, color, shadowColor, shadowOffset, style);
+            return new Instance(AtlasGlyphProvider.this.renderTypes, AtlasGlyphProvider.this.atlas.getTexture().textureView(), sprite, x, y, color, shadowColor, shadowOffset, style);
          }
       });
    }

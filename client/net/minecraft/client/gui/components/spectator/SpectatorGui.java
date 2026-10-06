@@ -41,7 +41,7 @@ public class SpectatorGui implements SpectatorMenuListener {
 
    private float getHotbarAlpha() {
       long delta = this.lastSelectionTime - Util.getMillis() + 5000L;
-      return Mth.clamp((float)delta / 2000.0F, 0.0F, 1.0F);
+      return Math.clamp((float)delta / 2000.0F, 0.0F, 1.0F);
    }
 
    public void extractHotbar(final GuiGraphicsExtractor graphics) {

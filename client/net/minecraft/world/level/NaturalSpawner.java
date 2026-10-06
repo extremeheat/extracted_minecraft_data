@@ -281,7 +281,11 @@ public final class NaturalSpawner {
    public static boolean isInNetherFortressBounds(final BlockPos pos, final ServerLevel level, final MobCategory category, final StructureManager structureManager) {
       if (category == MobCategory.MONSTER && level.getBlockState(pos.below()).is(Blocks.NETHER_BRICKS)) {
          Structure fortress = (Structure)structureManager.registryAccess().lookupOrThrow(Registries.STRUCTURE).getValue(BuiltinStructures.FORTRESS);
-         return fortress == null ? false : structureManager.getStructureAt(pos, fortress).isValid();
+         if (fortress == null) {
+            return false;
+         } else {
+            return structureManager.getStructureAt(pos, fortress) != null;
+         }
       } else {
          return false;
       }
@@ -338,8 +342,8 @@ public final class NaturalSpawner {
                         BlockPos pos = getTopNonCollidingPos(level, spawnerData.type(), x, z);
                         if (spawnerData.type().canSummon() && SpawnPlacements.isSpawnPositionOk(spawnerData.type(), level, pos)) {
                            float width = spawnerData.type().getWidth();
-                           double fx = Mth.clamp((double)x, (double)xo + (double)width, (double)xo + 16.0 - (double)width);
-                           double fz = Mth.clamp((double)z, (double)zo + (double)width, (double)zo + 16.0 - (double)width);
+                           double fx = Math.clamp((double)x, (double)xo + (double)width, (double)xo + 16.0 - (double)width);
+                           double fz = Math.clamp((double)z, (double)zo + (double)width, (double)zo + 16.0 - (double)width);
                            if (!level.noCollision(spawnerData.type().getSpawnAABB(fx, (double)pos.getY(), fz)) || !SpawnPlacements.checkSpawnRules(spawnerData.type(), level, EntitySpawnReason.CHUNK_GENERATION, BlockPos.containing(fx, (double)pos.getY(), fz), level.getRandom())) {
                               continue;
                            }

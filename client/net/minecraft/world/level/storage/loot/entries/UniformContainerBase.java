@@ -10,7 +10,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
-import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -42,7 +41,7 @@ public abstract class UniformContainerBase extends LootPoolEntryContainer {
       return new DummyBuilder(constructor);
    }
 
-   public abstract static class Builder<T extends Builder<T>> extends LootPoolEntryContainer.Builder<T> implements FunctionUserBuilder<T> {
+   public abstract static class Builder<T extends Builder<T>> extends LootPoolEntryContainer.Builder<T> {
       protected int weight = 1;
       protected int quality = 0;
 

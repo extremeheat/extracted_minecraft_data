@@ -792,7 +792,7 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       float limit = (float)this.getMaxHeadYRot();
       float headYRot = this.getYHeadRot();
       float delta = Mth.wrapDegrees(this.yBodyRot - headYRot);
-      float targetDelta = Mth.clamp(Mth.wrapDegrees(this.yBodyRot - headYRot), -limit, limit);
+      float targetDelta = Math.clamp(Mth.wrapDegrees(this.yBodyRot - headYRot), -limit, limit);
       float newHeadYRot = headYRot + delta - targetDelta;
       this.setYHeadRot(newHeadYRot);
    }

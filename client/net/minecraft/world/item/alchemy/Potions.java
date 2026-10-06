@@ -54,6 +54,8 @@ public class Potions {
    public static final Holder<Potion> WEAVING;
    public static final Holder<Potion> OOZING;
    public static final Holder<Potion> INFESTED;
+   public static final Holder<Potion> FREEZING;
+   public static final Holder<Potion> LONG_FREEZING;
 
    public Potions() {
       super();
@@ -114,5 +116,7 @@ public class Potions {
       WEAVING = register(PotionIds.WEAVING, new Potion("weaving", new MobEffectInstance[]{new MobEffectInstance(MobEffects.WEAVING, 3600)}));
       OOZING = register(PotionIds.OOZING, new Potion("oozing", new MobEffectInstance[]{new MobEffectInstance(MobEffects.OOZING, 3600)}));
       INFESTED = register(PotionIds.INFESTED, new Potion("infested", new MobEffectInstance[]{new MobEffectInstance(MobEffects.INFESTED, 3600)}));
+      FREEZING = register(PotionIds.FREEZING, new Potion("freezing", new MobEffectInstance[]{new MobEffectInstance(MobEffects.FREEZING, 900)}));
+      LONG_FREEZING = register(PotionIds.LONG_FREEZING, new Potion("freezing", new MobEffectInstance[]{new MobEffectInstance(MobEffects.FREEZING, 1800)}));
    }
 }

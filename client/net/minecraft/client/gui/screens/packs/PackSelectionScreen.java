@@ -39,8 +39,8 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -312,11 +312,12 @@ public class PackSelectionScreen extends Screen {
 
    private Identifier loadPackIcon(final TextureManager textureManager, final Pack pack) {
       try {
-         Identifier var9;
+         Identifier var19;
          try (PackMetadataResources packResources = pack.openMetadata()) {
             IoSupplier<InputStream> resource = packResources.getRootResource("pack.png");
             if (resource == null) {
-               return DEFAULT_ICON;
+               Identifier var18 = DEFAULT_ICON;
+               return var18;
             }
 
             String id = pack.getId();
@@ -325,20 +326,22 @@ public class PackSelectionScreen extends Screen {
             InputStream stream = resource.get();
 
             try {
-               NativeImage iconImage = NativeImage.read(stream);
-               Objects.requireNonNull(location);
-               textureManager.register(location, new DynamicTexture(location::toString, iconImage));
-               var9 = location;
-            } catch (Throwable var12) {
+               try (NativeImage iconImage = NativeImage.read(stream)) {
+                  Objects.requireNonNull(location);
+                  textureManager.register(location, TextureResources.from2dImage(location::toString, iconImage));
+               }
+
+               var19 = location;
+            } catch (Throwable var15) {
                if (stream != null) {
                   try {
                      stream.close();
-                  } catch (Throwable var11) {
-                     var12.addSuppressed(var11);
+                  } catch (Throwable var12) {
+                     var15.addSuppressed(var12);
                   }
                }
 
-               throw var12;
+               throw var15;
             }
 
             if (stream != null) {
@@ -346,7 +349,7 @@ public class PackSelectionScreen extends Screen {
             }
          }
 
-         return var9;
+         return var19;
       } catch (Exception e) {
          LOGGER.warn("Failed to load icon from pack {}", pack.getId(), e);
          return DEFAULT_ICON;

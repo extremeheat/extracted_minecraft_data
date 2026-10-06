@@ -307,7 +307,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
    protected void comeOffTrack(final ServerLevel level) {
       double maxSpeed = this.getMaxSpeed(level);
       Vec3 movement = this.getDeltaMovement();
-      this.setDeltaMovement(Mth.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Mth.clamp(movement.z, -maxSpeed, maxSpeed));
+      this.setDeltaMovement(Math.clamp(movement.x, -maxSpeed, maxSpeed), movement.y, Math.clamp(movement.z, -maxSpeed, maxSpeed));
       if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
       }

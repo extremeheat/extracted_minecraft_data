@@ -23,7 +23,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.util.Mth;
 import net.minecraft.util.SmoothDouble;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.Inventory;
@@ -174,7 +173,7 @@ public class MouseHandler {
                   if (this.minecraft.gui.hud.getSpectatorGui().isMenuActive()) {
                      this.minecraft.gui.hud.getSpectatorGui().onMouseScrolled(-wheel);
                   } else {
-                     float speed = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)wheelXY.y * 0.005F, 0.0F, 0.2F);
+                     float speed = Math.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)wheelXY.y * 0.005F, 0.0F, 0.2F);
                      this.minecraft.player.getAbilities().setFlyingSpeed(speed);
                   }
                } else {

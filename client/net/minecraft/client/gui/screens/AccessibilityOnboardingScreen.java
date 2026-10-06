@@ -68,7 +68,7 @@ public class AccessibilityOnboardingScreen extends Screen {
          rowHelper.addChild(this.narratorButton);
       }
 
-      rowHelper.addChild(SpriteIconButton.builder(Component.translatable("options.sounds"), (button) -> this.closeAndSetScreen(new SoundOptionsScreen(this, this.options)), false).width(150).sprite((Identifier)Identifier.withDefaultNamespace("icon/music_notes"), 16, 16).build());
+      rowHelper.addChild(((SpriteIconButton.Builder)SpriteIconButton.builder(Component.translatable("options.sounds"), (button) -> this.closeAndSetScreen(new SoundOptionsScreen(this, this.options)), false).width(150)).sprite((Identifier)Identifier.withDefaultNamespace("icon/music_notes"), 16, 16).build());
       rowHelper.addChild(CommonButtons.accessibility(150, (button) -> this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), false));
       rowHelper.addChild(CommonButtons.language(150, (button) -> this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), false));
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, (button) -> this.onClose()).build());
@@ -131,7 +131,7 @@ public class AccessibilityOnboardingScreen extends Screen {
             this.fadingIn = false;
             this.fadeInStart = 0.0F;
          } else {
-            fade = Mth.clamp(fade, 0.0F, 1.0F);
+            fade = Math.clamp(fade, 0.0F, 1.0F);
             widgetAlpha = Mth.clampedMap(fade, 0.5F, 1.0F, 0.0F, 1.0F);
          }
 
@@ -145,7 +145,7 @@ public class AccessibilityOnboardingScreen extends Screen {
             this.fadeOutStart = 0.0F;
             this.close(true, this.onClose);
          } else {
-            fade = Mth.clamp(fade, 0.0F, 1.0F);
+            fade = Math.clamp(fade, 0.0F, 1.0F);
             widgetAlpha = Mth.clampedMap(fade, 0.5F, 1.0F, 0.0F, 1.0F);
          }
 

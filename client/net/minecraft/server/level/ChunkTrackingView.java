@@ -62,6 +62,18 @@ public interface ChunkTrackingView {
       return this.contains(x, z, true);
    }
 
+   default boolean containsChunkAround(final int chunkX, final int chunkZ, final int radius) {
+      for(int dx = -radius; dx <= radius; ++dx) {
+         for(int dz = -radius; dz <= radius; ++dz) {
+            if (this.contains(chunkX + dx, chunkZ + dz)) {
+               return true;
+            }
+         }
+      }
+
+      return false;
+   }
+
    boolean contains(int chunkX, int chunkZ, boolean includeNeighbors);
 
    void forEach(Consumer<ChunkPos> consumer);

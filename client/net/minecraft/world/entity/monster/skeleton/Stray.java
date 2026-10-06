@@ -3,6 +3,7 @@ package net.minecraft.world.entity.monster.skeleton;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -24,13 +25,18 @@ public class Stray extends AbstractSkeleton {
    }
 
    public static boolean checkStraySpawnRules(final EntityType<Stray> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
-      BlockPos checkSkyPos = pos;
+      boolean canSpawn = Monster.checkMonsterSpawnRules(type, level, spawnReason, pos, random);
+      if (level.getBiome(pos).is(BiomeTags.SPAWNS_STRAYS_WITHOUT_POWDER_SNOW)) {
+         return canSpawn;
+      } else {
+         BlockPos checkSkyPos = pos;
 
-      do {
-         checkSkyPos = checkSkyPos.above();
-      } while(level.getBlockState(checkSkyPos).is(Blocks.POWDER_SNOW));
+         do {
+            checkSkyPos = checkSkyPos.above();
+         } while(level.getBlockState(checkSkyPos).is(Blocks.POWDER_SNOW));
 
-      return Monster.checkMonsterSpawnRules(type, level, spawnReason, pos, random) && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(checkSkyPos.below()));
+         return canSpawn && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(checkSkyPos.below()));
+      }
    }
 
    protected SoundEvent getAmbientSound() {

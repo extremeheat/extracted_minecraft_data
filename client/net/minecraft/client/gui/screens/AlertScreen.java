@@ -8,7 +8,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 
 public class AlertScreen extends Screen {
    private static final int LABEL_Y = 90;
@@ -41,7 +40,7 @@ public class AlertScreen extends Screen {
       int var10000 = this.message.getLineCount();
       Objects.requireNonNull(this.font);
       int textHeight = var10000 * 9;
-      int buttonY = Mth.clamp(90 + textHeight + 12, this.height / 6 + 96, this.height - 24);
+      int buttonY = Math.clamp((long)(90 + textHeight + 12), this.height / 6 + 96, this.height - 24);
       int buttonWidth = 150;
       this.addRenderableWidget(Button.builder(this.okButton, (button) -> this.callback.run()).bounds((this.width - 150) / 2, buttonY, 150, 20).build());
    }

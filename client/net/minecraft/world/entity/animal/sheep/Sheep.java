@@ -153,6 +153,19 @@ public class Sheep extends Animal implements Shearable {
          }
 
          return InteractionResult.CONSUME;
+      } else if (itemStack.is(ItemTags.SHEEP_WOOL_DYES) && this.isAlive() && !this.isSheared()) {
+         DyeColor dyeColor = (DyeColor)itemStack.get(DataComponents.DYE);
+         if (dyeColor != null && this.getColor() != dyeColor) {
+            this.level().playSound(player, (Entity)this, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+            if (!this.level().isClientSide()) {
+               this.setColor(dyeColor);
+               itemStack.shrink(1);
+            }
+
+            return InteractionResult.SUCCESS;
+         } else {
+            return InteractionResult.CONSUME;
+         }
       } else {
          return super.mobInteract(player, hand);
       }

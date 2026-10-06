@@ -34,7 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
@@ -117,10 +117,10 @@ public class Horse extends AbstractHorse {
       return Markings.byId((this.getTypeVariant() & '\uff00') >> 8);
    }
 
-   protected void playGallopSound(final SoundType soundType) {
-      super.playGallopSound(soundType);
+   protected void playGallopSound(final BlockSoundSet blockSoundSet) {
+      super.playGallopSound(blockSoundSet);
       if (this.random.nextInt(10) == 0) {
-         this.playSound(this.isBaby() ? SoundEvents.HORSE_BREATHE_BABY : SoundEvents.HORSE_BREATHE, soundType.getVolume() * 0.6F, soundType.getPitch());
+         this.playSound(this.isBaby() ? SoundEvents.HORSE_BREATHE_BABY : SoundEvents.HORSE_BREATHE, blockSoundSet.volume() * 0.6F, blockSoundSet.pitch());
       }
 
    }

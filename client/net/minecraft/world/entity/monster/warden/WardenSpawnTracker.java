@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -109,7 +108,7 @@ public class WardenSpawnTracker {
    }
 
    public void setWarningLevel(final int warningLevel) {
-      this.warningLevel = Mth.clamp(warningLevel, 0, 4);
+      this.warningLevel = Math.clamp((long)warningLevel, 0, 4);
    }
 
    public int getWarningLevel() {

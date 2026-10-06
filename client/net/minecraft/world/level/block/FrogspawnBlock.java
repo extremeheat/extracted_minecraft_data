@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -109,7 +108,7 @@ public class FrogspawnBlock extends Block {
 
    private double getRandomTadpolePositionOffset(final RandomSource random) {
       double tadpoleHitboxCenter = 0.20000000298023224;
-      return Mth.clamp(random.nextDouble(), 0.20000000298023224, 0.7999999970197678);
+      return Math.clamp(random.nextDouble(), 0.20000000298023224, 0.7999999970197678);
    }
 
    @VisibleForTesting

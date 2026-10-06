@@ -69,7 +69,7 @@ import org.slf4j.Logger;
 public class Gui {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final SectionCategory TRACY_CURRENT_SCREEN = TracyClient.createSectionCategory("Current Screen");
-   private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
+   private static final Component OTHER_PLAYERS_NOT_AVAILABLE = Component.translatable("multiplayer.other_players.not_available");
    public static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private final Minecraft minecraft;
    public final Hud hud;
@@ -241,7 +241,10 @@ public class Gui {
       }
 
       if (hadScreenOpen) {
-         oldScreen.clearFocus();
+         if (oldScreen.isInputCaptured()) {
+            oldScreen.clearFocus();
+         }
+
          this.minecraft.textInputManager().stopTextInput();
          oldScreen.removed();
       } else {
@@ -321,8 +324,8 @@ public class Gui {
    }
 
    public void addSocialInteractionsToast() {
-      Component title = Component.translatable("tutorial.socialInteractions.title");
-      Component message = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
+      Component title = Component.translatable("tutorial.other_players.title");
+      Component message = Component.translatable("tutorial.other_players.description", Tutorial.key("otherPlayers"));
       this.socialInteractionsToast = new TutorialToast(this.minecraft.font, TutorialToast.Icons.SOCIAL_INTERACTIONS, title, message, true, 8000);
       this.toastManager.addToast(this.socialInteractionsToast);
    }
@@ -349,10 +352,10 @@ public class Gui {
          this.setScreen(new AdvancementsScreen(this.minecraft.player.connection.getAdvancements()));
       }
 
-      while(options.keySocialInteractions.consumeClick()) {
+      while(options.keyOtherPlayers.consumeClick()) {
          if (!this.minecraft.isMultiplayerServer() && !SharedConstants.DEBUG_SOCIAL_INTERACTIONS) {
-            this.chatListener.handleOverlay(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
-            this.minecraft.getNarrator().saySystemNow(SOCIAL_INTERACTIONS_NOT_AVAILABLE);
+            this.chatListener.handleOverlay(OTHER_PLAYERS_NOT_AVAILABLE);
+            this.minecraft.getNarrator().saySystemNow(OTHER_PLAYERS_NOT_AVAILABLE);
          } else {
             if (this.socialInteractionsToast != null) {
                this.socialInteractionsToast.hide();

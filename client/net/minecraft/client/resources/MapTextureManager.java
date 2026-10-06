@@ -1,12 +1,19 @@
 package net.minecraft.client.resources;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.device.GpuDevice;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuSampler;
+import com.mojang.renderpearl.api.textures.GpuTexture;
+import com.mojang.renderpearl.api.textures.GpuTextureView;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Objects;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import java.util.function.Supplier;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapId;
@@ -32,13 +39,6 @@ public class MapTextureManager implements AutoCloseable {
    }
 
    public void resetData() {
-      ObjectIterator var1 = this.maps.values().iterator();
-
-      while(var1.hasNext()) {
-         MapInstance mapInstance = (MapInstance)var1.next();
-         mapInstance.close();
-      }
-
       this.maps.clear();
    }
 
@@ -57,20 +57,23 @@ public class MapTextureManager implements AutoCloseable {
       this.resetData();
    }
 
-   private class MapInstance implements AutoCloseable {
+   private class MapInstance {
       private MapItemSavedData data;
-      private final DynamicTexture texture;
       private boolean requiresUpload;
       private final Identifier location;
+      private final GpuTexture texture;
 
       private MapInstance(final int id, final MapItemSavedData data) {
          Objects.requireNonNull(MapTextureManager.this);
          super();
          this.requiresUpload = true;
          this.data = data;
-         this.texture = new DynamicTexture(() -> "Map " + id, 128, 128, true);
+         GpuDevice device = RenderSystem.getDevice();
+         this.texture = device.createTexture((Supplier)(() -> "Map " + id), 5, GpuFormat.RGBA8_UNORM, 128, 128, 1, 1);
+         GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
+         GpuTextureView textureView = device.createTextureView(this.texture);
          this.location = Identifier.withDefaultNamespace("map/" + id);
-         MapTextureManager.this.textureManager.register(this.location, this.texture);
+         MapTextureManager.this.textureManager.register(this.location, new TextureResources(this.texture, textureView, sampler));
       }
 
       private void replaceMapData(final MapItemSavedData data) {
@@ -85,23 +88,20 @@ public class MapTextureManager implements AutoCloseable {
 
       private void updateTextureIfNeeded() {
          if (this.requiresUpload) {
-            NativeImage pixels = this.texture.getPixels();
-
-            for(int y = 0; y < 128; ++y) {
-               for(int x = 0; x < 128; ++x) {
-                  int i = x + y * 128;
-                  pixels.setPixel(x, y, MapColor.getColorFromPackedId(this.data.colors[i]));
+            try (NativeImage pixels = new NativeImage(128, 128, false)) {
+               for(int y = 0; y < 128; ++y) {
+                  for(int x = 0; x < 128; ++x) {
+                     int i = x + y * 128;
+                     pixels.setPixel(x, y, MapColor.getColorFromPackedId(this.data.colors[i]));
+                  }
                }
+
+               pixels.writeToGpuTexture(RenderSystem.getDevice().createCommandEncoder(), this.texture);
             }
 
-            this.texture.upload();
             this.requiresUpload = false;
          }
 
-      }
-
-      public void close() {
-         this.texture.close();
       }
    }
 }

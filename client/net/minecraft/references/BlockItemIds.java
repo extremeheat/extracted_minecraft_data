@@ -747,6 +747,8 @@ public class BlockItemIds {
    public static final BlockItemId MEDIUM_AMETHYST_BUD = BlockItemId.create("medium_amethyst_bud");
    public static final BlockItemId LARGE_AMETHYST_BUD = BlockItemId.create("large_amethyst_bud");
    public static final BlockItemId AMETHYST_CLUSTER = BlockItemId.create("amethyst_cluster");
+   public static final BlockItemId ICE_CRYSTAL = BlockItemId.create("ice_crystal");
+   public static final BlockItemId ICICLE = BlockItemId.create("icicle");
    public static final BlockItemId POINTED_DRIPSTONE = BlockItemId.create("pointed_dripstone");
    public static final BlockItemId SULFUR_SPIKE = BlockItemId.create("sulfur_spike");
    public static final BlockItemId OCHRE_FROGLIGHT = BlockItemId.create("ochre_froglight");

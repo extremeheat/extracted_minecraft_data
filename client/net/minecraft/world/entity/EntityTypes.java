@@ -101,6 +101,7 @@ import net.minecraft.world.entity.monster.spider.CaveSpider;
 import net.minecraft.world.entity.monster.spider.Spider;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.zombie.Drowned;
+import net.minecraft.world.entity.monster.zombie.Frostbite;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.monster.zombie.ZombieVillager;
@@ -123,6 +124,7 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.BreezeWindCharge;
 import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.IceBall;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
@@ -204,6 +206,7 @@ public class EntityTypes {
    public static final EntityType<FireworkRocketEntity> FIREWORK_ROCKET;
    public static final EntityType<Fox> FOX;
    public static final EntityType<Frog> FROG;
+   public static final EntityType<Frostbite> FROSTBITE;
    public static final EntityType<MinecartFurnace> FURNACE_MINECART;
    public static final EntityType<Ghast> GHAST;
    public static final EntityType<HappyGhast> HAPPY_GHAST;
@@ -216,6 +219,7 @@ public class EntityTypes {
    public static final EntityType<MinecartHopper> HOPPER_MINECART;
    public static final EntityType<Horse> HORSE;
    public static final EntityType<Husk> HUSK;
+   public static final EntityType<IceBall> ICE_BALL;
    public static final EntityType<Illusioner> ILLUSIONER;
    public static final EntityType<Interaction> INTERACTION;
    public static final EntityType<IronGolem> IRON_GOLEM;
@@ -392,6 +396,7 @@ public class EntityTypes {
       FIREWORK_ROCKET = register(EntityTypeIds.FIREWORK_ROCKET, EntityType.Builder.of(FireworkRocketEntity::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       FOX = register(EntityTypeIds.FOX, EntityType.Builder.of(Fox::new, MobCategory.CREATURE).sized(0.6F, 0.7F).eyeHeight(0.4F).passengerAttachments(new Vec3(0.0, 0.6375, -0.25)).clientTrackingRange(8).immuneTo(BlockTags.FOX_IMMUNE_TO));
       FROG = register(EntityTypeIds.FROG, EntityType.Builder.of(Frog::new, MobCategory.CREATURE).sized(0.5F, 0.5F).passengerAttachments(new Vec3(0.0, 0.375, -0.25)).clientTrackingRange(10));
+      FROSTBITE = register(EntityTypeIds.FROSTBITE, EntityType.Builder.of(Frostbite::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
       FURNACE_MINECART = register(EntityTypeIds.FURNACE_MINECART, EntityType.Builder.of(MinecartFurnace::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       GHAST = register(EntityTypeIds.GHAST, EntityType.Builder.of(Ghast::new, MobCategory.MONSTER).fireImmune().sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(4.0625F).ridingOffset(0.5F).clientTrackingRange(10).notInPeaceful());
       HAPPY_GHAST = register(EntityTypeIds.HAPPY_GHAST, EntityType.Builder.of(HappyGhast::new, MobCategory.CREATURE).sized(4.0F, 4.0F).eyeHeight(2.6F).passengerAttachments(new Vec3(0.0, 4.0, 1.7), new Vec3(-1.7, 4.0, 0.0), new Vec3(0.0, 4.0, -1.7), new Vec3(1.7, 4.0, 0.0)).ridingOffset(0.5F).clientTrackingRange(10));
@@ -404,6 +409,7 @@ public class EntityTypes {
       HOPPER_MINECART = register(EntityTypeIds.HOPPER_MINECART, EntityType.Builder.of(MinecartHopper::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       HORSE = register(EntityTypeIds.HORSE, EntityType.Builder.of(Horse::new, MobCategory.CREATURE).sized(1.3964844F, 1.6F).eyeHeight(1.52F).passengerAttachments(1.44375F).clientTrackingRange(10));
       HUSK = register(EntityTypeIds.HUSK, EntityType.Builder.of(Husk::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.075F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
+      ICE_BALL = register(EntityTypeIds.ICE_BALL, EntityType.Builder.of(IceBall::new, MobCategory.MISC).noLootTable().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
       ILLUSIONER = register(EntityTypeIds.ILLUSIONER, EntityType.Builder.of(Illusioner::new, MobCategory.MONSTER).sized(0.6F, 1.95F).passengerAttachments(2.0F).ridingOffset(-0.6F).clientTrackingRange(8).notInPeaceful());
       INTERACTION = register(EntityTypeIds.INTERACTION, EntityType.Builder.of(Interaction::new, MobCategory.MISC).noLootTable().sized(0.0F, 0.0F).clientTrackingRange(10));
       IRON_GOLEM = register(EntityTypeIds.IRON_GOLEM, EntityType.Builder.of(IronGolem::new, MobCategory.MISC).sized(1.4F, 2.7F).clientTrackingRange(10));

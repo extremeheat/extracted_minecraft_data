@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.texture;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import java.io.Closeable;
+import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.io.IOException;
 import java.io.InputStream;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
@@ -10,7 +10,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.jspecify.annotations.Nullable;
 
-public record TextureContents(NativeImage image, @Nullable TextureMetadataSection metadata) implements Closeable {
+public record TextureContents(NativeImage image, @Nullable TextureMetadataSection metadata) implements UncheckedAutoCloseable {
    public TextureContents {
       super();
    }

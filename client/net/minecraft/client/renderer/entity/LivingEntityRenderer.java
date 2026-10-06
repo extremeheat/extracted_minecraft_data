@@ -323,7 +323,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       if (var4 instanceof LivingEntity riding) {
          float bodyRot = Mth.rotLerp(partialTicks, riding.yBodyRotO, riding.yBodyRot);
          float maxHeadDiff = 85.0F;
-         float headDiff = Mth.clamp(Mth.wrapDegrees(headRot - bodyRot), -85.0F, 85.0F);
+         float headDiff = Math.clamp(Mth.wrapDegrees(headRot - bodyRot), -85.0F, 85.0F);
          bodyRot = headRot - headDiff;
          if (Math.abs(headDiff) > 50.0F) {
             bodyRot += headDiff * 0.2F;

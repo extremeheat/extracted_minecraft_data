@@ -3,7 +3,6 @@ package net.minecraft.world.item.enchantment.providers;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.IntProviders;
@@ -20,7 +19,7 @@ public record SingleEnchantment(Holder<Enchantment> enchantment, IntProvider lev
    }
 
    public void enchant(final ItemStack item, final ItemEnchantments.Mutable itemEnchantments, final RandomSource random, final DifficultyInstance difficulty) {
-      itemEnchantments.upgrade(this.enchantment, Mth.clamp(this.level.sample(random), ((Enchantment)this.enchantment.value()).getMinLevel(), ((Enchantment)this.enchantment.value()).getMaxLevel()));
+      itemEnchantments.upgrade(this.enchantment, Math.clamp((long)this.level.sample(random), ((Enchantment)this.enchantment.value()).getMinLevel(), ((Enchantment)this.enchantment.value()).getMaxLevel()));
    }
 
    public MapCodec<SingleEnchantment> codec() {

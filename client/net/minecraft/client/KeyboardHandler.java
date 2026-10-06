@@ -296,6 +296,7 @@ public class KeyboardHandler {
             Path gameDirectory = this.minecraft.gameDirectory.toPath().toAbsolutePath();
             Path debugTexturePath = TextureUtil.getDebugTexturePath(gameDirectory);
             this.minecraft.getTextureManager().dumpAllSheets(debugTexturePath);
+            this.minecraft.getAtlasManager().dumpAllSprites(debugTexturePath);
             Component pathComponent = Component.literal(gameDirectory.relativize(debugTexturePath).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.OpenFile(debugTexturePath))));
             this.debugFeedbackComponent(Component.translatable("debug.dump_dynamic_textures", pathComponent));
             debugAction = true;

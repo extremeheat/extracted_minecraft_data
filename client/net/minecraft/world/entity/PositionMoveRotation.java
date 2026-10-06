@@ -5,7 +5,6 @@ import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,7 +36,7 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
       float offsetXRot = relatives.contains(Relative.X_ROT) ? source.xRot : 0.0F;
       Vec3 absolutePosition = new Vec3(offsetX + change.position.x, offsetY + change.position.y, offsetZ + change.position.z);
       float absoluteYRot = offsetYRot + change.yRot;
-      float absoluteXRot = Mth.clamp(offsetXRot + change.xRot, -90.0F, 90.0F);
+      float absoluteXRot = Math.clamp(offsetXRot + change.xRot, -90.0F, 90.0F);
       Vec3 rotatedCurrentMovement = source.deltaMovement;
       if (relatives.contains(Relative.ROTATE_DELTA)) {
          float diffYRot = source.yRot - absoluteYRot;

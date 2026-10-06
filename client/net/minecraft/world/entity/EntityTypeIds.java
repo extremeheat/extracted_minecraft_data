@@ -62,6 +62,7 @@ public class EntityTypeIds {
    public static final ResourceKey<EntityType<?>> FIREWORK_ROCKET = create("firework_rocket");
    public static final ResourceKey<EntityType<?>> FOX = create("fox");
    public static final ResourceKey<EntityType<?>> FROG = create("frog");
+   public static final ResourceKey<EntityType<?>> FROSTBITE = create("frostbite");
    public static final ResourceKey<EntityType<?>> FURNACE_MINECART = create("furnace_minecart");
    public static final ResourceKey<EntityType<?>> GHAST = create("ghast");
    public static final ResourceKey<EntityType<?>> HAPPY_GHAST = create("happy_ghast");
@@ -74,6 +75,7 @@ public class EntityTypeIds {
    public static final ResourceKey<EntityType<?>> HOPPER_MINECART = create("hopper_minecart");
    public static final ResourceKey<EntityType<?>> HORSE = create("horse");
    public static final ResourceKey<EntityType<?>> HUSK = create("husk");
+   public static final ResourceKey<EntityType<?>> ICE_BALL = create("ice_ball");
    public static final ResourceKey<EntityType<?>> ILLUSIONER = create("illusioner");
    public static final ResourceKey<EntityType<?>> INTERACTION = create("interaction");
    public static final ResourceKey<EntityType<?>> IRON_GOLEM = create("iron_golem");

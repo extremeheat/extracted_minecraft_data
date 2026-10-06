@@ -14,7 +14,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
@@ -86,7 +85,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       for(int slot = 0; slot < entity.items.size(); ++slot) {
          if (entity.cookingProgress[slot] > 0) {
             changed = true;
-            entity.cookingProgress[slot] = Mth.clamp(entity.cookingProgress[slot] - 2, 0, entity.cookingTime[slot]);
+            entity.cookingProgress[slot] = Math.clamp((long)(entity.cookingProgress[slot] - 2), 0, entity.cookingTime[slot]);
          }
       }
 

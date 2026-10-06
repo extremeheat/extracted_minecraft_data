@@ -2,11 +2,10 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
-import org.jspecify.annotations.Nullable;
 
 public class FaviconTexture implements AutoCloseable {
    private static final Identifier MISSING_LOCATION = Identifier.withDefaultNamespace("textures/misc/unknown_server.png");
@@ -14,7 +13,7 @@ public class FaviconTexture implements AutoCloseable {
    private static final int HEIGHT = 64;
    private final TextureManager textureManager;
    private final Identifier textureLocation;
-   private @Nullable DynamicTexture texture;
+   private boolean uploaded;
    private boolean closed;
 
    private FaviconTexture(final TextureManager textureManager, final Identifier textureLocation) {
@@ -34,41 +33,47 @@ public class FaviconTexture implements AutoCloseable {
    }
 
    public void upload(final NativeImage image) {
-      if (image.getWidth() == 64 && image.getHeight() == 64) {
+      try {
+         NativeImage var2 = image;
+
          try {
-            this.checkOpen();
-            if (this.texture == null) {
-               this.texture = new DynamicTexture(() -> "Favicon " + String.valueOf(this.textureLocation), image);
-            } else {
-               this.texture.setPixels(image);
-               this.texture.upload();
+            if (image.getWidth() != 64 || image.getHeight() != 64) {
+               int var10002 = image.getWidth();
+               throw new IllegalArgumentException("Icon must be 64x64, but was " + var10002 + "x" + image.getHeight());
             }
 
-            this.textureManager.register(this.textureLocation, this.texture);
-         } catch (Throwable t) {
-            image.close();
-            this.clear();
-            throw t;
+            this.checkOpen();
+            this.textureManager.register(this.textureLocation, TextureResources.from2dImage(() -> "Favicon " + String.valueOf(this.textureLocation), image));
+            this.uploaded = true;
+         } catch (Throwable var6) {
+            if (image != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var5) {
+                  var6.addSuppressed(var5);
+               }
+            }
+
+            throw var6;
          }
-      } else {
-         image.close();
-         int var10002 = image.getWidth();
-         throw new IllegalArgumentException("Icon must be 64x64, but was " + var10002 + "x" + image.getHeight());
+
+         if (image != null) {
+            image.close();
+         }
+
+      } catch (Throwable t) {
+         this.clear();
+         throw t;
       }
    }
 
    public void clear() {
       this.checkOpen();
-      if (this.texture != null) {
-         this.textureManager.release(this.textureLocation);
-         this.texture.close();
-         this.texture = null;
-      }
-
+      this.textureManager.release(this.textureLocation);
    }
 
    public Identifier textureLocation() {
-      return this.texture != null ? this.textureLocation : MISSING_LOCATION;
+      return this.uploaded ? this.textureLocation : MISSING_LOCATION;
    }
 
    public void close() {

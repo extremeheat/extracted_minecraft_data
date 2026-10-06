@@ -95,8 +95,8 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       worldNameEdit.setValue(this.worldName);
       worldNameEdit.setResponder(this::setWorldName);
       rowHelper.addChild(CommonLayouts.labeledElement(this.font, worldNameEdit, WORLD_NAME_EDIT_LABEL), 2);
-      CycleButton<Difficulty> difficultyCycleButton = (CycleButton)rowHelper.addChild(CycleButton.builder(Difficulty::getDisplayName, this.difficulty).withValues(DIFFICULTIES).create(0, 0, 150, 20, DIFFICULTY_BUTTON, (var1, value) -> this.difficulty = value));
-      CycleButton<GameType> gameTypeCycleButton = (CycleButton)rowHelper.addChild(CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GAME_MODES).create(0, 0, 150, 20, GAME_MODE_BUTTON, (var1, value) -> this.gameMode = value));
+      CycleButton<Difficulty> difficultyCycleButton = (CycleButton)rowHelper.addChild(((CycleButton.Builder)CycleButton.builder(Difficulty::getDisplayName, this.difficulty).withValues(DIFFICULTIES)).create(0, 0, 150, 20, DIFFICULTY_BUTTON, (var1, value) -> this.difficulty = value));
+      CycleButton<GameType> gameTypeCycleButton = (CycleButton)rowHelper.addChild(((CycleButton.Builder)CycleButton.builder(GameType::getShortDisplayName, this.gameMode).withValues(GAME_MODES)).create(0, 0, 150, 20, GAME_MODE_BUTTON, (var1, value) -> this.gameMode = value));
       CycleButton<Boolean> forceGameModeButton = (CycleButton)rowHelper.addChild(CycleButton.onOffBuilder(this.forceGameMode).create(0, 0, 150, 20, FORCE_GAME_MODE_BUTTON, (var1, value) -> this.forceGameMode = value));
       this.spawnProtectionButton = (SettingsSlider)rowHelper.addChild(new SettingsSlider(0, 0, 150, this.spawnProtection, 0.0F, 16.0F));
       if (this.worldType != RealmsServer.WorldType.NORMAL) {
@@ -178,13 +178,13 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          super(x, y, width, 20, CommonComponents.EMPTY, 0.0);
          this.minValue = (double)minValue;
          this.maxValue = (double)maxValue;
-         this.value = (double)((Mth.clamp((float)currentValue, minValue, maxValue) - minValue) / (maxValue - minValue));
+         this.value = (double)((Math.clamp((float)currentValue, minValue, maxValue) - minValue) / (maxValue - minValue));
          this.updateMessage();
       }
 
       public void applyValue() {
          if (RealmsSlotOptionsScreen.this.spawnProtectionButton.active) {
-            RealmsSlotOptionsScreen.this.spawnProtection = (int)Mth.lerp(Mth.clamp(this.value, 0.0, 1.0), this.minValue, this.maxValue);
+            RealmsSlotOptionsScreen.this.spawnProtection = (int)Mth.lerp(Math.clamp(this.value, 0.0, 1.0), this.minValue, this.maxValue);
          }
       }
 

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
 
@@ -161,7 +161,7 @@ public class PostPass implements AutoCloseable {
       boolean bilinear();
    }
 
-   public static record TextureInput(String samplerName, AbstractTexture texture, int width, int height, boolean bilinear) implements Input {
+   public static record TextureInput(String samplerName, TextureHandle texture, int width, int height, boolean bilinear) implements Input {
       public TextureInput {
          super();
       }
@@ -170,7 +170,7 @@ public class PostPass implements AutoCloseable {
       }
 
       public GpuTextureView texture(final Map<Identifier, ResourceHandle<RenderTarget>> targets) {
-         return this.texture.getTextureView();
+         return this.texture.textureView();
       }
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.world.item;
 import java.util.Map;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permissions;
@@ -19,9 +20,9 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.TagValueOutput;
@@ -84,8 +85,12 @@ public class BlockItem extends Item {
                   }
                }
 
-               SoundType soundType = placedState.getSoundType();
-               level.playSound(player, (BlockPos)pos, this.getPlaceSound(placedState), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
+               BlockSoundSet blockSoundSet = placedState.getSounds(level);
+               Holder<SoundEvent> placeSound = this.getPlaceSound(blockSoundSet);
+               if (placeSound != null) {
+                  level.playSound(player, (BlockPos)pos, (Holder)placeSound, SoundSource.BLOCKS, (blockSoundSet.volume() + 1.0F) / 2.0F, blockSoundSet.pitch() * 0.8F);
+               }
+
                level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, placedState));
                itemStack.consume(1, player);
                return InteractionResult.SUCCESS;
@@ -94,8 +99,8 @@ public class BlockItem extends Item {
       }
    }
 
-   protected SoundEvent getPlaceSound(final BlockState blockState) {
-      return blockState.getSoundType().getPlaceSound();
+   protected @Nullable Holder<SoundEvent> getPlaceSound(final BlockSoundSet blockSoundSet) {
+      return (Holder)blockSoundSet.placeSound().orElse((Object)null);
    }
 
    public @Nullable BlockPlaceContext updatePlacementContext(final BlockPlaceContext context) {

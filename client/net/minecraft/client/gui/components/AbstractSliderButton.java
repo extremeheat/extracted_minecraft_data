@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import net.minecraft.util.Mth;
 
 public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMessage {
    private static final Identifier SLIDER_SPRITE = Identifier.withDefaultNamespace("widget/slider");
@@ -119,7 +118,7 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
 
    protected void setValue(final double newValue) {
       double oldValue = this.value;
-      this.value = Mth.clamp(newValue, 0.0, 1.0);
+      this.value = Math.clamp(newValue, 0.0, 1.0);
       if (oldValue != this.value) {
          this.applyValue();
       }

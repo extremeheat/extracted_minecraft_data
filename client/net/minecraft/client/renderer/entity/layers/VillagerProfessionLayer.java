@@ -20,7 +20,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.npc.villager.VillagerData;
 import net.minecraft.world.entity.npc.villager.VillagerProfession;
@@ -66,7 +65,7 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
                Identifier professionTexture = this.getIdentifier("profession", profession);
                renderColoredCutoutModel(model, professionTexture, poseStack, submitNodeCollector, lightCoords, state, -1, 2);
                if (!profession.is(VillagerProfession.NITWIT)) {
-                  Identifier professionLevelTexture = this.getIdentifier("profession_level", (Identifier)LEVEL_LOCATIONS.get(Mth.clamp(villagerData.level(), 1, LEVEL_LOCATIONS.size())));
+                  Identifier professionLevelTexture = this.getIdentifier("profession_level", (Identifier)LEVEL_LOCATIONS.get(Math.clamp((long)villagerData.level(), 1, LEVEL_LOCATIONS.size())));
                   renderColoredCutoutModel(model, professionLevelTexture, poseStack, submitNodeCollector, lightCoords, state, -1, 3);
                }
             }

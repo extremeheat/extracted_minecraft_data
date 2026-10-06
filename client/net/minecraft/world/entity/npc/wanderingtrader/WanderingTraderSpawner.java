@@ -5,14 +5,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Continuation;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.entity.animal.equine.TraderLlama;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.CustomSpawner;
@@ -52,7 +51,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
             if (spawnDelay <= 0) {
                data.setSpawnDelay(24000);
                int chanceToSpawn = data.spawnChance();
-               int newSpawnChance = Mth.clamp(chanceToSpawn + 25, 25, 75);
+               int newSpawnChance = Math.clamp((long)(chanceToSpawn + 25), 25, 75);
                data.setSpawnChance(newSpawnChance);
                if (this.random.nextInt(100) <= chanceToSpawn) {
                   if (this.spawn(level)) {
@@ -83,7 +82,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
          BlockPos playerPos = player.blockPosition();
          int radius = 48;
          PoiManager poiManager = level.getPoiManager();
-         Optional<BlockPos> poiPos = poiManager.find((p) -> p.is(PoiTypes.MEETING), (p) -> true, playerPos, 48, PoiManager.Occupancy.ANY);
+         Optional<BlockPos> poiPos = poiManager.find((p) -> p.is(PoiTypeIds.MEETING), (p) -> true, playerPos, 48, PoiManager.Occupancy.ANY);
          BlockPos referencePos = (BlockPos)poiPos.orElse(playerPos);
          BlockPos spawnPosition = this.findSpawnPositionNear(level, referencePos, 48);
          if (spawnPosition != null && this.hasEnoughSpace(level, spawnPosition)) {

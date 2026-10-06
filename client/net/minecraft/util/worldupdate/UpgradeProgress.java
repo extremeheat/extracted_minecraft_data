@@ -10,7 +10,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.notifications.EmptyNotificationService;
 import net.minecraft.server.notifications.NotificationService;
-import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.Util;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -255,7 +254,7 @@ public class UpgradeProgress {
       }
 
       public float getProgress() {
-         return this.totalOperations() == 0 ? 0.0F : Mth.clamp((float)this.finishedOperations() / (float)this.totalOperations(), 0.0F, 1.0F);
+         return this.totalOperations() == 0 ? 0.0F : Math.clamp((float)this.finishedOperations() / (float)this.totalOperations(), 0.0F, 1.0F);
       }
    }
 

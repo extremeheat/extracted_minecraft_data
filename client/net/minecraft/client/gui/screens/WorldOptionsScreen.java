@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -186,7 +185,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    private CycleButton<GameType> createGameModeButton(final IntegratedServer singleplayerServer, final Component buttonName, final Tooltip tooltip, final GameType defaultValue, final Consumer<GameType> gameTypeToChange) {
-      CycleButton<GameType> gameModeButton = CycleButton.builder(GameType::getShortDisplayName, defaultValue).withValues(GameType.values()).withTooltip((var1) -> tooltip).create(0, 0, 308, 20, buttonName, (var2, value) -> {
+      CycleButton<GameType> gameModeButton = ((CycleButton.Builder)((CycleButton.Builder)CycleButton.builder(GameType::getShortDisplayName, defaultValue).withValues(GameType.values())).withTooltip((var1) -> tooltip)).create(0, 0, 308, 20, buttonName, (var2, value) -> {
          gameTypeToChange.accept(value);
          this.updateApplyChangesActiveState();
       });
@@ -195,7 +194,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
    }
 
    private CycleButton<Boolean> createAllowCommandsButton(final IntegratedServer singleplayerServer) {
-      CycleButton<Boolean> allowCommandsButton = CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).withTooltip((var0) -> ALLOW_COMMANDS_TOOLTIP).create(ALLOW_COMMANDS, (var2, allowCommands) -> {
+      CycleButton<Boolean> allowCommandsButton = ((CycleButton.Builder)CycleButton.onOffBuilder(singleplayerServer.getWorldData().isAllowCommands()).withTooltip((var0) -> ALLOW_COMMANDS_TOOLTIP)).create(ALLOW_COMMANDS, (var2, allowCommands) -> {
          this.wantedAllowCommands = allowCommands;
          this.updateGuestCommandAccessButton(singleplayerServer);
          this.updatePermissionDependentButtons(singleplayerServer, allowCommands, false);
@@ -261,7 +260,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       helper.addChild(this.createCategoryHeader(MULTIPLAYER_TITLE), 2);
       this.wantedMultiplayerScope = singleplayerServer.getMultiplayerScope();
       this.initialMultiplayerScope = this.wantedMultiplayerScope;
-      helper.addChild(CycleButton.onOffBuilder(singleplayerServer.getMultiplayerScope() == MinecraftServer.MultiplayerScope.LAN).withTooltip((value) -> Tooltip.create(value ? MinecraftServer.MultiplayerScope.LAN.getTooltip() : MinecraftServer.MultiplayerScope.OFF.getTooltip())).create(Component.translatable("menu.multiplayerOptions.lan"), (var2, value) -> {
+      helper.addChild(((CycleButton.Builder)CycleButton.onOffBuilder(singleplayerServer.getMultiplayerScope() == MinecraftServer.MultiplayerScope.LAN).withTooltip((value) -> Tooltip.create(value ? MinecraftServer.MultiplayerScope.LAN.getTooltip() : MinecraftServer.MultiplayerScope.OFF.getTooltip()))).create(Component.translatable("menu.multiplayerOptions.lan"), (var2, value) -> {
          this.wantedMultiplayerScope = value ? MinecraftServer.MultiplayerScope.LAN : MinecraftServer.MultiplayerScope.OFF;
          this.updateGuestCommandAccessButton(singleplayerServer);
          this.updatePortControlsState();
@@ -287,14 +286,14 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       this.updatePortControlsState();
       this.wantedGuestCommandAccess = singleplayerServer.getGuestCommandAccess();
       this.initialGuestCommandAccess = this.wantedGuestCommandAccess;
-      this.guestCommandAccessButton = (CycleButton)helper.addChild(CycleButton.onOffBuilder(this.initialGuestCommandAccess).withTooltip((var0) -> GUEST_COMMAND_ACCESS_TOOLTIP).create(GUEST_COMMAND_ACCESS, (var2, value) -> {
+      this.guestCommandAccessButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.onOffBuilder(this.initialGuestCommandAccess).withTooltip((var0) -> GUEST_COMMAND_ACCESS_TOOLTIP)).create(GUEST_COMMAND_ACCESS, (var2, value) -> {
          this.wantedGuestCommandAccess = value;
          this.updateForceGameModeButton(singleplayerServer);
          this.updateApplyChangesActiveState();
       }));
       this.wantedForceGameMode = singleplayerServer.forceGameMode();
       this.initialForceGameMode = this.wantedForceGameMode;
-      this.forceGameModeButton = (CycleButton)helper.addChild(CycleButton.onOffBuilder(this.initialForceGameMode).withTooltip((value) -> value ? FORCE_GAME_MODE_ON_TOOLTIP : FORCE_GAME_MODE_OFF_TOOLTIP).create(FORCE_GAME_MODE, (var1, value) -> {
+      this.forceGameModeButton = (CycleButton)helper.addChild(((CycleButton.Builder)CycleButton.onOffBuilder(this.initialForceGameMode).withTooltip((value) -> value ? FORCE_GAME_MODE_ON_TOOLTIP : FORCE_GAME_MODE_OFF_TOOLTIP)).create(FORCE_GAME_MODE, (var1, value) -> {
          this.wantedForceGameMode = value;
          this.updateApplyChangesActiveState();
       }));
@@ -411,13 +410,12 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
       super.extractMenuBackground(graphics);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, AbstractSelectionList.INWORLD_MENU_LIST_BACKGROUND, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight() + (int)this.scrollArea.getScrollAmount()), this.width, this.layout.getContentHeight(), 32, 32);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.INWORLD_MENU_LIST_BACKGROUND, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight() + (int)this.scrollArea.getScrollAmount()), this.width, this.layout.getContentHeight(), 32, 32);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
       super.extractRenderState(graphics, xm, ym, a);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.INWORLD_HEADER_SEPARATOR, this.layout.getX(), this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.INWORLD_FOOTER_SEPARATOR, this.layout.getX(), this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
+      this.extractListSeparators(graphics, this.layout, 2);
    }
 
    public void onClose() {
@@ -626,7 +624,7 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       public static DifficultyButtons create(final Minecraft minecraft, final Level level, final WorldOptionsScreen screen) {
          screen.wantedDifficulty = level.getDifficulty();
          screen.initialDifficulty = screen.wantedDifficulty;
-         CycleButton<Difficulty> difficultyButton = CycleButton.builder(Difficulty::getDisplayName, level.getDifficulty()).withValues(Difficulty.values()).create(0, 0, 150, 20, DIFFICULTY_TITLE, (var1, value) -> {
+         CycleButton<Difficulty> difficultyButton = ((CycleButton.Builder)CycleButton.builder(Difficulty::getDisplayName, level.getDifficulty()).withValues(Difficulty.values())).create(0, 0, 150, 20, DIFFICULTY_TITLE, (var1, value) -> {
             screen.wantedDifficulty = value;
             screen.updateApplyChangesActiveState();
          });

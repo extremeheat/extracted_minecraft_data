@@ -9,7 +9,6 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
@@ -163,7 +162,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int yscr = this.topPos + 14;
          int yscr2 = yscr + 54;
          this.scrollOffs = ((float)event.y() - (float)yscr - 7.5F) / ((float)(yscr2 - yscr) - 15.0F);
-         this.scrollOffs = Mth.clamp(this.scrollOffs, 0.0F, 1.0F);
+         this.scrollOffs = Math.clamp(this.scrollOffs, 0.0F, 1.0F);
          this.startIndex = (int)((double)(this.scrollOffs * (float)this.getOffscreenRows()) + 0.5) * 4;
          return true;
       } else {
@@ -183,7 +182,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          if (this.isScrollBarActive()) {
             int offscreenRows = this.getOffscreenRows();
             float scrolledDelta = (float)scrollY / (float)offscreenRows;
-            this.scrollOffs = Mth.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
+            this.scrollOffs = Math.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
             this.startIndex = (int)((double)(this.scrollOffs * (float)offscreenRows) + 0.5) * 4;
          }
 

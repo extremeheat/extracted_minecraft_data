@@ -95,6 +95,7 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.EXPLOSION, HugeExplosionParticle.Provider::new);
       this.register(ParticleTypes.SONIC_BOOM, SonicBoomParticle.Provider::new);
       this.register(ParticleTypes.FALLING_DUST, FallingDustParticle.Provider::new);
+      this.register(ParticleTypes.FREEZING, FreezingParticle.Provider::new);
       this.register(ParticleTypes.GUST, GustParticle.Provider::new);
       this.register(ParticleTypes.SMALL_GUST, GustParticle.SmallProvider::new);
       this.register(ParticleTypes.GUST_EMITTER_LARGE, new GustSeedParticle.Provider(3.0, 7, 0));
@@ -115,7 +116,6 @@ public class ParticleResources implements PreparableReloadListener {
       this.register(ParticleTypes.ITEM, new BreakingItemParticle.Provider());
       this.register(ParticleTypes.ITEM_SLIME, new BreakingItemParticle.SlimeProvider());
       this.register(ParticleTypes.ITEM_COBWEB, new BreakingItemParticle.CobwebProvider());
-      this.register(ParticleTypes.ITEM_SNOWBALL, new BreakingItemParticle.SnowballProvider());
       this.register(ParticleTypes.LARGE_SMOKE, LargeSmokeParticle.Provider::new);
       this.register(ParticleTypes.LAVA, LavaParticle.Provider::new);
       this.register(ParticleTypes.MYCELIUM, SuspendedTownParticle.Provider::new);

@@ -13,6 +13,7 @@ import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -54,11 +55,12 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.SupportType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
+import net.minecraft.world.level.block.sounds.BlockSoundSets;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.Fluid;
@@ -85,7 +87,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final boolean hasCollision;
    protected final float explosionResistance;
    protected final boolean isRandomlyTicking;
-   protected final SoundType soundType;
+   protected final Optional<ResourceKey<BlockSoundSet>> blockSoundSet;
    protected final float friction;
    protected final float speedFactor;
    protected final float jumpFactor;
@@ -104,7 +106,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.descriptionId = properties.effectiveDescriptionId();
       this.explosionResistance = properties.explosionResistance;
       this.isRandomlyTicking = properties.isRandomlyTicking;
-      this.soundType = properties.soundType;
+      this.blockSoundSet = properties.blockSoundSet;
       this.friction = properties.friction;
       this.speedFactor = properties.speedFactor;
       this.jumpFactor = properties.jumpFactor;
@@ -370,8 +372,8 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.isRandomlyTicking;
    }
 
-   protected SoundType getSoundType(final BlockState state) {
-      return this.soundType;
+   protected Optional<ResourceKey<BlockSoundSet>> getSounds(final BlockState state) {
+      return this.blockSoundSet;
    }
 
    protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
@@ -411,7 +413,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    public static class Properties {
       private Function<BlockState, MapColor> mapColor = (state) -> MapColor.NONE;
       private boolean hasCollision = true;
-      private SoundType soundType;
+      private Optional<ResourceKey<BlockSoundSet>> blockSoundSet;
       private ToIntFunction<BlockState> lightEmission;
       private float explosionResistance;
       private float destroyTime;
@@ -451,7 +453,7 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       private Properties() {
          super();
-         this.soundType = SoundType.STONE;
+         this.blockSoundSet = Optional.of(BlockSoundSets.STONE);
          this.lightEmission = (state) -> 0;
          this.friction = 0.6F;
          this.speedFactor = 1.0F;
@@ -500,7 +502,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          copyTo.isRandomlyTicking = copyFrom.isRandomlyTicking;
          copyTo.lightEmission = copyFrom.lightEmission;
          copyTo.mapColor = copyFrom.mapColor;
-         copyTo.soundType = copyFrom.soundType;
+         copyTo.blockSoundSet = copyFrom.blockSoundSet;
          copyTo.friction = copyFrom.friction;
          copyTo.speedFactor = copyFrom.speedFactor;
          copyTo.bounceRestitution = copyFrom.bounceRestitution;
@@ -568,8 +570,13 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public Properties sound(final SoundType soundType) {
-         this.soundType = soundType;
+      public Properties sound(final ResourceKey<BlockSoundSet> blockSoundSet) {
+         this.blockSoundSet = Optional.of(blockSoundSet);
+         return this;
+      }
+
+      public Properties noSound() {
+         this.blockSoundSet = Optional.empty();
          return this;
       }
 
@@ -700,8 +707,8 @@ public abstract class BlockBehaviour implements FeatureElement {
    Block block = state.getBlock();
    long seed = Mth.getSeed(pos.getX(), 0, pos.getZ());
    float maxHorizontalOffset = block.getMaxHorizontalOffset();
-   double x = Mth.clamp(((double)((float)(seed & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
-   double z = Mth.clamp(((double)((float)(seed >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
+   double x = Math.clamp(((double)((float)(seed & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
+   double z = Math.clamp(((double)((float)(seed >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
    return new Vec3(x, 0.0, z);
 };
             case 2 -> var10001 = (state, pos) -> {
@@ -709,8 +716,8 @@ public abstract class BlockBehaviour implements FeatureElement {
    long seed = Mth.getSeed(pos.getX(), 0, pos.getZ());
    double y = ((double)((float)(seed >> 4 & 15L) / 15.0F) - 1.0) * (double)block.getMaxVerticalOffset();
    float maxHorizontalOffset = block.getMaxHorizontalOffset();
-   double x = Mth.clamp(((double)((float)(seed & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
-   double z = Mth.clamp(((double)((float)(seed >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
+   double x = Math.clamp(((double)((float)(seed & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
+   double z = Math.clamp(((double)((float)(seed >> 8 & 15L) / 15.0F) - 0.5) * 0.5, (double)(-maxHorizontalOffset), (double)maxHorizontalOffset);
    return new Vec3(x, y, z);
 };
             default -> throw new MatchException((String)null, (Throwable)null);
@@ -1204,8 +1211,19 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getSeed(this.asState(), pos);
       }
 
-      public SoundType getSoundType() {
-         return this.getBlock().getSoundType(this.asState());
+      public Optional<ResourceKey<BlockSoundSet>> getSounds() {
+         return this.getBlock().getSounds(this.asState());
+      }
+
+      public Optional<Holder<BlockSoundSet>> getSoundsAsHolder(final LevelReader level) {
+         Optional var10000 = this.getSounds();
+         RegistryAccess var10001 = level.registryAccess();
+         Objects.requireNonNull(var10001);
+         return var10000.flatMap(var10001::get);
+      }
+
+      public BlockSoundSet getSounds(final LevelReader level) {
+         return (BlockSoundSet)this.getSoundsAsHolder(level).map(Holder::value).orElse(BlockSoundSet.EMPTY);
       }
 
       public void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile entity) {

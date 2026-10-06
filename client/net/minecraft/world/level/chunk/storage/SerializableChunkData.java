@@ -1,10 +1,14 @@
 package net.minecraft.world.level.chunk.storage;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.ArrayList;
@@ -16,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -25,15 +30,23 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.visitors.CollectFields;
+import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
@@ -88,6 +101,8 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
    public static final String BLOCK_LIGHT_TAG = "BlockLight";
    public static final String SKY_LIGHT_TAG = "SkyLight";
    public static final String STATUS_TAG = "status";
+   private static final String STRUCTURES_TAG = "structures";
+   private static final String STRUCTURE_STARTS_TAG = "starts";
 
    public SerializableChunkData {
       super();
@@ -463,24 +478,24 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
    }
 
    private static Map<Structure, StructureStart> unpackStructureStart(final StructurePieceSerializationContext context, final CompoundTag tag, final long seed) {
-      Map<Structure, StructureStart> outmap = Maps.newHashMap();
+      ImmutableMap.Builder<Structure, StructureStart> starts = ImmutableMap.builder();
       Registry<Structure> structuresRegistry = context.registryAccess().lookupOrThrow(Registries.STRUCTURE);
       CompoundTag startsTag = tag.getCompoundOrEmpty("starts");
 
       for(String key : startsTag.keySet()) {
          Identifier id = Identifier.tryParse(key);
-         Structure startFeature = (Structure)structuresRegistry.getValue(id);
-         if (startFeature == null) {
+         Structure structure = (Structure)structuresRegistry.getValue(id);
+         if (structure == null) {
             LOGGER.error("Unknown structure start: {}", id);
          } else {
-            StructureStart start = StructureStart.loadStaticStart(context, startsTag.getCompoundOrEmpty(key), seed);
+            StructureStart start = StructureStart.load(context, startsTag.getCompoundOrEmpty(key), seed, structure);
             if (start != null) {
-               outmap.put(startFeature, start);
+               starts.put(structure, start);
             }
          }
       }
 
-      return outmap;
+      return starts.build();
    }
 
    private static Map<Structure, LongSet> unpackStructureReferences(final RegistryAccess registryAccess, final ChunkPos pos, final CompoundTag tag) {
@@ -527,6 +542,23 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       return listTag;
    }
 
+   public static CompletableFuture<@Nullable StructureData> scanStructures(final ChunkStructureScanner scanner, final ChunkPos pos) {
+      CollectFields collectFields = new CollectFields(new FieldSelector[]{new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector("Level", "Structures", CompoundTag.TYPE, "Starts"), new FieldSelector("structures", CompoundTag.TYPE, "starts"), new FieldSelector(StringTag.TYPE, "status"), new FieldSelector(StringTag.TYPE, "Status"), new FieldSelector("Level", StringTag.TYPE, "Status")});
+      return scanner.storageAccess().scanChunk(pos, collectFields).thenApplyAsync((var2) -> {
+         Tag result = collectFields.getResult();
+         if (result instanceof CompoundTag chunkTag) {
+            int version = NbtUtils.getDataVersion(chunkTag);
+            SimpleRegionStorage.injectDatafixingContext(chunkTag, ChunkMap.getChunkDataFixContextTag(scanner.dimension(), scanner.typeNameForDataFixer()));
+            CompoundTag fixedChunkTag = DataFixTypes.CHUNK.updateToCurrentVersion(scanner.fixerUpper(), chunkTag, version);
+            ChunkStatus status = (ChunkStatus)fixedChunkTag.read("status", ChunkStatus.CODEC).orElse(ChunkStatus.EMPTY);
+            Optional structuresTag = fixedChunkTag.getCompound("structures");
+            return !status.isOrBefore(ChunkStatus.STRUCTURE_STARTS) && !structuresTag.isEmpty() ? new StructureData(scanner.registryAccess(), (CompoundTag)structuresTag.get()) : null;
+         } else {
+            return null;
+         }
+      }, Util.backgroundExecutor());
+   }
+
    static {
       BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec()).listOf();
       FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec()).listOf();
@@ -536,6 +568,40 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
    public static record SectionData(int y, @Nullable LevelChunkSection chunkSection, @Nullable DataLayer blockLight, @Nullable DataLayer skyLight) {
       public SectionData {
          super();
+      }
+   }
+
+   public static record StructureData(RegistryAccess registryAccess, CompoundTag structuresTag) {
+      public StructureData {
+         super();
+      }
+
+      public @Nullable Object2IntMap<Structure> parseStructureStartsWithReferenceCount() {
+         Optional<CompoundTag> maybeStartsTag = this.structuresTag.getCompound("starts");
+         if (maybeStartsTag.isEmpty()) {
+            return null;
+         } else {
+            CompoundTag startsTag = (CompoundTag)maybeStartsTag.get();
+            if (startsTag.isEmpty()) {
+               return Object2IntMaps.emptyMap();
+            } else {
+               Object2IntMap<Structure> knownStarts = new Object2IntOpenHashMap();
+               Registry<Structure> structuresRegistry = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
+               startsTag.forEach((key, tag) -> {
+                  Identifier id = Identifier.tryParse(key);
+                  if (id != null) {
+                     Structure foundFeature = (Structure)structuresRegistry.getValue(id);
+                     if (foundFeature != null) {
+                        tag.asCompound().ifPresent((structureData) -> {
+                           int referenceCount = structureData.getIntOr("references", 0);
+                           knownStarts.put(foundFeature, referenceCount);
+                        });
+                     }
+                  }
+               });
+               return knownStarts;
+            }
+         }
       }
    }
 

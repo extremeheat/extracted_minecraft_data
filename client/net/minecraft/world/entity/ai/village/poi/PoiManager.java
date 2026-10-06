@@ -23,6 +23,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.SectionTracker;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
@@ -30,12 +31,10 @@ import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.debug.DebugPoiInfo;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.chunk.storage.ChunkIOErrorReporter;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SectionStorage;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
@@ -47,8 +46,8 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    private final DistanceTracker distanceTracker = new DistanceTracker();
    private final LongSet loadedChunks = new LongOpenHashSet();
 
-   public PoiManager(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean sync, final RegistryAccess registryAccess, final ChunkIOErrorReporter errorReporter, final LevelHeightAccessor levelHeightAccessor) {
-      super(new SimpleRegionStorage(info, folder, fixerUpper, sync, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, registryAccess, errorReporter, levelHeightAccessor);
+   public PoiManager(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean sync, final RegistryAccess registryAccess, final ServerLevel level) {
+      super(new SimpleRegionStorage(info, folder, fixerUpper, sync, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, registryAccess, level.getServer(), level);
    }
 
    public @Nullable PoiRecord add(final BlockPos pos, final Holder<PoiType> type) {
@@ -162,7 +161,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
       this.distanceTracker.update(sectionPos, this.distanceTracker.getLevelFromSource(sectionPos), false);
    }
 
-   protected void onSectionLoad(final long sectionPos) {
+   protected void onSectionLoad(final PoiSection poiSection, final long sectionPos) {
       this.distanceTracker.update(sectionPos, this.distanceTracker.getLevelFromSource(sectionPos), false);
    }
 

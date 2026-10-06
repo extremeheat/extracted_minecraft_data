@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
-public class TextureAtlas extends AbstractTexture implements TickableTexture, Dumpable {
+public class TextureAtlas implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    /** @deprecated */
    @Deprecated
@@ -48,6 +48,8 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    private List<SpriteContents.AnimationState> animatedTexturesStates = List.of();
    private Map<Identifier, TextureAtlasSprite> texturesByName = Map.of();
    private @Nullable TextureAtlasSprite missingSprite;
+   private @Nullable TextureResources texture = null;
+   private final TextureManager textureManager;
    private final Identifier location;
    private final int maxSupportedTextureSize;
    private int width;
@@ -57,8 +59,9 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    private GpuTextureView[] mipViews = new GpuTextureView[0];
    private @Nullable GpuBuffer spriteUbos;
 
-   public TextureAtlas(final Identifier location) {
+   public TextureAtlas(final TextureManager textureManager, final Identifier location) {
       super();
+      this.textureManager = textureManager;
       this.location = location;
       this.maxSupportedTextureSize = RenderSystem.getDevice().getDeviceInfo().limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
    }
@@ -66,11 +69,13 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    private void createTexture(final int newWidth, final int newHeight, final int newMipLevel) {
       LOGGER.info("Created: {}x{}x{} {}-atlas", new Object[]{newWidth, newHeight, newMipLevel, this.location});
       GpuDevice device = RenderSystem.getDevice();
-      this.releaseTextures();
-      Identifier var10002 = this.location;
-      Objects.requireNonNull(var10002);
-      this.texture = device.createTexture(var10002::toString, 15, GpuFormat.RGBA8_UNORM, newWidth, newHeight, 1, newMipLevel + 1);
-      this.textureView = device.createTextureView(this.texture);
+      Identifier var10001 = this.location;
+      Objects.requireNonNull(var10001);
+      GpuTexture texture = device.createTexture(var10001::toString, 15, GpuFormat.RGBA8_UNORM, newWidth, newHeight, 1, newMipLevel + 1);
+      GpuTextureView textureView = device.createTextureView(texture);
+      GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
+      this.texture = new TextureResources(texture, textureView, sampler);
+      this.textureManager.register(this.location, this.texture);
       this.width = newWidth;
       this.height = newHeight;
       this.maxMipLevel = newMipLevel;
@@ -78,15 +83,14 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       this.mipViews = new GpuTextureView[this.mipLevelCount];
 
       for(int level = 0; level <= this.maxMipLevel; ++level) {
-         this.mipViews[level] = device.createTextureView(this.texture, level, 1);
+         this.mipViews[level] = device.createTextureView(texture, level, 1);
       }
 
    }
 
    public void upload(final SpriteLoader.Preparations preparations) {
-      this.createTexture(preparations.width(), preparations.height(), preparations.mipLevel());
       this.clearTextureData();
-      this.sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
+      this.createTexture(preparations.width(), preparations.height(), preparations.mipLevel());
       this.texturesByName = Map.copyOf(preparations.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
@@ -142,7 +146,10 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
 
             try {
                Files.createDirectories(dumpDir);
-               this.dumpContents(this.location, dumpDir);
+               this.dumpSpriteNames(this.location, dumpDir);
+               if (this.texture != null) {
+                  this.texture.dumpContents(this.location, dumpDir);
+               }
             } catch (Exception var13) {
                LOGGER.warn("Failed to dump atlas contents to {}", dumpDir);
             }
@@ -200,33 +207,28 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       this.uploadAnimationFrames();
    }
 
-   public void dumpContents(final Identifier selfId, final Path dir) throws IOException {
+   public void dumpSpriteNames(final Identifier selfId, final Path dir) {
       String outputId = selfId.toDebugFileName();
-      TextureUtil.writeAsPNG(dir, outputId, this.getTexture(), this.maxMipLevel, (argb) -> argb);
-      dumpSpriteNames(dir, outputId, this.texturesByName);
-   }
-
-   private static void dumpSpriteNames(final Path dir, final String outputId, final Map<Identifier, TextureAtlasSprite> regions) {
       Path outputPath = dir.resolve(outputId + ".txt");
 
       try {
          Writer output = Files.newBufferedWriter(outputPath);
 
          try {
-            for(Map.Entry<Identifier, TextureAtlasSprite> e : regions.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
+            for(Map.Entry<Identifier, TextureAtlasSprite> e : this.texturesByName.entrySet().stream().sorted(Entry.comparingByKey()).toList()) {
                TextureAtlasSprite value = (TextureAtlasSprite)e.getValue();
                output.write(String.format(Locale.ROOT, "%s\tx=%d\ty=%d\tw=%d\th=%d%n", e.getKey(), value.getX(), value.getY(), value.contents().width(), value.contents().height()));
             }
-         } catch (Throwable var9) {
+         } catch (Throwable var10) {
             if (output != null) {
                try {
                   output.close();
-               } catch (Throwable var8) {
-                  var9.addSuppressed(var8);
+               } catch (Throwable var9) {
+                  var10.addSuppressed(var9);
                }
             }
 
-            throw var9;
+            throw var10;
          }
 
          if (output != null) {
@@ -265,10 +267,6 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
 
    }
 
-   public void tick() {
-      this.cycleAnimationFrames();
-   }
-
    public TextureAtlasSprite getSprite(final Identifier location) {
       TextureAtlasSprite result = (TextureAtlasSprite)this.texturesByName.getOrDefault(location, this.missingSprite);
       if (result == null) {
@@ -283,11 +281,18 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
    }
 
    public void clearTextureData() {
+      for(GpuTextureView view : this.mipViews) {
+         view.close();
+      }
+
+      this.mipViews = new GpuTextureView[0];
       this.sprites.forEach(TextureAtlasSprite::close);
       this.sprites = List.of();
       this.animatedTexturesStates.forEach(SpriteContents.AnimationState::close);
       this.animatedTexturesStates = List.of();
       this.texturesByName = Map.of();
+      this.textureManager.release(this.location);
+      this.texture = null;
       this.missingSprite = null;
       if (this.spriteUbos != null) {
          this.spriteUbos.close();
@@ -296,18 +301,8 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
 
    }
 
-   protected void releaseTextures() {
-      super.releaseTextures();
-
-      for(GpuTextureView view : this.mipViews) {
-         view.close();
-      }
-
-   }
-
    public void close() {
       this.clearTextureData();
-      super.close();
    }
 
    public Identifier location() {
@@ -318,11 +313,11 @@ public class TextureAtlas extends AbstractTexture implements TickableTexture, Du
       return this.maxSupportedTextureSize;
    }
 
-   int getWidth() {
-      return this.width;
-   }
-
-   int getHeight() {
-      return this.height;
+   public TextureResources getTexture() {
+      if (this.texture == null) {
+         throw new IllegalStateException("Texture not initialized");
+      } else {
+         return this.texture;
+      }
    }
 }

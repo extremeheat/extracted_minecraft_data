@@ -177,9 +177,9 @@ public class PolarBear extends Animal implements NeutralMob {
 
          this.clientSideStandAnimationO = this.clientSideStandAnimation;
          if (this.isStanding()) {
-            this.clientSideStandAnimation = Mth.clamp(this.clientSideStandAnimation + 1.0F, 0.0F, 6.0F);
+            this.clientSideStandAnimation = Math.clamp(this.clientSideStandAnimation + 1.0F, 0.0F, 6.0F);
          } else {
-            this.clientSideStandAnimation = Mth.clamp(this.clientSideStandAnimation - 1.0F, 0.0F, 6.0F);
+            this.clientSideStandAnimation = Math.clamp(this.clientSideStandAnimation - 1.0F, 0.0F, 6.0F);
          }
       }
 

@@ -80,7 +80,7 @@ public class Phantom extends Mob implements Enemy {
    }
 
    public void setPhantomSize(final int size) {
-      this.entityData.set(ID_SIZE, Mth.clamp(size, 0, 64));
+      this.entityData.set(ID_SIZE, Math.clamp((long)size, 0, 64));
    }
 
    private void updatePhantomSizeInfo() {

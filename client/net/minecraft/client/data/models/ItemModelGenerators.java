@@ -541,6 +541,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.SKULL_BANNER_PATTERN, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SLIME_BALL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SNOWBALL, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.ICE_BALL, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ECHO_SHARD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SPECTRAL_ARROW, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SPIDER_EYE, ModelTemplates.FLAT_ITEM);
@@ -717,6 +718,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BOGGED_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.CAMEL_HUSK_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DROWNED_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.FROSTBITE_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.HUSK_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.PARCHED_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.SKELETON_SPAWN_EGG, ModelTemplates.FLAT_ITEM);
@@ -767,6 +769,7 @@ public class ItemModelGenerators {
       this.declareCustomModelItem(Items.SMALL_DRIPLEAF);
       this.declareCustomModelItem(Items.BIG_DRIPLEAF);
       this.declareCustomModelItem(Items.HANGING_ROOTS);
+      this.declareCustomModelItem(Items.ICICLE);
       this.declareCustomModelItem(Items.POINTED_DRIPSTONE);
       this.declareCustomModelItem(Items.SULFUR_SPIKE);
       this.declareCustomModelItem(Items.BONE);

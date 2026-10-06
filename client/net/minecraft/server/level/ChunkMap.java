@@ -103,7 +103,6 @@ import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.NoiseRouterData;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.phys.Vec3;
@@ -185,7 +184,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.lightEngine = new ThreadedLevelLightEngine(chunkGetter, this, this.level.dimensionType().hasSkyLight(), light, this.lightTaskDispatcher);
       this.distanceManager = new DistanceManager(ticketStorage, executor, mainThreadExecutor);
       this.ticketStorage = ticketStorage;
-      this.poiManager = new PoiManager(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "poi"), storageFolder.resolve("poi"), dataFixer, syncWrites, registryAccess, level.getServer(), level);
+      this.poiManager = new PoiManager(new RegionStorageInfo(levelStorage.getLevelId(), level.dimension(), "poi"), storageFolder.resolve("poi"), dataFixer, syncWrites, registryAccess, level);
       this.setServerViewDistance(serverViewDistance);
       this.worldGenContext = new WorldGenContext(level, generator, structureManager, this.lightEngine, mainThreadExecutor, this::setChunkUnsaved);
    }
@@ -588,8 +587,8 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.chunkTypeCache.put(pos.pack(), (byte)-1);
    }
 
-   private byte markPosition(final ChunkPos pos, final ChunkType type) {
-      return this.chunkTypeCache.put(pos.pack(), (byte)(type == ChunkType.PROTOCHUNK ? -1 : 1));
+   private void markPosition(final ChunkPos pos, final ChunkType type) {
+      this.chunkTypeCache.put(pos.pack(), (byte)(type == ChunkType.PROTOCHUNK ? -1 : 1));
    }
 
    public GenerationChunkHolder acquireGeneration(final long chunkNode) {
@@ -733,7 +732,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
                   return false;
                }
 
-               if (status == ChunkStatus.EMPTY && chunk.getAllStarts().values().stream().noneMatch(StructureStart::isValid)) {
+               if (status == ChunkStatus.EMPTY && chunk.getAllStarts().isEmpty()) {
                   return false;
                }
             }
@@ -780,12 +779,13 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          }
 
          ChunkType chunkType = SerializableChunkData.getChunkStatusFromTag(currentTag).getChunkType();
-         return this.markPosition(pos, chunkType) == 1;
+         this.markPosition(pos, chunkType);
+         return chunkType == ChunkType.LEVELCHUNK;
       }
    }
 
    protected void setServerViewDistance(final int newViewDistance) {
-      int actualNewDistance = Mth.clamp(newViewDistance, 2, 32);
+      int actualNewDistance = Math.clamp((long)newViewDistance, 2, 32);
       if (actualNewDistance != this.serverViewDistance) {
          this.serverViewDistance = actualNewDistance;
          this.distanceManager.updatePlayerTickets(this.serverViewDistance);
@@ -798,7 +798,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
    }
 
    private int getPlayerViewDistance(final ServerPlayer player) {
-      return Mth.clamp(player.requestedViewDistance(), 2, this.serverViewDistance);
+      return Math.clamp((long)player.requestedViewDistance(), 2, this.serverViewDistance);
    }
 
    private void markChunkPendingToSend(final ServerPlayer player, final ChunkPos pos) {

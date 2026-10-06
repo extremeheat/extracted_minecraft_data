@@ -9,10 +9,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.BlockUtil;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,7 +44,7 @@ public class PortalForcer {
       PoiManager poiManager = this.level.getPoiManager();
       int radius = toNether ? 16 : 128;
       poiManager.ensureLoadedAndValid(this.level, approximateExitPos, radius);
-      Stream var10000 = poiManager.getInSquare((type) -> type.is(PoiTypes.NETHER_PORTAL), approximateExitPos, radius, PoiManager.Occupancy.ANY).map(PoiRecord::getPos);
+      Stream var10000 = poiManager.getInSquare((type) -> type.is(PoiTypeIds.NETHER_PORTAL), approximateExitPos, radius, PoiManager.Occupancy.ANY).map(PoiRecord::getPos);
       Objects.requireNonNull(worldBorder);
       return var10000.filter(worldBorder::isWithinBounds).filter((pos) -> this.level.getBlockState(pos).hasProperty(BlockStateProperties.HORIZONTAL_AXIS)).min(Comparator.comparingDouble((p) -> p.distSqr(approximateExitPos)).thenComparingInt(Vec3i::getY));
    }
@@ -108,7 +107,7 @@ public class PortalForcer {
             return Optional.empty();
          }
 
-         closestFullPosition = (new BlockPos(origin.getX() - direction.getStepX() * 1, Mth.clamp(origin.getY(), minStartY, maxStartY), origin.getZ() - direction.getStepZ() * 1)).immutable();
+         closestFullPosition = (new BlockPos(origin.getX() - direction.getStepX() * 1, Math.clamp((long)origin.getY(), minStartY, maxStartY), origin.getZ() - direction.getStepZ() * 1)).immutable();
          closestFullPosition = worldBorder.clampToBounds(closestFullPosition);
          Direction clockWise = direction.getClockWise();
 

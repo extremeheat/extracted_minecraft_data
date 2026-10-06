@@ -6,6 +6,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.UserApiService;
 import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.FriendsService.ResultCode;
+import com.mojang.authlib.services.response.FriendData;
 import com.mojang.authlib.services.response.FriendDto;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ import net.minecraft.util.Util;
 public class PlayerSocialManager {
    private static final Component FRIEND_ACTION_FAILED_MESSAGE = Component.translatable("gui.friends.error.failed.message");
    private static final Component FRIEND_ACTION_RATE_LIMITED_MESSAGE = Component.translatable("gui.friends.error.rateLimited.message");
-   private static final Component FRIEND_ACTION_FORBIDDEN_MESSAGE = Component.translatable("gui.friends.error.forbidden.message");
    private static final Component FRIEND_ACTION_UNKNOWN_PROFILE = Component.translatable("gui.friends.error.user_may_lack_active_profile");
    private static final Component FRIEND_ACTION_UNAUTHORIZED = Component.translatable("gui.friends.error.unauthorized");
    private static final Component FRIEND_ACTION_UNAVAILABLE_MESSAGE = Component.translatable("gui.friends.error.unavailable.message");
@@ -112,6 +112,14 @@ public class PlayerSocialManager {
       }
    }
 
+   public Visibility getVisibility(final UUID id) {
+      if (this.isBlocked(id)) {
+         return PlayerSocialManager.Visibility.BLOCKED;
+      } else {
+         return this.isHidden(id) ? PlayerSocialManager.Visibility.MUTED : PlayerSocialManager.Visibility.NORMAL;
+      }
+   }
+
    public Set<UUID> getHiddenPlayers() {
       return this.hiddenPlayers;
    }
@@ -132,6 +140,10 @@ public class PlayerSocialManager {
 
    public CompletableFuture<FriendsService.ResultCode> sendFriendRequest(final String name) {
       return this.runAction(() -> this.friendsService.sendFriendRequest(name));
+   }
+
+   public CompletableFuture<FriendsService.ResultCode> sendFriendRequest(final UUID playerID) {
+      return this.runAction(() -> this.friendsService.sendFriendRequest(playerID));
    }
 
    public void removePlayer(final UUID id) {
@@ -189,13 +201,11 @@ public class PlayerSocialManager {
          case UNAUTHORIZED:
             var10000 = FRIEND_ACTION_UNAUTHORIZED;
             break;
-         case FORBIDDEN:
-            var10000 = FRIEND_ACTION_FORBIDDEN_MESSAGE;
-            break;
          case SERVICE_NOT_AVAILABLE:
             var10000 = FRIEND_ACTION_UNAVAILABLE_MESSAGE;
             break;
          case ERROR:
+         case FORBIDDEN:
             var10000 = FRIEND_ACTION_FAILED_MESSAGE;
             break;
          case SUCCESS:
@@ -241,14 +251,31 @@ public class PlayerSocialManager {
       return this.presenceHandler;
    }
 
-   public boolean isFriend(final UUID uuid) {
-      for(PlayerData playerData : this.getFriends()) {
-         if (playerData.id.equals(uuid)) {
+   private boolean containsFriendDto(final List<FriendDto> friendDtoList, final UUID uuid) {
+      for(FriendDto friendDto : friendDtoList) {
+         if (friendDto.profileId().equals(uuid)) {
             return true;
          }
       }
 
       return false;
+   }
+
+   public boolean isFriend(final UUID uuid) {
+      return this.containsFriendDto(this.remoteFriendListUpdateHandler.getLatestFriendData().friends(), uuid);
+   }
+
+   public FriendState getFriendState(final UUID uuid) {
+      if (this.isFriend(uuid)) {
+         return PlayerSocialManager.FriendState.FRIENDS;
+      } else {
+         FriendData friendData = this.remoteFriendListUpdateHandler.getLatestFriendData();
+         if (this.containsFriendDto(friendData.outgoingRequests(), uuid)) {
+            return PlayerSocialManager.FriendState.REQUEST_SENT;
+         } else {
+            return this.containsFriendDto(friendData.incomingRequests(), uuid) ? PlayerSocialManager.FriendState.REQUEST_RECEIVED : PlayerSocialManager.FriendState.NOT_FRIENDS;
+         }
+      }
    }
 
    private static List<PlayerData> remap(final List<FriendDto> friends) {
@@ -258,6 +285,35 @@ public class PlayerSocialManager {
    public static record PlayerData(UUID id, String name) {
       public PlayerData {
          super();
+      }
+   }
+
+   public static enum FriendState {
+      FRIENDS,
+      NOT_FRIENDS,
+      REQUEST_SENT,
+      REQUEST_RECEIVED;
+
+      private FriendState() {
+      }
+
+      // $FF: synthetic method
+      private static FriendState[] $values() {
+         return new FriendState[]{FRIENDS, NOT_FRIENDS, REQUEST_SENT, REQUEST_RECEIVED};
+      }
+   }
+
+   public static enum Visibility {
+      NORMAL,
+      MUTED,
+      BLOCKED;
+
+      private Visibility() {
+      }
+
+      // $FF: synthetic method
+      private static Visibility[] $values() {
+         return new Visibility[]{NORMAL, MUTED, BLOCKED};
       }
    }
 }

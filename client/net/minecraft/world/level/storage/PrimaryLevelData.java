@@ -48,7 +48,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final Set<String> knownServerBrands;
    private boolean wasModded;
    private final Set<String> removedFeatureFlags;
-   private List<Integer> versionHistory;
+   private final List<Integer> versionHistory;
 
    private PrimaryLevelData(final @Nullable UUID singlePlayerUUID, final boolean wasModded, final LevelData.RespawnData respawnData, final long gameTime, final int version, final boolean initialized, final Set<String> knownServerBrands, final Set<String> removedFeatureFlags, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle, final List<Integer> versionHistory) {
       super();

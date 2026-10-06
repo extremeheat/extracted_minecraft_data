@@ -5,7 +5,6 @@ import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
 import java.util.Objects;
-import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ public class ByteBufferBuilder implements AutoCloseable {
          }
 
          long preferredGrowth = Math.min(this.capacity, 2097152L);
-         long newCapacity = Mth.clamp(this.capacity + preferredGrowth, requiredCapacity, this.maxCapacity);
+         long newCapacity = Math.clamp(this.capacity + preferredGrowth, requiredCapacity, this.maxCapacity);
          this.resize(newCapacity);
       }
 

@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Interval;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
@@ -117,7 +116,7 @@ public record GradientFunction(Direction.Axis axis, TilingMode tiling, int fromC
       }
 
       public float compute(final int coordinate) {
-         int relativeCoordinate = Mth.clamp(coordinate, this.minCoordinate, this.maxCoordinate) - this.fromCoordinate;
+         int relativeCoordinate = Math.clamp((long)coordinate, this.minCoordinate, this.maxCoordinate) - this.fromCoordinate;
          return this.fromValue + (float)relativeCoordinate * this.coordinateFactor;
       }
    }

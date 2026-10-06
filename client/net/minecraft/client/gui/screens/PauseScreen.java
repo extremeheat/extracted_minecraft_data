@@ -1,10 +1,8 @@
 package net.minecraft.client.gui.screens;
 
-import java.util.List;
-import java.util.Map;
+import com.google.common.util.concurrent.Runnables;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
@@ -23,14 +21,14 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.gui.screens.friends.FriendsListActions;
 import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.OptionsScreen;
+import net.minecraft.client.gui.screens.reporting.DraftIconButton;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.client.multiplayer.chat.report.Report;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
@@ -48,7 +46,9 @@ import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 
 public class PauseScreen extends Screen {
-   private static final Identifier DRAFT_REPORT_SPRITE = Identifier.withDefaultNamespace("icon/draft_report");
+   public static final Identifier OTHER_PLAYERS_SPRITE = Identifier.withDefaultNamespace("pause_menu/other_players");
+   private static final Identifier SEND_FEEDBACK_SPRITE = Identifier.withDefaultNamespace("pause_menu/feedback");
+   private static final Identifier REPORT_BUGS_SPRITE = Identifier.withDefaultNamespace("pause_menu/bug");
    private static final int COLUMNS = 2;
    private static final int MENU_PADDING_TOP = 50;
    private static final int BUTTON_PADDING = 4;
@@ -61,19 +61,20 @@ public class PauseScreen extends Screen {
    private static final Component REPORT_BUGS = Component.translatable("menu.reportBugs");
    private static final Component OPTIONS = Component.translatable("menu.options");
    private static final Component WORLD_OPTIONS = Component.translatable("options.worldOptions.button");
-   private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
+   private static final Component OTHER_PLAYERS = Component.translatable("menu.other_players");
    private static final Component GAME = Component.translatable("menu.game");
    private static final Component PAUSED = Component.translatable("menu.paused");
    private static final Tooltip CUSTOM_OPTIONS_TOOLTIP = Tooltip.create(Component.translatable("menu.custom_options.tooltip"));
-   private static final Tooltip NO_PLAYERS_TO_REPORT_TOOLTIP = Tooltip.create(Component.translatable("menu.playerReporting.no_players"));
-   private final Runnable friendListUpdateListener = this::onFriendListUpdate;
+   private static final Tooltip NO_OTHER_PLAYERS_TOOLTIP = Tooltip.create(Component.translatable("menu.other_players.no_players"));
+   public static final Tooltip DRAFT_REPORT_TOOLTIP = Tooltip.create(Component.translatable("menu.disconnect.draft_report.tooltip"));
+   private final FriendsListActions friendsListActions;
    private @Nullable FriendsButton friends;
    private final boolean showPauseMenu;
-   private @Nullable Button disconnectButton;
 
    public PauseScreen(final boolean showPauseMenu) {
       super(showPauseMenu ? GAME : PAUSED);
       this.showPauseMenu = showPauseMenu;
+      this.friendsListActions = new FriendsListActions(this.minecraft);
    }
 
    public boolean showsPauseMenu() {
@@ -83,7 +84,7 @@ public class PauseScreen extends Screen {
    public void added() {
       super.added();
       if (this.showPauseMenu && this.minecraft.getPlayerSocialManager().isFriendListEnabled()) {
-         this.minecraft.getPlayerSocialManager().addFriendListUpdateListener(this.friendListUpdateListener);
+         this.friendsListActions.addFriendListUpdateListener(Runnables.doNothing(), this::onFriendListUpdate);
       }
 
    }
@@ -111,24 +112,20 @@ public class PauseScreen extends Screen {
       helper.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
       helper.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
       LinearLayout iconButtonRow = LinearLayout.horizontal().spacing(4);
-      SpriteIconButton reportBugsButton = SpriteIconButton.builder(REPORT_BUGS, ConfirmLinkScreen.confirmLink(this, CommonLinks.SNAPSHOT_BUGS_FEEDBACK), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/bug"), 15, 15).withTootip().build();
-      reportBugsButton.active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
-      iconButtonRow.addChild(reportBugsButton);
-      SpriteIconButton feedbackButton = SpriteIconButton.builder(SEND_FEEDBACK, ConfirmLinkScreen.confirmLink(this, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/social_interactions"), 15, 15).withTootip().build();
-      iconButtonRow.addChild(feedbackButton);
-      this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode());
+      this.friends = CommonButtons.friends(20, (var1) -> OnlineOptionsScreen.confirmFriendsListEnabled(this.minecraft, () -> this.minecraft.gui.setScreen(new FriendsOverlayScreen(this.minecraft, this, this.friendsListActions)), this), !this.minecraft.isDemo() && !this.minecraft.isOfflineDeveloperMode());
       iconButtonRow.addChild(this.friends);
-      SpriteIconButton playerReportingButton = SpriteIconButton.builder(PLAYER_REPORTING, (var1) -> this.minecraft.gui.setScreen(new SocialInteractionsScreen(this)), true).width(20).sprite((Identifier)Identifier.withDefaultNamespace("pause_menu/player_reporting"), 15, 15).withTootip().build();
+      SpriteIconButton playerReportingButton = ((SpriteIconButton.Builder)SpriteIconButton.builder(OTHER_PLAYERS, (var1) -> this.minecraft.gui.setScreen(new SocialInteractionsScreen(this)), true).width(20)).sprite((Identifier)OTHER_PLAYERS_SPRITE, 16, 16).withTootip().build();
       iconButtonRow.addChild(playerReportingButton);
-      IntegratedServer integratedServer = this.minecraft.getSingleplayerServer();
-      if (integratedServer != null && this.minecraft.player != null) {
-         List<Map.Entry<UUID, PlayerInfo>> list = this.minecraft.player.connection.getSeenPlayers().entrySet().stream().filter((entry) -> entry.getKey() != this.minecraft.player.getUUID()).toList();
-         if (list.isEmpty()) {
-            playerReportingButton.active = false;
-            playerReportingButton.setTooltip(NO_PLAYERS_TO_REPORT_TOOLTIP);
-         }
+      if (!this.minecraft.isMultiplayerServer()) {
+         playerReportingButton.active = false;
+         playerReportingButton.setTooltip(NO_OTHER_PLAYERS_TOOLTIP);
       }
 
+      SpriteIconButton reportBugsButton = ((SpriteIconButton.Builder)SpriteIconButton.builder(REPORT_BUGS, ConfirmLinkScreen.confirmLink(this, CommonLinks.SNAPSHOT_BUGS_FEEDBACK), true).width(20)).sprite((Identifier)REPORT_BUGS_SPRITE, 13, 13).withTootip().build();
+      reportBugsButton.active = !SharedConstants.getCurrentVersion().dataVersion().isSideSeries();
+      iconButtonRow.addChild(reportBugsButton);
+      SpriteIconButton feedbackButton = ((SpriteIconButton.Builder)SpriteIconButton.builder(SEND_FEEDBACK, ConfirmLinkScreen.confirmLink(this, SharedConstants.getCurrentVersion().stable() ? CommonLinks.RELEASE_FEEDBACK : CommonLinks.SNAPSHOT_FEEDBACK), true).width(20)).sprite((Identifier)SEND_FEEDBACK_SPRITE, 20, 20).withTootip().build();
+      iconButtonRow.addChild(feedbackButton);
       helper.addChild(iconButtonRow, 2, gridLayout.newCellSettings().alignHorizontallyCenter());
       Optional<? extends Holder<Dialog>> additions = this.getCustomAdditions();
       additions.ifPresent((dialogHolder) -> this.addCustomDialogButtons(this.minecraft, dialogHolder, helper));
@@ -137,10 +134,10 @@ public class PauseScreen extends Screen {
          helper.addChild(this.openScreenButton(WORLD_OPTIONS, () -> new WorldOptionsScreen(this, this.minecraft.level)));
       }
 
-      this.disconnectButton = (Button)helper.addChild(Button.builder(CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (button) -> {
+      helper.addChild(new DraftIconButton(204, 20, CommonComponents.disconnectButtonLabel(this.minecraft.isLocalServer()), (button) -> {
          button.active = false;
-         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> this.minecraft.disconnectFromWorld(ClientLevel.DEFAULT_QUIT_MESSAGE), true);
-      }).width(204).build(), 2);
+         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, () -> this.minecraft.disconnectFromWorld(ClientLevel.DEFAULT_QUIT_MESSAGE), true, Report::isUnreportableLater);
+      }, DRAFT_REPORT_TOOLTIP, Report::isUnreportableLater), 2);
       gridLayout.arrangeElements();
       FrameLayout.alignInRectangle(gridLayout, 0, 0, this.width, this.height, 0.5F, 0.25F);
       gridLayout.visitWidgets(this::addRenderableWidget);
@@ -181,10 +178,6 @@ public class PauseScreen extends Screen {
          NowPlayingToast.extractToast(graphics, this.font);
       }
 
-      if (this.showPauseMenu && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
-      }
-
    }
 
    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
@@ -200,7 +193,7 @@ public class PauseScreen extends Screen {
    }
 
    public void removed() {
-      this.minecraft.getPlayerSocialManager().removeFriendListUpdateListener(this.friendListUpdateListener);
+      this.friendsListActions.removeFriendListUpdateListener();
       super.removed();
    }
 

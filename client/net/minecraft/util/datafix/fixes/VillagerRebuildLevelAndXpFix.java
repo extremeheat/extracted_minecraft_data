@@ -10,14 +10,13 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import net.minecraft.util.Mth;
 
 public class VillagerRebuildLevelAndXpFix extends DataFix {
    private static final int TRADES_PER_LEVEL = 2;
    private static final int[] LEVEL_XP_THRESHOLDS = new int[]{0, 10, 50, 100, 150};
 
    public static int getMinXpPerLevel(final int level) {
-      return LEVEL_XP_THRESHOLDS[Mth.clamp(level - 1, 0, LEVEL_XP_THRESHOLDS.length - 1)];
+      return LEVEL_XP_THRESHOLDS[Math.clamp((long)(level - 1), 0, LEVEL_XP_THRESHOLDS.length - 1)];
    }
 
    public VillagerRebuildLevelAndXpFix(final Schema outputSchema, final boolean changesType) {
@@ -38,7 +37,7 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
             Typed<?> modifiedVillager = villager;
             if (level == 0 || level == 1) {
                int offerCount = (Integer)villager.getOptionalTyped(offersF).flatMap((o) -> o.getOptionalTyped(recipeListF)).map((recipeList) -> recipeList.getAllTyped(recipeF).size()).orElse(0);
-               level = Mth.clamp(offerCount / 2, 1, 5);
+               level = Math.clamp((long)(offerCount / 2), 1, 5);
                if (level > 1) {
                   modifiedVillager = addLevel(villager, level);
                }

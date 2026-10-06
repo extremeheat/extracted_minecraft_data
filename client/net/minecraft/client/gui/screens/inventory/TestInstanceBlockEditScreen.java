@@ -19,7 +19,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.jspecify.annotations.Nullable;
@@ -76,7 +75,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       this.sizeZEdit.setMaxLength(15);
       this.addRenderableWidget(this.sizeZEdit);
       this.setSize(size);
-      this.rotationButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values()).displayOnlyValue().create(this.widgetX(index++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (button, value) -> this.updateSaveState()));
+      this.rotationButton = (CycleButton)this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder(TestInstanceBlockEditScreen::rotationDisplay, this.blockEntity.getRotation()).withValues(Rotation.values())).displayOnlyValue().create(this.widgetX(index++, 5), 160, widgetSize(5), 20, ROTATION_LABEL, (button, value) -> this.updateSaveState()));
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.blockEntity.ignoreEntities()).displayOnlyValue().create(this.widgetX(index++, 5), 160, widgetSize(5), 20, INCLUDE_ENTITIES_LABEL));
       index = 0;
       this.addRenderableWidget(Button.builder(Component.translatable("test_instance.action.reset"), (button) -> {
@@ -174,7 +173,7 @@ public class TestInstanceBlockEditScreen extends Screen {
       Optional<ResourceKey<GameTestInstance>> key = id.map((i) -> ResourceKey.create(Registries.TEST_INSTANCE, i));
       Vec3i size = new Vec3i(parseSize(this.sizeXEdit.getValue()), parseSize(this.sizeYEdit.getValue()), parseSize(this.sizeZEdit.getValue()));
       boolean ignoreEntities = !(Boolean)this.includeEntitiesButton.getValue();
-      this.minecraft.getConnection().send(new ServerboundTestInstanceBlockActionPacket(this.blockEntity.getBlockPos(), action, key, size, this.rotationButton.getValue(), ignoreEntities));
+      this.minecraft.getConnection().send(new ServerboundTestInstanceBlockActionPacket(this.blockEntity.getBlockPos(), action, key, size, (Rotation)this.rotationButton.getValue(), ignoreEntities));
       return id.isPresent();
    }
 
@@ -192,7 +191,7 @@ public class TestInstanceBlockEditScreen extends Screen {
 
    private static int parseSize(final String value) {
       try {
-         return Mth.clamp(Integer.parseInt(value), 1, 48);
+         return Math.clamp((long)Integer.parseInt(value), 1, 48);
       } catch (NumberFormatException var2) {
          return 1;
       }

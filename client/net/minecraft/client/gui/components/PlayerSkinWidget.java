@@ -12,7 +12,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.PlayerModelType;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
@@ -46,7 +45,7 @@ public class PlayerSkinWidget extends AbstractWidget {
    }
 
    protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
-      this.rotationX = Mth.clamp(this.rotationX - (float)dy * 2.5F, -50.0F, 50.0F);
+      this.rotationX = Math.clamp(this.rotationX - (float)dy * 2.5F, -50.0F, 50.0F);
       this.rotationY += (float)dx * 2.5F;
    }
 

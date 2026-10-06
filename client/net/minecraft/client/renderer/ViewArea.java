@@ -64,6 +64,10 @@ public class ViewArea {
       return this.sections.radius();
    }
 
+   public RotatingSectionStorage<SectionRenderDispatcher.RenderSection> getSections() {
+      return this.sections;
+   }
+
    public boolean repositionCamera(final SectionPos cameraSectionPos) {
       boolean result = this.sections.repositionCenter(cameraSectionPos);
       if (result) {

@@ -1,10 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.renderpearl.api.textures.FilterMode;
-import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -29,18 +26,16 @@ import net.minecraft.client.gui.components.debug.DebugScreenDisplayer;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntry;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryList;
+import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debugchart.BandwidthDebugChart;
 import net.minecraft.client.gui.components.debugchart.FpsDebugChart;
 import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
-import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.progress.ChunkLoadStatusView;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
@@ -62,7 +57,6 @@ public class DebugScreenOverlay {
    private boolean renderProfilerChart;
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
-   private boolean renderLightmapTexture;
    private final LocalSampleLogger frameTimeLogger = new LocalSampleLogger(1);
    private final LocalSampleLogger tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
    private final LocalSampleLogger pingLogger = new LocalSampleLogger(1);
@@ -180,7 +174,7 @@ public class DebugScreenOverlay {
                DebugGroup var10001 = DebugGroups.HELP;
                String var10002 = formatChart(keyDebugModifier, options.keyDebugPofilingChart, "Profiler", this.renderProfilerChart);
                var10002 = "Debug charts: " + var10002 + "; " + formatChart(keyDebugModifier, options.keyDebugFpsCharts, hasServer ? "fps + tps" : "fps", this.renderFpsCharts) + ";";
-               String var10003 = formatChart(keyDebugModifier, options.keyDebugNetworkCharts, !this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping", this.renderNetworkCharts) + "; " + formatChart(keyDebugModifier, options.keyDebugLightmapTexture, "Lightmap", this.renderLightmapTexture);
+               String var10003 = formatChart(keyDebugModifier, options.keyDebugNetworkCharts, !this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping", this.renderNetworkCharts) + "; " + formatChart(keyDebugModifier, options.keyDebugLightmapTexture, "Lightmap", this.showLightmapTexture());
                String var10004 = formatKeybind(keyDebugModifier, options.keyDebugDebugOptions);
                displayer.addToGroup(var10001, List.of(var10002, var10003, "To edit: press " + var10004));
             }
@@ -287,24 +281,6 @@ public class DebugScreenOverlay {
                this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
             }
 
-            if (this.showLightmapTexture()) {
-               GpuTextureView lightmapTextureView = this.minecraft.gameRenderer.levelLightmap();
-               int displaySize = 64;
-               int x = scaledScreenWidth - 64 - 2;
-               int y = scaledScreenHeight - 64 - 2;
-               graphics.fill(x - 1, y - 1, x + 64 + 1, y + 64 + 1, -16777216);
-               graphics.blit(lightmapTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST), x, y, x + 64, y + 64, 0.0F, 1.0F, 1.0F, 0.0F);
-            }
-
-            if (this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_CHUNKS_ON_SERVER)) {
-               IntegratedServer singleplayerServer = this.minecraft.getSingleplayerServer();
-               if (singleplayerServer != null && this.minecraft.player != null) {
-                  ChunkLoadStatusView statusView = singleplayerServer.createChunkLoadStatusView(16 + ChunkLevel.RADIUS_AROUND_FULL_CHUNK);
-                  statusView.moveTo(this.minecraft.player.level().dimension(), this.minecraft.player.chunkPosition());
-                  LevelLoadingScreen.extractChunksForRendering(graphics, scaledScreenWidth / 2, scaledScreenHeight / 2, 4, 1, statusView);
-               }
-            }
-
             try (Zone ignored = profiler.zone("profilerPie")) {
                this.profilerPieChart.extractRenderState(graphics, scaledScreenWidth, scaledScreenHeight);
             }
@@ -391,7 +367,7 @@ public class DebugScreenOverlay {
    }
 
    public boolean showLightmapTexture() {
-      return this.minecraft.debugEntries.isOverlayVisible() && this.renderLightmapTexture;
+      return this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.LIGHTMAP_TEXTURE);
    }
 
    public void toggleNetworkCharts() {
@@ -399,7 +375,6 @@ public class DebugScreenOverlay {
       if (this.renderNetworkCharts) {
          this.minecraft.debugEntries.setOverlayVisible(true);
          this.renderFpsCharts = false;
-         this.renderLightmapTexture = false;
       }
 
    }
@@ -409,17 +384,16 @@ public class DebugScreenOverlay {
       if (this.renderFpsCharts) {
          this.minecraft.debugEntries.setOverlayVisible(true);
          this.renderNetworkCharts = false;
-         this.renderLightmapTexture = false;
       }
 
    }
 
    public void toggleLightmapTexture() {
-      this.renderLightmapTexture = !this.minecraft.debugEntries.isOverlayVisible() || !this.renderLightmapTexture;
-      if (this.renderLightmapTexture) {
-         this.minecraft.debugEntries.setOverlayVisible(true);
-         this.renderFpsCharts = false;
-         this.renderNetworkCharts = false;
+      DebugScreenEntryList entries = this.minecraft.debugEntries;
+      boolean enable = !this.showLightmapTexture();
+      entries.setStatus(DebugScreenEntries.LIGHTMAP_TEXTURE, enable ? DebugScreenEntryStatus.IN_OVERLAY : DebugScreenEntryStatus.NEVER);
+      if (enable) {
+         entries.setOverlayVisible(true);
       }
 
    }

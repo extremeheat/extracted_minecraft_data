@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.util.LightCoordsUtil;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import org.joml.Quaternionf;
 
@@ -26,12 +25,12 @@ public class ShriekParticle extends SingleQuadParticle {
    }
 
    public float getQuadSize(final float a) {
-      return this.quadSize * Mth.clamp(((float)this.age + a) / (float)this.lifetime * 0.75F, 0.0F, 1.0F);
+      return this.quadSize * Math.clamp(((float)this.age + a) / (float)this.lifetime * 0.75F, 0.0F, 1.0F);
    }
 
    public void extract(final QuadParticleRenderState particleTypeRenderState, final Camera camera, final float partialTickTime) {
       if (this.delay <= 0) {
-         this.alpha = 1.0F - Mth.clamp(((float)this.age + partialTickTime) / (float)this.lifetime, 0.0F, 1.0F);
+         this.alpha = 1.0F - Math.clamp(((float)this.age + partialTickTime) / (float)this.lifetime, 0.0F, 1.0F);
          Quaternionf rotation = new Quaternionf();
          rotation.rotationX(-1.0472F);
          this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);

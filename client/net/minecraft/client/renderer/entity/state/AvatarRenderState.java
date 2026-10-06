@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity.state;
 
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.parrot.Parrot;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
@@ -36,6 +35,6 @@ public class AvatarRenderState extends HumanoidRenderState {
    }
 
    public float fallFlyingScale() {
-      return Mth.clamp(this.fallFlyingTimeInTicks * this.fallFlyingTimeInTicks / 100.0F, 0.0F, 1.0F);
+      return Math.clamp(this.fallFlyingTimeInTicks * this.fallFlyingTimeInTicks / 100.0F, 0.0F, 1.0F);
    }
 }

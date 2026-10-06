@@ -5,7 +5,6 @@ import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.state.CamelRenderState;
-import net.minecraft.util.Mth;
 
 public abstract class CamelModel extends EntityModel<CamelRenderState> {
    private static final float MAX_WALK_ANIMATION_SPEED = 2.0F;
@@ -42,11 +41,11 @@ public abstract class CamelModel extends EntityModel<CamelRenderState> {
    }
 
    private void applyHeadRotation(final CamelRenderState state, float yRot, float xRot) {
-      yRot = Mth.clamp(yRot, -30.0F, 30.0F);
-      xRot = Mth.clamp(xRot, -25.0F, 45.0F);
+      yRot = Math.clamp(yRot, -30.0F, 30.0F);
+      xRot = Math.clamp(xRot, -25.0F, 45.0F);
       if (state.jumpCooldown > 0.0F) {
          float headRotation = 45.0F * state.jumpCooldown / 55.0F;
-         xRot = Mth.clamp(xRot + headRotation, -25.0F, 70.0F);
+         xRot = Math.clamp(xRot + headRotation, -25.0F, 70.0F);
       }
 
       this.head.yRot = yRot * 0.017453292F;

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.entity.ai.village.poi.PoiTypes;
+import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
 
 public class LocateHidingPlace {
    public LocateHidingPlace() {
@@ -16,7 +16,7 @@ public class LocateHidingPlace {
 
    public static OneShot<LivingEntity> create(final int radius, final float speedModifier, final int closeEnoughDist) {
       return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.HOME), i.registered(MemoryModuleType.HIDING_PLACE), i.registered(MemoryModuleType.PATH), i.registered(MemoryModuleType.LOOK_TARGET), i.registered(MemoryModuleType.BREED_TARGET), i.registered(MemoryModuleType.INTERACTION_TARGET)).apply(i, (walkTarget, home, hidingPlace, path, lookTarget, breedTarget, interactionTarget) -> (level, body, timestamp) -> {
-               level.getPoiManager().find((p) -> p.is(PoiTypes.HOME), (blockPos) -> true, body.blockPosition(), closeEnoughDist + 1, PoiManager.Occupancy.ANY).filter((p) -> p.closerToCenterThan(body.position(), (double)closeEnoughDist)).or(() -> level.getPoiManager().getRandom((p) -> p.is(PoiTypes.HOME), (blockPos) -> true, PoiManager.Occupancy.ANY, body.blockPosition(), radius, body.getRandom())).or(() -> i.tryGet(home).map(GlobalPos::pos)).ifPresent((pos) -> {
+               level.getPoiManager().find((p) -> p.is(PoiTypeIds.HOME), (blockPos) -> true, body.blockPosition(), closeEnoughDist + 1, PoiManager.Occupancy.ANY).filter((p) -> p.closerToCenterThan(body.position(), (double)closeEnoughDist)).or(() -> level.getPoiManager().getRandom((p) -> p.is(PoiTypeIds.HOME), (blockPos) -> true, PoiManager.Occupancy.ANY, body.blockPosition(), radius, body.getRandom())).or(() -> i.tryGet(home).map(GlobalPos::pos)).ifPresent((pos) -> {
                   path.erase();
                   lookTarget.erase();
                   breedTarget.erase();

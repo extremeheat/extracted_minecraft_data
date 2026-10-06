@@ -120,7 +120,7 @@ public class StructureBlockEditScreen extends Screen {
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
-      this.addRenderableWidget(CycleButton.builder((value) -> Component.translatable("structure_block.mode." + value.getSerializedName()), this.initialMode).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (button, value) -> {
+      this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder((value) -> Component.translatable("structure_block.mode." + value.getSerializedName()), this.initialMode).withValues(DEFAULT_MODES, ALL_MODES)).displayOnlyValue().create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (button, value) -> {
          this.structure.setMode(value);
          this.updateMode(value);
       }));
@@ -133,7 +133,7 @@ public class StructureBlockEditScreen extends Screen {
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (button, value) -> this.structure.setIgnoreEntities(!value)));
       this.strictButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.isStrict()).displayOnlyValue().create(this.width / 2 + 4 + 100, 120, 50, 20, STRICT_LABEL, (button, value) -> this.structure.setStrict(value)));
-      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol, this.initialMirror).withValues(Mirror.values()).displayOnlyValue().create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (button, value) -> this.structure.setMirror(value)));
+      this.mirrorButton = (CycleButton)this.addRenderableWidget(((CycleButton.Builder)CycleButton.builder(Mirror::symbol, this.initialMirror).withValues(Mirror.values())).displayOnlyValue().create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (button, value) -> this.structure.setMirror(value)));
       this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (button, value) -> this.structure.setShowAir(value)));
       this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (button, value) -> this.structure.setShowBoundingBox(value)));
       this.rot0Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("0"), (button) -> {

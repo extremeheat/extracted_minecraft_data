@@ -1,7 +1,6 @@
 package net.minecraft.world.attribute;
 
 import com.mojang.serialization.DataResult;
-import net.minecraft.util.Mth;
 
 public interface AttributeRange<Value> {
    AttributeRange<Float> UNIT_FLOAT = ofFloat(0.0F, 1.0F);
@@ -27,7 +26,7 @@ public interface AttributeRange<Value> {
          }
 
          public Float sanitize(final Float value) {
-            return value >= minValue && value <= maxValue ? value : Mth.clamp(value, minValue, maxValue);
+            return value >= minValue && value <= maxValue ? value : Math.clamp(value, minValue, maxValue);
          }
       };
    }

@@ -45,7 +45,7 @@ public class SmoothSwimmingMoveControl<T extends Mob> extends MoveControl<T> {
                double sqrt = Math.sqrt(xd * xd + zd * zd);
                if (Math.abs(yd) > 9.999999747378752E-6 || Math.abs(sqrt) > 9.999999747378752E-6) {
                   float xRotD = -((float)(Mth.atan2(yd, sqrt) * 57.2957763671875));
-                  xRotD = Mth.clamp(Mth.wrapDegrees(xRotD), (float)(-this.maxTurnX), (float)this.maxTurnX);
+                  xRotD = Math.clamp(Mth.wrapDegrees(xRotD), (float)(-this.maxTurnX), (float)this.maxTurnX);
                   this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), xRotD, 5.0F));
                }
 
@@ -69,6 +69,6 @@ public class SmoothSwimmingMoveControl<T extends Mob> extends MoveControl<T> {
    }
 
    private static float getTurningSpeedFactor(final float leftToTurn) {
-      return 1.0F - Mth.clamp((leftToTurn - 10.0F) / 50.0F, 0.0F, 1.0F);
+      return 1.0F - Math.clamp((leftToTurn - 10.0F) / 50.0F, 0.0F, 1.0F);
    }
 }

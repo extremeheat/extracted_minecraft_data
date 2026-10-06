@@ -8,9 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageWidget;
+import net.minecraft.client.gui.components.ScaledWidgetSprites;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
@@ -32,6 +32,7 @@ public final class RealmsHeader {
    private static final Component INVITES_TITLE = Component.translatable("mco.invites.title");
    private static final Component NEWS_TITLE = Component.translatable("mco.news");
    private static final Component JOIN_REALM_TEXT = Component.translatable("mco.selectServer.joinRealm");
+   private static final Tooltip NEWS_TITLE_TOOLTIP;
    private final Minecraft minecraft = Minecraft.getInstance();
    private final Screen screen;
    private final Button joinRealmButton;
@@ -42,8 +43,8 @@ public final class RealmsHeader {
    public RealmsHeader(final Screen screen, final Runnable openJoinRealmScreen) {
       super();
       this.screen = screen;
-      this.pendingInvitesButton = new NotificationButton(INVITES_TITLE, INVITE_SPRITE, (var2) -> this.minecraft.gui.setScreen(new RealmsPendingInvitesScreen(screen, INVITES_TITLE)), (Component)null);
-      this.newsButton = new NotificationButton(NEWS_TITLE, NEWS_SPRITE, (var1) -> this.openNews(), NEWS_TITLE);
+      this.pendingInvitesButton = new NotificationButton(INVITES_TITLE, INVITE_SPRITE, (var2) -> this.minecraft.gui.setScreen(new RealmsPendingInvitesScreen(screen, INVITES_TITLE)), (Tooltip)null);
+      this.newsButton = new NotificationButton(NEWS_TITLE, NEWS_SPRITE, (var1) -> this.openNews(), NEWS_TITLE_TOOLTIP);
       this.joinRealmButton = Button.builder(JOIN_REALM_TEXT, (button) -> openJoinRealmScreen.run()).build();
    }
 
@@ -90,7 +91,11 @@ public final class RealmsHeader {
       }
    }
 
-   private static class NotificationButton extends SpriteIconButton.CenteredIcon {
+   static {
+      NEWS_TITLE_TOOLTIP = Tooltip.create(NEWS_TITLE);
+   }
+
+   private static class NotificationButton extends SpriteIconButton {
       private static final Identifier[] NOTIFICATION_ICONS = new Identifier[]{Identifier.withDefaultNamespace("notification/1"), Identifier.withDefaultNamespace("notification/2"), Identifier.withDefaultNamespace("notification/3"), Identifier.withDefaultNamespace("notification/4"), Identifier.withDefaultNamespace("notification/5"), Identifier.withDefaultNamespace("notification/more")};
       private static final int UNKNOWN_COUNT = 2147483647;
       private static final int SIZE = 20;
@@ -100,8 +105,8 @@ public final class RealmsHeader {
       private static final int NOTIFICATION_Y_OFFSET = -3;
       private int notificationCount;
 
-      public NotificationButton(final Component title, final Identifier texture, final Button.OnPress onPress, final @Nullable Component tooltip) {
-         super(20, 20, title, 14, 14, 0, 0, new WidgetSprites(texture), onPress, tooltip, (Button.CreateNarration)null, false);
+      public NotificationButton(final Component title, final Identifier texture, final Button.OnPress onPress, final @Nullable Tooltip tooltip) {
+         super(0, 0, 20, 20, title, new ScaledWidgetSprites(texture, 14), SpriteIconButton.DisplayState.ICON_ONLY, onPress, tooltip, DEFAULT_NARRATION, false);
       }
 
       private int notificationCount() {

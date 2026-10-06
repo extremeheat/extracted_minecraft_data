@@ -27,7 +27,6 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
-import org.jspecify.annotations.Nullable;
 
 public class FlatLevelSource extends ChunkGenerator {
    public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(i, i.stable(FlatLevelSource::new)));
@@ -57,7 +56,7 @@ public class FlatLevelSource extends ChunkGenerator {
       return heightAccessor.getMinY() + Math.min(heightAccessor.getHeight(), this.settings.getLayers().size());
    }
 
-   public CompletableFuture<ChunkAccess> buildTerrain(final ChunkAccess chunk, final Blender blender, final RandomState randomState, final StructureManager structureManager, final @Nullable WorldGenRegion carverBiomeRegion, final Set<Holder<Biome>> possibleBiomes) {
+   public CompletableFuture<ChunkAccess> buildTerrain(final ChunkAccess chunk, final Blender blender, final RandomState randomState, final StructureManager structureManager, final WorldGenRegion carverBiomeRegion, final Set<Holder<Biome>> possibleBiomes) {
       List<BlockState> layers = this.settings.getLayers();
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();
 
@@ -84,7 +83,7 @@ public class FlatLevelSource extends ChunkGenerator {
 
       for(int y = 0; y < layers.size(); ++y) {
          BlockState block = (BlockState)layers.get(y);
-         if (!block.isAir()) {
+         if (block != null && !block.isAir()) {
             if (block.getBlock() instanceof LiquidBlock) {
                noiseColumn.setFluid(y + minY, block);
             } else {

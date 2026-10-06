@@ -5,8 +5,8 @@ import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.Identifier;
 
 public final class MissingTextureAtlasSprite {
-   private static final int MISSING_IMAGE_WIDTH = 16;
-   private static final int MISSING_IMAGE_HEIGHT = 16;
+   public static final int MISSING_IMAGE_WIDTH = 16;
+   public static final int MISSING_IMAGE_HEIGHT = 16;
    private static final String MISSING_TEXTURE_NAME = "missingno";
    private static final Identifier MISSING_TEXTURE_LOCATION = Identifier.withDefaultNamespace("missingno");
 

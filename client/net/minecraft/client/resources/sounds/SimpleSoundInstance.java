@@ -13,6 +13,10 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       this(sound, source, volume, pitch, random, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5);
    }
 
+   public SimpleSoundInstance(final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final RandomSource random, final BlockPos pos) {
+      this(sound.value(), source, volume, pitch, random, pos);
+   }
+
    public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch) {
       return forUI(sound, pitch, 0.25F);
    }

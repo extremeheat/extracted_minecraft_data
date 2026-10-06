@@ -95,6 +95,7 @@ import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.DecoratedPotPattern;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerConfig;
+import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -244,6 +245,7 @@ public class Registries {
    public static final ResourceKey<Registry<ContextKeySet>> CONTEXT_KEY_SET = createRegistryKey("context_key_set");
    public static final ResourceKey<Registry<BannerPattern>> BANNER_PATTERN = createRegistryKey("banner_pattern");
    public static final ResourceKey<Registry<Biome>> BIOME = createRegistryKey("worldgen/biome");
+   public static final ResourceKey<Registry<BlockSoundSet>> BLOCK_SOUND_SET = createRegistryKey("block_sound_set");
    public static final ResourceKey<Registry<BlockStateProvider>> BLOCK_STATE_PROVIDER = createRegistryKey("worldgen/block_state_provider");
    public static final ResourceKey<Registry<CatSoundVariant>> CAT_SOUND_VARIANT = createRegistryKey("cat_sound_variant");
    public static final ResourceKey<Registry<CatVariant>> CAT_VARIANT = createRegistryKey("cat_variant");

@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.AmbientAdditionsSettings;
 import net.minecraft.world.attribute.AmbientSounds;
@@ -114,7 +113,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
          }
 
          this.fade += this.fadeDirection;
-         this.volume = Mth.clamp((float)this.fade / 40.0F, 0.0F, 1.0F);
+         this.volume = Math.clamp((float)this.fade / 40.0F, 0.0F, 1.0F);
       }
 
       public void fadeOut() {

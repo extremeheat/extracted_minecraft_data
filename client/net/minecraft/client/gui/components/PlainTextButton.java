@@ -12,11 +12,15 @@ public class PlainTextButton extends Button {
    private final Component message;
    private final Component underlinedMessage;
 
-   public PlainTextButton(final int x, final int y, final int width, final int height, final Component message, final Button.OnPress onPress, final Font font) {
-      super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
+   public PlainTextButton(final int x, final int y, final int width, final int height, final Component message, final Button.OnPress onPress, final Button.CreateNarration createNarration, final Font font) {
+      super(x, y, width, height, message, onPress, createNarration);
       this.font = font;
       this.message = message;
       this.underlinedMessage = ComponentUtils.mergeStyles(message, Style.EMPTY.withUnderlined(true));
+   }
+
+   public PlainTextButton(final int x, final int y, final int width, final int height, final Component message, final Button.OnPress onPress, final Font font) {
+      this(x, y, width, height, message, onPress, DEFAULT_NARRATION, font);
    }
 
    public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {

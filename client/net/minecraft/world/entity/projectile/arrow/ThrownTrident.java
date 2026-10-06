@@ -9,7 +9,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -204,7 +203,7 @@ public class ThrownTrident extends AbstractArrow {
    private byte getLoyaltyFromItem(final ItemStack tridentItem) {
       Level var3 = this.level();
       if (var3 instanceof ServerLevel serverLevel) {
-         return (byte)Mth.clamp(EnchantmentHelper.getTridentReturnToOwnerAcceleration(serverLevel, tridentItem, this), 0, 127);
+         return (byte)Math.clamp((long)EnchantmentHelper.getTridentReturnToOwnerAcceleration(serverLevel, tridentItem, this), 0, 127);
       } else {
          return 0;
       }

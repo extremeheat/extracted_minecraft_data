@@ -78,6 +78,10 @@ public class Husk extends Zombie {
       return EntityTypes.ZOMBIE;
    }
 
+   protected EntityType<? extends Zombie> convertsToWhenFreezing() {
+      return EntityTypes.ZOMBIE;
+   }
+
    public @Nullable SpawnGroupData finalizeSpawn(final ServerLevelAccessor level, final DifficultyInstance difficulty, final EntitySpawnReason spawnReason, @Nullable SpawnGroupData groupData) {
       RandomSource random = level.getRandom();
       groupData = super.finalizeSpawn(level, difficulty, spawnReason, groupData);

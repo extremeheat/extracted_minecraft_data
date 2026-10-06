@@ -180,7 +180,7 @@ public class ProtoChunk extends ChunkAccess {
 
    public void setStartForStructure(final Structure structure, final StructureStart structureStart) {
       RetroGen retroGen = this.getRetroGen();
-      if (retroGen != null && structureStart.isValid()) {
+      if (retroGen != null) {
          BoundingBox boundingBox = structureStart.getBoundingBox();
          LevelHeightAccessor heightAccessor = this.getHeightAccessorForGeneration();
          if (boundingBox.minY() < heightAccessor.getMinY() || boundingBox.maxY() > heightAccessor.getMaxY()) {

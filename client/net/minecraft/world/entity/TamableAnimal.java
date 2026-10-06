@@ -247,7 +247,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    public boolean shouldTryTeleportToOwner() {
       LivingEntity owner = this.getOwner();
-      return owner != null && this.distanceToSqr(this.getOwner()) >= 144.0;
+      return owner != null && this.distanceToSqr(this.getOwner()) >= 144.0 && owner.level().dimension().equals(this.level().dimension());
    }
 
    private void teleportToAroundBlockPos(final BlockPos targetPos) {

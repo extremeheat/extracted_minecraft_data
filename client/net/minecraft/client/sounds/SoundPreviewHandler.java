@@ -24,17 +24,17 @@ public final class SoundPreviewHandler {
          switch (category) {
             case RECORDS -> var10000 = SoundEvents.NOTE_BLOCK_GUITAR.value();
             case WEATHER -> var10000 = SoundEvents.LIGHTNING_BOLT_THUNDER;
-            case BLOCKS -> var10000 = SoundEvents.GRASS_PLACE;
+            case BLOCKS -> var10000 = SoundEvents.GRASS_PLACE.value();
             case HOSTILE -> var10000 = SoundEvents.ZOMBIE_AMBIENT;
             case NEUTRAL -> var10000 = (SoundEvent)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().value();
             case PLAYERS -> var10000 = SoundEvents.GENERIC_EAT.value();
             case AMBIENT -> var10000 = SoundEvents.AMBIENT_CAVE.value();
             case UI -> var10000 = SoundEvents.UI_BUTTON_CLICK.value();
-            default -> var10000 = SoundEvents.EMPTY;
+            default -> var10000 = SoundEvents.EMPTY.value();
          }
 
          SoundEvent previewSound = var10000;
-         if (previewSound != SoundEvents.EMPTY) {
+         if (previewSound != SoundEvents.EMPTY.value()) {
             activePreview = SimpleSoundInstance.forUI(previewSound, 1.0F, volume);
             soundManager.play(activePreview);
          }

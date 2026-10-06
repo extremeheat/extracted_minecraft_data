@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.FriendToast;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.friends.FriendsOverlayScreen;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -88,7 +87,7 @@ public final class RemoteFriendListUpdateHandler {
    private long getUpdateIntervalNanos() {
       long foregroundNanos = (Long)this.friendsService.getFriendsPollInterval().map(Duration::toNanos).orElse(FOREGROUND_INTERVAL_NANOS);
       Screen screen = this.minecraft.gui.screen();
-      return screen instanceof FriendsOverlayScreen ? foregroundNanos : foregroundNanos * 5L;
+      return screen instanceof PresenceAwareScreen ? foregroundNanos : foregroundNanos * 5L;
    }
 
    void runUpdateFriendDataInternal() {

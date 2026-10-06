@@ -23,7 +23,7 @@ public record ClampedNormalFloat(float mean, float deviation, float min, float m
    }
 
    public static float sample(final RandomSource random, final float mean, final float deviation, final float min, final float max) {
-      return Mth.clamp(Mth.normal(random, mean, deviation), min, max);
+      return Math.clamp(Mth.normal(random, mean, deviation), min, max);
    }
 
    public MapCodec<ClampedNormalFloat> codec() {

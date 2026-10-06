@@ -23,7 +23,7 @@ public record ClampedNormalInt(float mean, float deviation, int minInclusive, in
    }
 
    public static int sample(final RandomSource random, final float mean, final float deviation, final float minInclusive, final float maxInclusive) {
-      return (int)Mth.clamp(Mth.normal(random, mean, deviation), minInclusive, maxInclusive);
+      return (int)Math.clamp(Mth.normal(random, mean, deviation), minInclusive, maxInclusive);
    }
 
    public MapCodec<ClampedNormalInt> codec() {

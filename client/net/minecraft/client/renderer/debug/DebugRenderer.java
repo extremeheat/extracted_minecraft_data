@@ -7,7 +7,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.util.Mth;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
@@ -163,7 +162,7 @@ public class DebugRenderer {
 
    private static Vec3 mixColor(final float hueShift) {
       float regions = 5.99999F;
-      int region = (int)(Mth.clamp(hueShift, 0.0F, 1.0F) * 5.99999F);
+      int region = (int)(Math.clamp(hueShift, 0.0F, 1.0F) * 5.99999F);
       float progress = hueShift * 5.99999F - (float)region;
       Vec3 var10000;
       switch (region) {

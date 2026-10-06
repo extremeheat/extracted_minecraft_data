@@ -369,7 +369,7 @@ public class Hud {
             alpha = (int)(t * 255.0F / (float)this.titleFadeOutTime);
          }
 
-         alpha = Mth.clamp(alpha, 0, 255);
+         alpha = Math.clamp((long)alpha, 0, 255);
          if (alpha > 0) {
             graphics.nextStratum();
             graphics.pose().pushMatrix();
@@ -520,8 +520,8 @@ public class Hud {
                   if (instance.endsWithin(200)) {
                      int remainingDuration = instance.getDuration();
                      int usedSeconds = 10 - remainingDuration / 20;
-                     alpha = Mth.clamp((float)remainingDuration / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((double)((float)remainingDuration * 3.1415927F / 5.0F)) * Mth.clamp((float)usedSeconds / 10.0F * 0.25F, 0.0F, 0.25F);
-                     alpha = Mth.clamp(alpha, 0.0F, 1.0F);
+                     alpha = Math.clamp((float)remainingDuration / 10.0F / 5.0F * 0.5F, 0.0F, 0.5F) + Mth.cos((double)((float)remainingDuration * 3.1415927F / 5.0F)) * Math.clamp((float)usedSeconds / 10.0F * 0.25F, 0.0F, 0.25F);
+                     alpha = Math.clamp(alpha, 0.0F, 1.0F);
                   }
                }
 
@@ -1042,7 +1042,7 @@ public class Hud {
    private void updateVignetteBrightness(final Entity camera) {
       BlockPos blockPos = BlockPos.containing(camera.getX(), camera.getEyeY(), camera.getZ());
       float levelBrightness = Lightmap.getBrightness(camera.level().dimensionType(), camera.level().getMaxLocalRawBrightness(blockPos));
-      float brightness = Mth.clamp(1.0F - levelBrightness, 0.0F, 1.0F);
+      float brightness = Math.clamp(1.0F - levelBrightness, 0.0F, 1.0F);
       this.vignetteBrightness += (brightness - this.vignetteBrightness) * 0.01F;
    }
 
@@ -1058,10 +1058,10 @@ public class Hud {
          }
       }
 
-      float brightness = Mth.clamp(this.vignetteBrightness, 0.0F, 1.0F);
+      float brightness = Math.clamp(this.vignetteBrightness, 0.0F, 1.0F);
       int color;
       if (borderWarningStrength > 0.0F) {
-         borderWarningStrength = Mth.clamp(borderWarningStrength, 0.0F, 1.0F);
+         borderWarningStrength = Math.clamp(borderWarningStrength, 0.0F, 1.0F);
          float red = brightness * (1.0F - borderWarningStrength);
          float greenBlue = brightness + (1.0F - brightness) * borderWarningStrength;
          color = ARGB.colorFromFloat(1.0F, red, greenBlue, greenBlue);
@@ -1265,7 +1265,7 @@ public class Hud {
 
    public void extractSavingIndicator(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
       if ((Boolean)this.minecraft.options.showAutosaveIndicator().get() && (this.autosaveIndicatorValue > 0.0F || this.lastAutosaveIndicatorValue > 0.0F)) {
-         int alpha = Mth.floor(255.0F * Mth.clamp(Mth.lerp(deltaTracker.getRealtimeDeltaTicks(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F));
+         int alpha = Mth.floor(255.0F * Math.clamp(Mth.lerp(deltaTracker.getRealtimeDeltaTicks(), this.lastAutosaveIndicatorValue, this.autosaveIndicatorValue), 0.0F, 1.0F));
          if (alpha > 0) {
             Font font = this.getFont();
             int width = font.width((FormattedText)SAVING_TEXT);

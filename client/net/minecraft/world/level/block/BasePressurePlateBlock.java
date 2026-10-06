@@ -28,7 +28,7 @@ public abstract class BasePressurePlateBlock extends Block {
    protected final BlockSetType type;
 
    protected BasePressurePlateBlock(final BlockBehaviour.Properties properties, final BlockSetType type) {
-      super(properties.sound(type.soundType()));
+      super(properties.sound(type.blockSoundSet()));
       this.type = type;
    }
 

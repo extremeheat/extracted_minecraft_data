@@ -240,7 +240,7 @@ public record UnaryFunction(Type type, DensityFunction input) implements Density
       }
 
       private static float apply(final float input) {
-         float clampedInput = Mth.clamp(input, -1.0F, 1.0F);
+         float clampedInput = Math.clamp(input, -1.0F, 1.0F);
          return clampedInput / 2.0F - Mth.cube(clampedInput) / 24.0F;
       }
 

@@ -87,7 +87,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    public void setRadius(final float radius) {
       if (!this.level().isClientSide()) {
-         this.getEntityData().set(DATA_RADIUS, Mth.clamp(radius, 0.0F, 32.0F));
+         this.getEntityData().set(DATA_RADIUS, Math.clamp(radius, 0.0F, 32.0F));
       }
 
    }

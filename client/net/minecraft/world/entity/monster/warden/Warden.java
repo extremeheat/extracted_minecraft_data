@@ -285,7 +285,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    private int getHeartBeatDelay() {
       float anger = (float)this.getClientAngerLevel() / (float)AngerLevel.ANGRY.getMinimumAnger();
-      return 40 - Mth.floor(Mth.clamp(anger, 0.0F, 1.0F) * 30.0F);
+      return 40 - Mth.floor(Math.clamp(anger, 0.0F, 1.0F) * 30.0F);
    }
 
    public float getTendrilAnimation(final float a) {
