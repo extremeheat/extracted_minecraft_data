@@ -19,7 +19,6 @@ public class BlockStateProperties {
    public static final BooleanProperty ENABLED = BooleanProperty.create("enabled");
    public static final BooleanProperty EXTENDED = BooleanProperty.create("extended");
    public static final BooleanProperty EYE = BooleanProperty.create("eye");
-   public static final BooleanProperty FALLING = BooleanProperty.create("falling");
    public static final BooleanProperty HANGING = BooleanProperty.create("hanging");
    public static final BooleanProperty HAS_BOTTLE_0 = BooleanProperty.create("has_bottle_0");
    public static final BooleanProperty HAS_BOTTLE_1 = BooleanProperty.create("has_bottle_1");
@@ -34,11 +33,13 @@ public class BlockStateProperties {
    public static final BooleanProperty OCCUPIED = BooleanProperty.create("occupied");
    public static final BooleanProperty OPEN = BooleanProperty.create("open");
    public static final BooleanProperty PERSISTENT = BooleanProperty.create("persistent");
+   public static final BooleanProperty PLAYLIST_MODE = BooleanProperty.create("playlist_mode");
    public static final BooleanProperty POWERED = BooleanProperty.create("powered");
    public static final BooleanProperty SHORT = BooleanProperty.create("short");
    public static final BooleanProperty SHRIEKING = BooleanProperty.create("shrieking");
    public static final BooleanProperty SIGNAL_FIRE = BooleanProperty.create("signal_fire");
    public static final BooleanProperty SNOWY = BooleanProperty.create("snowy");
+   public static final BooleanProperty SOURCE = BooleanProperty.create("source");
    public static final BooleanProperty TIP = BooleanProperty.create("tip");
    public static final BooleanProperty TRIGGERED = BooleanProperty.create("triggered");
    public static final BooleanProperty UNSTABLE = BooleanProperty.create("unstable");

@@ -49,7 +49,7 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {

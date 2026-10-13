@@ -28,6 +28,7 @@ import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ArmorStandItem;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.HoneycombItem;
@@ -87,6 +88,7 @@ public interface DispenseItemBehavior {
             PostSpawnProcessor<ArmorStand> postSpawnConfig = EntityType.<ArmorStand>appendDefaultStackConfig((armorStandx) -> armorStandx.setYRot(direction.toYRot()), serverLevel, dispensed, (LivingEntity)null);
             ArmorStand armorStand = EntityTypes.ARMOR_STAND.spawn(serverLevel, postSpawnConfig, pos, EntitySpawnReason.DISPENSER, false, false);
             if (armorStand != null) {
+               ArmorStandItem.playSound(serverLevel, armorStand);
                dispensed.shrink(1);
             }
 
@@ -169,6 +171,7 @@ public interface DispenseItemBehavior {
                if (pickup.isEmpty()) {
                   return super.execute(source, dispensed);
                } else {
+                  bucket.getPickupSound().ifPresent((soundEvent) -> level.playSound((Entity)null, target, soundEvent, SoundSource.BLOCKS));
                   level.gameEvent((Entity)null, (Holder)GameEvent.FLUID_PICKUP, (BlockPos)target);
                   Item targetType = pickup.getItem();
                   return this.consumeWithRemainder(source, dispensed, new ItemStack(targetType));

@@ -61,6 +61,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
@@ -164,6 +165,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return this.isInWater() ? SoundEvents.DROWNED_DEATH_WATER : SoundEvents.DROWNED_DEATH;
    }
 
+   protected @LevelEvent.Value int getFreezingConversionSound() {
+      return 1058;
+   }
+
    protected SoundEvent getStepSound() {
       return SoundEvents.DROWNED_STEP;
    }
@@ -196,8 +201,8 @@ public class Drowned extends Zombie implements RangedAttackMob {
       return false;
    }
 
-   protected boolean convertsWhenFreezing() {
-      return false;
+   protected EntityType<? extends Zombie> convertsToWhenFreezing() {
+      return EntityTypes.ZOMBIE;
    }
 
    public boolean checkSpawnObstruction(final LevelReader level) {

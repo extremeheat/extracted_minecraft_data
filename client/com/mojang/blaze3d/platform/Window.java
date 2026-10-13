@@ -147,8 +147,8 @@ public final class Window implements AutoCloseable {
    }
 
    private long createWindow(final GpuBackend backend, final int width, final int height, final String title) {
-      long flags = 8224L;
-      long windowHandle = backend.createWindow(title, width, height, 8224L);
+      long flags = 8232L;
+      long windowHandle = backend.createWindow(title, width, height, 8232L);
       if (windowHandle == 0L) {
          String var10002 = SDLError.SDL_GetError();
          throw new IllegalStateException("Failed to create window: " + (String)Objects.requireNonNullElse(var10002, "<no error>"));
@@ -172,6 +172,20 @@ public final class Window implements AutoCloseable {
          int displayId = SDLVideo.SDL_GetDisplayForWindow(this.handle);
          return displayId == 0 ? null : SDLVideo.SDL_GetCurrentDisplayMode(displayId);
       }
+   }
+
+   public void show() {
+      RenderSystem.assertOnRenderThread();
+      if (!SDLVideo.SDL_ShowWindow(this.handle)) {
+         LOGGER.warn("Failed to show window: {}", SDLError.SDL_GetError());
+      }
+
+      if (!SDLVideo.SDL_SyncWindow(this.handle)) {
+         LOGGER.warn("Failed to synchronize SDL window after showing it: {}", SDLError.SDL_GetError());
+      }
+
+      this.updateFullscreenState();
+      this.refreshFramebufferSize();
    }
 
    public boolean shouldClose() {

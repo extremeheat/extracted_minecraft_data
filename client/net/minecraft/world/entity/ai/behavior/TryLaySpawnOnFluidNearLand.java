@@ -5,13 +5,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.FrogspawnBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
@@ -27,7 +26,7 @@ public class TryLaySpawnOnFluidNearLand {
 
                   for(Direction direction : Direction.Plane.HORIZONTAL) {
                      BlockPos relativePos = belowPos.relative(direction);
-                     if (level.getBlockState(relativePos).getCollisionShape(level, relativePos).getFaceShape(Direction.UP).isEmpty() && (level.getFluidState(relativePos).is(FluidTags.SUPPORTS_FROGSPAWN) || level.getBlockState(relativePos).is(BlockTags.SUPPORTS_FROGSPAWN))) {
+                     if (level.getBlockState(relativePos).getCollisionShape(level, relativePos).getFaceShape(Direction.UP).isEmpty() && FrogspawnBlock.supportsFrogSpawn(level, relativePos)) {
                         BlockPos spawnPos = relativePos.above();
                         if (level.getBlockState(spawnPos).isAir()) {
                            BlockState newState = spawnBlock.defaultBlockState();

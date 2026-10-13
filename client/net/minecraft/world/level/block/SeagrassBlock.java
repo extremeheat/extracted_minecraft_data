@@ -61,7 +61,7 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return Fluids.WATER.getSource(false);
+      return Fluids.WATER.getSource();
    }
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
@@ -72,7 +72,7 @@ public class SeagrassBlock extends VegetationBlock implements BonemealableBlock,
       level.setBlock(above, upperState, 2);
    }
 
-   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       return false;
    }
 

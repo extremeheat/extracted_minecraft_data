@@ -14,8 +14,8 @@ public class FluidTagsProvider extends TagsProvider<Fluid> {
    }
 
    protected void addTags(final HolderLookup.Provider registries) {
-      this.tag(FluidTags.WATER).add(FluidIds.WATER, FluidIds.FLOWING_WATER);
-      this.tag(FluidTags.LAVA).add(FluidIds.LAVA, FluidIds.FLOWING_LAVA);
+      this.tag(FluidTags.WATER).add(FluidIds.WATER);
+      this.tag(FluidTags.LAVA).add(FluidIds.LAVA);
       this.tag(FluidTags.SUPPORTS_SUGAR_CANE_ADJACENTLY).addTag(FluidTags.WATER);
       this.tag(FluidTags.SUPPORTS_LILY_PAD).add(FluidIds.WATER);
       this.tag(FluidTags.SUPPORTS_FROGSPAWN).add(FluidIds.WATER);

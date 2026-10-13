@@ -86,6 +86,7 @@ public class VanillaBlockItemTagsProvider extends BlockItemTagsProvider {
       this.tag(BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL).addTag(BlockItemTags.LOGS).addTag(BlockItemTags.LEAVES).addTag(BlockItemTags.WART_BLOCKS);
       this.tag(BlockItemTags.SHULKER_BOXES).add(BlockItemIds.SHULKER_BOX).addAll(BlockItemIds.DYED_SHULKER_BOX.asList());
       this.tag(BlockItemTags.COPPER_CHESTS).addAll(BlockItemIds.COPPER_CHEST.asList());
+      this.tag(BlockItemTags.JUKEBOX_CONTAINERS).add(BlockItemIds.CHEST, BlockItemIds.TRAPPED_CHEST).addAll(BlockItemIds.COPPER_CHEST.asList());
       this.tag(BlockItemTags.LIGHTNING_RODS).addAll(BlockItemIds.LIGHTNING_ROD.asList());
       this.tag(BlockItemTags.COPPER_GOLEM_STATUES).addAll(BlockItemIds.COPPER_GOLEM_STATUE.asList());
       this.tag(BlockItemTags.COPPER).addAll(BlockItemIds.COPPER_BLOCK.asList());

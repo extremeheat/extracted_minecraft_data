@@ -74,6 +74,10 @@ public class Husk extends Zombie {
       return 1041;
    }
 
+   protected @LevelEvent.Value int getFreezingConversionSound() {
+      return 1041;
+   }
+
    protected EntityType<? extends Zombie> convertsToWhenDrowning() {
       return EntityTypes.ZOMBIE;
    }

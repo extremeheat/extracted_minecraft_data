@@ -1,27 +1,17 @@
 package net.minecraft.core.registries;
 
-import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import net.minecraft.advancements.predicates.entity.EntitySubPredicate;
 import net.minecraft.advancements.predicates.entity.EntitySubPredicates;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.advancements.triggers.CriterionTrigger;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
-import net.minecraft.core.DefaultedMappedRegistry;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
-import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -36,8 +26,6 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.chat.numbers.NumberFormatType;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.dialog.DialogTypes;
 import net.minecraft.server.dialog.action.Action;
@@ -59,7 +47,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.util.debug.DebugSubscription;
 import net.minecraft.util.debug.DebugSubscriptions;
@@ -177,12 +164,9 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviderTypes;
 import net.minecraft.world.level.storage.loot.providers.score.ScoreboardNameProvider;
 import net.minecraft.world.level.storage.loot.providers.score.ScoreboardNameProviders;
-import org.slf4j.Logger;
 
 public class BuiltInRegistries {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<Identifier, Supplier<?>> LOADERS = Maps.newLinkedHashMap();
-   private static final WritableRegistry<WritableRegistry<?>> WRITABLE_REGISTRY;
+   private static final BuiltinRegistryBuilder BUILDER;
    public static final DataComponentInitializers DATA_COMPONENT_INITIALIZERS;
    public static final DefaultedRegistry<GameEvent> GAME_EVENT;
    public static final Registry<SoundEvent> SOUND_EVENT;
@@ -285,181 +269,112 @@ public class BuiltInRegistries {
       super();
    }
 
-   private static <T> Registry<T> registerSimple(final ResourceKey<? extends Registry<T>> name, final RegistryBootstrap<T> loader) {
-      return internalRegister(name, new MappedRegistry(name, Lifecycle.stable(), false), loader);
-   }
-
-   private static <T> Registry<T> registerSimpleWithIntrusiveHolders(final ResourceKey<? extends Registry<T>> name, final RegistryBootstrap<T> loader) {
-      return internalRegister(name, new MappedRegistry(name, Lifecycle.stable(), true), loader);
-   }
-
-   private static <T> DefaultedRegistry<T> registerDefaulted(final ResourceKey<? extends Registry<T>> name, final String defaultKey, final RegistryBootstrap<T> loader) {
-      return (DefaultedRegistry)internalRegister(name, new DefaultedMappedRegistry(defaultKey, name, Lifecycle.stable(), false), loader);
-   }
-
-   private static <T> DefaultedRegistry<T> registerDefaultedWithIntrusiveHolders(final ResourceKey<? extends Registry<T>> name, final String defaultKey, final RegistryBootstrap<T> loader) {
-      return (DefaultedRegistry)internalRegister(name, new DefaultedMappedRegistry(defaultKey, name, Lifecycle.stable(), true), loader);
-   }
-
-   private static <T, R extends WritableRegistry<T>> R internalRegister(final ResourceKey<? extends Registry<T>> name, final R registry, final RegistryBootstrap<T> loader) {
-      Bootstrap.checkBootstrapCalled(() -> "registry " + String.valueOf(name.identifier()));
-      Identifier key = name.identifier();
-      LOADERS.put(key, (Supplier)() -> loader.run(registry));
-      WRITABLE_REGISTRY.register(name, registry, RegistrationInfo.BUILT_IN);
-      return registry;
-   }
-
    public static void bootStrap() {
-      createContents();
-      freeze();
-      validate(REGISTRY);
-   }
-
-   private static void createContents() {
-      LOADERS.forEach((key, value) -> {
-         if (value.get() == null) {
-            LOGGER.error("Unable to bootstrap registry '{}'", key);
-         }
-
-      });
-   }
-
-   private static void freeze() {
-      REGISTRY.freeze();
-
-      for(Registry<?> registry : REGISTRY) {
-         bindBootstrappedTagsToEmpty(registry);
-         registry.freeze();
-      }
-
-   }
-
-   private static <T extends Registry<?>> void validate(final Registry<T> registry) {
-      registry.forEach((r) -> {
-         if (r.keySet().isEmpty()) {
-            Identifier var10000 = registry.getKey(r);
-            Util.logAndPauseIfInIde("Registry '" + String.valueOf(var10000) + "' was empty after loading");
-         }
-
-         if (r instanceof DefaultedRegistry) {
-            Identifier key = ((DefaultedRegistry)r).getDefaultKey();
-            Objects.requireNonNull(r.getValue(key), "Missing default of DefaultedMappedRegistry: " + String.valueOf(key));
-         }
-
-      });
+      BUILDER.bootStrap();
    }
 
    public static <T> HolderGetter<T> acquireBootstrapRegistrationLookup(final Registry<T> registry) {
       return (registry).createRegistrationLookup();
    }
 
-   private static void bindBootstrappedTagsToEmpty(final Registry<?> registry) {
-      ((MappedRegistry)registry).bindAllTagsToEmpty();
-   }
-
    static {
-      WRITABLE_REGISTRY = new MappedRegistry<WritableRegistry<?>>(ResourceKey.createRegistryKey(Registries.ROOT_REGISTRY_NAME), Lifecycle.stable());
+      BUILDER = new BuiltinRegistryBuilder(Registries.ROOT_REGISTRY_NAME);
       DATA_COMPONENT_INITIALIZERS = new DataComponentInitializers();
-      GAME_EVENT = registerDefaulted(Registries.GAME_EVENT, "step", GameEvent::bootstrap);
-      SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, (var0) -> SoundEvents.ITEM_PICKUP);
-      FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> Fluids.EMPTY);
-      MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
-      BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> Blocks.AIR);
-      DEBUG_SUBSCRIPTION = registerSimple(Registries.DEBUG_SUBSCRIPTION, DebugSubscriptions::bootstrap);
-      ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> EntityTypes.PIG);
-      ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> Items.AIR);
-      POTION = registerSimple(Registries.POTION, Potions::bootstrap);
-      PARTICLE_TYPE = registerSimple(Registries.PARTICLE_TYPE, (var0) -> ParticleTypes.BLOCK);
-      BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> BlockEntityTypes.FURNACE);
-      CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, (var0) -> Stats.JUMP);
-      CHUNK_STATUS = registerDefaulted(Registries.CHUNK_STATUS, "empty", (var0) -> ChunkStatus.EMPTY);
-      RULE_TEST_TYPE = registerSimple(Registries.RULE_TEST_TYPE, RuleTestTypes::bootstrap);
-      RULE_BLOCK_ENTITY_MODIFIER = registerSimple(Registries.RULE_BLOCK_ENTITY_MODIFIER, (var0) -> RuleBlockEntityModifierType.PASSTHROUGH);
-      POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, (var0) -> PosRuleTestType.ALWAYS_TRUE_TEST);
-      MENU = registerSimple(Registries.MENU, (var0) -> MenuType.ANVIL);
-      RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, (var0) -> RecipeType.CRAFTING);
-      RECIPE_SERIALIZER = registerSimple(Registries.RECIPE_SERIALIZER, RecipeSerializers::bootstrap);
-      ATTRIBUTE = registerSimple(Registries.ATTRIBUTE, Attributes::bootstrap);
-      POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> PositionSourceType.BLOCK);
-      COMMAND_ARGUMENT_TYPE = registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
-      STAT_TYPE = registerSimple(Registries.STAT_TYPE, (var0) -> Stats.ITEM_USED);
-      VILLAGER_TYPE = registerDefaulted(Registries.VILLAGER_TYPE, "plains", VillagerType::bootstrap);
-      VILLAGER_PROFESSION = registerDefaulted(Registries.VILLAGER_PROFESSION, "none", VillagerProfession::bootstrap);
-      POINT_OF_INTEREST_TYPE = registerSimple(Registries.POINT_OF_INTEREST_TYPE, PoiTypes::bootstrap);
-      MEMORY_MODULE_TYPE = registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> MemoryModuleType.DUMMY);
-      SENSOR_TYPE = registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> SensorType.DUMMY);
-      ACTIVITY = registerSimple(Registries.ACTIVITY, (var0) -> Activity.IDLE);
-      LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, LootPoolEntries::bootstrap);
-      LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, LootItemFunctions::bootstrap);
-      LOOT_CONDITION_TYPE = registerSimple(Registries.LOOT_CONDITION_TYPE, LootItemConditionTypes::bootstrap);
-      CONTEXT_FLOAT_PROVIDER_TYPE = registerSimple(Registries.CONTEXT_FLOAT_PROVIDER_TYPE, ContextFloatProviderTypes::bootstrap);
-      CONTEXT_INT_PROVIDER_TYPE = registerSimple(Registries.CONTEXT_INT_PROVIDER_TYPE, ContextIntProviderTypes::bootstrap);
-      LOOT_NBT_PROVIDER_TYPE = registerSimple(Registries.LOOT_NBT_PROVIDER_TYPE, NbtProviders::bootstrap);
-      LOOT_SCORE_PROVIDER_TYPE = registerSimple(Registries.LOOT_SCORE_PROVIDER_TYPE, ScoreboardNameProviders::bootstrap);
-      FLOAT_PROVIDER_TYPE = registerSimple(Registries.FLOAT_PROVIDER_TYPE, FloatProviders::bootstrap);
-      INT_PROVIDER_TYPE = registerSimple(Registries.INT_PROVIDER_TYPE, IntProviders::bootstrap);
-      HEIGHT_PROVIDER_TYPE = registerSimple(Registries.HEIGHT_PROVIDER_TYPE, (var0) -> HeightProviderType.CONSTANT);
-      BLOCK_PREDICATE_TYPE = registerSimple(Registries.BLOCK_PREDICATE_TYPE, (var0) -> BlockPredicateType.NOT);
-      CARVER_TYPE = registerSimple(Registries.CARVER_TYPE, WorldCarverTypes::bootstrap);
-      FEATURE_TYPE = registerSimple(Registries.FEATURE_TYPE, FeatureTypes::bootstrap);
-      STRUCTURE_PLACEMENT = registerSimple(Registries.STRUCTURE_PLACEMENT, StructurePlacements::bootstrap);
-      STRUCTURE_PIECE = registerSimple(Registries.STRUCTURE_PIECE, (var0) -> StructurePieceType.MINE_SHAFT_ROOM);
-      STRUCTURE_TYPE = registerSimple(Registries.STRUCTURE_TYPE, (var0) -> StructureType.JIGSAW);
-      PLACEMENT_MODIFIER_TYPE = registerSimple(Registries.PLACEMENT_MODIFIER_TYPE, PlacementModifierTypes::bootstrap);
-      BLOCK_STATE_PROVIDER_TYPE = registerSimple(Registries.BLOCK_STATE_PROVIDER_TYPE, BlockStateProviderTypes::bootstrap);
-      FOLIAGE_PLACER_TYPE = registerSimple(Registries.FOLIAGE_PLACER_TYPE, (var0) -> FoliagePlacerType.BLOB_FOLIAGE_PLACER);
-      TRUNK_PLACER_TYPE = registerSimple(Registries.TRUNK_PLACER_TYPE, (var0) -> TrunkPlacerType.STRAIGHT_TRUNK_PLACER);
-      ROOT_PLACER_TYPE = registerSimple(Registries.ROOT_PLACER_TYPE, (var0) -> RootPlacerType.MANGROVE_ROOT_PLACER);
-      TREE_DECORATOR_TYPE = registerSimple(Registries.TREE_DECORATOR_TYPE, (var0) -> TreeDecoratorType.LEAVE_VINE);
-      FEATURE_SIZE_TYPE = registerSimple(Registries.FEATURE_SIZE_TYPE, (var0) -> FeatureSizeType.TWO_LAYERS_FEATURE_SIZE);
-      BIOME_SOURCE = registerSimple(Registries.BIOME_SOURCE, BiomeSources::bootstrap);
-      CHUNK_GENERATOR = registerSimple(Registries.CHUNK_GENERATOR, ChunkGenerators::bootstrap);
-      MATERIAL_CONDITION_TYPE = registerSimple(Registries.MATERIAL_CONDITION_TYPE, MaterialRules::bootstrapConditions);
-      MATERIAL_RULE_TYPE = registerSimple(Registries.MATERIAL_RULE_TYPE, MaterialRules::bootstrapRules);
-      DENSITY_FUNCTION_TYPE = registerSimple(Registries.DENSITY_FUNCTION_TYPE, DensityFunctions::bootstrap);
-      STRUCTURE_PROCESSOR = registerSimple(Registries.STRUCTURE_PROCESSOR, StructureProcessorTypes::bootstrap);
-      STRUCTURE_POOL_ELEMENT = registerSimple(Registries.STRUCTURE_POOL_ELEMENT, (var0) -> StructurePoolElementType.EMPTY);
-      POOL_ALIAS_BINDING_TYPE = registerSimple(Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap);
-      CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
-      TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
-      NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
-      DATA_COMPONENT_TYPE = registerSimple(Registries.DATA_COMPONENT_TYPE, DataComponents::bootstrap);
-      GAME_RULE = registerSimple(Registries.GAME_RULE, GameRules::bootstrap);
-      ENTITY_SUB_PREDICATE_TYPE = registerSimple(Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap);
-      DATA_COMPONENT_PREDICATE_TYPE = registerSimple(Registries.DATA_COMPONENT_PREDICATE_TYPE, DataComponentPredicates::bootstrap);
-      MAP_DECORATION_TYPE = registerSimple(Registries.MAP_DECORATION_TYPE, MapDecorationTypes::bootstrap);
-      ENCHANTMENT_EFFECT_COMPONENT_TYPE = registerSimple(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, EnchantmentEffectComponents::bootstrap);
-      ENCHANTMENT_LEVEL_BASED_VALUE_TYPE = registerSimple(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE, LevelBasedValue::bootstrap);
-      ENCHANTMENT_ENTITY_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE, EnchantmentEntityEffect::bootstrap);
-      ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE, EnchantmentLocationBasedEffect::bootstrap);
-      ENCHANTMENT_VALUE_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_VALUE_EFFECT_TYPE, EnchantmentValueEffect::bootstrap);
-      ENCHANTMENT_PROVIDER_TYPE = registerSimple(Registries.ENCHANTMENT_PROVIDER_TYPE, EnchantmentProviderTypes::bootstrap);
-      CONSUME_EFFECT_TYPE = registerSimple(Registries.CONSUME_EFFECT_TYPE, (var0) -> ConsumeEffect.Type.APPLY_EFFECTS);
-      RECIPE_DISPLAY = registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
-      SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
-      RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
-      TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
-      INCOMING_RPC_METHOD = registerSimple(Registries.INCOMING_RPC_METHOD, IncomingRpcMethods::bootstrap);
-      OUTGOING_RPC_METHOD = registerSimple(Registries.OUTGOING_RPC_METHOD, (var0) -> OutgoingRpcMethods.SERVER_STARTED);
-      TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
-      TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
-      SPAWN_CONDITION_TYPE = registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);
-      DIALOG_TYPE = registerSimple(Registries.DIALOG_TYPE, DialogTypes::bootstrap);
-      DIALOG_ACTION_TYPE = registerSimple(Registries.DIALOG_ACTION_TYPE, ActionTypes::bootstrap);
-      INPUT_CONTROL_TYPE = registerSimple(Registries.INPUT_CONTROL_TYPE, InputControlTypes::bootstrap);
-      DIALOG_BODY_TYPE = registerSimple(Registries.DIALOG_BODY_TYPE, DialogBodyTypes::bootstrap);
-      PERMISSION_TYPE = registerSimple(Registries.PERMISSION_TYPE, PermissionTypes::bootstrap);
-      PERMISSION_CHECK_TYPE = registerSimple(Registries.PERMISSION_CHECK_TYPE, PermissionCheckTypes::bootstrap);
-      ENVIRONMENT_ATTRIBUTE = registerSimple(Registries.ENVIRONMENT_ATTRIBUTE, EnvironmentAttributes::bootstrap);
-      ATTRIBUTE_TYPE = registerSimple(Registries.ATTRIBUTE_TYPE, AttributeTypes::bootstrap);
-      SLOT_SOURCE_TYPE = registerSimple(Registries.SLOT_SOURCE_TYPE, SlotSources::bootstrap);
-      CONTEXT_KEY_SET = registerSimple(Registries.CONTEXT_KEY_SET, LootContextParamSets::bootstrap);
-      TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
-      REGISTRY = WRITABLE_REGISTRY;
-   }
-
-   @FunctionalInterface
-   private interface RegistryBootstrap<T> {
-      Object run(Registry<T> registry);
+      GAME_EVENT = BUILDER.<GameEvent>registerDefaulted(Registries.GAME_EVENT, "step", GameEvent::bootstrap);
+      SOUND_EVENT = BUILDER.<SoundEvent>registerSimple(Registries.SOUND_EVENT, (var0) -> SoundEvents.ITEM_PICKUP);
+      FLUID = BUILDER.<Fluid>registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> Fluids.EMPTY);
+      MOB_EFFECT = BUILDER.<MobEffect>registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
+      BLOCK = BUILDER.<Block>registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> Blocks.AIR);
+      DEBUG_SUBSCRIPTION = BUILDER.<DebugSubscription<?>>registerSimple(Registries.DEBUG_SUBSCRIPTION, DebugSubscriptions::bootstrap);
+      ENTITY_TYPE = BUILDER.<EntityType<?>>registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> EntityTypes.PIG);
+      ITEM = BUILDER.<Item>registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> Items.AIR);
+      POTION = BUILDER.<Potion>registerSimple(Registries.POTION, Potions::bootstrap);
+      PARTICLE_TYPE = BUILDER.<ParticleType<?>>registerSimple(Registries.PARTICLE_TYPE, (var0) -> ParticleTypes.BLOCK);
+      BLOCK_ENTITY_TYPE = BUILDER.<BlockEntityType<?>>registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> BlockEntityTypes.FURNACE);
+      CUSTOM_STAT = BUILDER.<Identifier>registerSimple(Registries.CUSTOM_STAT, (var0) -> Stats.JUMP);
+      CHUNK_STATUS = BUILDER.<ChunkStatus>registerDefaulted(Registries.CHUNK_STATUS, "empty", (var0) -> ChunkStatus.EMPTY);
+      RULE_TEST_TYPE = BUILDER.<MapCodec<? extends RuleTest>>registerSimple(Registries.RULE_TEST_TYPE, RuleTestTypes::bootstrap);
+      RULE_BLOCK_ENTITY_MODIFIER = BUILDER.<RuleBlockEntityModifierType<?>>registerSimple(Registries.RULE_BLOCK_ENTITY_MODIFIER, (var0) -> RuleBlockEntityModifierType.PASSTHROUGH);
+      POS_RULE_TEST = BUILDER.<PosRuleTestType<?>>registerSimple(Registries.POS_RULE_TEST, (var0) -> PosRuleTestType.ALWAYS_TRUE_TEST);
+      MENU = BUILDER.<MenuType<?>>registerSimple(Registries.MENU, (var0) -> MenuType.ANVIL);
+      RECIPE_TYPE = BUILDER.<RecipeType<?>>registerSimple(Registries.RECIPE_TYPE, (var0) -> RecipeType.CRAFTING);
+      RECIPE_SERIALIZER = BUILDER.<RecipeSerializer<?>>registerSimple(Registries.RECIPE_SERIALIZER, RecipeSerializers::bootstrap);
+      ATTRIBUTE = BUILDER.<Attribute>registerSimple(Registries.ATTRIBUTE, Attributes::bootstrap);
+      POSITION_SOURCE_TYPE = BUILDER.<PositionSourceType<?>>registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> PositionSourceType.BLOCK);
+      COMMAND_ARGUMENT_TYPE = BUILDER.<ArgumentTypeInfo<?, ?>>registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
+      STAT_TYPE = BUILDER.<StatType<?>>registerSimple(Registries.STAT_TYPE, (var0) -> Stats.ITEM_USED);
+      VILLAGER_TYPE = BUILDER.<VillagerType>registerDefaulted(Registries.VILLAGER_TYPE, "plains", VillagerType::bootstrap);
+      VILLAGER_PROFESSION = BUILDER.<VillagerProfession>registerDefaulted(Registries.VILLAGER_PROFESSION, "none", VillagerProfession::bootstrap);
+      POINT_OF_INTEREST_TYPE = BUILDER.<PoiType>registerSimple(Registries.POINT_OF_INTEREST_TYPE, PoiTypes::bootstrap);
+      MEMORY_MODULE_TYPE = BUILDER.<MemoryModuleType<?>>registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> MemoryModuleType.DUMMY);
+      SENSOR_TYPE = BUILDER.<SensorType<?>>registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> SensorType.DUMMY);
+      ACTIVITY = BUILDER.<Activity>registerSimple(Registries.ACTIVITY, (var0) -> Activity.IDLE);
+      LOOT_POOL_ENTRY_TYPE = BUILDER.<MapCodec<? extends LootPoolEntryContainer>>registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, LootPoolEntries::bootstrap);
+      LOOT_FUNCTION_TYPE = BUILDER.<MapCodec<? extends LootItemFunction>>registerSimple(Registries.LOOT_FUNCTION_TYPE, LootItemFunctions::bootstrap);
+      LOOT_CONDITION_TYPE = BUILDER.<MapCodec<? extends LootItemCondition>>registerSimple(Registries.LOOT_CONDITION_TYPE, LootItemConditionTypes::bootstrap);
+      CONTEXT_FLOAT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends ContextFloatProvider>>registerSimple(Registries.CONTEXT_FLOAT_PROVIDER_TYPE, ContextFloatProviderTypes::bootstrap);
+      CONTEXT_INT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends ContextIntProvider>>registerSimple(Registries.CONTEXT_INT_PROVIDER_TYPE, ContextIntProviderTypes::bootstrap);
+      LOOT_NBT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends NbtProvider>>registerSimple(Registries.LOOT_NBT_PROVIDER_TYPE, NbtProviders::bootstrap);
+      LOOT_SCORE_PROVIDER_TYPE = BUILDER.<MapCodec<? extends ScoreboardNameProvider>>registerSimple(Registries.LOOT_SCORE_PROVIDER_TYPE, ScoreboardNameProviders::bootstrap);
+      FLOAT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends FloatProvider>>registerSimple(Registries.FLOAT_PROVIDER_TYPE, FloatProviders::bootstrap);
+      INT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends IntProvider>>registerSimple(Registries.INT_PROVIDER_TYPE, IntProviders::bootstrap);
+      HEIGHT_PROVIDER_TYPE = BUILDER.<HeightProviderType<?>>registerSimple(Registries.HEIGHT_PROVIDER_TYPE, (var0) -> HeightProviderType.CONSTANT);
+      BLOCK_PREDICATE_TYPE = BUILDER.<BlockPredicateType<?>>registerSimple(Registries.BLOCK_PREDICATE_TYPE, (var0) -> BlockPredicateType.NOT);
+      CARVER_TYPE = BUILDER.<MapCodec<? extends WorldCarver>>registerSimple(Registries.CARVER_TYPE, WorldCarverTypes::bootstrap);
+      FEATURE_TYPE = BUILDER.<MapCodec<? extends Feature>>registerSimple(Registries.FEATURE_TYPE, FeatureTypes::bootstrap);
+      STRUCTURE_PLACEMENT = BUILDER.<MapCodec<? extends StructurePlacement>>registerSimple(Registries.STRUCTURE_PLACEMENT, StructurePlacements::bootstrap);
+      STRUCTURE_PIECE = BUILDER.<StructurePieceType>registerSimple(Registries.STRUCTURE_PIECE, (var0) -> StructurePieceType.MINE_SHAFT_ROOM);
+      STRUCTURE_TYPE = BUILDER.<StructureType<?>>registerSimple(Registries.STRUCTURE_TYPE, (var0) -> StructureType.JIGSAW);
+      PLACEMENT_MODIFIER_TYPE = BUILDER.<MapCodec<? extends PlacementModifier>>registerSimple(Registries.PLACEMENT_MODIFIER_TYPE, PlacementModifierTypes::bootstrap);
+      BLOCK_STATE_PROVIDER_TYPE = BUILDER.<MapCodec<? extends BlockStateProvider>>registerSimple(Registries.BLOCK_STATE_PROVIDER_TYPE, BlockStateProviderTypes::bootstrap);
+      FOLIAGE_PLACER_TYPE = BUILDER.<FoliagePlacerType<?>>registerSimple(Registries.FOLIAGE_PLACER_TYPE, (var0) -> FoliagePlacerType.BLOB_FOLIAGE_PLACER);
+      TRUNK_PLACER_TYPE = BUILDER.<TrunkPlacerType<?>>registerSimple(Registries.TRUNK_PLACER_TYPE, (var0) -> TrunkPlacerType.STRAIGHT_TRUNK_PLACER);
+      ROOT_PLACER_TYPE = BUILDER.<RootPlacerType<?>>registerSimple(Registries.ROOT_PLACER_TYPE, (var0) -> RootPlacerType.MANGROVE_ROOT_PLACER);
+      TREE_DECORATOR_TYPE = BUILDER.<TreeDecoratorType<?>>registerSimple(Registries.TREE_DECORATOR_TYPE, (var0) -> TreeDecoratorType.LEAVE_VINE);
+      FEATURE_SIZE_TYPE = BUILDER.<FeatureSizeType<?>>registerSimple(Registries.FEATURE_SIZE_TYPE, (var0) -> FeatureSizeType.TWO_LAYERS_FEATURE_SIZE);
+      BIOME_SOURCE = BUILDER.<MapCodec<? extends BiomeSource>>registerSimple(Registries.BIOME_SOURCE, BiomeSources::bootstrap);
+      CHUNK_GENERATOR = BUILDER.<MapCodec<? extends ChunkGenerator>>registerSimple(Registries.CHUNK_GENERATOR, ChunkGenerators::bootstrap);
+      MATERIAL_CONDITION_TYPE = BUILDER.<MapCodec<? extends MaterialCondition>>registerSimple(Registries.MATERIAL_CONDITION_TYPE, MaterialRules::bootstrapConditions);
+      MATERIAL_RULE_TYPE = BUILDER.<MapCodec<? extends MaterialRule>>registerSimple(Registries.MATERIAL_RULE_TYPE, MaterialRules::bootstrapRules);
+      DENSITY_FUNCTION_TYPE = BUILDER.<MapCodec<? extends DensityFunction>>registerSimple(Registries.DENSITY_FUNCTION_TYPE, DensityFunctions::bootstrap);
+      STRUCTURE_PROCESSOR = BUILDER.<MapCodec<? extends StructureProcessor>>registerSimple(Registries.STRUCTURE_PROCESSOR, StructureProcessorTypes::bootstrap);
+      STRUCTURE_POOL_ELEMENT = BUILDER.<StructurePoolElementType<?>>registerSimple(Registries.STRUCTURE_POOL_ELEMENT, (var0) -> StructurePoolElementType.EMPTY);
+      POOL_ALIAS_BINDING_TYPE = BUILDER.<MapCodec<? extends PoolAliasBinding>>registerSimple(Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap);
+      CREATIVE_MODE_TAB = BUILDER.<CreativeModeTab>registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
+      TRIGGER_TYPES = BUILDER.<CriterionTrigger<?>>registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
+      NUMBER_FORMAT_TYPE = BUILDER.<NumberFormatType<?>>registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
+      DATA_COMPONENT_TYPE = BUILDER.<DataComponentType<?>>registerSimple(Registries.DATA_COMPONENT_TYPE, DataComponents::bootstrap);
+      GAME_RULE = BUILDER.<GameRule<?>>registerSimple(Registries.GAME_RULE, GameRules::bootstrap);
+      ENTITY_SUB_PREDICATE_TYPE = BUILDER.<Codec<? extends EntitySubPredicate>>registerSimple(Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap);
+      DATA_COMPONENT_PREDICATE_TYPE = BUILDER.<DataComponentPredicate.Type<?>>registerSimple(Registries.DATA_COMPONENT_PREDICATE_TYPE, DataComponentPredicates::bootstrap);
+      MAP_DECORATION_TYPE = BUILDER.<MapDecorationType>registerSimple(Registries.MAP_DECORATION_TYPE, MapDecorationTypes::bootstrap);
+      ENCHANTMENT_EFFECT_COMPONENT_TYPE = BUILDER.<DataComponentType<?>>registerSimple(Registries.ENCHANTMENT_EFFECT_COMPONENT_TYPE, EnchantmentEffectComponents::bootstrap);
+      ENCHANTMENT_LEVEL_BASED_VALUE_TYPE = BUILDER.<MapCodec<? extends LevelBasedValue>>registerSimple(Registries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE, LevelBasedValue::bootstrap);
+      ENCHANTMENT_ENTITY_EFFECT_TYPE = BUILDER.<MapCodec<? extends EnchantmentEntityEffect>>registerSimple(Registries.ENCHANTMENT_ENTITY_EFFECT_TYPE, EnchantmentEntityEffect::bootstrap);
+      ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = BUILDER.<MapCodec<? extends EnchantmentLocationBasedEffect>>registerSimple(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE, EnchantmentLocationBasedEffect::bootstrap);
+      ENCHANTMENT_VALUE_EFFECT_TYPE = BUILDER.<MapCodec<? extends EnchantmentValueEffect>>registerSimple(Registries.ENCHANTMENT_VALUE_EFFECT_TYPE, EnchantmentValueEffect::bootstrap);
+      ENCHANTMENT_PROVIDER_TYPE = BUILDER.<MapCodec<? extends EnchantmentProvider>>registerSimple(Registries.ENCHANTMENT_PROVIDER_TYPE, EnchantmentProviderTypes::bootstrap);
+      CONSUME_EFFECT_TYPE = BUILDER.<ConsumeEffect.Type<?>>registerSimple(Registries.CONSUME_EFFECT_TYPE, (var0) -> ConsumeEffect.Type.APPLY_EFFECTS);
+      RECIPE_DISPLAY = BUILDER.<RecipeDisplay.Type<?>>registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
+      SLOT_DISPLAY = BUILDER.<SlotDisplay.Type<?>>registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
+      RECIPE_BOOK_CATEGORY = BUILDER.<RecipeBookCategory>registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
+      TICKET_TYPE = BUILDER.<TicketType>registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
+      INCOMING_RPC_METHOD = BUILDER.<IncomingRpcMethod<?, ?>>registerSimple(Registries.INCOMING_RPC_METHOD, IncomingRpcMethods::bootstrap);
+      OUTGOING_RPC_METHOD = BUILDER.<OutgoingRpcMethod<?, ?>>registerSimple(Registries.OUTGOING_RPC_METHOD, (var0) -> OutgoingRpcMethods.SERVER_STARTED);
+      TEST_ENVIRONMENT_DEFINITION_TYPE = BUILDER.<MapCodec<? extends TestEnvironmentDefinition<?>>>registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
+      TEST_INSTANCE_TYPE = BUILDER.<MapCodec<? extends GameTestInstance>>registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
+      SPAWN_CONDITION_TYPE = BUILDER.<MapCodec<? extends SpawnCondition>>registerSimple(Registries.SPAWN_CONDITION_TYPE, SpawnConditions::bootstrap);
+      DIALOG_TYPE = BUILDER.<MapCodec<? extends Dialog>>registerSimple(Registries.DIALOG_TYPE, DialogTypes::bootstrap);
+      DIALOG_ACTION_TYPE = BUILDER.<MapCodec<? extends Action>>registerSimple(Registries.DIALOG_ACTION_TYPE, ActionTypes::bootstrap);
+      INPUT_CONTROL_TYPE = BUILDER.<MapCodec<? extends InputControl>>registerSimple(Registries.INPUT_CONTROL_TYPE, InputControlTypes::bootstrap);
+      DIALOG_BODY_TYPE = BUILDER.<MapCodec<? extends DialogBody>>registerSimple(Registries.DIALOG_BODY_TYPE, DialogBodyTypes::bootstrap);
+      PERMISSION_TYPE = BUILDER.<MapCodec<? extends Permission>>registerSimple(Registries.PERMISSION_TYPE, PermissionTypes::bootstrap);
+      PERMISSION_CHECK_TYPE = BUILDER.<MapCodec<? extends PermissionCheck>>registerSimple(Registries.PERMISSION_CHECK_TYPE, PermissionCheckTypes::bootstrap);
+      ENVIRONMENT_ATTRIBUTE = BUILDER.<EnvironmentAttribute<?>>registerSimple(Registries.ENVIRONMENT_ATTRIBUTE, EnvironmentAttributes::bootstrap);
+      ATTRIBUTE_TYPE = BUILDER.<AttributeType<?>>registerSimple(Registries.ATTRIBUTE_TYPE, AttributeTypes::bootstrap);
+      SLOT_SOURCE_TYPE = BUILDER.<MapCodec<? extends SlotSource>>registerSimple(Registries.SLOT_SOURCE_TYPE, SlotSources::bootstrap);
+      CONTEXT_KEY_SET = BUILDER.<ContextKeySet>registerSimple(Registries.CONTEXT_KEY_SET, LootContextParamSets::bootstrap);
+      TEST_FUNCTION = BUILDER.<Consumer<GameTestHelper>>registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
+      REGISTRY = BUILDER.build();
    }
 }

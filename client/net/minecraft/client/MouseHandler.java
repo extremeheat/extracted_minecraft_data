@@ -126,11 +126,11 @@ public class MouseHandler {
          }
 
          if (this.minecraft.gui.screen() == null && this.minecraft.gui.overlay() == null) {
-            if (rawButtonInfo.button() == 1) {
+            if (rawButtonInfo.isLeftMouse()) {
                this.isLeftPressed = pressed;
-            } else if (rawButtonInfo.button() == 2) {
+            } else if (rawButtonInfo.isMiddleMouse()) {
                this.isMiddlePressed = pressed;
-            } else if (rawButtonInfo.button() == 3) {
+            } else if (rawButtonInfo.isRightMouse()) {
                this.isRightPressed = pressed;
             }
 

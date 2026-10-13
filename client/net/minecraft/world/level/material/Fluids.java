@@ -7,9 +7,7 @@ import net.minecraft.resources.ResourceKey;
 
 public class Fluids {
    public static final Fluid EMPTY;
-   public static final FlowingFluid FLOWING_WATER;
    public static final FlowingFluid WATER;
-   public static final FlowingFluid FLOWING_LAVA;
    public static final FlowingFluid LAVA;
 
    public Fluids() {
@@ -22,10 +20,8 @@ public class Fluids {
 
    static {
       EMPTY = register(FluidIds.EMPTY, new EmptyFluid());
-      FLOWING_WATER = (FlowingFluid)register(FluidIds.FLOWING_WATER, new WaterFluid.Flowing());
-      WATER = (FlowingFluid)register(FluidIds.WATER, new WaterFluid.Source());
-      FLOWING_LAVA = (FlowingFluid)register(FluidIds.FLOWING_LAVA, new LavaFluid.Flowing());
-      LAVA = (FlowingFluid)register(FluidIds.LAVA, new LavaFluid.Source());
+      WATER = (FlowingFluid)register(FluidIds.WATER, new WaterFluid());
+      LAVA = (FlowingFluid)register(FluidIds.LAVA, new LavaFluid());
 
       for(Fluid fluid : BuiltInRegistries.FLUID) {
          UnmodifiableIterator var2 = fluid.getStateDefinition().getPossibleStates().iterator();

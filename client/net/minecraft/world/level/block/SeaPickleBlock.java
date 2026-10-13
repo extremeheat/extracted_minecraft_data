@@ -44,7 +44,7 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
          return (BlockState)state.setValue(PICKLES, Math.min(4, (Integer)state.getValue(PICKLES) + 1));
       } else {
          FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-         boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+         boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
          return (BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource);
       }
    }
@@ -91,7 +91,7 @@ public class SeaPickleBlock extends VegetationBlock implements SimpleWaterlogged
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

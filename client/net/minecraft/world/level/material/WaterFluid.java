@@ -25,21 +25,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.gamerules.GameRules;
 import org.jspecify.annotations.Nullable;
 
-public abstract class WaterFluid extends FlowingFluid {
+public class WaterFluid extends FlowingFluid {
    public WaterFluid() {
       super();
-   }
-
-   public Fluid getFlowing() {
-      return Fluids.FLOWING_WATER;
-   }
-
-   public Fluid getSource() {
-      return Fluids.WATER;
    }
 
    public Item getBucket() {
@@ -47,7 +38,7 @@ public abstract class WaterFluid extends FlowingFluid {
    }
 
    public void animateTick(final Level level, final BlockPos pos, final FluidState fluidState, final RandomSource random) {
-      if (!fluidState.isSource() && !(Boolean)fluidState.getValue(FALLING)) {
+      if (!fluidState.isSource() && !fluidState.isFalling()) {
          if (random.nextInt(64) == 0) {
             level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.WATER_AMBIENT, SoundSource.AMBIENT, random.nextFloat() * 0.25F + 0.75F, random.nextFloat() + 0.5F, false);
          }
@@ -82,10 +73,6 @@ public abstract class WaterFluid extends FlowingFluid {
       return (BlockState)Blocks.WATER.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(fluidState));
    }
 
-   public boolean isSame(final Fluid other) {
-      return other == Fluids.WATER || other == Fluids.FLOWING_WATER;
-   }
-
    public int getDropOff(final LevelReader level) {
       return 1;
    }
@@ -94,7 +81,7 @@ public abstract class WaterFluid extends FlowingFluid {
       return 5;
    }
 
-   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {
+   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final FluidState other, final Direction direction) {
       return direction == Direction.DOWN && !other.is(FluidTags.WATER);
    }
 
@@ -104,38 +91,5 @@ public abstract class WaterFluid extends FlowingFluid {
 
    public Optional<SoundEvent> getPickupSound() {
       return Optional.of(SoundEvents.BUCKET_FILL);
-   }
-
-   public static class Source extends WaterFluid {
-      public Source() {
-         super();
-      }
-
-      public int getAmount(final FluidState fluidState) {
-         return 8;
-      }
-
-      public boolean isSource(final FluidState fluidState) {
-         return true;
-      }
-   }
-
-   public static class Flowing extends WaterFluid {
-      public Flowing() {
-         super();
-      }
-
-      protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
-         super.createFluidStateDefinition(builder);
-         builder.add(LEVEL);
-      }
-
-      public int getAmount(final FluidState fluidState) {
-         return (Integer)fluidState.getValue(LEVEL);
-      }
-
-      public boolean isSource(final FluidState fluidState) {
-         return false;
-      }
    }
 }

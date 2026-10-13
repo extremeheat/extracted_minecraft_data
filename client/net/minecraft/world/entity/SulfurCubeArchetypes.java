@@ -78,7 +78,7 @@ public class SulfurCubeArchetypes {
    }
 
    private static SulfurCubeArchetype.SoundSettings soundSettings(final Holder<SoundEvent> hitSound, final Holder<SoundEvent> pushSound, final float threshold, final float cooldown) {
-      return new SulfurCubeArchetype.SoundSettings(hitSound, pushSound, threshold, cooldown);
+      return new SulfurCubeArchetype.SoundSettings(Optional.of(hitSound), Optional.of(pushSound), threshold, cooldown);
    }
 
    private static void register(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<SulfurCubeArchetype> name, final TagKey<Item> blocks, final List<Function<ResourceKey<SulfurCubeArchetype>, SulfurCubeArchetype.AttributeEntry>> modifiers, final boolean floats, final Optional<SulfurCubeArchetype.ExplosionData> maxFuse, final Optional<SulfurCubeArchetype.ContactDamage> contactDamage, final SulfurCubeArchetype.KnockbackModifiers knockbackModifiers, final SulfurCubeArchetype.SoundSettings soundSettings) {

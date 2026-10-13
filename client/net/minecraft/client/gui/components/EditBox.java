@@ -38,6 +38,7 @@ public class EditBox extends AbstractWidget {
    private final Font font;
    private String value;
    private int maxLength;
+   private int maxWidth;
    private boolean bordered;
    private boolean canLoseFocus;
    private boolean isEditable;
@@ -74,6 +75,7 @@ public class EditBox extends AbstractWidget {
       super(x, y, width, height, narration);
       this.value = "";
       this.maxLength = 32;
+      this.maxWidth = 2147483647;
       this.bordered = true;
       this.canLoseFocus = true;
       this.isEditable = true;
@@ -106,15 +108,23 @@ public class EditBox extends AbstractWidget {
    }
 
    public void setValue(final String value) {
+      this.value = value;
       if (value.length() > this.maxLength) {
          this.value = value.substring(0, this.maxLength);
-      } else {
-         this.value = value;
       }
 
       this.moveCursorToEnd(false);
       this.setHighlightPos(this.cursorPos);
       this.onValueChange(value);
+   }
+
+   private boolean canChangeValueTo(final String newValue) {
+      if (this.font == null) {
+         return true;
+      } else {
+         int newWidth = this.font.width(newValue);
+         return newWidth <= this.maxWidth || newWidth <= this.font.width(this.value);
+      }
    }
 
    public String getValue() {
@@ -153,10 +163,14 @@ public class EditBox extends AbstractWidget {
             insertionLength = maxInsertionLength;
          }
 
-         this.value = (new StringBuilder(this.value)).replace(start, end, text).toString();
-         this.setCursorPosition(start + insertionLength);
-         this.setHighlightPos(this.cursorPos);
-         this.onValueChange(this.value);
+         String newValue = (new StringBuilder(this.value)).replace(start, end, text).toString();
+         if (this.canChangeValueTo(newValue)) {
+            this.value = newValue;
+            this.setCursorPosition(start + insertionLength);
+            this.setHighlightPos(this.cursorPos);
+            this.onValueChange(this.value);
+         }
+
       }
    }
 
@@ -518,6 +532,10 @@ public class EditBox extends AbstractWidget {
          this.onValueChange(this.value);
       }
 
+   }
+
+   public void setMaxWidth(final int maxWidth) {
+      this.maxWidth = maxWidth;
    }
 
    private int getMaxLength() {

@@ -88,6 +88,7 @@ public class BlockIds {
    public static final ResourceKey<Block> PIGLIN_WALL_HEAD = create("piglin_wall_head");
    public static final ResourceKey<Block> END_GATEWAY = create("end_gateway");
    public static final ResourceKey<Block> FROSTED_ICE = create("frosted_ice");
+   public static final ResourceKey<Block> BRITTLE_ICE = create("brittle_ice");
    public static final ResourceKey<Block> KELP_PLANT = create("kelp_plant");
    public static final ResourceKey<Block> DEAD_TUBE_CORAL_WALL_FAN = create("dead_tube_coral_wall_fan");
    public static final ResourceKey<Block> DEAD_BRAIN_CORAL_WALL_FAN = create("dead_brain_coral_wall_fan");

@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -23,8 +24,12 @@ public class IceBlock extends HalfTransparentBlock {
       super(properties);
    }
 
-   public static BlockState meltsInto() {
+   public BlockState meltsInto() {
       return Blocks.WATER.defaultBlockState();
+   }
+
+   protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
+      return neighborState.is(BlockTags.FACE_OCCLUDING_ICE_BLOCKS) ? true : super.skipRendering(state, neighborState, direction);
    }
 
    public void playerDestroy(final ServerLevel level, final ServerPlayer player, final BlockPos pos, final BlockState state, final @Nullable BlockEntity blockEntity, final ItemStack destroyedWith) {
@@ -37,7 +42,7 @@ public class IceBlock extends HalfTransparentBlock {
 
          BlockState belowState = level.getBlockState(pos.below());
          if (belowState.is(BlockTags.ICE_MELTS_WHEN_DESTROYED_ABOVE) || belowState.liquid()) {
-            level.setBlockAndUpdate(pos, meltsInto());
+            level.setBlockAndUpdate(pos, this.meltsInto());
          }
       }
 
@@ -54,8 +59,8 @@ public class IceBlock extends HalfTransparentBlock {
       if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos)) {
          level.removeBlock(pos, false);
       } else {
-         level.setBlockAndUpdate(pos, meltsInto());
-         level.neighborChanged(pos, meltsInto().getBlock(), (Orientation)null);
+         level.setBlockAndUpdate(pos, this.meltsInto());
+         level.neighborChanged(pos, this.meltsInto().getBlock(), (Orientation)null);
          level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
       }
    }

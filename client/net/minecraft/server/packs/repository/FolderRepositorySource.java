@@ -7,8 +7,6 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -22,7 +20,6 @@ import net.minecraft.server.packs.linkfs.LinkFileSystem;
 import net.minecraft.util.FileUtil;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
-import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -75,15 +72,14 @@ public class FolderRepositorySource implements RepositorySource {
       try {
          for(Path content : contents) {
             try {
-               List<ForbiddenSymlinkInfo> validationIssues = new ArrayList();
-               Pack.ResourcesSupplier resources = (Pack.ResourcesSupplier)detector.detectPackResources(content, validationIssues);
-               if (!validationIssues.isEmpty()) {
-                  LOGGER.warn("Ignoring potential pack entry: {}", ContentValidationException.getMessage(content, validationIssues));
-               } else if (resources != null) {
+               Pack.ResourcesSupplier resources = (Pack.ResourcesSupplier)detector.detectPackResources(content);
+               if (resources != null) {
                   result.accept(content, resources);
                } else {
                   LOGGER.info("Found non-pack entry '{}', ignoring", content);
                }
+            } catch (ContentValidationException e) {
+               LOGGER.warn("Ignoring potential pack entry: {}", e.getMessage());
             } catch (IOException e) {
                LOGGER.warn("Failed to read properties of '{}', ignoring", content, e);
             }
@@ -92,8 +88,8 @@ public class FolderRepositorySource implements RepositorySource {
          if (contents != null) {
             try {
                contents.close();
-            } catch (Throwable var9) {
-               var11.addSuppressed(var9);
+            } catch (Throwable var8) {
+               var11.addSuppressed(var8);
             }
          }
 

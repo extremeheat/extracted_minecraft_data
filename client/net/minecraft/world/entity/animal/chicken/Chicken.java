@@ -146,20 +146,20 @@ public class Chicken extends Animal {
       this.nextFlap = this.flyDist + this.flapSpeed / 2.0F;
    }
 
-   protected SoundEvent getAmbientSound() {
-      return (SoundEvent)this.getSoundSet().ambientSound().value();
+   protected @Nullable SoundEvent getAmbientSound() {
+      return (SoundEvent)this.getSoundSet().ambientSound().map(Holder::value).orElse((Object)null);
    }
 
-   protected SoundEvent getHurtSound(final DamageSource source) {
-      return (SoundEvent)this.getSoundSet().hurtSound().value();
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
+      return (SoundEvent)this.getSoundSet().hurtSound().map(Holder::value).orElse((Object)null);
    }
 
-   protected SoundEvent getDeathSound() {
-      return (SoundEvent)this.getSoundSet().deathSound().value();
+   protected @Nullable SoundEvent getDeathSound() {
+      return (SoundEvent)this.getSoundSet().deathSound().map(Holder::value).orElse((Object)null);
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
+      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.15F, 1.0F));
    }
 
    public @Nullable Chicken getBreedOffspring(final ServerLevel level, final AgeableMob partner) {

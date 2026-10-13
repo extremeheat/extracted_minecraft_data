@@ -5,14 +5,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import io.netty.buffer.ByteBuf;
 import java.util.stream.IntStream;
-import javax.annotation.concurrent.Immutable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import org.joml.Vector3i;
 
-@Immutable
 public class Vec3i implements Comparable<Vec3i> {
    public static final Codec<Vec3i> CODEC;
    public static final StreamCodec<ByteBuf, Vec3i> STREAM_CODEC;

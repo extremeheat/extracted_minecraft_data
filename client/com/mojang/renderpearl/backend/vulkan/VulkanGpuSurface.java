@@ -5,7 +5,6 @@ import com.mojang.renderpearl.api.device.SurfaceException;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.renderpearl.backend.api.CommandEncoderBackend;
 import com.mojang.renderpearl.backend.api.GpuSurfaceBackend;
-import com.mojang.renderpearl.backend.vulkan.checkpoints.CheckpointExtension;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -14,7 +13,6 @@ import java.nio.LongBuffer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
@@ -285,8 +283,9 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             long acquireSemaphore = this.acquireSemaphores[this.currentAcquireSemaphore];
             int result = KHRSwapchain.vkAcquireNextImageKHR(this.device.vkDevice(), this.swapchain, 5000000000L, acquireSemaphore, 0L, frameIndexPtr);
             if (result == 2) {
-               List<CheckpointExtension.QueueCheckpoints> checkpoints = this.device.checkpointExtension().retrieveCheckpoints(false);
-               throw new IllegalStateException("GPU timeout attempting to acquire next frame: " + VulkanUtils.formatCheckpoints(checkpoints));
+               this.swapchainSuboptimal = true;
+               this.swapchainOutOfDate = true;
+               throw new SurfaceException("Timed out whilst acquiring next image");
             }
 
             this.currentImageIndex = frameIndexPtr.get(0);
@@ -301,16 +300,16 @@ public class VulkanGpuSurface implements GpuSurfaceBackend {
             } else {
                VulkanUtils.crashIfFailure(this.device, result, "Failed to acquire image");
             }
-         } catch (Throwable var8) {
+         } catch (Throwable var7) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var7) {
-                  var8.addSuppressed(var7);
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
                }
             }
 
-            throw var8;
+            throw var7;
          }
 
          if (stack != null) {

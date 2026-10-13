@@ -1,16 +1,25 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.JukeboxMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.JukeboxSongPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.JukeboxBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -22,13 +31,39 @@ import net.minecraft.world.ticks.ContainerSingleItem;
 public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleItem.BlockContainerSingleItem {
    public static final String SONG_ITEM_TAG_ID = "RecordItem";
    public static final String TICKS_SINCE_SONG_STARTED_TAG_ID = "ticks_since_song_started";
+   public static final String PLAYLIST_POSITION = "playlist_position";
+   public static final int DATA_PLAYLIST_POS = 0;
+   public static final int NUM_DATA = 1;
+   public static final int NO_PLAYLIST_POS = -1;
+   public final ContainerData dataAccess = new ContainerData() {
+      {
+         Objects.requireNonNull(JukeboxBlockEntity.this);
+      }
+
+      public int get(final int dataId) {
+         return dataId == 0 ? JukeboxBlockEntity.this.playlistPosition.orElse(-1) : 0;
+      }
+
+      public void set(final int dataId, final int value) {
+         if (dataId == 0) {
+            JukeboxBlockEntity.this.playlistPosition = OptionalInt.of(value);
+         }
+
+      }
+
+      public int getCount() {
+         return 1;
+      }
+   };
    private ItemStack item;
+   private OptionalInt playlistPosition;
    private final JukeboxSongPlayer jukeboxSongPlayer;
 
    public JukeboxBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       super(BlockEntityTypes.JUKEBOX, worldPosition, blockState);
       this.item = ItemStack.EMPTY;
-      this.jukeboxSongPlayer = new JukeboxSongPlayer(this::onSongChanged, this.getBlockPos());
+      this.playlistPosition = OptionalInt.empty();
+      this.jukeboxSongPlayer = new JukeboxSongPlayer(this::onSongChanged, this.getBlockPos(), this::shouldLoop);
    }
 
    public JukeboxSongPlayer getSongPlayer() {
@@ -36,6 +71,10 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    }
 
    public void onSongChanged() {
+      if (!this.jukeboxSongPlayer.isPlaying() && this.shouldLoop()) {
+         this.tryToAdvancePlaylist(true);
+      }
+
       this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
       this.setChanged();
    }
@@ -63,8 +102,12 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       }
    }
 
-   public static void tick(final Level level, final BlockPos blockPos, final BlockState blockState, final JukeboxBlockEntity jukebox) {
+   public static void tickWithRecord(final Level level, final BlockPos blockPos, final BlockState blockState, final JukeboxBlockEntity jukebox) {
       jukebox.jukeboxSongPlayer.tick(level, blockState);
+   }
+
+   public static void tickWithoutRecord(final Level level, final BlockPos blockPos, final BlockState blockState, final JukeboxBlockEntity jukebox) {
+      jukebox.tryToAdvancePlaylist(false);
    }
 
    public int getComparatorOutput() {
@@ -80,6 +123,8 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
 
       this.item = newItem;
       input.getLong("ticks_since_song_started").ifPresent((ticksSinceSongStarted) -> JukeboxSong.fromStack(this.item).ifPresent((song) -> this.jukeboxSongPlayer.setSongWithoutPlaying(song, ticksSinceSongStarted)));
+      Optional<Integer> newPlaylistPosition = input.getInt("playlist_position");
+      this.playlistPosition = newPlaylistPosition.isPresent() ? OptionalInt.of((Integer)newPlaylistPosition.get()) : OptionalInt.empty();
    }
 
    protected void saveAdditional(final ValueOutput output) {
@@ -90,6 +135,10 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
 
       if (this.jukeboxSongPlayer.getSong() != null) {
          output.putLong("ticks_since_song_started", this.jukeboxSongPlayer.getTicksSinceSongStarted());
+      }
+
+      if (this.playlistPosition.isPresent()) {
+         output.putInt("playlist_position", this.playlistPosition.getAsInt());
       }
 
    }
@@ -132,7 +181,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    }
 
    public boolean canPlaceItem(final int slot, final ItemStack itemStack) {
-      return itemStack.has(DataComponents.JUKEBOX_PLAYABLE) && this.getItem(slot).isEmpty();
+      return isMusicDisc(itemStack) && this.getItem(slot).isEmpty();
    }
 
    public boolean canTakeItem(final Container into, final int slot, final ItemStack itemStack) {
@@ -154,5 +203,55 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    @VisibleForTesting
    public void tryForcePlaySong() {
       JukeboxSong.fromStack(this.getTheItem()).ifPresent((song) -> this.jukeboxSongPlayer.play(this.level, song));
+   }
+
+   private boolean shouldLoop() {
+      return isMusicDisc(this.item) && isInPlaylistMode(this.level, this.worldPosition);
+   }
+
+   public static boolean isInPlaylistMode(final Level level, final BlockPos pos) {
+      BlockPos above = pos.above();
+      BlockState blockAbove = level.getBlockState(above);
+      BlockEntity entityAbove = level.getBlockEntity(above);
+      return blockAbove.is(BlockTags.JUKEBOX_CONTAINERS) && entityAbove instanceof Container && (!(blockAbove.getBlock() instanceof ChestBlock) || ChestBlock.getBlockType(blockAbove) == DoubleBlockCombiner.BlockType.SINGLE);
+   }
+
+   private static boolean isMusicDisc(final ItemStack item) {
+      return item.has(DataComponents.JUKEBOX_PLAYABLE);
+   }
+
+   public static OptionalInt findNextPlayListPosition(final Container container, final int startPosition) {
+      for(int offset = 1; offset <= container.getContainerSize(); ++offset) {
+         int slot = (startPosition + offset) % container.getContainerSize();
+         if (isMusicDisc(container.getItem(slot))) {
+            return OptionalInt.of(slot);
+         }
+      }
+
+      return OptionalInt.empty();
+   }
+
+   private void replayCurrentSong() {
+      this.setTheItem(this.item);
+   }
+
+   private void advancePlaylist(final Container container, final int newPosition) {
+      ItemStack recordItem = container.getItem(newPosition);
+      container.setItem(newPosition, this.getTheItem());
+      this.setTheItem(recordItem);
+   }
+
+   private void tryToAdvancePlaylist(final boolean replayCurrentSongOtherwise) {
+      BlockEntity blockEntity = this.level.getBlockEntity(this.worldPosition.above());
+      if (blockEntity instanceof Container container) {
+         this.playlistPosition = findNextPlayListPosition(container, this.playlistPosition.orElse(-1));
+         this.playlistPosition.ifPresentOrElse((newPosition) -> this.advancePlaylist(container, newPosition), replayCurrentSongOtherwise ? this::replayCurrentSong : () -> {
+         });
+      }
+
+   }
+
+   public AbstractContainerMenu createMenu(final int containerId, final Inventory inventory, final Container container) {
+      return new JukeboxMenu(containerId, inventory, container, this.dataAccess);
    }
 }

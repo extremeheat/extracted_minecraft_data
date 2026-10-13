@@ -12,10 +12,22 @@ public record BlockSoundSet(float volume, float pitch, Optional<Holder<SoundEven
    public static final BlockSoundSet EMPTY = new BlockSoundSet(1.0F, 1.0F, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
    public static final Codec<BlockSoundSet> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.floatRange(1.0E-5F, 10.0F).optionalFieldOf("volume", 1.0F).forGetter(BlockSoundSet::volume), ExtraCodecs.floatRange(1.0E-5F, 2.0F).optionalFieldOf("pitch", 1.0F).forGetter(BlockSoundSet::pitch), SoundEvent.CODEC.optionalFieldOf("break_sound").forGetter(BlockSoundSet::breakSound), SoundEvent.CODEC.optionalFieldOf("step_sound").forGetter(BlockSoundSet::stepSound), SoundEvent.CODEC.optionalFieldOf("place_sound").forGetter(BlockSoundSet::placeSound), SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(BlockSoundSet::hitSound), SoundEvent.CODEC.optionalFieldOf("fall_sound").forGetter(BlockSoundSet::fallSound)).apply(i, BlockSoundSet::new));
 
+   public BlockSoundSet(final float volume, final float pitch, final BlockSoundCollection<Optional<Holder<SoundEvent>>> soundCollection) {
+      this(volume, pitch, soundCollection.breakSound(), soundCollection.stepSound(), soundCollection.placeSound(), soundCollection.hitSound(), soundCollection.fallSound());
+   }
+
+   public BlockSoundSet(final BlockSoundCollection<Optional<Holder<SoundEvent>>> soundCollection) {
+      this(1.0F, 1.0F, soundCollection);
+   }
+
+   /** @deprecated */
+   @Deprecated
    public BlockSoundSet(final float volume, final float pitch, final @Nullable Holder<SoundEvent> breakSound, final @Nullable Holder<SoundEvent> stepSound, final @Nullable Holder<SoundEvent> placeSound, final @Nullable Holder<SoundEvent> hitSound, final @Nullable Holder<SoundEvent> fallSound) {
       this(volume, pitch, Optional.ofNullable(breakSound), Optional.ofNullable(stepSound), Optional.ofNullable(placeSound), Optional.ofNullable(hitSound), Optional.ofNullable(fallSound));
    }
 
+   /** @deprecated */
+   @Deprecated
    public BlockSoundSet(final @Nullable Holder<SoundEvent> breakSound, final @Nullable Holder<SoundEvent> stepSound, final @Nullable Holder<SoundEvent> placeSound, final @Nullable Holder<SoundEvent> hitSound, final @Nullable Holder<SoundEvent> fallSound) {
       this(1.0F, 1.0F, breakSound, stepSound, placeSound, hitSound, fallSound);
    }

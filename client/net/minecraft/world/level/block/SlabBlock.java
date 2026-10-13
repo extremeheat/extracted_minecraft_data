@@ -65,7 +65,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
          return (BlockState)((BlockState)replacedBlockState.setValue(TYPE, SlabType.DOUBLE)).setValue(WATERLOGGED, false);
       } else {
          FluidState replacedFluidState = context.getLevel().getFluidState(pos);
-         BlockState result = (BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+         BlockState result = (BlockState)((BlockState)this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
          Direction clickedFace = context.getClickedFace();
          return clickedFace != Direction.DOWN && (clickedFace == Direction.UP || !(context.getClickLocation().y - (double)pos.getY() > 0.5)) ? result : (BlockState)result.setValue(TYPE, SlabType.TOP);
       }
@@ -92,15 +92,15 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       return state.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.placeLiquid(level, pos, state, fluidState) : false;
    }
 
-   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
-      return state.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, type) : false;
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
+      return state.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, fluidState) : false;
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {

@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -18,11 +19,13 @@ public class JukeboxSongPlayer {
    private @Nullable Holder<JukeboxSong> song;
    private final BlockPos blockPos;
    private final OnSongChanged onSongChanged;
+   private final BooleanSupplier shouldEmitParticlesHigher;
 
-   public JukeboxSongPlayer(final OnSongChanged onSongChanged, final BlockPos blockPos) {
+   public JukeboxSongPlayer(final OnSongChanged onSongChanged, final BlockPos blockPos, final BooleanSupplier shouldEmitParticlesHigher) {
       super();
       this.onSongChanged = onSongChanged;
       this.blockPos = blockPos;
+      this.shouldEmitParticlesHigher = shouldEmitParticlesHigher;
    }
 
    public boolean isPlaying() {
@@ -69,7 +72,7 @@ public class JukeboxSongPlayer {
          } else {
             if (this.shouldEmitJukeboxPlayingEvent()) {
                level.gameEvent(GameEvent.JUKEBOX_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(blockState));
-               spawnMusicParticles(level, this.blockPos);
+               this.spawnMusicParticles(level);
             }
 
             ++this.ticksSinceSongStarted;
@@ -81,9 +84,10 @@ public class JukeboxSongPlayer {
       return this.ticksSinceSongStarted % 20L == 0L;
    }
 
-   private static void spawnMusicParticles(final LevelAccessor level, final BlockPos blockPos) {
+   private void spawnMusicParticles(final LevelAccessor level) {
       if (level instanceof ServerLevel serverLevel) {
-         Vec3 pos = Vec3.atBottomCenterOf(blockPos).add(0.0, 1.2000000476837158, 0.0);
+         float y = 1.2F + (this.shouldEmitParticlesHigher.getAsBoolean() ? 1.0F : 0.0F);
+         Vec3 pos = Vec3.atBottomCenterOf(this.blockPos).add(0.0, (double)y, 0.0);
          float randomColor = (float)level.getRandom().nextInt(4) / 24.0F;
          serverLevel.sendParticles(ParticleTypes.NOTE, pos.x(), pos.y(), pos.z(), 0, (double)randomColor, 0.0, 0.0, 1.0);
       }

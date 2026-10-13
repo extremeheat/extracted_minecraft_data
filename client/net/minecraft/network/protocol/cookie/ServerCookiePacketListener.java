@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.cookie;
 
-import net.minecraft.network.protocol.game.ServerPacketListener;
+import net.minecraft.network.ServerboundPacketListener;
 
-public interface ServerCookiePacketListener extends ServerPacketListener {
+public interface ServerCookiePacketListener extends ServerboundPacketListener {
    void handleCookieResponse(ServerboundCookieResponsePacket packet);
 }

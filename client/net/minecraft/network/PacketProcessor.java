@@ -24,7 +24,7 @@ public class PacketProcessor implements AutoCloseable {
       return Thread.currentThread() == this.runningThread;
    }
 
-   public <T extends PacketListener> void scheduleIfPossible(final T listener, final Packet<T> packet) {
+   public <T extends PacketListener & Handler> void scheduleIfPossible(final T listener, final Packet<? super T> packet) {
       if (this.closed) {
          throw new RejectedExecutionException("Server already shutting down");
       } else {
@@ -45,7 +45,7 @@ public class PacketProcessor implements AutoCloseable {
       this.closed = true;
    }
 
-   private static record ListenerAndPacket<T extends PacketListener>(T listener, Packet<T> packet) {
+   private static record ListenerAndPacket<T extends PacketListener & Handler>(T listener, Packet<? super T> packet) {
       private ListenerAndPacket {
          super();
       }
@@ -62,12 +62,16 @@ public class PacketProcessor implements AutoCloseable {
                   }
                }
 
-               this.listener.onPacketError(this.packet, var3);
+               ((Handler)this.listener).onPacketError(this.packet, var3);
             }
          } else {
             PacketProcessor.LOGGER.debug("Ignoring packet due to disconnection: {}", this.packet);
          }
 
       }
+   }
+
+   public interface Handler {
+      void onPacketError(Packet<?> packet, Exception cause) throws ReportedException;
    }
 }

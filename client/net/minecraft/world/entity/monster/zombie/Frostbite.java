@@ -94,7 +94,7 @@ public class Frostbite extends RangedZombie {
    }
 
    protected SoundEvent getRangedAttackSound() {
-      return SoundEvents.DROWNED_SHOOT;
+      return SoundEvents.ICE_BALL_THROW;
    }
 
    public TagKey<Item> getPreferredWeaponType() {
@@ -116,10 +116,6 @@ public class Frostbite extends RangedZombie {
       }
 
       return result;
-   }
-
-   public boolean canBeAffected(final MobEffectInstance newEffect) {
-      return newEffect.is(MobEffects.FREEZING) ? false : super.canBeAffected(newEffect);
    }
 
    private int getRangedAttackIntervalMin() {
@@ -172,5 +168,9 @@ public class Frostbite extends RangedZombie {
    public void performRangedAttack(final LivingEntity target, final float power) {
       super.performRangedAttack(target, power);
       this.swingForAttack(InteractionHand.MAIN_HAND);
+   }
+
+   protected boolean convertsWhenFreezing() {
+      return false;
    }
 }

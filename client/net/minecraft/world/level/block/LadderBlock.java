@@ -75,7 +75,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
          if (direction.getAxis().isHorizontal()) {
             state = (BlockState)state.setValue(FACING, direction.getOpposite());
             if (state.canSurvive(level, pos)) {
-               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
             }
          }
       }
@@ -96,7 +96,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    static {

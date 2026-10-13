@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -48,13 +49,13 @@ public class LiquidBlock extends Block implements BucketPickup {
       super(properties);
       this.fluid = fluid;
       this.stateCache = Lists.newArrayList();
-      this.stateCache.add(fluid.getSource(false));
+      this.stateCache.add(fluid.getSource());
 
       for(int level = 1; level < 8; ++level) {
-         this.stateCache.add(fluid.getFlowing(8 - level, false));
+         this.stateCache.add(fluid.getFlowing(8 - level));
       }
 
-      this.stateCache.add(fluid.getFlowing(8, true));
+      this.stateCache.add(fluid.getFlowing(8));
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(LEVEL, 0));
    }
 
@@ -90,7 +91,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {
-      return !this.fluid.is(FluidTags.LAVA);
+      return this.fluid != Fluids.LAVA;
    }
 
    protected FluidState getFluidState(final BlockState state) {
@@ -99,7 +100,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    protected boolean skipRendering(final BlockState state, final BlockState neighborState, final Direction direction) {
-      return neighborState.getFluidState().getType().isSame(this.fluid);
+      return neighborState.getFluidState().is(this.fluid);
    }
 
    protected RenderShape getRenderShape(final BlockState state) {
@@ -146,8 +147,8 @@ public class LiquidBlock extends Block implements BucketPickup {
       return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
    }
 
-   private static boolean shouldBubbleColumnOccupy(final BlockState state) {
-      return state.getFluidState().is(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY) && state.getFluidState().isSource() && state.getFluidState().isFull();
+   public static boolean shouldBubbleColumnOccupy(final BlockState state) {
+      return state.getFluidState().isSourceOfType(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY);
    }
 
    protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
@@ -170,7 +171,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    private boolean shouldSpreadLiquid(final Level level, final BlockPos pos, final BlockState state) {
-      if (this.fluid.is(FluidTags.LAVA)) {
+      if (this.fluid == Fluids.LAVA) {
          boolean isOverSoulSoil = level.getBlockState(pos.below()).is(Blocks.SOUL_SOIL);
          UnmodifiableIterator var5 = POSSIBLE_FLOW_DIRECTIONS.iterator();
 
@@ -187,6 +188,16 @@ public class LiquidBlock extends Block implements BucketPickup {
             if (isOverSoulSoil && level.getBlockState(neighbourPos).is(Blocks.BLUE_ICE)) {
                level.setBlockAndUpdate(pos, Blocks.BASALT.defaultBlockState());
                this.fizz(level, pos);
+               return false;
+            }
+         }
+      }
+
+      if (this.fluid == Fluids.WATER) {
+         for(Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos neighbourPos = pos.relative(direction.getOpposite());
+            if (level.getBlockState(neighbourPos).is(Blocks.BLUE_ICE)) {
+               level.setBlockAndUpdate(pos, Blocks.BRITTLE_ICE.defaultBlockState());
                return false;
             }
          }

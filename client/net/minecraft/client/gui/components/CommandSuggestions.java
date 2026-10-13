@@ -132,7 +132,7 @@ public class CommandSuggestions {
    }
 
    public boolean mouseClicked(final MouseButtonEvent event) {
-      return this.suggestions != null && this.suggestions.mouseClicked((int)event.x(), (int)event.y());
+      return this.suggestions != null && this.suggestions.mouseClicked(event);
    }
 
    public void showSuggestions(final boolean immediateNarration) {
@@ -546,17 +546,23 @@ public class CommandSuggestions {
 
       }
 
-      public boolean mouseClicked(final int x, final int y) {
-         if (!this.rect.contains(x, y)) {
+      public boolean mouseClicked(final MouseButtonEvent event) {
+         if (!event.isLeftMouse()) {
             return false;
          } else {
-            int line = (y - this.rect.getY()) / 12 + this.offset;
-            if (line >= 0 && line < this.suggestionList.size()) {
-               this.select(line);
-               this.useSuggestion();
-            }
+            int x = (int)event.x();
+            int y = (int)event.y();
+            if (!this.rect.contains(x, y)) {
+               return false;
+            } else {
+               int line = (y - this.rect.getY()) / 12 + this.offset;
+               if (line >= 0 && line < this.suggestionList.size()) {
+                  this.select(line);
+                  this.useSuggestion();
+               }
 
-            return true;
+               return true;
+            }
          }
       }
 

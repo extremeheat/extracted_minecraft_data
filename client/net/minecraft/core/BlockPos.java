@@ -14,7 +14,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.concurrent.Immutable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
@@ -27,7 +26,6 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 import org.jspecify.annotations.Nullable;
 
-@Immutable
 public class BlockPos extends Vec3i {
    public static final Codec<BlockPos> CODEC;
    public static final StreamCodec<ByteBuf, BlockPos> STREAM_CODEC;
@@ -219,7 +217,10 @@ public class BlockPos extends Vec3i {
    }
 
    public Vec3 clampLocationWithin(final Vec3 location) {
-      return new Vec3(Math.clamp(location.x, (double)((float)this.getX() + 1.0E-5F), (double)this.getX() + 1.0 - 9.999999747378752E-6), Math.clamp(location.y, (double)((float)this.getY() + 1.0E-5F), (double)this.getY() + 1.0 - 9.999999747378752E-6), Math.clamp(location.z, (double)((float)this.getZ() + 1.0E-5F), (double)this.getZ() + 1.0 - 9.999999747378752E-6));
+      double x = (double)this.getX();
+      double y = (double)this.getY();
+      double z = (double)this.getZ();
+      return new Vec3(Math.clamp(location.x, x + 9.999999747378752E-6, x + 1.0 - 9.999999747378752E-6), Math.clamp(location.y, y + 9.999999747378752E-6, y + 1.0 - 9.999999747378752E-6), Math.clamp(location.z, z + 9.999999747378752E-6, z + 1.0 - 9.999999747378752E-6));
    }
 
    public static Iterable<BlockPos> randomInCube(final RandomSource random, final int limit, final BlockPos center, final int sizeToScanInAllDirections) {

@@ -35,13 +35,13 @@ public class FireChargeItem extends Item implements ProjectileItem {
       if (!CampfireBlock.canLight(blockState) && !CandleBlock.canLight(blockState) && !CandleCakeBlock.canLight(blockState)) {
          pos = pos.relative(context.getClickedFace());
          if (BaseFireBlock.canBePlacedAt(level, pos, context.getHorizontalDirection())) {
-            this.playSound(level, pos);
+            playSound(level, pos);
             level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
             level.gameEvent(context.getPlayer(), GameEvent.BLOCK_PLACE, pos);
             used = true;
          }
       } else {
-         this.playSound(level, pos);
+         playSound(level, pos);
          level.setBlockAndUpdate(pos, (BlockState)blockState.setValue(BlockStateProperties.LIT, true));
          level.gameEvent(context.getPlayer(), GameEvent.BLOCK_CHANGE, pos);
          used = true;
@@ -55,7 +55,7 @@ public class FireChargeItem extends Item implements ProjectileItem {
       }
    }
 
-   private void playSound(final Level level, final BlockPos pos) {
+   public static void playSound(final Level level, final BlockPos pos) {
       RandomSource random = level.getRandom();
       level.playSound((Entity)null, (BlockPos)pos, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F);
    }

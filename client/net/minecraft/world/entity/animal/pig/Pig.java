@@ -55,7 +55,6 @@ import net.minecraft.world.entity.variant.SpawnContext;
 import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -137,24 +136,24 @@ public class Pig extends Animal implements ItemSteerable {
       input.read("sound_variant", ResourceKey.codec(Registries.PIG_SOUND_VARIANT)).flatMap((soundVariant) -> this.registryAccess().lookupOrThrow(Registries.PIG_SOUND_VARIANT).get(soundVariant)).ifPresent(this::setSoundVariant);
    }
 
-   protected SoundEvent getAmbientSound() {
-      return (SoundEvent)this.getSoundSet().ambientSound().value();
+   protected @Nullable SoundEvent getAmbientSound() {
+      return (SoundEvent)this.getSoundSet().ambientSound().map(Holder::value).orElse((Object)null);
    }
 
-   protected SoundEvent getHurtSound(final DamageSource source) {
-      return (SoundEvent)this.getSoundSet().hurtSound().value();
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
+      return (SoundEvent)this.getSoundSet().hurtSound().map(Holder::value).orElse((Object)null);
    }
 
-   protected SoundEvent getDeathSound() {
-      return (SoundEvent)this.getSoundSet().deathSound().value();
+   protected @Nullable SoundEvent getDeathSound() {
+      return (SoundEvent)this.getSoundSet().deathSound().map(Holder::value).orElse((Object)null);
    }
 
    protected void playEatingSound() {
-      this.makeSound((SoundEvent)this.getSoundSet().eatSound().value());
+      this.getSoundSet().eatSound().ifPresent((s) -> this.makeSound((SoundEvent)s.value()));
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
+      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.15F, 1.0F));
    }
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
@@ -188,8 +187,8 @@ public class Pig extends Animal implements ItemSteerable {
       return slot == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(slot);
    }
 
-   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
-      return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.PIG_SADDLE : super.getEquipSound(slot, stack, equippable));
+   public Holder<SoundEvent> getSaddleEquipSound() {
+      return SoundEvents.PIG_SADDLE;
    }
 
    public void thunderHit(final ServerLevel level, final LightningBolt lightningBolt) {

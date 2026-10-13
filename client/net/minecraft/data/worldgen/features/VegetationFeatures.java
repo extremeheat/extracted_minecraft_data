@@ -247,6 +247,6 @@ public class VegetationFeatures {
    }
 
    public static BlockPredicateFilter nearWaterPredicate(final Block block) {
-      return BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(block), BlockPredicate.anyOf(BlockPredicate.matchesFluids((Directional)CompositeDirection.EAST_DOWN, Fluids.WATER, Fluids.FLOWING_WATER), BlockPredicate.matchesFluids((Directional)CompositeDirection.WEST_DOWN, Fluids.WATER, Fluids.FLOWING_WATER), BlockPredicate.matchesFluids((Directional)CompositeDirection.SOUTH_DOWN, Fluids.WATER, Fluids.FLOWING_WATER), BlockPredicate.matchesFluids((Directional)CompositeDirection.NORTH_DOWN, Fluids.WATER, Fluids.FLOWING_WATER))));
+      return BlockPredicateFilter.forPredicate(BlockPredicate.allOf(BlockPredicate.ONLY_IN_AIR_PREDICATE, BlockPredicate.wouldSurvive(block), BlockPredicate.anyOf(BlockPredicate.matchesFluids(CompositeDirection.EAST_DOWN, Fluids.WATER), BlockPredicate.matchesFluids(CompositeDirection.WEST_DOWN, Fluids.WATER), BlockPredicate.matchesFluids(CompositeDirection.SOUTH_DOWN, Fluids.WATER), BlockPredicate.matchesFluids(CompositeDirection.NORTH_DOWN, Fluids.WATER))));
    }
 }

@@ -9,7 +9,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -36,10 +35,14 @@ public abstract class Fluid {
       StateDefinition.Builder<Fluid, FluidState> builder = new StateDefinition.Builder<Fluid, FluidState>(this);
       this.createFluidStateDefinition(builder);
       this.stateDefinition = builder.create(Fluid::defaultFluidState, FluidState::new);
-      this.registerDefaultState(this.stateDefinition.any());
+      this.registerDefaultState(this.makeDefaultState(this.stateDefinition.any()));
    }
 
    protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
+   }
+
+   protected FluidState makeDefaultState(final FluidState state) {
+      return state;
    }
 
    public StateDefinition<Fluid, FluidState> getStateDefinition() {
@@ -72,7 +75,7 @@ public abstract class Fluid {
       return null;
    }
 
-   protected abstract boolean canBeReplacedWith(FluidState state, final BlockGetter level, final BlockPos pos, Fluid other, Direction direction);
+   protected abstract boolean canBeReplacedWith(FluidState state, final BlockGetter level, final BlockPos pos, FluidState other, Direction direction);
 
    protected abstract Vec3 getFlow(BlockGetter level, BlockPos pos, FluidState fluidState);
 
@@ -96,17 +99,9 @@ public abstract class Fluid {
 
    public abstract boolean isSource(FluidState fluidState);
 
+   public abstract boolean isFalling(final FluidState fluidState);
+
    public abstract int getAmount(FluidState fluidState);
-
-   public boolean isSame(final Fluid other) {
-      return other == this;
-   }
-
-   /** @deprecated */
-   @Deprecated
-   public boolean is(final TagKey<Fluid> tag) {
-      return this.builtInRegistryHolder.is(tag);
-   }
 
    public abstract VoxelShape getShape(final FluidState state, final BlockGetter level, final BlockPos pos);
 

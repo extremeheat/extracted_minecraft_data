@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -724,12 +723,14 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             playerSpeed = Math.clamp(playerSpeed, 0.0, 0.5);
             Vec3 pushVelocity = (new Vec3(pushDirection.x, this.onGround() ? knockback * 0.30000001192092896 : 0.0, pushDirection.z)).scale(playerSpeed);
             this.needsSync = true;
-            float push_sound_threshold = this.soundSettings.pushSoundImpulseThreshold();
-            if (pushVelocity.lengthSqr() > (double)(push_sound_threshold * push_sound_threshold) && this.pushSoundCooldown <= 0) {
-               this.pushSoundCooldown = (int)(this.soundSettings.pushSoundCooldown() * 20.0F);
-               this.playSound((SoundEvent)this.soundSettings.pushSound().value());
-            }
+            this.soundSettings.pushSound().ifPresent((pushSound) -> {
+               float pushSoundThreshold = this.soundSettings.pushSoundImpulseThreshold();
+               if (pushVelocity.lengthSqr() > (double)(pushSoundThreshold * pushSoundThreshold) && this.pushSoundCooldown <= 0) {
+                  this.pushSoundCooldown = (int)(this.soundSettings.pushSoundCooldown() * 20.0F);
+                  this.playSound((SoundEvent)pushSound.value());
+               }
 
+            });
             this.addDeltaMovement(pushVelocity);
             this.applyContactDamage(player);
          }
@@ -784,7 +785,6 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          float verticalPower = this.knockbackModifier.verticalPower();
          float originalHorizontalPower = horizontalPower;
          float originalVerticalPower = verticalPower;
-         Holder<SoundEvent> hitSound = this.soundSettings.hitSound();
          Vec2 originalAngle = new Vec2((float)xd, (float)zd);
          Vec2 newAngle = this.applyHorizontalHitAngleScale(1.6F, originalAngle, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter());
          Vec2 newPower = this.applyVerticalHitAnglePowerTransfer(0.5F, horizontalPower, verticalPower, source.getEntity().getEyePosition(), source.getEntity().getLookAngle().normalize(), this.getBoundingBox().getCenter(), this.getBbHeight());
@@ -807,7 +807,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          verticalPower = Math.clamp(verticalPower, -128.0F, 128.0F);
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
          this.addDeltaMovement(-horizontalKnockback.x, (double)verticalPower * 1.2, -horizontalKnockback.z);
-         this.playSound(hitSound.value());
+         this.soundSettings.hitSound().ifPresent((s) -> this.playSound((SoundEvent)s.value()));
       } else {
          super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }

@@ -30,7 +30,7 @@ public class FluidRenderer {
    }
 
    private static boolean isNeighborSameFluid(final FluidState fluidState, final FluidState neighborFluidState) {
-      return neighborFluidState.getType().isSame(fluidState.getType());
+      return neighborFluidState.is(fluidState.getType());
    }
 
    private static boolean isFaceOccludedByState(final Direction direction, final float height, final BlockState state) {
@@ -298,9 +298,9 @@ public class FluidRenderer {
    }
 
    private float getHeight(final BlockAndTintGetter level, final Fluid fluidType, final BlockPos pos, final BlockState state, final FluidState fluidState) {
-      if (fluidType.isSame(fluidState.getType())) {
+      if (fluidState.is(fluidType)) {
          BlockState aboveState = level.getBlockState(pos.above());
-         return fluidType.isSame(aboveState.getFluidState().getType()) ? 1.0F : fluidState.getOwnHeight();
+         return aboveState.getFluidState().is(fluidType) ? 1.0F : fluidState.getOwnHeight();
       } else {
          return !state.isSolid() ? 0.0F : -1.0F;
       }

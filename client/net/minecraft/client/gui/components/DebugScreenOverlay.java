@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.debug.DebugColumn;
@@ -34,7 +35,7 @@ import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
@@ -93,7 +94,7 @@ public class DebugScreenOverlay {
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       Options options = this.minecraft.options;
       if (this.minecraft.isGameLoadFinished() && (!this.minecraft.gui.hud.isHidden() || this.minecraft.gui.screen() != null)) {
-         Collection<Identifier> visibleEntries = this.minecraft.debugEntries.getCurrentlyEnabled();
+         Collection<ResourceKey<DebugScreenEntry>> visibleEntries = this.minecraft.debugEntries.getCurrentlyEnabled();
          if (visibleEntries.isEmpty()) {
             this.clearColumnCache();
          } else {
@@ -155,8 +156,8 @@ public class DebugScreenOverlay {
             };
             Level level = this.getLevel();
 
-            for(Identifier id : visibleEntries) {
-               DebugScreenEntry entry = DebugScreenEntries.getEntry(id);
+            for(ResourceKey<DebugScreenEntry> id : visibleEntries) {
+               DebugScreenEntry entry = (DebugScreenEntry)BuiltInClientRegistries.DEBUG_SCREEN_ENTRY.getValue(id);
                if (entry != null) {
                   entry.display(displayer, level, this.getClientChunk(), this.getServerChunk());
                }

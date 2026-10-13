@@ -246,7 +246,7 @@ public class ChatSelectionScreen extends Screen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            return this.canSelect();
+            return event.isLeftMouse() && this.canSelect();
          }
       }
 
@@ -333,8 +333,12 @@ public class ChatSelectionScreen extends Screen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            ChatSelectionList.this.setSelected((Entry)null);
-            return this.toggleReport();
+            if (event.isLeftMouse()) {
+               ChatSelectionList.this.setSelected((Entry)null);
+               return this.toggleReport();
+            } else {
+               return false;
+            }
          }
 
          public boolean keyPressed(final KeyEvent event) {

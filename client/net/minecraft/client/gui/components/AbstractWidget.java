@@ -134,7 +134,7 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
    }
 
    protected boolean isValidClickButton(final MouseButtonInfo buttonInfo) {
-      return buttonInfo.button() == 1;
+      return buttonInfo.isLeftMouse();
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {

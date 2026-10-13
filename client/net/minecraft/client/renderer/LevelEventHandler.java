@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -222,6 +223,9 @@ public class LevelEventHandler {
             break;
          case 1057:
             this.level.playLocalSound(pos, SoundEvents.FROSTBITE_CONVERTED_TO_ZOMBIE, SoundSource.HOSTILE, 2.0F, random.nextFloat() * 0.1F + 0.9F, false);
+            break;
+         case 1058:
+            this.level.playLocalSound(pos, SoundEvents.DROWNED_CONVERTED_TO_ZOMBIE, SoundSource.HOSTILE, 2.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1500:
             ComposterBlock.handleFill(this.level, pos, data > 0);
@@ -497,7 +501,7 @@ public class LevelEventHandler {
                this.level.addParticle(ParticleTypes.POOF, (double)pos.getX() + random.nextDouble(), (double)pos.getY() + random.nextDouble(), (double)pos.getZ() + random.nextDouble(), velocityX, velocityY, velocityZ);
             }
 
-            this.level.playLocalSound(pos, SoundEvents.COBWEB_PLACE, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
+            this.level.playLocalSound(pos, (Holder)((Optional)SoundEvents.COBWEB.placeSound()).orElseThrow(), SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);
             break;
          case 3019:
             this.level.playLocalSound(pos, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (random.nextFloat() - random.nextFloat()) * 0.2F + 1.0F, true);

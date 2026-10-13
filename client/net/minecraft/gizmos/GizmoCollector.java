@@ -2,6 +2,10 @@ package net.minecraft.gizmos;
 
 public interface GizmoCollector {
    GizmoProperties IGNORED = new GizmoProperties() {
+      public GizmoProperties withEntityHitboxes() {
+         return this;
+      }
+
       public GizmoProperties setAlwaysOnTop() {
          return this;
       }

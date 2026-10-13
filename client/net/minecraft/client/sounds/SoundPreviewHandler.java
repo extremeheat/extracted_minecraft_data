@@ -1,8 +1,9 @@
 package net.minecraft.client.sounds;
 
+import java.util.Optional;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.animal.cow.CowSoundVariant;
@@ -20,22 +21,22 @@ public final class SoundPreviewHandler {
    public static void preview(final SoundManager soundManager, final SoundSource category, final float volume) {
       stopOtherCategoryPreview(soundManager, category);
       if (canPlaySound(soundManager)) {
-         SoundEvent var10000;
+         SimpleSoundInstance var10000;
          switch (category) {
-            case RECORDS -> var10000 = SoundEvents.NOTE_BLOCK_GUITAR.value();
-            case WEATHER -> var10000 = SoundEvents.LIGHTNING_BOLT_THUNDER;
-            case BLOCKS -> var10000 = SoundEvents.GRASS_PLACE.value();
-            case HOSTILE -> var10000 = SoundEvents.ZOMBIE_AMBIENT;
-            case NEUTRAL -> var10000 = (SoundEvent)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().value();
-            case PLAYERS -> var10000 = SoundEvents.GENERIC_EAT.value();
-            case AMBIENT -> var10000 = SoundEvents.AMBIENT_CAVE.value();
-            case UI -> var10000 = SoundEvents.UI_BUTTON_CLICK.value();
-            default -> var10000 = SoundEvents.EMPTY.value();
+            case RECORDS -> var10000 = SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_GUITAR, 1.0F, volume);
+            case WEATHER -> var10000 = SimpleSoundInstance.forUI(SoundEvents.LIGHTNING_BOLT_THUNDER, 1.0F, volume);
+            case BLOCKS -> var10000 = SimpleSoundInstance.forUI((Holder)((Optional)SoundEvents.GRASS.placeSound()).orElseThrow(), 1.0F, volume);
+            case HOSTILE -> var10000 = SimpleSoundInstance.forUI(SoundEvents.ZOMBIE_AMBIENT, 1.0F, volume);
+            case NEUTRAL -> var10000 = SimpleSoundInstance.forUI((Holder)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().orElseThrow(), 1.0F, volume);
+            case PLAYERS -> var10000 = SimpleSoundInstance.forUI(SoundEvents.GENERIC_EAT, 1.0F, volume);
+            case AMBIENT -> var10000 = SimpleSoundInstance.forUI(SoundEvents.AMBIENT_CAVE, 1.0F, volume);
+            case UI -> var10000 = SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F, volume);
+            default -> var10000 = null;
          }
 
-         SoundEvent previewSound = var10000;
-         if (previewSound != SoundEvents.EMPTY.value()) {
-            activePreview = SimpleSoundInstance.forUI(previewSound, 1.0F, volume);
+         SoundInstance previewSound = var10000;
+         if (previewSound != null) {
+            activePreview = previewSound;
             soundManager.play(activePreview);
          }
       }

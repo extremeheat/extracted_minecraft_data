@@ -133,7 +133,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
       }
 
       public Builder setProperties(final StatePropertiesPredicate.Builder properties) {
-         this.properties = properties.build();
+         this.properties = Optional.of(properties.build());
          return this;
       }
 

@@ -136,7 +136,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int yo = this.topPos + 14;
          int endIndex = this.startIndex + 12;
 
-         for(int index = this.startIndex; index < endIndex; ++index) {
+         for(int index = this.startIndex; index < endIndex && index < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++index) {
             int posIndex = index - this.startIndex;
             double xx = event.x() - (double)(xo + posIndex % 4 * 16);
             double yy = event.y() - (double)(yo + posIndex / 4 * 18);

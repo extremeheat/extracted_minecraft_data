@@ -215,11 +215,15 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-         if (doubleClick) {
-            this.join();
-         }
+         if (event.isLeftMouse()) {
+            if (doubleClick) {
+               this.join();
+            }
 
-         return super.mouseClicked(event, doubleClick);
+            return true;
+         } else {
+            return false;
+         }
       }
 
       public boolean keyPressed(final KeyEvent event) {
@@ -489,26 +493,30 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-         int relX = (int)event.x() - this.getContentX();
-         int relY = (int)event.y() - this.getContentY();
-         if (this.mouseOverRightHalf(relX, relY, 32)) {
-            this.join();
-            return true;
-         } else {
-            int currentIndex = this.screen.serverSelectionList.children().indexOf(this);
-            if (currentIndex > 0 && this.mouseOverTopLeftQuarter(relX, relY, 32)) {
-               this.swap(currentIndex, currentIndex - 1);
-               return true;
-            } else if (currentIndex < this.screen.getServers().size() - 1 && this.mouseOverBottomLeftQuarter(relX, relY, 32)) {
-               this.swap(currentIndex, currentIndex + 1);
+         if (event.isLeftMouse()) {
+            int relX = (int)event.x() - this.getContentX();
+            int relY = (int)event.y() - this.getContentY();
+            if (this.mouseOverRightHalf(relX, relY, 32)) {
+               this.join();
                return true;
             } else {
-               if (doubleClick) {
-                  this.join();
-               }
+               int currentIndex = this.screen.serverSelectionList.children().indexOf(this);
+               if (currentIndex > 0 && this.mouseOverTopLeftQuarter(relX, relY, 32)) {
+                  this.swap(currentIndex, currentIndex - 1);
+                  return true;
+               } else if (currentIndex < this.screen.getServers().size() - 1 && this.mouseOverBottomLeftQuarter(relX, relY, 32)) {
+                  this.swap(currentIndex, currentIndex + 1);
+                  return true;
+               } else {
+                  if (doubleClick) {
+                     this.join();
+                  }
 
-               return super.mouseClicked(event, doubleClick);
+                  return true;
+               }
             }
+         } else {
+            return false;
          }
       }
 

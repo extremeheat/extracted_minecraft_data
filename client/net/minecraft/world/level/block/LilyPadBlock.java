@@ -38,6 +38,6 @@ public class LilyPadBlock extends VegetationBlock {
    protected boolean mayPlaceOn(final BlockState state, final BlockGetter level, final BlockPos pos) {
       FluidState fluidState = level.getFluidState(pos);
       FluidState fluidAbove = level.getFluidState(pos.above());
-      return (fluidState.is(FluidTags.SUPPORTS_LILY_PAD) || state.is(BlockTags.SUPPORTS_LILY_PAD)) && fluidAbove.is(Fluids.EMPTY);
+      return (fluidState.isSourceOfType(FluidTags.SUPPORTS_LILY_PAD) || state.is(BlockTags.SUPPORTS_LILY_PAD)) && fluidAbove.is(Fluids.EMPTY);
    }
 }

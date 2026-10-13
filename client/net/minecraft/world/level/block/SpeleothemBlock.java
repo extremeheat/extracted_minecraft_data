@@ -115,7 +115,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
       } else {
          boolean mergeOpposingTips = !context.isSecondaryUseActive();
          SpeleothemThickness thickness = this.calculateSpeleothemThickness(level, pos, tipDirection, mergeOpposingTips);
-         return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, tipDirection)).setValue(THICKNESS, thickness)).setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER));
+         return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, tipDirection)).setValue(THICKNESS, thickness)).setValue(WATERLOGGED, level.getFluidState(pos).isSourceOfType(Fluids.WATER));
       }
    }
 
@@ -232,7 +232,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {
@@ -365,7 +365,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    }
 
    private void createSpeleothem(final LevelAccessor level, final BlockPos pos, final Direction direction, final SpeleothemThickness thickness) {
-      BlockState state = (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, direction)).setValue(THICKNESS, thickness)).setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER));
+      BlockState state = (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(TIP_DIRECTION, direction)).setValue(THICKNESS, thickness)).setValue(WATERLOGGED, level.getFluidState(pos).isSourceOfType(Fluids.WATER));
       level.setBlockAndUpdate(pos, state);
    }
 

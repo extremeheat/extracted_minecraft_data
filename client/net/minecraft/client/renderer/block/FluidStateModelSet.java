@@ -23,9 +23,7 @@ public class FluidStateModelSet {
    }
 
    public static Map<Fluid, FluidModel> bake(final MaterialBaker materials) {
-      FluidModel waterModel = WATER_MODEL.bake(materials, () -> "Water");
-      FluidModel lavaModel = LAVA_MODEL.bake(materials, () -> "Lava");
-      return Map.of(Fluids.WATER, waterModel, Fluids.FLOWING_WATER, waterModel, Fluids.LAVA, lavaModel, Fluids.FLOWING_LAVA, lavaModel);
+      return Map.of(Fluids.WATER, WATER_MODEL.bake(materials, () -> "Water"), Fluids.LAVA, LAVA_MODEL.bake(materials, () -> "Lava"));
    }
 
    public FluidModel get(final FluidState state) {

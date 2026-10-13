@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.Music;
@@ -142,14 +141,7 @@ public class MusicManager {
    }
 
    public @Nullable String getCurrentMusicTranslationKey() {
-      if (this.currentMusic != null) {
-         Sound sound = this.currentMusic.getSound();
-         if (sound != null) {
-            return sound.getLocation().toShortLanguageKey();
-         }
-      }
-
-      return null;
+      return this.currentMusic != null ? this.currentMusic.getSound().getLocation().toShortLanguageKey() : null;
    }
 
    public void setMinutesBetweenSongs(final MusicFrequency musicFrequency) {

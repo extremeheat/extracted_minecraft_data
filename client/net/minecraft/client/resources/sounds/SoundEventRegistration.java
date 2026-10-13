@@ -1,6 +1,7 @@
 package net.minecraft.client.resources.sounds;
 
 import java.util.List;
+import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
 
 public class SoundEventRegistration {
@@ -23,7 +24,7 @@ public class SoundEventRegistration {
       return this.replace;
    }
 
-   public @Nullable String getSubtitle() {
-      return this.subtitle;
+   public @Nullable Component getSubtitle() {
+      return this.subtitle == null ? null : Component.translatable(this.subtitle);
    }
 }

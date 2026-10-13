@@ -115,7 +115,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       LevelAccessor level = context.getLevel();
       BlockPos pos = context.getClickedPos();
-      boolean replacedWater = level.getFluidState(pos).is(Fluids.WATER);
+      boolean replacedWater = level.getFluidState(pos).isSourceOfType(Fluids.WATER);
       return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, replacedWater)).setValue(SIGNAL_FIRE, this.isSmokeSource(level.getBlockState(pos.below())))).setValue(LIT, !replacedWater)).setValue(FACING, context.getHorizontalDirection());
    }
 
@@ -161,7 +161,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    public boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
-      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
+      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.isSourceOfType(Fluids.WATER)) {
          boolean isLit = (Boolean)state.getValue(LIT);
          if (isLit) {
             if (!level.isClientSide()) {
@@ -222,7 +222,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected BlockState rotate(final BlockState state, final Rotation rotation) {

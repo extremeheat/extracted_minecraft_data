@@ -1,6 +1,5 @@
 package net.minecraft.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -121,7 +120,7 @@ public class Camera implements TrackedWaypoint.Camera {
          this.alignWithEntity(partialTicks);
          this.fov = this.calculateFov(partialTicks);
          this.hudFov = this.calculateHudFov(partialTicks);
-         this.prepareCullFrustum(this.getViewRotationMatrix(this.cachedViewRotMatrix), this.createProjectionMatrixForCulling(), this.position);
+         this.prepareCullFrustum();
          float windowWidth = (float)this.minecraft.getWindow().getWidth();
          float windowHeight = (float)this.minecraft.getWindow().getHeight();
          this.setupPerspective(0.05F, this.depthFar, this.fov, windowWidth, windowHeight);
@@ -200,22 +199,15 @@ public class Camera implements TrackedWaypoint.Camera {
       this.fovModifier = Math.clamp(this.fovModifier, 0.1F, 1.5F);
    }
 
-   private Matrix4f createProjectionMatrixForCulling() {
-      float fovForCulling = Math.max(this.fov, (float)(Integer)this.minecraft.options.fov().get());
-      Matrix4f projection = new Matrix4f();
-      return projection.perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, RenderSystem.getDevice().getDeviceInfo().isZZeroToOne());
-   }
-
    public Frustum getCullFrustum() {
       return this.cullFrustum;
    }
 
-   private void prepareCullFrustum(final Matrix4fc modelViewMatrix, final Matrix4f projectionMatrixForCulling, final Vec3 cameraPos) {
+   private void prepareCullFrustum() {
       if (this.capturedFrustum != null && !this.captureFrustum) {
          this.cullFrustum = this.capturedFrustum;
       } else {
-         this.cullFrustum = new Frustum(modelViewMatrix, projectionMatrixForCulling);
-         this.cullFrustum.prepare(cameraPos.x(), cameraPos.y(), cameraPos.z());
+         this.cullFrustum = this.createCullFrustum();
       }
 
       if (this.captureFrustum) {
@@ -223,6 +215,15 @@ public class Camera implements TrackedWaypoint.Camera {
          this.captureFrustum = false;
       }
 
+   }
+
+   private Frustum createCullFrustum() {
+      Matrix4fc modelViewMatrix = this.getViewRotationMatrix(this.cachedViewRotMatrix);
+      float fovForCulling = Math.max(this.fov, (float)(Integer)this.minecraft.options.fov().get());
+      Matrix4f projectionMatrixForCulling = (new Matrix4f()).perspective(fovForCulling * 0.017453292F, (float)this.minecraft.getWindow().getWidth() / (float)this.minecraft.getWindow().getHeight(), 0.05F, this.depthFar, false);
+      Frustum cullFrustum = new Frustum(modelViewMatrix, projectionMatrixForCulling);
+      cullFrustum.prepare(this.position.x(), this.position.y(), this.position.z());
+      return cullFrustum;
    }
 
    public @Nullable Frustum getCapturedFrustum() {

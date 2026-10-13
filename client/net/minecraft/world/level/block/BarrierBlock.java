@@ -50,11 +50,11 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
-      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).is(Fluids.WATER));
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).isSourceOfType(Fluids.WATER));
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
@@ -71,10 +71,10 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
       return ItemStack.EMPTY;
    }
 
-   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
+   public boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
       if (user instanceof Player player) {
          if (player.isCreative()) {
-            return SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, type);
+            return SimpleWaterloggedBlock.super.canPlaceLiquid(user, level, pos, state, fluidState);
          }
       }
 

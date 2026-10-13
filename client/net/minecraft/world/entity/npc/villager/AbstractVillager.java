@@ -263,6 +263,10 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
 
    }
 
+   protected boolean canShearEquipment(final Player player) {
+      return false;
+   }
+
    public Vec3 getRopeHoldPosition(final float partialTickTime) {
       float yRot = Mth.lerp(partialTickTime, this.yBodyRotO, this.yBodyRot) * 0.017453292F;
       Vec3 offset = new Vec3(0.0, this.getBoundingBox().getYsize() - 1.0, 0.2);

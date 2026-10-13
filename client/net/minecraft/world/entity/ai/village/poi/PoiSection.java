@@ -90,8 +90,7 @@ public class PoiSection {
       } else {
          ((Set)this.byType.get(poiRecord.getPoiType())).remove(poiRecord);
          Logger var10000 = LOGGER;
-         Objects.requireNonNull(poiRecord);
-         Object var10002 = LogUtils.defer(poiRecord::getPoiType);
+         Object var10002 = LogUtils.defer(() -> poiRecord.getPoiType().getRegisteredName());
          Objects.requireNonNull(poiRecord);
          var10000.debug("Removed POI of type {} @ {}", var10002, LogUtils.defer(poiRecord::getPos));
          this.setDirty.run();

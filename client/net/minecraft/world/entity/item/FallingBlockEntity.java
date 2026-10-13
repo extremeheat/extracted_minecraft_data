@@ -183,7 +183,7 @@ public class FallingBlockEntity extends Entity {
                         boolean wouldContinueFalling = FallingBlock.isFree(this.level().getBlockState(pos.below())) && (!isConcrete || !isStuckInWater);
                         boolean wouldSurvive = this.blockState.canSurvive(this.level(), pos) && !wouldContinueFalling;
                         if (mayReplace && wouldSurvive) {
-                           if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(pos).is(Fluids.WATER)) {
+                           if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(pos).isSourceOfType(Fluids.WATER)) {
                               this.blockState = (BlockState)this.blockState.setValue(BlockStateProperties.WATERLOGGED, true);
                            }
 

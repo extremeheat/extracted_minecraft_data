@@ -459,7 +459,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 1) {
+      if (event.isLeftMouse()) {
          double xm = event.x() - (double)this.leftPos;
          double ym = event.y() - (double)this.topPos;
 
@@ -479,7 +479,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    public boolean mouseReleased(final MouseButtonEvent event) {
-      if (event.button() == 1) {
+      if (event.isLeftMouse()) {
          double xm = event.x() - (double)this.leftPos;
          double ym = event.y() - (double)this.topPos;
          this.scrolling = false;

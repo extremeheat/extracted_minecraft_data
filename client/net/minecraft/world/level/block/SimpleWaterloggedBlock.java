@@ -10,18 +10,17 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import org.jspecify.annotations.Nullable;
 
 public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContainer {
-   default boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid type) {
-      return type == Fluids.WATER;
+   default boolean canPlaceLiquid(final @Nullable LivingEntity user, final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
+      return fluidState.isSourceOfType(Fluids.WATER);
    }
 
    default boolean placeLiquid(final LevelAccessor level, final BlockPos pos, final BlockState state, final FluidState fluidState) {
-      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.is(Fluids.WATER)) {
+      if (!(Boolean)state.getValue(BlockStateProperties.WATERLOGGED) && fluidState.isSourceOfType(Fluids.WATER)) {
          if (!level.isClientSide()) {
             level.setBlockAndUpdate(pos, (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, true));
             level.scheduleTick(pos, fluidState.getType(), fluidState.getType().getTickDelay(level));

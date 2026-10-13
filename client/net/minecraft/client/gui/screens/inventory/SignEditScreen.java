@@ -6,16 +6,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignTextSlot;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
 
 public class SignEditScreen extends AbstractSignEditScreen {
-   public static final float MAGIC_BACKGROUND_SCALE = 3.9F;
-   public static final float MAGIC_TEXT_SCALE = 0.9765628F;
+   private static final float MAGIC_BACKGROUND_SCALE = 3.9F;
    private static final int TEXTURE_WIDTH = 24;
    private static final int TEXTURE_HEIGHT = 26;
    private static final int POST_HEIGHT = 14;
-   private static final Vector3fc TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
+   private static final int TEXT_Y_OFFSET = -26;
+   private static final int TEXT_SPACING = 10;
    private final int displayedHeight;
    private final Identifier texture;
 
@@ -27,17 +25,16 @@ public class SignEditScreen extends AbstractSignEditScreen {
       this.displayedHeight = isWallSign ? 12 : 26;
    }
 
-   protected float getSignYOffset() {
-      return 90.0F;
+   protected int getSignTextYOffset() {
+      return -26;
    }
 
    protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
-      graphics.pose().translate(0.0F, 27.0F);
       graphics.pose().scale(3.9F, 3.9F);
       graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -12, -13, 0.0F, 0.0F, 24, this.displayedHeight, 24, 26);
    }
 
-   protected Vector3fc getSignTextScale() {
-      return TEXT_SCALE;
+   protected int getSignTextSpacing() {
+      return 10;
    }
 }

@@ -253,7 +253,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    private long lastKineticHitFeedbackTime;
    private BlockPos lastPos;
    private Optional<BlockPos> lastClimbablePos;
-   protected @Nullable DamageSource lastDamageSource;
+   private @Nullable DamageSource lastDamageSource;
    private long lastDamageStamp;
    protected int autoSpinAttackTicks;
    protected float autoSpinAttackDmg;
@@ -648,7 +648,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (!ItemStack.isSameItemSameComponents(oldStack, stack) && !this.firstTick) {
             Equippable equippable = (Equippable)stack.get(DataComponents.EQUIPPABLE);
             if (!this.isSilent() && equippable != null && slot == equippable.slot()) {
-               this.level().playSeededSound((Entity)null, this.getX(), this.getY(), this.getZ(), this.getEquipSound(slot, stack, equippable), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
+               this.level().playSeededSound((Entity)null, this.getX(), this.getY(), this.getZ(), this.getEquipSound(slot, equippable), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
             }
 
             if (this.doesEmitEquipEvent(slot)) {
@@ -659,8 +659,15 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
-   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
-      return equippable.equipSound();
+   protected final Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final Equippable equippable) {
+      Holder<SoundEvent> equipSound = equippable.equipSound();
+      if (slot == EquipmentSlot.SADDLE && this instanceof Saddleable saddleable) {
+         if (equipSound.is(Saddleable.DEFAULT_EQUIP_SOUND)) {
+            return saddleable.getSaddleEquipSound();
+         }
+      }
+
+      return equipSound;
    }
 
    public void remove(final Entity.RemovalReason reason) {
@@ -980,6 +987,8 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public boolean canBeAffected(final MobEffectInstance newEffect) {
       if (this.is(EntityTypeTags.IMMUNE_TO_INFESTED)) {
          return !newEffect.is(MobEffects.INFESTED);
+      } else if (this.is(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES)) {
+         return !newEffect.is(MobEffects.FREEZING);
       } else if (this.is(EntityTypeTags.IMMUNE_TO_OOZING)) {
          return !newEffect.is(MobEffects.OOZING);
       } else if (!this.is(EntityTypeTags.IGNORES_POISON_AND_REGEN)) {
@@ -1221,8 +1230,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
          boolean success = !blocked || damage > 0.0F;
          if (success) {
-            this.lastDamageSource = source;
-            this.lastDamageStamp = this.level().getGameTime();
+            this.setLastDamageSource(source);
 
             for(MobEffectInstance effect : this.getActiveEffects()) {
                effect.onMobHurt(level, this, source, damage);
@@ -1395,6 +1403,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       }
    }
 
+   public final void setLastDamageSource(final DamageSource source) {
+      this.lastDamageSource = source;
+      this.lastDamageStamp = this.level().getGameTime();
+   }
+
    public @Nullable DamageSource getLastDamageSource() {
       return this.getLastDamageSource(40);
    }
@@ -1404,7 +1417,11 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    protected void playHurtSound(final DamageSource source) {
-      this.makeSound(this.getHurtSound(source));
+      this.makeSound(this.getHurtSoundForDamage(source));
+   }
+
+   private @Nullable SoundEvent getHurtSoundForDamage(final DamageSource source) {
+      return source.is(DamageTypeTags.NO_HURT_SOUND) ? null : this.getHurtSound(source);
    }
 
    public void makeSound(final @Nullable SoundEvent sound) {
@@ -1978,13 +1995,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       this.damageCooldownTime = 20;
       this.hurtDuration = 10;
       this.hurtTime = this.hurtDuration;
-      SoundEvent hurtSound = this.getHurtSound(source);
+      SoundEvent hurtSound = this.getHurtSoundForDamage(source);
       if (hurtSound != null) {
          this.playSound(hurtSound, this.getSoundVolume(), (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
       }
 
-      this.lastDamageSource = source;
-      this.lastDamageStamp = this.level().getGameTime();
+      this.setLastDamageSource(source);
    }
 
    public void handleEntityEvent(final @EntityEvent.Value byte id) {
@@ -3621,17 +3637,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return false;
    }
 
-   private boolean checkPositionAndTeleport(final double xx, final double y, final double zz, final boolean showParticles, final Predicate<BlockState> isInvalidPosition, final BlockState state, final Level level) {
+   private boolean checkPositionAndTeleport(final double x, final double y, final double z, final boolean showParticles, final Predicate<BlockState> isInvalidPosition, final BlockState state, final Level level) {
       if (isInvalidPosition.test(state)) {
          return false;
       } else {
-         AABB aabb = this.makeBoundingBox(new Vec3(xx, y, zz));
-         if (level.noCollision(aabb) && !level.containsAnyLiquid(aabb)) {
+         AABB aabb = this.makeBoundingBox(new Vec3(x, y, z));
+         if (level.noCollision(x, z, aabb) && !level.containsAnyLiquid(aabb)) {
             boolean hasInvalidPosition = level.findBlocksIn(aabb).filterState(isInvalidPosition).anyMatched();
             if (hasInvalidPosition) {
                return false;
-            } else if (this.canRandomlyTeleportTo(xx, y, zz)) {
-               this.teleportTo(xx, y, zz);
+            } else if (this.canRandomlyTeleportTo(x, y, z)) {
+               this.teleportTo(x, y, z);
                if (showParticles) {
                   level.broadcastEntityEvent(this, (byte)46);
                }

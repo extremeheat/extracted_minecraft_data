@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
+import net.minecraft.client.core.registries.ClientRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.datafix.DataFixTypes;
 import org.apache.commons.io.FileUtils;
@@ -29,8 +31,8 @@ import org.slf4j.Logger;
 public class DebugScreenEntryList {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_DEBUG_PROFILE_VERSION = 4649;
-   private final Map<Identifier, DebugScreenEntryStatus> allStatuses = new HashMap();
-   private final List<Identifier> currentlyEnabled = new ArrayList();
+   private final Map<ResourceKey<DebugScreenEntry>, DebugScreenEntryStatus> allStatuses = new HashMap();
+   private final List<ResourceKey<DebugScreenEntry>> currentlyEnabled = new ArrayList();
    private boolean isOverlayVisible = false;
    private @Nullable DebugScreenProfile profile;
    private final File debugProfileFile;
@@ -69,7 +71,7 @@ public class DebugScreenEntryList {
       this.rebuildCurrentList();
    }
 
-   private void resetStatuses(final Map<Identifier, DebugScreenEntryStatus> newEntries) {
+   private void resetStatuses(final Map<ResourceKey<DebugScreenEntry>, DebugScreenEntryStatus> newEntries) {
       this.allStatuses.clear();
       this.allStatuses.putAll(newEntries);
    }
@@ -84,22 +86,22 @@ public class DebugScreenEntryList {
       this.rebuildCurrentList();
    }
 
-   public DebugScreenEntryStatus getStatus(final Identifier location) {
+   public DebugScreenEntryStatus getStatus(final ResourceKey<DebugScreenEntry> location) {
       return (DebugScreenEntryStatus)this.allStatuses.getOrDefault(location, DebugScreenEntryStatus.NEVER);
    }
 
-   public boolean isCurrentlyEnabled(final Identifier location) {
+   public boolean isCurrentlyEnabled(final ResourceKey<DebugScreenEntry> location) {
       return this.currentlyEnabled.contains(location);
    }
 
-   public void setStatus(final Identifier location, final DebugScreenEntryStatus status) {
+   public void setStatus(final ResourceKey<DebugScreenEntry> location, final DebugScreenEntryStatus status) {
       this.profile = null;
       this.allStatuses.put(location, status);
       this.rebuildCurrentList();
       this.save();
    }
 
-   public boolean toggleStatus(final Identifier location) {
+   public boolean toggleStatus(final ResourceKey<DebugScreenEntry> location) {
       DebugScreenEntryStatus status = (DebugScreenEntryStatus)this.allStatuses.get(location);
       byte var4 = 0;
       //$FF: var4->value
@@ -133,7 +135,7 @@ public class DebugScreenEntryList {
       }
    }
 
-   public Collection<Identifier> getCurrentlyEnabled() {
+   public Collection<ResourceKey<DebugScreenEntry>> getCurrentlyEnabled() {
       return List.copyOf(this.currentlyEnabled);
    }
 
@@ -159,14 +161,14 @@ public class DebugScreenEntryList {
       boolean isReducedDebugInfo = minecraft.showOnlyReducedInfo();
       this.allStatuses.forEach((key, value) -> {
          if (value == DebugScreenEntryStatus.ALWAYS_ON || this.isOverlayVisible && value == DebugScreenEntryStatus.IN_OVERLAY) {
-            DebugScreenEntry debug = DebugScreenEntries.getEntry(key);
+            DebugScreenEntry debug = (DebugScreenEntry)BuiltInClientRegistries.DEBUG_SCREEN_ENTRY.getValue(key);
             if (debug != null && debug.isAllowed(isReducedDebugInfo)) {
                this.currentlyEnabled.add(key);
             }
          }
 
       });
-      this.currentlyEnabled.sort(Comparator.naturalOrder());
+      this.currentlyEnabled.sort(Comparator.comparing(ResourceKey::identifier, Comparator.naturalOrder()));
       ++this.currentlyEnabledVersion;
    }
 
@@ -189,8 +191,8 @@ public class DebugScreenEntryList {
 
    }
 
-   private static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<Identifier, DebugScreenEntryStatus>> custom) {
-      private static final Codec<Map<Identifier, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
+   private static record SerializedOptions(Optional<DebugScreenProfile> profile, Optional<Map<ResourceKey<DebugScreenEntry>, DebugScreenEntryStatus>> custom) {
+      private static final Codec<Map<ResourceKey<DebugScreenEntry>, DebugScreenEntryStatus>> CUSTOM_ENTRIES_CODEC;
       public static final Codec<SerializedOptions> CODEC;
 
       private SerializedOptions {
@@ -198,7 +200,7 @@ public class DebugScreenEntryList {
       }
 
       static {
-         CUSTOM_ENTRIES_CODEC = Codec.unboundedMap(Identifier.CODEC, DebugScreenEntryStatus.CODEC);
+         CUSTOM_ENTRIES_CODEC = Codec.unboundedMap(ResourceKey.codec(ClientRegistries.DEBUG_SCREEN_ENTRY), DebugScreenEntryStatus.CODEC);
          CODEC = RecordCodecBuilder.create((i) -> i.group(DebugScreenProfile.CODEC.optionalFieldOf("profile").forGetter(SerializedOptions::profile), CUSTOM_ENTRIES_CODEC.optionalFieldOf("custom").forGetter(SerializedOptions::custom)).apply(i, SerializedOptions::new));
       }
    }

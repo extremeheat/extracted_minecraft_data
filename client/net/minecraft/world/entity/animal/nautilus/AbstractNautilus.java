@@ -30,6 +30,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
+import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
@@ -46,7 +47,6 @@ import net.minecraft.world.inventory.AbstractMountInventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -59,7 +59,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractNautilus extends TamableAnimal implements PlayerRideableJumping, HasCustomInventoryScreen {
+public abstract class AbstractNautilus extends TamableAnimal implements PlayerRideableJumping, HasCustomInventoryScreen, Saddleable {
    public static final int INVENTORY_SLOT_OFFSET = 500;
    public static final int INVENTORY_ROWS = 3;
    public static final int SMALL_RESTRICTION_RADIUS = 16;
@@ -435,12 +435,8 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
-      if (slot == EquipmentSlot.SADDLE && this.isUnderWater()) {
-         return SoundEvents.NAUTILUS_SADDLE_UNDERWATER_EQUIP;
-      } else {
-         return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.NAUTILUS_SADDLE_EQUIP : super.getEquipSound(slot, stack, equippable));
-      }
+   public Holder<SoundEvent> getSaddleEquipSound() {
+      return this.isUnderWater() ? SoundEvents.NAUTILUS_SADDLE_UNDERWATER_EQUIP : SoundEvents.NAUTILUS_SADDLE_EQUIP;
    }
 
    public final int getInventorySize() {

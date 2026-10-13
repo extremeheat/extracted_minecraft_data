@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,11 +33,11 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty PERSISTENT;
    public static final BooleanProperty WATERLOGGED;
-   protected final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer;
+   protected final Optional<AmbientLeavesBlockSoundPlayer> ambientLeavesBlockSoundPlayer;
    private static final int TICK_DELAY = 1;
    private static volatile boolean cutoutLeaves;
 
-   public LeavesBlock(final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
+   public LeavesBlock(final Optional<AmbientLeavesBlockSoundPlayer> ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(properties);
       this.ambientLeavesBlockSoundPlayer = ambientLeavesBlockSoundPlayer;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
@@ -119,7 +120,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
@@ -127,7 +128,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
       BlockPos below = pos.below();
       BlockState belowState = level.getBlockState(below);
       makeDrippingWaterParticles(level, pos, random, belowState, below);
-      this.ambientLeavesBlockSoundPlayer.playAmbientLeavesSounds(level, pos, this, random);
+      this.ambientLeavesBlockSoundPlayer.ifPresent((ambientSound) -> ambientSound.playAmbientLeavesSounds(level, pos, this, random));
    }
 
    private static void makeDrippingWaterParticles(final Level level, final BlockPos pos, final RandomSource random, final BlockState belowState, final BlockPos below) {
@@ -146,7 +147,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-      BlockState state = (BlockState)((BlockState)this.defaultBlockState().setValue(PERSISTENT, true)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      BlockState state = (BlockState)((BlockState)this.defaultBlockState().setValue(PERSISTENT, true)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
       return updateDistance(state, context.getLevel(), context.getClickedPos());
    }
 

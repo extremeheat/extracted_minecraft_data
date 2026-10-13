@@ -111,7 +111,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 1) {
+      if (event.isLeftMouse()) {
          int xo = (this.width - 252) / 2;
          int yo = (this.height - 140) / 2;
 
@@ -160,7 +160,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
-      if (event.button() != 1) {
+      if (!event.isLeftMouse()) {
          this.isScrolling = false;
          return false;
       } else {

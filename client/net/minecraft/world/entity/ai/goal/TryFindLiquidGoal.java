@@ -17,14 +17,14 @@ public class TryFindLiquidGoal extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.onGround() && !this.mob.level().getFluidState(this.mob.blockPosition()).is(this.fluidTag);
+      return this.mob.onGround() && !this.mob.level().getFluidState(this.mob.blockPosition()).isSourceOfType(this.fluidTag);
    }
 
    public void start() {
       BlockPos fluidPos = null;
 
       for(BlockPos pos : BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 2.0), Mth.floor(this.mob.getY() - 2.0), Mth.floor(this.mob.getZ() - 2.0), Mth.floor(this.mob.getX() + 2.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() + 2.0))) {
-         if (this.mob.level().getFluidState(pos).is(this.fluidTag)) {
+         if (this.mob.level().getFluidState(pos).isSourceOfType(this.fluidTag)) {
             fluidPos = pos;
             break;
          }

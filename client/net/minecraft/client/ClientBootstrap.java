@@ -2,6 +2,7 @@ package net.minecraft.client;
 
 import com.mojang.renderpearl.backend.vulkan.VulkanFeatureSets;
 import net.minecraft.client.color.item.ItemTintSources;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.client.gui.screens.dialog.DialogScreens;
 import net.minecraft.client.gui.screens.dialog.body.DialogBodyHandlers;
 import net.minecraft.client.gui.screens.dialog.input.InputControlHandlers;
@@ -33,6 +34,7 @@ public class ClientBootstrap {
          InputControlHandlers.bootstrap();
          DialogBodyHandlers.bootstrap();
          VulkanFeatureSets.bootstrap();
+         BuiltInClientRegistries.bootStrap();
       }
    }
 }

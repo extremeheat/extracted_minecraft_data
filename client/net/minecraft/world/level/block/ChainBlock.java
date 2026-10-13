@@ -36,7 +36,7 @@ public class ChainBlock extends RotatedPillarBlock implements SimpleWaterloggedB
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
       return (BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource);
    }
 
@@ -53,7 +53,7 @@ public class ChainBlock extends RotatedPillarBlock implements SimpleWaterloggedB
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {

@@ -92,7 +92,7 @@ public class CeilingHangingSignBlock extends SignBlock implements HangingSignBlo
       }
 
       int rotationSegment = !attachedToMiddle ? RotationSegment.convertToSegment(direction.getOpposite()) : RotationSegment.convertToSegment(context.getRotation() + 180.0F);
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHED, attachedToMiddle)).setValue(ROTATION, rotationSegment)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHED, attachedToMiddle)).setValue(ROTATION, rotationSegment)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 
    protected VoxelShape getShape(final BlockState state, final BlockGetter level, final BlockPos pos, final CollisionContext context) {

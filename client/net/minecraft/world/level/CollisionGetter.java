@@ -49,8 +49,16 @@ public interface CollisionGetter extends BlockGetter {
       return this.noCollision(entity, aabb, false);
    }
 
+   default boolean noCollision(final double x, final double z, final AABB aabb) {
+      return this.noCollision(x, z, aabb, false);
+   }
+
    default boolean noCollision(final @Nullable Entity entity, final AABB aabb, final boolean alwaysCollideWithFluids) {
       return this.noBlockCollision(entity, aabb, alwaysCollideWithFluids) && this.noEntityCollision(entity, aabb) && this.noBorderCollision(entity, aabb);
+   }
+
+   default boolean noCollision(final double x, final double z, final AABB aabb, final boolean alwaysCollideWithFluids) {
+      return this.noBlockCollision((Entity)null, aabb, alwaysCollideWithFluids) && this.noEntityCollision((Entity)null, aabb) && this.noBorderCollision(x, z, aabb);
    }
 
    default boolean noBlockCollision(final @Nullable Entity entity, final AABB aabb) {
@@ -72,12 +80,12 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noBorderCollision(final @Nullable Entity entity, final AABB aabb) {
-      if (entity == null) {
-         return true;
-      } else {
-         VoxelShape borderShape = this.borderCollision(entity, aabb);
-         return borderShape == null || !Shapes.joinIsNotEmpty(borderShape, Shapes.create(aabb), BooleanOp.AND);
-      }
+      return entity == null || this.noBorderCollision(entity.getX(), entity.getZ(), aabb);
+   }
+
+   default boolean noBorderCollision(final double x, final double z, final AABB aabb) {
+      VoxelShape borderShape = this.borderCollision(x, z, aabb);
+      return borderShape == null || !Shapes.joinIsNotEmpty(borderShape, Shapes.create(aabb), BooleanOp.AND);
    }
 
    List<VoxelShape> getEntityCollisions(final @Nullable Entity source, final AABB testArea);
@@ -106,9 +114,9 @@ public interface CollisionGetter extends BlockGetter {
       return () -> new BlockCollisions(this, source, box, false, (p, shape) -> shape);
    }
 
-   private @Nullable VoxelShape borderCollision(final Entity source, final AABB box) {
+   private @Nullable VoxelShape borderCollision(final double x, final double z, final AABB box) {
       WorldBorder worldBorder = this.getWorldBorder();
-      return worldBorder.isInsideCloseToBorder(source, box) ? worldBorder.getCollisionShape() : null;
+      return worldBorder.isInsideCloseToBorder(x, z, box) ? worldBorder.getCollisionShape() : null;
    }
 
    default BlockHitResult clipIncludingBorder(final ClipContext c) {

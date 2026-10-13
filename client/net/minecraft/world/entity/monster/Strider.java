@@ -57,7 +57,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -133,8 +132,8 @@ public class Strider extends Animal implements ItemSteerable {
       return slot == EquipmentSlot.SADDLE || super.canDispenserEquipIntoSlot(slot);
    }
 
-   protected Holder<SoundEvent> getEquipSound(final EquipmentSlot slot, final ItemStack stack, final Equippable equippable) {
-      return (Holder<SoundEvent>)(slot == EquipmentSlot.SADDLE ? SoundEvents.STRIDER_SADDLE : super.getEquipSound(slot, stack, equippable));
+   public Holder<SoundEvent> getSaddleEquipSound() {
+      return SoundEvents.STRIDER_SADDLE;
    }
 
    protected void registerGoals() {

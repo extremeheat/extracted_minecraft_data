@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class FallingParticlesLeavesBlock extends LeavesBlock {
    protected final float leafParticleChance;
 
-   public FallingParticlesLeavesBlock(final float leafParticleChance, final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
+   public FallingParticlesLeavesBlock(final float leafParticleChance, final Optional<AmbientLeavesBlockSoundPlayer> ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(ambientLeavesBlockSoundPlayer, properties);
       this.leafParticleChance = leafParticleChance;
    }

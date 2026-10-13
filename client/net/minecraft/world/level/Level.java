@@ -471,7 +471,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.explode(source, damageSource, damageCalculator, x, y, z, r, fire, interactionType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, DEFAULT_EXPLOSION_BLOCK_PARTICLES, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public abstract void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> blockParticles, final Holder<SoundEvent> explosionSound);
+   public abstract void explode(@Nullable Entity source, @Nullable DamageSource damageSource, @Nullable ExplosionDamageCalculator damageCalculator, double x, double y, double z, float r, boolean fire, ExplosionInteraction interactionType, @Nullable ParticleOptions smallExplosionParticles, @Nullable ParticleOptions largeExplosionParticles, WeightedList<ExplosionParticleInfo> blockParticles, @Nullable Holder<SoundEvent> explosionSound);
 
    public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
       if (!this.isInValidBounds(pos)) {

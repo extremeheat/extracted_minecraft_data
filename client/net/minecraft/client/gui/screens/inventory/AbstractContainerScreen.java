@@ -307,7 +307,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          this.doubleclick = this.lastClickSlot == slot && doubleClick;
          this.lastClickSlot = slot;
          this.skipNextRelease = false;
-         if (event.button() != 1 && event.button() != 3 && !cloning) {
+         if (!event.isLeftMouse() && !event.isRightMouse() && !cloning) {
             this.checkHotbarSwap((keyMapping) -> keyMapping.matchesMouse(event));
          } else {
             if (this.isQuickCrafting()) {
@@ -328,7 +328,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             if (this.menu.getCarried().isEmpty()) {
                this.tryPickUpItem(slot, slotId, getContainerClickButton(event), cloning, event.hasShiftDown());
             } else {
-               this.setupQuickCrafting(event.button() == 1, event.button() == 3, cloning, getContainerClickButton(event));
+               this.setupQuickCrafting(event.isLeftMouse(), event.isRightMouse(), cloning, getContainerClickButton(event));
             }
          }
 
@@ -412,7 +412,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          slotId = -1;
       }
 
-      if (this.handleDoublePress(slot, slotId, this.doubleclick, event.button() == 1, event.hasShiftDown(), getContainerClickButton(event))) {
+      if (this.handleDoublePress(slot, slotId, this.doubleclick, event.isLeftMouse(), event.hasShiftDown(), getContainerClickButton(event))) {
          this.doubleclick = false;
          this.setQuickCrafting(false);
          return super.mouseReleased(event);

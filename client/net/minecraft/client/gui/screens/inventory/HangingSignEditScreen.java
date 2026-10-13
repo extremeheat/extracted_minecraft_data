@@ -6,14 +6,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.SignTextSlot;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
 
 public class HangingSignEditScreen extends AbstractSignEditScreen {
-   public static final float MAGIC_BACKGROUND_SCALE = 4.5F;
-   private static final Vector3fc TEXT_SCALE = new Vector3f(1.0F, 1.0F, 1.0F);
+   private static final float MAGIC_BACKGROUND_SCALE = 4.5F;
    private static final int TEXTURE_WIDTH = 16;
    private static final int TEXTURE_HEIGHT = 16;
+   private static final int TEXT_Y_OFFSET = -22;
+   private static final int TEXT_SPACING = 9;
    private final Identifier texture;
 
    public HangingSignEditScreen(final SignBlockEntity sign, final SignTextSlot slot, final boolean shouldFilter) {
@@ -21,17 +20,16 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
       this.texture = Identifier.withDefaultNamespace("textures/gui/hanging_signs/" + this.woodType.name() + ".png");
    }
 
-   protected float getSignYOffset() {
-      return 125.0F;
-   }
-
    protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
-      graphics.pose().translate(0.0F, -13.0F);
       graphics.pose().scale(4.5F, 4.5F);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -16, 0.0F, 0.0F, 16, 16, 16, 16);
    }
 
-   protected Vector3fc getSignTextScale() {
-      return TEXT_SCALE;
+   protected int getSignTextYOffset() {
+      return -22;
+   }
+
+   protected int getSignTextSpacing() {
+      return 9;
    }
 }

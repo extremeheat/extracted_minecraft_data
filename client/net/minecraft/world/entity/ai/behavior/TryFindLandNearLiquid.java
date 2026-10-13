@@ -20,7 +20,7 @@ public class TryFindLandNearLiquid {
    public static BehaviorControl<PathfinderMob> create(final int range, final float speedModifier, final TagKey<Fluid> fluidTag) {
       MutableLong nextOkStartTime = new MutableLong(0L);
       return BehaviorBuilder.create((Function)((i) -> i.group(i.absent(MemoryModuleType.ATTACK_TARGET), i.absent(MemoryModuleType.WALK_TARGET), i.registered(MemoryModuleType.LOOK_TARGET)).apply(i, (var4, walkTarget, lookTarget) -> (level, body, timestamp) -> {
-               if (level.getFluidState(body.blockPosition()).is(fluidTag)) {
+               if (level.getFluidState(body.blockPosition()).isSourceOfType(fluidTag)) {
                   return false;
                } else if (timestamp < nextOkStartTime.longValue()) {
                   nextOkStartTime.setValue(timestamp + 40L);
@@ -37,7 +37,7 @@ public class TryFindLandNearLiquid {
                      } else {
                         for(Direction direction : Direction.Plane.HORIZONTAL) {
                            testPos.setWithOffset(pos, (Direction)direction);
-                           if (level.getBlockState(testPos).isAir() && level.getBlockState(testPos.move(Direction.DOWN)).getFluidState().is(fluidTag)) {
+                           if (level.getBlockState(testPos).isAir() && level.getBlockState(testPos.move(Direction.DOWN)).getFluidState().isSourceOfType(fluidTag)) {
                               return true;
                            }
                         }

@@ -48,7 +48,7 @@ public class ArmorStandItem extends Item {
                float yRot = (float)Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
                entity.snapTo(entity.getX(), entity.getY(), entity.getZ(), yRot, 0.0F);
                serverLevel.addFreshEntityWithPassengers(entity);
-               level.playSound((Entity)null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               playSound(level, entity);
                entity.gameEvent(GameEvent.ENTITY_PLACE, context.getPlayer());
             }
 
@@ -58,5 +58,9 @@ public class ArmorStandItem extends Item {
             return InteractionResult.FAIL;
          }
       }
+   }
+
+   public static void playSound(final Level level, final ArmorStand entity) {
+      level.playSound((Entity)null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
    }
 }

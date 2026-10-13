@@ -93,7 +93,7 @@ public class DoublePlantBlock extends VegetationBlock {
          BlockPos bottomPos = pos.below();
          BlockState bottomState = level.getBlockState(bottomPos);
          if (bottomState.is(state.getBlock()) && bottomState.getValue(HALF) == DoubleBlockHalf.LOWER) {
-            BlockState blockState = bottomState.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+            BlockState blockState = bottomState.getFluidState().isSourceOfType(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
             level.setBlock(bottomPos, blockState, 35);
             level.levelEvent(player, 2001, bottomPos, Block.getId(bottomState));
          }

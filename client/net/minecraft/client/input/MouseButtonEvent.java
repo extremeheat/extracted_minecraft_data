@@ -16,4 +16,24 @@ public record MouseButtonEvent(double x, double y, MouseButtonInfo buttonInfo) i
    public @InputWithModifiers.Modifiers int modifiers() {
       return this.buttonInfo().modifiers();
    }
+
+   public boolean isLeftMouse() {
+      return this.buttonInfo().isLeftMouse();
+   }
+
+   public boolean isMiddleMouse() {
+      return this.buttonInfo().isMiddleMouse();
+   }
+
+   public boolean isRightMouse() {
+      return this.buttonInfo().isRightMouse();
+   }
+
+   public boolean isMouse4() {
+      return this.buttonInfo().isMouse4();
+   }
+
+   public boolean isMouse5() {
+      return this.buttonInfo().isMouse5();
+   }
 }

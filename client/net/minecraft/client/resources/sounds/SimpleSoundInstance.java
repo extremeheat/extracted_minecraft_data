@@ -25,6 +25,10 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       return forUI(sound.value(), pitch);
    }
 
+   public static SimpleSoundInstance forUI(final Holder<SoundEvent> sound, final float pitch, final float volume) {
+      return forUI(sound.value(), pitch, volume);
+   }
+
    public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch, final float volume) {
       return new SimpleSoundInstance(sound.location(), SoundSource.UI, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }

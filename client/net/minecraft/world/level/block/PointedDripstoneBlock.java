@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
@@ -139,7 +138,12 @@ public class PointedDripstoneBlock extends SpeleothemBlock {
          if (aboveState.is(Blocks.MUD) && !(Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, abovePos)) {
             fluid = Fluids.WATER;
          } else {
-            fluid = level.getFluidState(abovePos).getType();
+            FluidState fluidState = level.getFluidState(abovePos);
+            if (fluidState.isSource()) {
+               fluid = fluidState.getType();
+            } else {
+               fluid = Fluids.EMPTY;
+            }
          }
 
          return new FluidInfo(abovePos, fluid, aboveState);
@@ -152,14 +156,14 @@ public class PointedDripstoneBlock extends SpeleothemBlock {
 
    protected boolean canGrow(final LevelReader level, final BlockPos pos) {
       FluidState fluidState = level.getBlockState(pos.above(2)).getFluidState();
-      return super.canGrow(level, pos) && fluidState.is(Fluids.WATER) && fluidState.isSource();
+      return super.canGrow(level, pos) && fluidState.isSourceOfType(Fluids.WATER);
    }
 
    protected @Nullable ParticleOptions getDripParticle(final Level level, final @Nullable Fluid fluidAbove, final BlockPos posAbove) {
-      if (Fluids.EMPTY.isSame(fluidAbove)) {
+      if (fluidAbove == Fluids.EMPTY) {
          return (ParticleOptions)level.environmentAttributes().getValue(EnvironmentAttributes.DEFAULT_DRIPSTONE_PARTICLE, posAbove);
       } else {
-         return fluidAbove.is(FluidTags.LAVA) ? ParticleTypes.DRIPPING_DRIPSTONE_LAVA : ParticleTypes.DRIPPING_DRIPSTONE_WATER;
+         return fluidAbove == Fluids.LAVA ? ParticleTypes.DRIPPING_DRIPSTONE_LAVA : ParticleTypes.DRIPPING_DRIPSTONE_WATER;
       }
    }
 

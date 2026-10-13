@@ -144,6 +144,7 @@ import net.minecraft.util.datafix.fixes.FilteredSignsFix;
 import net.minecraft.util.datafix.fixes.FireResistantToDamageResistantComponentFix;
 import net.minecraft.util.datafix.fixes.FixProjectileStoredItem;
 import net.minecraft.util.datafix.fixes.FixWolfHealth;
+import net.minecraft.util.datafix.fixes.FluidRenameFix;
 import net.minecraft.util.datafix.fixes.FoodToConsumableFix;
 import net.minecraft.util.datafix.fixes.ForcePoiRebuild;
 import net.minecraft.util.datafix.fixes.ForcedChunkToTicketFix;
@@ -412,6 +413,7 @@ import net.minecraft.util.datafix.schemas.V5000;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V5116;
 import net.minecraft.util.datafix.schemas.V5121;
+import net.minecraft.util.datafix.schemas.V5123;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
 import net.minecraft.util.datafix.schemas.V702;
@@ -920,9 +922,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var325 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var325);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var325::contains));
+      Set var326 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var326);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var326::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1257,6 +1259,9 @@ public class DataFixers {
       fixerUpper.addFixer(new OptionsRenameFieldFix(v5121, false, "Rename socialInteractions setting", "key_key.socialInteractions", "key_key.otherPlayers"));
       Schema blendingSchema = fixerUpper.addSchema(5122, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataFix(blendingSchema));
+      Schema v5123 = fixerUpper.addSchema(5123, V5123::new);
+      fixerUpper.addFixer(new WriteAndReadFix(v5123, "Add fluid name type and move things to schema", References.CHUNK));
+      fixerUpper.addFixer(FluidRenameFix.create(v5123, "Remove flowing fluid types fix", createRenamer(Map.of("minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava"))));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

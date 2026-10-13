@@ -64,7 +64,7 @@ public class FriendEntry extends AbstractFriendsEntryContainerWidget {
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (super.mouseClicked(event, doubleClick)) {
          return true;
-      } else if (event.button() == 1 && !this.profileButton.isFocused()) {
+      } else if (event.isLeftMouse() && !this.profileButton.isFocused()) {
          this.setFocused(this.profileButton);
          return true;
       } else {

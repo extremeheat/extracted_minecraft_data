@@ -130,7 +130,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
          state = (BlockState)((BlockState)state.setValue(OPEN, true)).setValue(POWERED, true);
       }
 
-      return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
@@ -138,7 +138,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {

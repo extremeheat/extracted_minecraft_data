@@ -691,9 +691,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
 
          this.packetProcessor = new PacketProcessor(this.gameThread);
-         this.sdlEventHandler.pumpEvents();
-         this.framebufferSizeChanged();
-         this.renderFrame(false);
+         this.showWindow();
          this.telemetryManager.getOutsideSessionSender().send(TelemetryEventType.GRAPHICS_CAPABILITIES, (properties) -> {
             properties.putIfNotNull(TelemetryProperty.BACKEND_NAME, RenderSystem.getDevice().getDeviceInfo().backendName());
             if (this.backendCreationException != null) {
@@ -708,6 +706,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          });
       }
+   }
+
+   private void showWindow() {
+      this.window.show();
+      this.sdlEventHandler.pumpEvents();
+      this.framebufferSizeChanged();
+      this.renderFrame(false);
    }
 
    public boolean hasShiftDown() {
@@ -1939,8 +1944,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.pickBlockOrEntity();
          }
 
-         if (this.player.isSpectator()) {
-            while(this.options.keySpectatorHotbar.consumeClick()) {
+         while(this.options.keySpectatorHotbar.consumeClick()) {
+            if (this.player.isSpectator()) {
                this.gui.hud.getSpectatorGui().onHotbarActionKeyPressed();
             }
          }

@@ -119,8 +119,12 @@ public class WorldBorder extends SavedData {
    }
 
    public boolean isInsideCloseToBorder(final Entity source, final AABB boundingBox) {
+      return this.isInsideCloseToBorder(source.getX(), source.getZ(), boundingBox);
+   }
+
+   public boolean isInsideCloseToBorder(final double x, final double z, final AABB boundingBox) {
       double bbMax = Math.max(Mth.absMax(boundingBox.getXsize(), boundingBox.getZsize()), 1.0);
-      return this.getDistanceToBorder(source) < bbMax * 2.0 && this.isWithinBounds(source.getX(), source.getZ(), bbMax);
+      return this.getDistanceToBorder(x, z) < bbMax * 2.0 && this.isWithinBounds(x, z, bbMax);
    }
 
    public BorderStatus getStatus() {

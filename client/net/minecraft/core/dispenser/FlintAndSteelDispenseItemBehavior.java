@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
+import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.CampfireBlock;
@@ -50,7 +51,8 @@ public class FlintAndSteelDispenseItemBehavior extends OptionalDispenseItemBehav
       }
 
       if (this.isSuccess()) {
-         dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (item) -> {
+         FlintAndSteelItem.playSound(level, targetPos);
+         dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (var0) -> {
          });
       }
 

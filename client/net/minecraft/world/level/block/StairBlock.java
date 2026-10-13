@@ -101,7 +101,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
       Direction clickedFace = context.getClickedFace();
       BlockPos pos = context.getClickedPos();
       FluidState replacedFluidState = context.getLevel().getFluidState(pos);
-      BlockState state = (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection())).setValue(HALF, clickedFace != Direction.DOWN && (clickedFace == Direction.UP || !(context.getClickLocation().y - (double)pos.getY() > 0.5)) ? Half.BOTTOM : Half.TOP)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      BlockState state = (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection())).setValue(HALF, clickedFace != Direction.DOWN && (clickedFace == Direction.UP || !(context.getClickLocation().y - (double)pos.getY() > 0.5)) ? Half.BOTTOM : Half.TOP)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
       return (BlockState)state.setValue(SHAPE, getStairsShape(state, context.getLevel(), pos));
    }
 
@@ -210,7 +210,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {

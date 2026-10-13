@@ -9,7 +9,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
@@ -61,7 +60,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return Fluids.WATER.getSource(false);
+      return Fluids.WATER.getSource();
    }
 
    public static void updateColumn(final Block bubbleColumn, final LevelAccessor level, final BlockPos occupyAt, final BlockState belowState) {
@@ -89,8 +88,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
       if (occupyState.is(bubbleColumn)) {
          return true;
       } else {
-         FluidState occupyFluid = occupyState.getFluidState();
-         return occupyFluid.is(FluidTags.BUBBLE_COLUMN_CAN_OCCUPY) && occupyState.getBlock() instanceof LiquidBlock && occupyFluid.isSource() && occupyFluid.getAmount() >= 8;
+         return occupyState.getBlock() instanceof LiquidBlock && LiquidBlock.shouldBubbleColumnOccupy(occupyState);
       }
    }
 

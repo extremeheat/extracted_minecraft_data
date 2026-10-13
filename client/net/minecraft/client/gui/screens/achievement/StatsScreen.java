@@ -635,13 +635,13 @@ public class StatsScreen extends Screen {
             Font var10001 = StatsScreen.this.font;
             Component var10002 = this.kills;
             int var10003 = this.getContentX() + 2 + 10;
-            int var10004 = this.getContentY() + 1;
+            int var10004 = this.getContentY() + 2;
             Objects.requireNonNull(StatsScreen.this.font);
             graphics.text(var10001, var10002, var10003, var10004 + 9, this.hasKills ? -4539718 : -8355712);
             var10001 = StatsScreen.this.font;
             var10002 = this.killedBy;
             var10003 = this.getContentX() + 2 + 10;
-            var10004 = this.getContentY() + 1;
+            var10004 = this.getContentY() + 2;
             Objects.requireNonNull(StatsScreen.this.font);
             graphics.text(var10001, var10002, var10003, var10004 + 9 * 2, this.wasKilledBy ? -4539718 : -8355712);
          }

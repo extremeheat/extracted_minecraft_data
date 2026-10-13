@@ -220,7 +220,7 @@ public class BookViewScreen extends Screen {
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (event.button() == 1) {
+      if (event.isLeftMouse()) {
          ActiveTextCollector.ClickableStyleFinder finder = new ActiveTextCollector.ClickableStyleFinder(this.font, (int)event.x(), (int)event.y());
          this.visitText(finder, true);
          Style clickedStyle = finder.result();

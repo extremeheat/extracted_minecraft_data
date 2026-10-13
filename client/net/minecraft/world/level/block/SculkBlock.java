@@ -67,7 +67,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
 
    private static boolean canPlaceGrowth(final LevelAccessor level, final BlockPos pos) {
       BlockState stateAbove = level.getBlockState(pos.above());
-      return stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().is(Fluids.WATER) ? level.findBlocksIn(pos.offset(-4, 0, -4), pos.offset(4, 2, 4)).filterState((state) -> state.is(BlockTags.SCULK_GROWTH_INHIBITORS)).atMostMatched(2) : false;
+      return stateAbove.isAir() || stateAbove.is(Blocks.WATER) && stateAbove.getFluidState().isSourceOfType(Fluids.WATER) ? level.findBlocksIn(pos.offset(-4, 0, -4), pos.offset(4, 2, 4)).filterState((state) -> state.is(BlockTags.SCULK_GROWTH_INHIBITORS)).atMostMatched(2) : false;
    }
 
    public boolean canChangeBlockStateOnSpread() {

@@ -274,16 +274,24 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
          boolean shouldShowName = state.distanceToCameraSq < Mth.square(nameTagDistance) && this.shouldShowName(entity, state.distanceToCameraSq);
          if (shouldShowName) {
             state.nameTag = this.getNameTag(entity);
-            state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTicks));
+            this.setNameTagAttachment(entity, state, partialTicks);
          } else {
             state.nameTag = null;
          }
 
          if (state.distanceToCameraSq < Mth.square(belowNameDistance)) {
             state.scoreText = entity.belowNameDisplay();
+            this.setNameTagAttachment(entity, state, partialTicks);
          } else {
             state.scoreText = null;
          }
+      }
+
+   }
+
+   private void setNameTagAttachment(final T entity, final S state, final float partialTicks) {
+      if (state.nameTagAttachment == null) {
+         state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTicks));
       }
 
    }

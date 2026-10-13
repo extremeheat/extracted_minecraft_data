@@ -12,21 +12,17 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.redstone.Orientation;
 import org.jspecify.annotations.Nullable;
 
-public class FrostedIceBlock extends IceBlock {
-   public static final int MAX_AGE = 3;
-   public static final IntegerProperty AGE;
+public class FrostedIceBlock extends CrackingIceBlock {
    private static final int NEIGHBORS_TO_AGE = 4;
    private static final int NEIGHBORS_TO_MELT = 2;
+   private static final int MIN_TICK_DELAY = 20;
+   private static final int MAX_TICK_DELAY = 40;
 
    public FrostedIceBlock(final BlockBehaviour.Properties properties) {
       super(properties);
-      this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
    public void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
@@ -34,35 +30,12 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
-      if (random.nextInt(3) == 0 || this.fewerNeigboursThan(level, pos, 4)) {
-         int brightness = level.dimension() == Level.END ? level.getBrightness(LightLayer.BLOCK, pos) : level.getMaxLocalRawBrightness(pos);
-         if (brightness > 11 - (Integer)state.getValue(AGE) - state.getLightDampening() && this.slightlyMelt(state, level, pos)) {
-            BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
-
-            for(Direction direction : Direction.values()) {
-               neighborPos.setWithOffset(pos, (Direction)direction);
-               BlockState neighbour = level.getBlockState(neighborPos);
-               if (neighbour.is(this) && !this.slightlyMelt(neighbour, level, neighborPos)) {
-                  level.scheduleTick(neighborPos, this, Mth.nextInt(random, 20, 40));
-               }
-            }
-
-            return;
-         }
-      }
-
-      level.scheduleTick(pos, this, Mth.nextInt(random, 20, 40));
-   }
-
-   private boolean slightlyMelt(final BlockState state, final Level level, final BlockPos pos) {
-      int age = (Integer)state.getValue(AGE);
-      if (age < 3) {
-         level.setBlock(pos, (BlockState)state.setValue(AGE, age + 1), 2);
-         return false;
+      if (this.shouldEnvironmentIncreaseCracking(state, level, pos, random) && this.slightlyMelt(state, level, pos)) {
+         this.propagateMelting(level, pos, random);
       } else {
-         this.melt(state, level, pos);
-         return true;
+         level.scheduleTick(pos, this, this.getTickDelay(random));
       }
+
    }
 
    protected void neighborChanged(final BlockState state, final Level level, final BlockPos pos, final Block block, final @Nullable Orientation orientation, final boolean movedByPiston) {
@@ -90,15 +63,20 @@ public class FrostedIceBlock extends IceBlock {
       return true;
    }
 
-   protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {
-      builder.add(AGE);
+   protected boolean shouldEnvironmentIncreaseCracking(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
+      if (random.nextInt(3) != 0 && !this.fewerNeigboursThan(level, pos, 4)) {
+         return false;
+      } else {
+         int brightness = level.dimension() == Level.END ? level.getBrightness(LightLayer.BLOCK, pos) : level.getMaxLocalRawBrightness(pos);
+         return brightness > 11 - (Integer)state.getValue(AGE) - state.getLightDampening();
+      }
+   }
+
+   protected int getTickDelay(final RandomSource random) {
+      return Mth.nextInt(random, 20, 40);
    }
 
    protected ItemStack getCloneItemStack(final LevelReader level, final BlockPos pos, final BlockState state, final boolean includeData) {
       return ItemStack.EMPTY;
-   }
-
-   static {
-      AGE = BlockStateProperties.AGE_3;
    }
 }

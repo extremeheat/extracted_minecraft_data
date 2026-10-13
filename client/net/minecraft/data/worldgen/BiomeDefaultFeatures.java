@@ -35,6 +35,7 @@ public class BiomeDefaultFeatures {
          builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_LOWER);
       }
 
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRAVEL);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIORITE_UPPER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIORITE_LOWER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_ANDESITE_UPPER);
@@ -222,6 +223,7 @@ public class BiomeDefaultFeatures {
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.SNOW_LAYERS);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.ICE_CRYSTALS);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.ICICLE_CLUSTER);
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_DECORATION, CavePlacements.ICE_CREVASSE);
    }
 
    public static void addLushCavesSpecialOres(final BiomeGenerationSettings.Builder builder) {

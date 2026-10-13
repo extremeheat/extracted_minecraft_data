@@ -69,7 +69,6 @@ import net.minecraft.world.level.storage.LevelStorageException;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
 import net.minecraft.world.level.validation.ContentValidationException;
-import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -356,7 +355,6 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          this.screen = list.getScreen();
          this.summary = summary;
          this.icon = FaviconTexture.forWorld(this.minecraft.getTextureManager(), summary.getLevelId());
-         this.iconFile = summary.getIcon();
          int maxTextWidth = list.getRowWidth() - this.getTextX() - 2;
          Component worldNameComponent = Component.literal(summary.getLevelName());
          this.worldNameText = new StringWidget(worldNameComponent, this.minecraft.font);
@@ -386,34 +384,30 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             this.infoText.setTooltip(Tooltip.create(info));
          }
 
-         this.validateIconFile();
+         this.iconFile = validateIconFile(this.minecraft, summary.getIcon());
          this.loadIcon();
       }
 
-      private void validateIconFile() {
-         if (this.iconFile != null) {
+      private static @Nullable Path validateIconFile(final Minecraft minecraft, final @Nullable Path iconFile) {
+         if (iconFile == null) {
+            return null;
+         } else {
             try {
-               BasicFileAttributes attributes = Files.readAttributes(this.iconFile, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
-               if (attributes.isSymbolicLink()) {
-                  List<ForbiddenSymlinkInfo> issues = this.minecraft.directoryValidator().validateSymlink(this.iconFile);
-                  if (!issues.isEmpty()) {
-                     WorldSelectionList.LOGGER.warn("{}", ContentValidationException.getMessage(this.iconFile, issues));
-                     this.iconFile = null;
-                  } else {
-                     attributes = Files.readAttributes(this.iconFile, BasicFileAttributes.class);
-                  }
+               BasicFileAttributes attributes = Files.readAttributes(iconFile, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+               if (minecraft.directoryValidator().validateAndResolveLink(iconFile) != null) {
+                  attributes = Files.readAttributes(iconFile, BasicFileAttributes.class);
                }
 
-               if (!attributes.isRegularFile()) {
-                  this.iconFile = null;
-               }
-            } catch (NoSuchFileException var3) {
-               this.iconFile = null;
+               return !attributes.isRegularFile() ? null : iconFile;
+            } catch (ContentValidationException e) {
+               WorldSelectionList.LOGGER.warn("{}", e.getMessage());
+               return null;
+            } catch (NoSuchFileException var4) {
+               return null;
             } catch (IOException e) {
                WorldSelectionList.LOGGER.error("could not validate symlink", e);
-               this.iconFile = null;
+               return null;
             }
-
          }
       }
 
@@ -509,20 +503,23 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-         if (this.canInteract()) {
-            int relX = (int)event.x() - this.getContentX();
-            int relY = (int)event.y() - this.getContentY();
-            if (doubleClick || this.mouseOverIcon(relX, relY, 32) && this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER) {
-               this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
-               Consumer<WorldListEntry> onEntryInteract = this.list.onEntryInteract;
-               if (onEntryInteract != null) {
-                  onEntryInteract.accept(this);
-                  return true;
+         if (!event.isLeftMouse()) {
+            return false;
+         } else {
+            if (this.canInteract()) {
+               int relX = (int)event.x() - this.getContentX();
+               int relY = (int)event.y() - this.getContentY();
+               if (doubleClick || this.mouseOverIcon(relX, relY, 32) && this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER) {
+                  this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                  Consumer<WorldListEntry> onEntryInteract = this.list.onEntryInteract;
+                  if (onEntryInteract != null) {
+                     onEntryInteract.accept(this);
+                  }
                }
             }
-         }
 
-         return super.mouseClicked(event, doubleClick);
+            return true;
+         }
       }
 
       public boolean keyPressed(final KeyEvent event) {

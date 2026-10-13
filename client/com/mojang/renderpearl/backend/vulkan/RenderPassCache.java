@@ -4,8 +4,8 @@ import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -113,7 +113,7 @@ public class RenderPassCache implements Destroyable {
    }
 
    public long getRenderPass(final int depthFormat, final List<@Nullable ColorTargetState> colorFormats) {
-      ReferenceArrayList<AttachmentDescription> colorAttachments = new ReferenceArrayList();
+      List<AttachmentDescription> colorAttachments = new ArrayList();
 
       for(ColorTargetState colorTargetState : colorFormats) {
          if (colorTargetState != null) {
@@ -128,7 +128,7 @@ public class RenderPassCache implements Destroyable {
    }
 
    public long getRenderPass(final RenderPassDescriptor renderPassDescriptor) {
-      ReferenceArrayList<AttachmentDescription> colorAttachments = new ReferenceArrayList();
+      List<AttachmentDescription> colorAttachments = new ArrayList();
 
       for(RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment : renderPassDescriptor.colorAttachments()) {
          if (colorAttachment == null) {

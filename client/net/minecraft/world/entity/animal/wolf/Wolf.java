@@ -225,7 +225,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound((SoundEvent)this.getSoundSet().stepSound().value(), 0.15F, 1.0F);
+      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.15F, 1.0F));
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -259,22 +259,22 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
    }
 
-   protected SoundEvent getAmbientSound() {
+   protected @Nullable SoundEvent getAmbientSound() {
       if (this.isAngry()) {
-         return (SoundEvent)this.getSoundSet().growlSound().value();
+         return (SoundEvent)this.getSoundSet().growlSound().map(Holder::value).orElse((Object)null);
       } else if (this.random.nextInt(3) == 0) {
-         return this.isTame() && this.getHealth() < 20.0F ? (SoundEvent)this.getSoundSet().whineSound().value() : (SoundEvent)this.getSoundSet().pantSound().value();
+         return this.isTame() && this.getHealth() < 20.0F ? (SoundEvent)this.getSoundSet().whineSound().map(Holder::value).orElse((Object)null) : (SoundEvent)this.getSoundSet().pantSound().map(Holder::value).orElse((Object)null);
       } else {
-         return (SoundEvent)this.getSoundSet().ambientSound().value();
+         return (SoundEvent)this.getSoundSet().ambientSound().map(Holder::value).orElse((Object)null);
       }
    }
 
-   protected SoundEvent getHurtSound(final DamageSource source) {
-      return this.canArmorAbsorb(source) ? SoundEvents.WOLF_ARMOR_DAMAGE : (SoundEvent)this.getSoundSet().hurtSound().value();
+   protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
+      return this.canArmorAbsorb(source) ? SoundEvents.WOLF_ARMOR_DAMAGE : (SoundEvent)this.getSoundSet().hurtSound().map(Holder::value).orElse((Object)null);
    }
 
-   protected SoundEvent getDeathSound() {
-      return (SoundEvent)this.getSoundSet().deathSound().value();
+   protected @Nullable SoundEvent getDeathSound() {
+      return (SoundEvent)this.getSoundSet().deathSound().map(Holder::value).orElse((Object)null);
    }
 
    protected float getSoundVolume() {

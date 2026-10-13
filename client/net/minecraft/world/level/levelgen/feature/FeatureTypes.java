@@ -14,6 +14,7 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"chorus_plant", ChorusPlantFeature.CODEC);
       Registry.register(registry, (String)"coral_claw", CoralClawFeature.CODEC);
       Registry.register(registry, (String)"coral_tree", CoralTreeFeature.CODEC);
+      Registry.register(registry, (String)"crevasse", CrevasseFeature.CODEC);
       Registry.register(registry, (String)"delta_feature", DeltaFeature.CODEC);
       Registry.register(registry, (String)"disk", DiskFeature.CODEC);
       Registry.register(registry, (String)"end_gateway", EndGatewayFeature.CODEC);

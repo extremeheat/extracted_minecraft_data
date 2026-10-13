@@ -98,7 +98,7 @@ public class WallHangingSignBlock extends SignBlock implements HangingSignBlock 
             Direction facing = direction.getOpposite();
             state = (BlockState)state.setValue(FACING, facing);
             if (state.canSurvive(level, pos) && this.canPlace(state, level, pos)) {
-               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
             }
          }
       }

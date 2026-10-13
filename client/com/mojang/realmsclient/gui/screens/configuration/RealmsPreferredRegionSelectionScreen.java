@@ -133,13 +133,16 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            RegionSelectionList.this.setSelected(this);
-            if (doubleClick) {
-               RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
-               RealmsPreferredRegionSelectionScreen.this.onDone();
+            if (event.isLeftMouse()) {
+               RegionSelectionList.this.setSelected(this);
+               if (doubleClick) {
+                  RegionSelectionList.this.playDownSound(RegionSelectionList.this.minecraft.getSoundManager());
+                  RealmsPreferredRegionSelectionScreen.this.onDone();
+               }
+
                return true;
             } else {
-               return super.mouseClicked(event, doubleClick);
+               return false;
             }
          }
 

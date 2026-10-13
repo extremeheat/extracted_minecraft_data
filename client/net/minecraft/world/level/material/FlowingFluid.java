@@ -32,7 +32,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class FlowingFluid extends Fluid {
-   public static final BooleanProperty FALLING;
+   public static final BooleanProperty SOURCE;
    public static final IntegerProperty LEVEL;
    private static final int CACHE_SIZE = 200;
    private static final ThreadLocal<Object2ByteLinkedOpenHashMap<BlockStatePairKey>> OCCLUSION_CACHE;
@@ -43,7 +43,12 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
-      builder.add(FALLING);
+      builder.add(SOURCE);
+      builder.add(LEVEL);
+   }
+
+   protected FluidState makeDefaultState(final FluidState state) {
+      return (FluidState)((FluidState)state.setValue(SOURCE, true)).setValue(LEVEL, 8);
    }
 
    public Vec3 getFlow(final BlockGetter level, final BlockPos pos, final FluidState fluidState) {
@@ -80,7 +85,7 @@ public abstract class FlowingFluid extends Fluid {
       }
 
       Vec3 flow = new Vec3(flowX, 0.0, flowZ);
-      if ((Boolean)fluidState.getValue(FALLING)) {
+      if (fluidState.isFalling()) {
          for(Direction direction : Direction.Plane.HORIZONTAL) {
             blockPos.setWithOffset(pos, (Direction)direction);
             if (this.isSolidFace(level, blockPos, direction) || this.isSolidFace(level, blockPos.above(), direction)) {
@@ -94,13 +99,13 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    private boolean affectsFlow(final FluidState neighbourFluid) {
-      return neighbourFluid.isEmpty() || neighbourFluid.getType().isSame(this);
+      return neighbourFluid.isEmpty() || neighbourFluid.is(this);
    }
 
    protected boolean isSolidFace(final BlockGetter level, final BlockPos pos, final Direction direction) {
       BlockState state = level.getBlockState(pos);
       FluidState fluidState = level.getFluidState(pos);
-      if (fluidState.getType().isSame(this)) {
+      if (fluidState.is(this)) {
          return false;
       } else if (direction == Direction.UP) {
          return true;
@@ -116,8 +121,7 @@ public abstract class FlowingFluid extends Fluid {
          FluidState belowFluid = belowState.getFluidState();
          if (this.canMaybePassThrough(level, pos, state, Direction.DOWN, belowPos, belowState, belowFluid)) {
             FluidState newBelowFluid = this.getNewLiquid(level, belowPos, belowState);
-            Fluid newBelowFluidType = newBelowFluid.getType();
-            if (belowFluid.canBeReplacedWith(level, belowPos, newBelowFluidType, Direction.DOWN) && canHoldSpecificFluid(level, belowPos, belowState, newBelowFluidType)) {
+            if (belowFluid.canBeReplacedWith(level, belowPos, newBelowFluid, Direction.DOWN) && canHoldSpecificFluid(level, belowPos, belowState, newBelowFluid)) {
                this.spreadTo(level, belowPos, belowState, Direction.DOWN, newBelowFluid);
                if (this.sourceNeighborCount(level, pos) >= 3) {
                   this.spreadToSides(level, pos, fluidState, state);
@@ -136,7 +140,7 @@ public abstract class FlowingFluid extends Fluid {
 
    private void spreadToSides(final ServerLevel level, final BlockPos pos, final FluidState fluidState, final BlockState state) {
       int neighbor = fluidState.getAmount() - this.getDropOff(level);
-      if ((Boolean)fluidState.getValue(FALLING)) {
+      if (fluidState.isFalling()) {
          neighbor = 7;
       }
 
@@ -162,7 +166,7 @@ public abstract class FlowingFluid extends Fluid {
          BlockPos relativePos = mutablePos.setWithOffset(pos, (Direction)direction);
          BlockState blockState = level.getBlockState(relativePos);
          FluidState fluidState = blockState.getFluidState();
-         if (fluidState.getType().isSame(this) && canPassThroughWall(direction, level, pos, state, relativePos, blockState)) {
+         if (fluidState.is(this) && canPassThroughWall(direction, level, pos, state, relativePos, blockState)) {
             if (fluidState.isSource()) {
                ++neighbourSources;
             }
@@ -175,21 +179,21 @@ public abstract class FlowingFluid extends Fluid {
          BlockState belowState = level.getBlockState(mutablePos.setWithOffset(pos, (Direction)Direction.DOWN));
          FluidState belowFluid = belowState.getFluidState();
          if (belowState.isSolid() || this.isSourceBlockOfThisType(belowFluid)) {
-            return this.getSource(false);
+            return this.getSource();
          }
       }
 
       BlockPos abovePos = mutablePos.setWithOffset(pos, (Direction)Direction.UP);
       BlockState aboveState = level.getBlockState(abovePos);
       FluidState aboveFluid = aboveState.getFluidState();
-      if (!aboveFluid.isEmpty() && aboveFluid.getType().isSame(this) && canPassThroughWall(Direction.UP, level, pos, state, abovePos, aboveState)) {
-         return this.getFlowing(8, true);
+      if (!aboveFluid.isEmpty() && aboveFluid.is(this) && canPassThroughWall(Direction.UP, level, pos, state, abovePos, aboveState)) {
+         return this.getFlowing(8);
       } else {
          int amount = highestNeighbor - this.getDropOff(level);
          if (amount <= 0) {
             return Fluids.EMPTY.defaultFluidState();
          } else {
-            return this.getFlowing(amount, false);
+            return this.getFlowing(amount);
          }
       }
    }
@@ -241,16 +245,20 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   public abstract Fluid getFlowing();
-
-   public FluidState getFlowing(final int amount, final boolean falling) {
-      return (FluidState)((FluidState)this.getFlowing().defaultFluidState().setValue(LEVEL, amount)).setValue(FALLING, falling);
+   public FluidState getFlowing(final int amount) {
+      return (FluidState)((FluidState)this.defaultFluidState().setValue(LEVEL, amount)).setValue(SOURCE, false);
    }
 
-   public abstract Fluid getSource();
+   public FluidState getSource() {
+      return this.defaultFluidState();
+   }
 
-   public FluidState getSource(final boolean falling) {
-      return (FluidState)this.getSource().defaultFluidState().setValue(FALLING, falling);
+   public boolean isSource(final FluidState fluidState) {
+      return (Boolean)fluidState.getValue(SOURCE);
+   }
+
+   public boolean isFalling(final FluidState fluidState) {
+      return !(Boolean)fluidState.getValue(SOURCE) && fluidState.getAmount() == 8;
    }
 
    protected abstract boolean canConvertToSource(ServerLevel level);
@@ -279,7 +287,7 @@ public abstract class FlowingFluid extends Fluid {
             BlockPos testPos = pos.relative(direction);
             BlockState testState = context.getBlockState(testPos);
             FluidState testFluidState = testState.getFluidState();
-            if (this.canPassThrough(level, this.getFlowing(), pos, state, direction, testPos, testState, testFluidState)) {
+            if (this.canPassThrough(level, pos, state, direction, testPos, testState, testFluidState)) {
                if (context.isHole(testPos)) {
                   return pass;
                }
@@ -301,12 +309,12 @@ public abstract class FlowingFluid extends Fluid {
       if (!canPassThroughWall(Direction.DOWN, level, topPos, topState, bottomPos, bottomState)) {
          return false;
       } else {
-         return bottomState.getFluidState().getType().isSame(this) ? true : canHoldFluid(level, bottomPos, bottomState, this.getFlowing());
+         return bottomState.getFluidState().is(this) ? true : canHoldFluid(level, bottomPos, bottomState, this.getFlowing(8));
       }
    }
 
-   private boolean canPassThrough(final BlockGetter level, final Fluid fluid, final BlockPos sourcePos, final BlockState sourceState, final Direction direction, final BlockPos testPos, final BlockState testState, final FluidState testFluidState) {
-      return this.canMaybePassThrough(level, sourcePos, sourceState, direction, testPos, testState, testFluidState) && canHoldSpecificFluid(level, testPos, testState, fluid);
+   private boolean canPassThrough(final BlockGetter level, final BlockPos sourcePos, final BlockState sourceState, final Direction direction, final BlockPos testPos, final BlockState testState, final FluidState testFluidState) {
+      return this.canMaybePassThrough(level, sourcePos, sourceState, direction, testPos, testState, testFluidState) && canHoldSpecificFluid(level, testPos, testState, this.getFlowing(8));
    }
 
    private boolean canMaybePassThrough(final BlockGetter level, final BlockPos sourcePos, final BlockState sourceState, final Direction direction, final BlockPos testPos, final BlockState testState, final FluidState testFluidState) {
@@ -314,7 +322,7 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    private boolean isSourceBlockOfThisType(final FluidState state) {
-      return state.getType().isSame(this) && state.isSource();
+      return state.is(this) && state.isSource();
    }
 
    protected abstract int getSlopeFindDistance(LevelReader level);
@@ -344,7 +352,7 @@ public abstract class FlowingFluid extends Fluid {
          FluidState testFluidState = testState.getFluidState();
          if (this.canMaybePassThrough(level, pos, state, direction, testPos, testState, testFluidState)) {
             FluidState newFluid = this.getNewLiquid(level, testPos, testState);
-            if (canHoldSpecificFluid(level, testPos, testState, newFluid.getType())) {
+            if (canHoldSpecificFluid(level, testPos, testState, newFluid)) {
                if (context == null) {
                   context = new SpreadContext(level, pos);
                }
@@ -361,7 +369,7 @@ public abstract class FlowingFluid extends Fluid {
                }
 
                if (distance <= lowest) {
-                  if (testFluidState.canBeReplacedWith(level, testPos, newFluid.getType(), direction)) {
+                  if (testFluidState.canBeReplacedWith(level, testPos, newFluid, direction)) {
                      result.put(direction, newFluid);
                   }
 
@@ -379,11 +387,11 @@ public abstract class FlowingFluid extends Fluid {
       return block instanceof LiquidBlockContainer ? true : state.is(BlockTags.WASHED_AWAY_BY_FLUIDS);
    }
 
-   private static boolean canHoldFluid(final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid newFluid) {
+   private static boolean canHoldFluid(final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState newFluid) {
       return canHoldAnyFluid(state) && canHoldSpecificFluid(level, pos, state, newFluid);
    }
 
-   private static boolean canHoldSpecificFluid(final BlockGetter level, final BlockPos pos, final BlockState state, final Fluid newFluid) {
+   private static boolean canHoldSpecificFluid(final BlockGetter level, final BlockPos pos, final BlockState state, final FluidState newFluid) {
       Block block = state.getBlock();
       if (block instanceof LiquidBlockContainer container) {
          return container.canPlaceLiquid((LivingEntity)null, level, pos, state, newFluid);
@@ -418,11 +426,11 @@ public abstract class FlowingFluid extends Fluid {
    }
 
    protected static int getLegacyLevel(final FluidState fluidState) {
-      return fluidState.isSource() ? 0 : 8 - Math.min(fluidState.getAmount(), 8) + ((Boolean)fluidState.getValue(FALLING) ? 8 : 0);
+      return fluidState.isSource() ? 0 : 8 - Math.min(fluidState.getAmount(), 8) + (fluidState.isFalling() ? 8 : 0);
    }
 
    private static boolean hasSameAbove(final FluidState fluidState, final BlockGetter level, final BlockPos pos) {
-      return fluidState.getType().isSame(level.getFluidState(pos.above()).getType());
+      return fluidState.is(level.getFluidState(pos.above()).getType());
    }
 
    public float getHeight(final FluidState fluidState, final BlockGetter level, final BlockPos pos) {
@@ -433,14 +441,16 @@ public abstract class FlowingFluid extends Fluid {
       return (float)fluidState.getAmount() / 9.0F;
    }
 
-   public abstract int getAmount(final FluidState fluidState);
+   public int getAmount(final FluidState fluidState) {
+      return (Integer)fluidState.getValue(LEVEL);
+   }
 
    public VoxelShape getShape(final FluidState state, final BlockGetter level, final BlockPos pos) {
       return state.getAmount() == 9 && hasSameAbove(state, level, pos) ? Shapes.block() : (VoxelShape)this.shapes.computeIfAbsent(state, (fluidState) -> Shapes.box(0.0, 0.0, 0.0, 1.0, (double)fluidState.getHeight(level, pos), 1.0));
    }
 
    static {
-      FALLING = BlockStateProperties.FALLING;
+      SOURCE = BlockStateProperties.SOURCE;
       LEVEL = BlockStateProperties.LEVEL_FLOWING;
       OCCLUSION_CACHE = ThreadLocal.withInitial(() -> {
          Object2ByteLinkedOpenHashMap<BlockStatePairKey> map = new Object2ByteLinkedOpenHashMap<BlockStatePairKey>(200) {

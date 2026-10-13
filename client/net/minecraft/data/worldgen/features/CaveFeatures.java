@@ -34,6 +34,7 @@ import net.minecraft.world.level.levelgen.GeodeCrackSettings;
 import net.minecraft.world.level.levelgen.GeodeLayerSettings;
 import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.BlockColumnFeature;
+import net.minecraft.world.level.levelgen.feature.CrevasseFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FossilFeature;
 import net.minecraft.world.level.levelgen.feature.GeodeFeature;
@@ -86,6 +87,7 @@ public class CaveFeatures {
    public static final ResourceKey<Feature> MOSS_PATCH_BONEMEAL = FeatureUtils.createKey("moss_patch_bonemeal");
    public static final ResourceKey<Feature> SNOW_LAYER = FeatureUtils.createKey("snow_layer");
    public static final ResourceKey<Feature> ICE_CRYSTAL = FeatureUtils.createKey("ice_crystal");
+   public static final ResourceKey<Feature> ICE_CREVASSE = FeatureUtils.createKey("ice_crevasse");
    public static final ResourceKey<Feature> DRIPLEAF = FeatureUtils.createKey("dripleaf");
    public static final ResourceKey<Feature> CLAY_WITH_DRIPLEAVES = FeatureUtils.createKey("clay_with_dripleaves");
    public static final ResourceKey<Feature> CLAY_POOL_WITH_DRIPLEAVES = FeatureUtils.createKey("clay_pool_with_dripleaves");
@@ -154,5 +156,6 @@ public class CaveFeatures {
       context.register(SNOW_LAYER, new SimpleBlockFeature(BlockStateProvider.of(Blocks.SNOW)));
       context.register(ICE_CRYSTAL, new SimpleBlockFeature(BlockStateProvider.of(Blocks.ICE_CRYSTAL)));
       context.register(LARGE_ICICLE, new LargeSpeleothemFeature(Blocks.PACKED_ICE.defaultBlockState(), blocks.getOrThrow(BlockTags.LARGE_ICICLE_REPLACEABLE), 30, ClampedInt.of(UniformInt.of(3, 19), 3, 16), UniformFloat.of(0.4F, 2.0F), 0.33F, UniformFloat.of(0.3F, 0.9F), UniformFloat.of(0.4F, 1.0F), UniformFloat.of(0.0F, 0.3F), 4, 0.6F));
+      context.register(ICE_CREVASSE, new CrevasseFeature(4, 16, 10, 8, 8, 4.0F, 0.6F, 0.05F, UniformInt.of(6, 10), UniformInt.of(4, 6), BlockStateProvider.holderOf(Blocks.BRITTLE_ICE), BlockStateProvider.holderOf(Blocks.WATER), BlockPredicate.matchesTag(BlockTags.ICE_CREVASSE_REPLACEABLES), BlockPredicate.matchesTag(BlockTags.BLOCKS_FLUID_FLOW)));
    }
 }

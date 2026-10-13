@@ -37,7 +37,7 @@ public class IronBarsBlock extends CrossCollisionBlock {
       BlockState southState = level.getBlockState(south);
       BlockState westState = level.getBlockState(west);
       BlockState eastState = level.getBlockState(east);
-      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.attachsTo(northState, northState.isFaceSturdy(level, north, Direction.SOUTH)))).setValue(SOUTH, this.attachsTo(southState, southState.isFaceSturdy(level, south, Direction.NORTH)))).setValue(WEST, this.attachsTo(westState, westState.isFaceSturdy(level, west, Direction.EAST)))).setValue(EAST, this.attachsTo(eastState, eastState.isFaceSturdy(level, east, Direction.WEST)))).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.attachsTo(northState, northState.isFaceSturdy(level, north, Direction.SOUTH)))).setValue(SOUTH, this.attachsTo(southState, southState.isFaceSturdy(level, south, Direction.NORTH)))).setValue(WEST, this.attachsTo(westState, westState.isFaceSturdy(level, west, Direction.EAST)))).setValue(EAST, this.attachsTo(eastState, eastState.isFaceSturdy(level, east, Direction.WEST)))).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 
    protected BlockState updateShape(final BlockState state, final LevelReader level, final ScheduledTickAccess ticks, final BlockPos pos, final Direction directionToNeighbour, final BlockPos neighbourPos, final BlockState neighbourState, final RandomSource random) {

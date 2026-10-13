@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.DeviceList;
 import com.mojang.blaze3d.audio.DeviceTracker;
@@ -14,6 +13,7 @@ import com.mojang.blaze3d.audio.ListenerTransform;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
@@ -48,14 +47,13 @@ public class SoundEngine {
    private static final float VOLUME_MIN = 0.0F;
    private static final float VOLUME_MAX = 1.0F;
    private static final int MIN_SOURCE_LIFETIME = 20;
-   private static final Set<Identifier> ONLY_WARN_ONCE = Sets.newHashSet();
-   public static final String MISSING_SOUND = "FOR THE DEBUG!";
    public static final int LOOPING_SOUND_SUBTITLE_INTERVAL_TICKS = 10;
    public static final String OPEN_AL_SOFT_PREFIX = "OpenAL Soft on ";
    public static final int OPEN_AL_SOFT_PREFIX_LENGTH = "OpenAL Soft on ".length();
    private final SoundManager soundManager;
    private final Options options;
    private boolean loaded;
+   private final Set<Identifier> alreadyHadWarning = new HashSet();
    private final Library library = new Library();
    private final Listener listener;
    private final SoundBufferLibrary soundBuffers;
@@ -96,18 +94,15 @@ public class SoundEngine {
    }
 
    public void reload() {
-      ONLY_WARN_ONCE.clear();
-
-      for(SoundEvent sound : BuiltInRegistries.SOUND_EVENT) {
-         if (sound != SoundEvents.EMPTY.value()) {
-            Identifier location = sound.location();
-            if (this.soundManager.getSoundEvent(location) == null) {
-               LOGGER.warn("Missing sound for event: {}", BuiltInRegistries.SOUND_EVENT.getKey(sound));
-               ONLY_WARN_ONCE.add(location);
-            }
+      this.alreadyHadWarning.clear();
+      BuiltInRegistries.SOUND_EVENT.listElements().forEach((sound) -> {
+         Identifier soundResource = ((SoundEvent)sound.value()).location();
+         if (this.soundManager.getSoundEvent(soundResource) == null) {
+            LOGGER.warn("Missing sound for event: {}", sound.key().identifier());
+            this.alreadyHadWarning.add(soundResource);
          }
-      }
 
+      });
       this.destroy();
       this.loadLibrary();
    }
@@ -274,14 +269,8 @@ public class SoundEngine {
                   channel.setSelfPosition(position);
                });
                if (instance.isLooping() && this.tickCount % 10 == 0 && volume > 0.0F && !this.listeners.isEmpty()) {
-                  Sound sound = instance.getSound();
-                  if (sound != null) {
-                     WeighedSoundEvents soundEvent = instance.getSoundEvent();
-                     if (soundEvent != null) {
-                        float attenuationDistance = sound.getAttenuationDistance(instance.getVolume());
-                        this.notifyListeners(instance, soundEvent, attenuationDistance);
-                     }
-                  }
+                  float attenuationDistance = instance.getSound().getAttenuationDistance(instance.getVolume());
+                  this.notifyListeners(instance, instance.getSoundEvent(), attenuationDistance);
                }
             }
          }
@@ -306,7 +295,7 @@ public class SoundEngine {
 
                try {
                   this.instanceBySource.remove(instance.getSource(), instance);
-               } catch (RuntimeException var10) {
+               } catch (RuntimeException var8) {
                }
 
                if (instance instanceof TickableSoundInstance) {
@@ -390,30 +379,16 @@ public class SoundEngine {
       } else if (!instance.canPlaySound()) {
          return SoundEngine.PlayResult.NOT_STARTED;
       } else {
-         WeighedSoundEvents soundEvent = instance.getOrResolve(this.soundManager);
          Identifier eventLocation = instance.getIdentifier();
-         if (soundEvent == null) {
-            if (ONLY_WARN_ONCE.add(eventLocation)) {
-               LOGGER.warn(MARKER, "Unable to play unknown soundEvent: {}", eventLocation);
-            }
-
-            if (!SharedConstants.DEBUG_SUBTITLES) {
-               return SoundEngine.PlayResult.NOT_STARTED;
-            }
-
-            soundEvent = new WeighedSoundEvents(eventLocation, "FOR THE DEBUG!");
-         }
-
-         Sound sound = instance.getSound();
-         if (sound == SoundManager.INTENTIONALLY_EMPTY_SOUND) {
-            return SoundEngine.PlayResult.NOT_STARTED;
-         } else if (sound == SoundManager.EMPTY_SOUND) {
-            if (ONLY_WARN_ONCE.add(eventLocation)) {
-               LOGGER.warn(MARKER, "Unable to play empty soundEvent: {}", eventLocation);
+         if (!instance.resolveAndSelectSound(this.soundManager)) {
+            if (this.alreadyHadWarning.add(eventLocation)) {
+               LOGGER.warn(MARKER, "Unable to play unknown or empty soundEvent: {}", eventLocation);
             }
 
             return SoundEngine.PlayResult.NOT_STARTED;
          } else {
+            WeighedSoundEvents soundEvent = instance.getSoundEvent();
+            Sound sound = instance.getSound();
             float instanceVolume = instance.getVolume();
             float attenuationDistance = sound.getAttenuationDistance(instanceVolume);
             if (!this.listeners.isEmpty()) {

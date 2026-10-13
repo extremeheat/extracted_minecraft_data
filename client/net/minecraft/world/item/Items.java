@@ -611,6 +611,7 @@ public class Items {
    public static final Item DEAD_FIRE_CORAL_FAN;
    public static final Item DEAD_HORN_CORAL_FAN;
    public static final Item BLUE_ICE;
+   public static final Item BRITTLE_ICE;
    public static final Item CONDUIT;
    public static final Item POLISHED_GRANITE_STAIRS;
    public static final Item SMOOTH_RED_SANDSTONE_STAIRS;
@@ -1955,6 +1956,7 @@ public class Items {
       DEAD_FIRE_CORAL_FAN = registerBlock(BlockItemIds.DEAD_FIRE_CORAL_FAN, Blocks.DEAD_FIRE_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_FIRE_CORAL_WALL_FAN, Direction.DOWN, p)));
       DEAD_HORN_CORAL_FAN = registerBlock(BlockItemIds.DEAD_HORN_CORAL_FAN, Blocks.DEAD_HORN_CORAL_FAN, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DEAD_HORN_CORAL_WALL_FAN, Direction.DOWN, p)));
       BLUE_ICE = registerBlock(BlockItemIds.BLUE_ICE, Blocks.BLUE_ICE);
+      BRITTLE_ICE = registerBlock(BlockItemIds.BRITTLE_ICE, Blocks.BRITTLE_ICE);
       CONDUIT = registerBlock(BlockItemIds.CONDUIT, Blocks.CONDUIT, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       POLISHED_GRANITE_STAIRS = registerBlock(BlockItemIds.POLISHED_GRANITE_STAIRS, Blocks.POLISHED_GRANITE_STAIRS);
       SMOOTH_RED_SANDSTONE_STAIRS = registerBlock(BlockItemIds.SMOOTH_RED_SANDSTONE_STAIRS, Blocks.SMOOTH_RED_SANDSTONE_STAIRS);

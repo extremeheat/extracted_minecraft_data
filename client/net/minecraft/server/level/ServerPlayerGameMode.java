@@ -371,25 +371,27 @@ public class ServerPlayerGameMode {
             player.openMenu(menuProvider);
             return InteractionResult.CONSUME;
          } else {
-            Block var17 = state.getBlock();
-            if (var17 instanceof Portal) {
-               Portal portal = (Portal)var17;
-               ServerLevel serverLevel = player.level();
-               TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
-               if (teleportTransition != null) {
-                  if (player.getCamera() != player) {
-                     player.setCamera(player);
+            ServerLevel serverLevel = player.level();
+            if (!serverLevel.isDebug()) {
+               Block var19 = state.getBlock();
+               if (var19 instanceof Portal) {
+                  Portal portal = (Portal)var19;
+                  TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
+                  if (teleportTransition != null) {
+                     if (player.getCamera() != player) {
+                        player.setCamera(player);
+                     }
+
+                     player.teleportToPortalDestination(serverLevel, teleportTransition);
+                  } else {
+                     player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
                   }
 
-                  player.teleportToPortalDestination(serverLevel, teleportTransition);
-               } else {
-                  player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
+                  return InteractionResult.CONSUME;
                }
-
-               return InteractionResult.CONSUME;
-            } else {
-               return InteractionResult.PASS;
             }
+
+            return InteractionResult.PASS;
          }
       } else {
          boolean haveSomethingInOurHands = !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();

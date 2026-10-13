@@ -527,6 +527,7 @@ public class BlockItemIds {
    public static final BlockItemId DEAD_FIRE_CORAL_FAN = BlockItemId.create("dead_fire_coral_fan");
    public static final BlockItemId DEAD_HORN_CORAL_FAN = BlockItemId.create("dead_horn_coral_fan");
    public static final BlockItemId BLUE_ICE = BlockItemId.create("blue_ice");
+   public static final BlockItemId BRITTLE_ICE = BlockItemId.create("brittle_ice");
    public static final BlockItemId CONDUIT = BlockItemId.create("conduit");
    public static final BlockItemId POLISHED_GRANITE_STAIRS = BlockItemId.create("polished_granite_stairs");
    public static final BlockItemId SMOOTH_RED_SANDSTONE_STAIRS = BlockItemId.create("smooth_red_sandstone_stairs");

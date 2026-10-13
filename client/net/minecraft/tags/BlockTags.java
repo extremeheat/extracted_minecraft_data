@@ -59,6 +59,7 @@ public final class BlockTags {
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL;
    public static final TagKey<Block> SHULKER_BOXES;
    public static final TagKey<Block> COPPER_CHESTS;
+   public static final TagKey<Block> JUKEBOX_CONTAINERS;
    public static final TagKey<Block> LIGHTNING_RODS;
    public static final TagKey<Block> COPPER;
    public static final TagKey<Block> CHAINS;
@@ -81,6 +82,7 @@ public final class BlockTags {
    public static final TagKey<Block> FLOWER_POTS;
    public static final TagKey<Block> ENDERMAN_HOLDABLE;
    public static final TagKey<Block> ICE;
+   public static final TagKey<Block> FACE_OCCLUDING_ICE_BLOCKS;
    public static final TagKey<Block> VALID_SPAWN;
    public static final TagKey<Block> IMPERMEABLE;
    public static final TagKey<Block> UNDERWATER_BONEMEALS;
@@ -129,6 +131,7 @@ public final class BlockTags {
    public static final TagKey<Block> HEIGHT_SPECIFIC_ORE_REPLACEABLES;
    public static final TagKey<Block> DEEPSLATE_ORE_REPLACEABLES;
    public static final TagKey<Block> ICE_CAVE_ORE_REPLACEABLES;
+   public static final TagKey<Block> ICE_CREVASSE_REPLACEABLES;
    public static final TagKey<Block> BASE_STONE_NETHER;
    public static final TagKey<Block> BENEATH_TREE_PODZOL_REPLACEABLE;
    public static final TagKey<Block> BENEATH_BAMBOO_PODZOL_REPLACEABLE;
@@ -366,6 +369,7 @@ public final class BlockTags {
       COMPLETES_FIND_TREE_TUTORIAL = BlockItemTags.COMPLETES_FIND_TREE_TUTORIAL.block();
       SHULKER_BOXES = BlockItemTags.SHULKER_BOXES.block();
       COPPER_CHESTS = BlockItemTags.COPPER_CHESTS.block();
+      JUKEBOX_CONTAINERS = BlockItemTags.JUKEBOX_CONTAINERS.block();
       LIGHTNING_RODS = BlockItemTags.LIGHTNING_RODS.block();
       COPPER = BlockItemTags.COPPER.block();
       CHAINS = BlockItemTags.CHAINS.block();
@@ -388,6 +392,7 @@ public final class BlockTags {
       FLOWER_POTS = create("flower_pots");
       ENDERMAN_HOLDABLE = create("enderman_holdable");
       ICE = create("ice");
+      FACE_OCCLUDING_ICE_BLOCKS = create("face_occluding_ice_blocks");
       VALID_SPAWN = create("valid_spawn");
       IMPERMEABLE = create("impermeable");
       UNDERWATER_BONEMEALS = create("underwater_bonemeals");
@@ -436,6 +441,7 @@ public final class BlockTags {
       HEIGHT_SPECIFIC_ORE_REPLACEABLES = create("height_specific_ore_replaceables");
       DEEPSLATE_ORE_REPLACEABLES = create("deepslate_ore_replaceables");
       ICE_CAVE_ORE_REPLACEABLES = create("ice_cave_ore_replaceables");
+      ICE_CREVASSE_REPLACEABLES = create("ice_crevasse_replaceables");
       BASE_STONE_NETHER = create("base_stone_nether");
       BENEATH_TREE_PODZOL_REPLACEABLE = create("beneath_tree_podzol_replaceable");
       BENEATH_BAMBOO_PODZOL_REPLACEABLE = create("beneath_bamboo_podzol_replaceable");

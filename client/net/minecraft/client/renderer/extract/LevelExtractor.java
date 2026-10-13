@@ -58,6 +58,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
 import net.minecraft.util.VisibleForDebug;
@@ -81,6 +82,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
@@ -393,7 +395,12 @@ public class LevelExtractor implements ResourceManagerReloadListener {
          this.mainThreadGizmos.addTemporaryGizmos(server.getPerTickGizmos());
       }
 
-      this.levelRenderer.addMainThreadGizmos(this.mainThreadGizmos.drainGizmos());
+      boolean showEntityHitboxes = this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.ENTITY_HITBOXES);
+      this.levelRenderer.addMainThreadGizmos(filterGizmos(this.mainThreadGizmos.drainGizmos(), showEntityHitboxes));
+   }
+
+   private static List<SimpleGizmoCollector.GizmoInstance> filterGizmos(final List<SimpleGizmoCollector.GizmoInstance> gizmos, final boolean showEntityHitboxes) {
+      return showEntityHitboxes ? gizmos : gizmos.stream().filter((gizmo) -> !gizmo.isWithEntityHitboxes()).toList();
    }
 
    private void extractPlayerState(final Camera camera, final DeltaTracker deltaTracker, final float worldPartialTicks, final PlayerRenderState state) {
@@ -453,18 +460,17 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       if (player.noPhysics) {
          return null;
       } else {
-         AABB nearPlaneBB = frustum.getNearPlaneBounds().move(player.getEyePosition());
-         BlockPos.MutableBlockPos testPos = new BlockPos.MutableBlockPos();
-
-         for(int i = 0; i < 8; ++i) {
-            testPos.set(player.getX() + (double)(((float)((i >> 0) % 2) - 0.5F) * player.getBbWidth() * 0.8F), player.getEyeY() + (double)(((float)((i >> 1) % 2) - 0.5F) * 0.1F * player.getScale()), player.getZ() + (double)(((float)((i >> 2) % 2) - 0.5F) * player.getBbWidth() * 0.8F));
-            BlockState blockState = player.level().getBlockState(testPos);
-            if (blockState.getRenderShape() != RenderShape.INVISIBLE && blockState.isViewBlocking(player.level(), testPos, nearPlaneBB)) {
-               return blockState;
+         AABB nearPlaneBB = frustum.getNearPlaneBounds().move(frustum.getCamX(), frustum.getCamY(), frustum.getCamZ());
+         MutableObject<BlockState> outState = new MutableObject();
+         player.level().findBlocksIn(nearPlaneBB).filterState((state) -> state.getRenderShape() != RenderShape.INVISIBLE).forEachUntil((pos, state) -> {
+            if (state.isViewBlocking(player.level(), pos, nearPlaneBB)) {
+               outState.setValue(state);
+               return Continuation.ABORT;
+            } else {
+               return Continuation.CONTINUE;
             }
-         }
-
-         return null;
+         });
+         return (BlockState)outState.get();
       }
    }
 

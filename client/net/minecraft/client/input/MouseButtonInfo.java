@@ -14,6 +14,26 @@ public record MouseButtonInfo(@MouseButtonInfo.MouseButton int button, @InputWit
       return this.button;
    }
 
+   public boolean isLeftMouse() {
+      return this.button == 1;
+   }
+
+   public boolean isMiddleMouse() {
+      return this.button == 2;
+   }
+
+   public boolean isRightMouse() {
+      return this.button == 3;
+   }
+
+   public boolean isMouse4() {
+      return this.button == 4;
+   }
+
+   public boolean isMouse5() {
+      return this.button == 5;
+   }
+
    @Retention(RetentionPolicy.CLASS)
    @Target({ElementType.TYPE_USE})
    public @interface Action {

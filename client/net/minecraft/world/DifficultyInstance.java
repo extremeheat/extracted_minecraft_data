@@ -1,8 +1,5 @@
 package net.minecraft.world;
 
-import javax.annotation.concurrent.Immutable;
-
-@Immutable
 public class DifficultyInstance {
    private static final float DIFFICULTY_TIME_GLOBAL_OFFSET = -72000.0F;
    private static final float MAX_DIFFICULTY_TIME_GLOBAL = 1440000.0F;

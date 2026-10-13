@@ -22,6 +22,7 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
    private static final Codec<List<PropertyMatcher>> PROPERTIES_CODEC;
    public static final Codec<StatePropertiesPredicate> CODEC;
    public static final StreamCodec<ByteBuf, StatePropertiesPredicate> STREAM_CODEC;
+   public static final StatePropertiesPredicate EMPTY;
 
    public StatePropertiesPredicate {
       super();
@@ -60,6 +61,7 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
       PROPERTIES_CODEC = Codec.unboundedMap(Codec.STRING, StatePropertiesPredicate.ValueMatcher.CODEC).xmap((map) -> map.entrySet().stream().map((entry) -> new PropertyMatcher((String)entry.getKey(), (ValueMatcher)entry.getValue())).toList(), (properties) -> (Map)properties.stream().collect(Collectors.toMap(PropertyMatcher::name, PropertyMatcher::valueMatcher)));
       CODEC = PROPERTIES_CODEC.xmap(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
       STREAM_CODEC = StatePropertiesPredicate.PropertyMatcher.STREAM_CODEC.apply(ByteBufCodecs.list()).map(StatePropertiesPredicate::new, StatePropertiesPredicate::properties);
+      EMPTY = new StatePropertiesPredicate(List.of());
    }
 
    private static record PropertyMatcher(String name, ValueMatcher valueMatcher) {
@@ -187,8 +189,8 @@ public record StatePropertiesPredicate(List<PropertyMatcher> properties) {
          return this.hasProperty(property, ((StringRepresentable)value).getSerializedName());
       }
 
-      public Optional<StatePropertiesPredicate> build() {
-         return Optional.of(new StatePropertiesPredicate(this.matchers.build()));
+      public StatePropertiesPredicate build() {
+         return new StatePropertiesPredicate(this.matchers.build());
       }
    }
 }

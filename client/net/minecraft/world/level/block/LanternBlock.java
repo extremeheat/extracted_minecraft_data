@@ -39,7 +39,7 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
          if (direction.getAxis() == Direction.Axis.Y) {
             BlockState state = (BlockState)this.defaultBlockState().setValue(HANGING, direction == Direction.UP);
             if (state.canSurvive(context.getLevel(), context.getClickedPos())) {
-               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+               return (BlockState)state.setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
             }
          }
       }
@@ -73,7 +73,7 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected boolean isPathfindable(final BlockState state, final PathComputationType type) {

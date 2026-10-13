@@ -22,15 +22,15 @@ import net.minecraft.world.item.Item;
 
 public record SulfurCubeArchetype(HolderSet<Item> items, List<AttributeEntry> attributeModifiers, boolean buoyant, Optional<ExplosionData> explosion, Optional<ContactDamage> contactDamage, KnockbackModifiers knockbackModifiers, SoundSettings soundSettings) {
    public static final Codec<SulfurCubeArchetype> DIRECT_CODEC = RecordCodecBuilder.create((i) -> i.group(RegistryCodecs.holderSet(Registries.ITEM).fieldOf("items").forGetter(SulfurCubeArchetype::items), SulfurCubeArchetype.AttributeEntry.CODEC.listOf().fieldOf("attribute_modifiers").forGetter(SulfurCubeArchetype::attributeModifiers), Codec.BOOL.optionalFieldOf("buoyant", false).forGetter(SulfurCubeArchetype::buoyant), SulfurCubeArchetype.ExplosionData.CODEC.optionalFieldOf("explosion").forGetter(SulfurCubeArchetype::explosion), SulfurCubeArchetype.ContactDamage.CODEC.optionalFieldOf("contact_damage").forGetter(SulfurCubeArchetype::contactDamage), SulfurCubeArchetype.KnockbackModifiers.CODEC.fieldOf("knockback_modifiers").forGetter(SulfurCubeArchetype::knockbackModifiers), SulfurCubeArchetype.SoundSettings.CODEC.fieldOf("sound_settings").forGetter(SulfurCubeArchetype::soundSettings)).apply(i, SulfurCubeArchetype::new));
-   public static KnockbackModifiers DEFAULT_KNOCKBACK_MODIFIERS = new KnockbackModifiers(0.33F, 0.06F);
-   public static SoundSettings DEFAULT_SOUND_SETTINGS;
+   public static final KnockbackModifiers DEFAULT_KNOCKBACK_MODIFIERS = new KnockbackModifiers(0.33F, 0.06F);
+   public static final SoundSettings DEFAULT_SOUND_SETTINGS;
 
    public SulfurCubeArchetype {
       super();
    }
 
    static {
-      DEFAULT_SOUND_SETTINGS = new SoundSettings(SoundEvents.SULFUR_CUBE_REGULAR_HIT, SoundEvents.SULFUR_CUBE_REGULAR_PUSH, 0.2F, 0.5F);
+      DEFAULT_SOUND_SETTINGS = new SoundSettings(Optional.of(SoundEvents.SULFUR_CUBE_REGULAR_HIT), Optional.of(SoundEvents.SULFUR_CUBE_REGULAR_PUSH), 0.2F, 0.5F);
    }
 
    public static record AttributeEntry(Holder<Attribute> attribute, AttributeModifier modifier) {
@@ -75,8 +75,8 @@ public record SulfurCubeArchetype(HolderSet<Item> items, List<AttributeEntry> at
       }
    }
 
-   public static record SoundSettings(Holder<SoundEvent> hitSound, Holder<SoundEvent> pushSound, float pushSoundImpulseThreshold, float pushSoundCooldown) {
-      public static final Codec<SoundSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.fieldOf("hit_sound").forGetter(SoundSettings::hitSound), SoundEvent.CODEC.fieldOf("push_sound").forGetter(SoundSettings::pushSound), Codec.FLOAT.fieldOf("push_sound_impulse_threshold").forGetter(SoundSettings::pushSoundImpulseThreshold), Codec.FLOAT.fieldOf("push_sound_cooldown").forGetter(SoundSettings::pushSoundCooldown)).apply(i, SoundSettings::new));
+   public static record SoundSettings(Optional<Holder<SoundEvent>> hitSound, Optional<Holder<SoundEvent>> pushSound, float pushSoundImpulseThreshold, float pushSoundCooldown) {
+      public static final Codec<SoundSettings> CODEC = RecordCodecBuilder.create((i) -> i.group(SoundEvent.CODEC.optionalFieldOf("hit_sound").forGetter(SoundSettings::hitSound), SoundEvent.CODEC.optionalFieldOf("push_sound").forGetter(SoundSettings::pushSound), Codec.FLOAT.fieldOf("push_sound_impulse_threshold").forGetter(SoundSettings::pushSoundImpulseThreshold), Codec.FLOAT.fieldOf("push_sound_cooldown").forGetter(SoundSettings::pushSoundCooldown)).apply(i, SoundSettings::new));
 
       public SoundSettings {
          super();

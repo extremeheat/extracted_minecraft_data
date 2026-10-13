@@ -284,8 +284,12 @@ public class RealmsInviteCodesScreen extends AbstractRealmsCodeScreen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            InviteCodeSelectionList.this.setSelected(this);
-            return true;
+            if (event.isLeftMouse()) {
+               InviteCodeSelectionList.this.setSelected(this);
+               return true;
+            } else {
+               return false;
+            }
          }
 
          public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {

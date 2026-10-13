@@ -71,6 +71,7 @@ public class BlockItemTags {
    public static final BlockItemTagId COMPLETES_FIND_TREE_TUTORIAL = BlockItemTagId.create("completes_find_tree_tutorial");
    public static final BlockItemTagId SHULKER_BOXES = BlockItemTagId.create("shulker_boxes");
    public static final BlockItemTagId COPPER_CHESTS = BlockItemTagId.create("copper_chests");
+   public static final BlockItemTagId JUKEBOX_CONTAINERS = BlockItemTagId.create("jukebox_containers");
    public static final BlockItemTagId LIGHTNING_RODS = BlockItemTagId.create("lightning_rods");
    public static final BlockItemTagId COPPER_GOLEM_STATUES = BlockItemTagId.create("copper_golem_statues");
    public static final BlockItemTagId COPPER = BlockItemTagId.create("copper");

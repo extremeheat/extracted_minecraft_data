@@ -5,11 +5,11 @@ import it.unimi.dsi.fastutil.floats.FloatComparators;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -20,7 +20,6 @@ import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.debug.DebugEntryCategory;
-import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.debug.DebugScreenEntry;
 import net.minecraft.client.gui.components.debug.DebugScreenEntryStatus;
 import net.minecraft.client.gui.components.debug.DebugScreenProfile;
@@ -31,10 +30,11 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 public class DebugOptionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("debug.options.title");
@@ -123,9 +123,9 @@ public class DebugOptionsScreen extends Screen {
    }
 
    public class OptionList extends ContainerObjectSelectionList<AbstractOptionEntry> {
-      private static final Comparator<Map.Entry<Identifier, DebugScreenEntry>> COMPARATOR = (o1, o2) -> {
-         int byCategory = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)o1.getValue()).category().sortKey(), ((DebugScreenEntry)o2.getValue()).category().sortKey());
-         return byCategory != 0 ? byCategory : ((Identifier)o1.getKey()).compareTo((Identifier)o2.getKey());
+      private static final Comparator<Holder.Reference<DebugScreenEntry>> COMPARATOR = (o1, o2) -> {
+         int byCategory = FloatComparators.NATURAL_COMPARATOR.compare(((DebugScreenEntry)o1.value()).category().sortKey(), ((DebugScreenEntry)o2.value()).category().sortKey());
+         return byCategory != 0 ? byCategory : o1.key().identifier().compareTo(o2.key().identifier());
       };
       private static final int ITEM_HEIGHT = 20;
 
@@ -149,19 +149,18 @@ public class DebugOptionsScreen extends Screen {
 
       public void updateSearch(final String value) {
          this.clearEntries();
-         List<Map.Entry<Identifier, DebugScreenEntry>> all = new ArrayList(DebugScreenEntries.allEntries().entrySet());
-         all.sort(COMPARATOR);
+         List<Holder.Reference<DebugScreenEntry>> all = BuiltInClientRegistries.DEBUG_SCREEN_ENTRY.listElements().sorted(COMPARATOR).toList();
          DebugEntryCategory currentCategory = null;
 
-         for(Map.Entry<Identifier, DebugScreenEntry> entry : all) {
-            if (((Identifier)entry.getKey()).getPath().contains(value)) {
-               DebugEntryCategory newCategory = ((DebugScreenEntry)entry.getValue()).category();
+         for(Holder.Reference<DebugScreenEntry> holder : all) {
+            if (holder.key().identifier().getPath().contains(value)) {
+               DebugEntryCategory newCategory = ((DebugScreenEntry)holder.value()).category();
                if (!newCategory.equals(currentCategory)) {
                   this.addEntry(DebugOptionsScreen.this.new CategoryEntry(newCategory.label()));
                   currentCategory = newCategory;
                }
 
-               this.addEntry(DebugOptionsScreen.this.new OptionEntry((Identifier)entry.getKey()));
+               this.addEntry(DebugOptionsScreen.this.new OptionEntry(holder.key()));
             }
          }
 
@@ -210,7 +209,7 @@ public class DebugOptionsScreen extends Screen {
 
    private class OptionEntry extends AbstractOptionEntry {
       private static final int BUTTON_WIDTH = 60;
-      private final Identifier location;
+      private final ResourceKey<DebugScreenEntry> key;
       protected final List<AbstractWidget> children;
       private final CycleButton<Boolean> always;
       private final CycleButton<Boolean> overlay;
@@ -218,14 +217,14 @@ public class DebugOptionsScreen extends Screen {
       private final String name;
       private final boolean isAllowed;
 
-      public OptionEntry(final Identifier location) {
+      public OptionEntry(final ResourceKey<DebugScreenEntry> key) {
          Objects.requireNonNull(DebugOptionsScreen.this);
          super();
          this.children = Lists.newArrayList();
-         this.location = location;
-         DebugScreenEntry entry = DebugScreenEntries.getEntry(location);
+         this.key = key;
+         DebugScreenEntry entry = (DebugScreenEntry)BuiltInClientRegistries.DEBUG_SCREEN_ENTRY.getValue(key);
          this.isAllowed = entry != null && entry.isAllowed(DebugOptionsScreen.this.minecraft.showOnlyReducedInfo());
-         String name = location.getPath();
+         String name = key.identifier().getPath();
          if (this.isAllowed) {
             this.name = name;
          } else {
@@ -233,9 +232,9 @@ public class DebugOptionsScreen extends Screen {
             this.name = var10001 + name;
          }
 
-         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.ALWAYS_ON));
-         this.overlay = CycleButton.booleanBuilder(DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.IN_OVERLAY));
-         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(location, DebugScreenEntryStatus.NEVER));
+         this.always = CycleButton.booleanBuilder(DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-2142128), DebugOptionsScreen.ENABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(key, DebugScreenEntryStatus.ALWAYS_ON));
+         this.overlay = CycleButton.booleanBuilder(DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-171), DebugOptionsScreen.IN_OVERLAY_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(key, DebugScreenEntryStatus.IN_OVERLAY));
+         this.never = CycleButton.booleanBuilder(DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-1), DebugOptionsScreen.DISABLED_TEXT.copy().withColor(-4539718), false).displayOnlyValue().withCustomNarration(this::narrateButton).create(10, 5, 60, 16, Component.literal(name), (button, newValue) -> this.setValue(key, DebugScreenEntryStatus.NEVER));
          this.children.add(this.never);
          this.children.add(this.overlay);
          this.children.add(this.always);
@@ -243,12 +242,12 @@ public class DebugOptionsScreen extends Screen {
       }
 
       private MutableComponent narrateButton(final CycleButton<Boolean> booleanCycleButton) {
-         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
+         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.key);
          MutableComponent current = Component.translatable("debug.entry.currently." + status.getSerializedName(), this.name);
          return CommonComponents.optionNameValue(current, booleanCycleButton.getMessage());
       }
 
-      private void setValue(final Identifier location, final DebugScreenEntryStatus never) {
+      private void setValue(final ResourceKey<DebugScreenEntry> location, final DebugScreenEntryStatus never) {
          DebugOptionsScreen.this.minecraft.debugEntries.setStatus(location, never);
 
          for(Button profileButton : DebugOptionsScreen.this.profileButtons) {
@@ -287,7 +286,7 @@ public class DebugOptionsScreen extends Screen {
       }
 
       public void refreshEntry() {
-         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.location);
+         DebugScreenEntryStatus status = DebugOptionsScreen.this.minecraft.debugEntries.getStatus(this.key);
          this.always.setValue(status == DebugScreenEntryStatus.ALWAYS_ON);
          this.overlay.setValue(status == DebugScreenEntryStatus.IN_OVERLAY);
          this.never.setValue(status == DebugScreenEntryStatus.NEVER);

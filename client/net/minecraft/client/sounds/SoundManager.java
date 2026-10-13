@@ -34,22 +34,17 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.profiling.Zone;
-import net.minecraft.util.valueproviders.ConstantFloat;
 import net.minecraft.util.valueproviders.MultipliedFloats;
 import net.minecraft.util.valueproviders.SampledFloat;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class SoundManager extends SimplePreparableReloadListener<Preparations> {
-   public static final Identifier EMPTY_SOUND_LOCATION = Identifier.withDefaultNamespace("empty");
-   public static final Sound EMPTY_SOUND;
-   public static final Identifier INTENTIONALLY_EMPTY_SOUND_LOCATION;
-   public static final WeighedSoundEvents INTENTIONALLY_EMPTY_SOUND_EVENT;
-   public static final Sound INTENTIONALLY_EMPTY_SOUND;
-   private static final Logger LOGGER;
+   private static final Logger LOGGER = LogUtils.getLogger();
    private static final String SOUNDS_PATH = "sounds.json";
-   private static final Gson GSON;
-   private static final TypeToken<Map<String, SoundEventRegistration>> SOUND_EVENT_REGISTRATION_TYPE;
+   private static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
+   private static final TypeToken<Map<String, SoundEventRegistration>> SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
+   };
    private final Map<Identifier, WeighedSoundEvents> registry = Maps.newHashMap();
    private final SoundEngine soundEngine;
    private final Map<Identifier, Resource> soundCache = new HashMap();
@@ -240,17 +235,6 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.reload();
    }
 
-   static {
-      EMPTY_SOUND = new Sound(EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
-      INTENTIONALLY_EMPTY_SOUND_LOCATION = Identifier.withDefaultNamespace("intentionally_empty");
-      INTENTIONALLY_EMPTY_SOUND_EVENT = new WeighedSoundEvents(INTENTIONALLY_EMPTY_SOUND_LOCATION, (String)null);
-      INTENTIONALLY_EMPTY_SOUND = new Sound(INTENTIONALLY_EMPTY_SOUND_LOCATION, ConstantFloat.of(1.0F), ConstantFloat.of(1.0F), 1, Sound.Type.FILE, false, false, 16);
-      LOGGER = LogUtils.getLogger();
-      GSON = (new GsonBuilder()).registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer()).create();
-      SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
-      };
-   }
-
    protected static class Preparations {
       private final Map<Identifier, WeighedSoundEvents> registry = Maps.newHashMap();
       private Map<Identifier, Resource> soundCache = Map.of();
@@ -271,7 +255,7 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
                SoundManager.LOGGER.debug("Replaced sound event location {}", eventLocation);
             }
 
-            registration = new WeighedSoundEvents(eventLocation, soundEventRegistration.getSubtitle());
+            registration = new WeighedSoundEvents(soundEventRegistration.getSubtitle());
             this.registry.put(eventLocation, registration);
          }
 
@@ -299,13 +283,13 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
                         return registration == null ? 0 : registration.getWeight();
                      }
 
-                     public Sound getSound(final RandomSource random) {
+                     public @Nullable Sound getSound(final RandomSource random) {
                         WeighedSoundEvents registration = (WeighedSoundEvents)Preparations.this.registry.get(soundLocation);
                         if (registration == null) {
-                           return SoundManager.EMPTY_SOUND;
+                           return null;
                         } else {
                            Sound wrappedSound = registration.getSound(random);
-                           return new Sound(wrappedSound.getLocation(), new MultipliedFloats(new SampledFloat[]{wrappedSound.getVolume(), sound.getVolume()}), new MultipliedFloats(new SampledFloat[]{wrappedSound.getPitch(), sound.getPitch()}), sound.getWeight(), Sound.Type.FILE, wrappedSound.shouldStream() || sound.shouldStream(), wrappedSound.shouldPreload(), wrappedSound.getAttenuationDistance());
+                           return wrappedSound == null ? null : new Sound(wrappedSound.getLocation(), new MultipliedFloats(new SampledFloat[]{wrappedSound.getVolume(), sound.getVolume()}), new MultipliedFloats(new SampledFloat[]{wrappedSound.getPitch(), sound.getPitch()}), sound.getWeight(), Sound.Type.FILE, wrappedSound.shouldStream() || sound.shouldStream(), wrappedSound.shouldPreload(), wrappedSound.getAttenuationDistance());
                         }
                      }
 

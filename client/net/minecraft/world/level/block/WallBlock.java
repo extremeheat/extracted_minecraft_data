@@ -109,7 +109,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
       boolean east = this.connectsTo(eastState, eastState.isFaceSturdy(level, eastPos, Direction.WEST), Direction.WEST);
       boolean south = this.connectsTo(southState, southState.isFaceSturdy(level, southPos, Direction.NORTH), Direction.NORTH);
       boolean west = this.connectsTo(westState, westState.isFaceSturdy(level, westPos, Direction.EAST), Direction.EAST);
-      BlockState state = (BlockState)this.defaultBlockState().setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      BlockState state = (BlockState)this.defaultBlockState().setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
       return this.updateShape(level, state, topPos, topState, north, east, south, west);
    }
 
@@ -198,7 +198,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected boolean propagatesSkylightDown(final BlockState state) {

@@ -14,7 +14,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.ParticlesRenderState;
 import net.minecraft.core.particles.ParticleLimit;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.world.entity.Entity;
@@ -55,7 +54,7 @@ public class ParticleEngine {
    }
 
    private <T extends ParticleOptions> @Nullable Particle makeParticle(final T options, final double x, final double y, final double z, final double xa, final double ya, final double za) {
-      ParticleProvider<T> provider = (ParticleProvider)this.resourceManager.getProviders().get(BuiltInRegistries.PARTICLE_TYPE.getId(options.getType()));
+      ParticleProvider<T> provider = this.resourceManager.<T>getProvider(options);
       return provider == null ? null : provider.createParticle(options, this.level, x, y, z, xa, ya, za, this.random);
    }
 

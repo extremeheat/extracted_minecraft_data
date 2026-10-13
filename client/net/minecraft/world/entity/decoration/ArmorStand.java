@@ -435,7 +435,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    protected void kill(final ServerLevel level, final DamageSource source) {
-      this.lastDamageSource = source;
+      this.setLastDamageSource(source);
       this.kill(level);
    }
 

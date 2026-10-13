@@ -182,7 +182,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected boolean showAsInteractableInSpectatorMode(final BlockState state, final Level level, final BlockPos pos, final BlockHitResult hitResult) {
-      return state.getMenuProvider(level, pos) != null || state.getBlock() instanceof Portal;
+      return !level.isDebug() && (state.getMenuProvider(level, pos) != null || state.getBlock() instanceof Portal);
    }
 
    protected boolean triggerEvent(final BlockState state, final Level level, final BlockPos pos, final int b0, final int b1) {

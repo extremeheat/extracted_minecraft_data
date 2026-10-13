@@ -63,7 +63,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
       BlockPos pos = context.getClickedPos();
       Level level = context.getLevel();
       int distance = getDistance(level, pos);
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER))).setValue(DISTANCE, distance)).setValue(BOTTOM, this.isBottom(level, pos, distance));
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).isSourceOfType(Fluids.WATER))).setValue(DISTANCE, distance)).setValue(BOTTOM, this.isBottom(level, pos, distance));
    }
 
    protected void onPlace(final BlockState state, final Level level, final BlockPos pos, final BlockState oldState, final boolean movedByPiston) {
@@ -115,7 +115,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    private boolean isBottom(final BlockGetter level, final BlockPos pos, final int distance) {

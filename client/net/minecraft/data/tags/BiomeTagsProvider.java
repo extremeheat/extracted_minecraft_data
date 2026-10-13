@@ -28,7 +28,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.IS_JUNGLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.JUNGLE).add(Biomes.SPARSE_JUNGLE);
       this.tag(BiomeTags.IS_FOREST).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.DAPPLED_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.GROVE);
       this.tag(BiomeTags.IS_SAVANNA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_SAVANNA);
-      this.tag(BiomeTags.IS_CAVE).add(Biomes.LUSH_CAVES).add(Biomes.DEEP_DARK).add(Biomes.DRIPSTONE_CAVES).add(Biomes.SULFUR_CAVES);
+      this.tag(BiomeTags.IS_CAVE).add(Biomes.LUSH_CAVES).add(Biomes.DEEP_DARK).add(Biomes.DRIPSTONE_CAVES).add(Biomes.SULFUR_CAVES).add(Biomes.ICE_CAVES);
       this.tag(BiomeTags.IS_NETHER).addAll(MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes());
       List<ResourceKey<Biome>> overworldBiomes = MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD.usedBiomes().toList();
       this.tag(BiomeTags.IS_OVERWORLD).addAll(overworldBiomes);
@@ -37,7 +37,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.HAS_DESERT_PYRAMID).add(Biomes.DESERT);
       this.tag(BiomeTags.HAS_IGLOO).add(Biomes.SNOWY_TAIGA).add(Biomes.SNOWY_PLAINS).add(Biomes.SNOWY_SLOPES);
       this.tag(BiomeTags.HAS_JUNGLE_TEMPLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.JUNGLE);
-      this.tag(BiomeTags.HAS_MINESHAFT).addTag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_RIVER).addTag(BiomeTags.IS_BEACH).addTag(BiomeTags.IS_MOUNTAIN).addTag(BiomeTags.IS_HILL).addTag(BiomeTags.IS_TAIGA).addTag(BiomeTags.IS_JUNGLE).addTag(BiomeTags.IS_FOREST).add(Biomes.STONY_SHORE).add(Biomes.MUSHROOM_FIELDS).add(Biomes.ICE_SPIKES).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.DESERT).add(Biomes.SAVANNA).add(Biomes.SNOWY_PLAINS).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP).add(Biomes.SAVANNA_PLATEAU).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.SULFUR_CAVES);
+      this.tag(BiomeTags.HAS_MINESHAFT).addTag(BiomeTags.IS_OCEAN).addTag(BiomeTags.IS_RIVER).addTag(BiomeTags.IS_BEACH).addTag(BiomeTags.IS_MOUNTAIN).addTag(BiomeTags.IS_HILL).addTag(BiomeTags.IS_TAIGA).addTag(BiomeTags.IS_JUNGLE).addTag(BiomeTags.IS_FOREST).add(Biomes.STONY_SHORE).add(Biomes.MUSHROOM_FIELDS).add(Biomes.ICE_SPIKES).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.DESERT).add(Biomes.SAVANNA).add(Biomes.SNOWY_PLAINS).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP).add(Biomes.SAVANNA_PLATEAU).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.SULFUR_CAVES).add(Biomes.ICE_CAVES);
       this.tag(BiomeTags.HAS_MINESHAFT_MESA).addTag(BiomeTags.IS_BADLANDS);
       this.tag(BiomeTags.MINESHAFT_BLOCKING).add(Biomes.DEEP_DARK);
       this.tag(BiomeTags.HAS_OCEAN_MONUMENT).addTag(BiomeTags.IS_DEEP_OCEAN);

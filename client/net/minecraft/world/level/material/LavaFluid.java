@@ -26,24 +26,15 @@ import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.gamerules.GameRules;
 import org.jspecify.annotations.Nullable;
 
-public abstract class LavaFluid extends FlowingFluid {
+public class LavaFluid extends FlowingFluid {
    public static final int LIGHT_EMISSION = 15;
    public static final float MIN_LEVEL_CUTOFF = 0.44444445F;
 
    public LavaFluid() {
       super();
-   }
-
-   public Fluid getFlowing() {
-      return Fluids.FLOWING_LAVA;
-   }
-
-   public Fluid getSource() {
-      return Fluids.LAVA;
    }
 
    public Item getBucket() {
@@ -142,15 +133,11 @@ public abstract class LavaFluid extends FlowingFluid {
       return (BlockState)Blocks.LAVA.defaultBlockState().setValue(LiquidBlock.LEVEL, getLegacyLevel(fluidState));
    }
 
-   public boolean isSame(final Fluid other) {
-      return other == Fluids.LAVA || other == Fluids.FLOWING_LAVA;
-   }
-
    public int getDropOff(final LevelReader level) {
       return isFastLava(level) ? 1 : 2;
    }
 
-   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final Fluid other, final Direction direction) {
+   public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final FluidState other, final Direction direction) {
       return state.getHeight(level, pos) >= 0.44444445F && other.is(FluidTags.WATER);
    }
 
@@ -160,7 +147,7 @@ public abstract class LavaFluid extends FlowingFluid {
 
    public int getSpreadDelay(final Level level, final BlockPos pos, final FluidState oldFluidState, final FluidState newFluidState) {
       int result = this.getTickDelay(level);
-      if (!oldFluidState.isEmpty() && !newFluidState.isEmpty() && !(Boolean)oldFluidState.getValue(FALLING) && !(Boolean)newFluidState.getValue(FALLING) && newFluidState.getHeight(level, pos) > oldFluidState.getHeight(level, pos) && level.getRandom().nextInt(4) != 0) {
+      if (!oldFluidState.isEmpty() && !newFluidState.isEmpty() && !oldFluidState.isFalling() && !newFluidState.isFalling() && newFluidState.getHeight(level, pos) > oldFluidState.getHeight(level, pos) && level.getRandom().nextInt(4) != 0) {
          result *= 4;
       }
 
@@ -178,7 +165,7 @@ public abstract class LavaFluid extends FlowingFluid {
    protected void spreadTo(final LevelAccessor level, final BlockPos pos, final BlockState state, final Direction direction, final FluidState target) {
       if (direction == Direction.DOWN) {
          FluidState fluidState = level.getFluidState(pos);
-         if (this.is(FluidTags.LAVA) && fluidState.is(FluidTags.WATER)) {
+         if (fluidState.is(FluidTags.WATER)) {
             if (state.getBlock() instanceof LiquidBlock) {
                level.setBlockAndUpdate(pos, Blocks.STONE.defaultBlockState());
             }
@@ -205,38 +192,5 @@ public abstract class LavaFluid extends FlowingFluid {
 
    private static boolean isFastLava(final LevelReader level) {
       return (Boolean)level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA);
-   }
-
-   public static class Source extends LavaFluid {
-      public Source() {
-         super();
-      }
-
-      public int getAmount(final FluidState fluidState) {
-         return 8;
-      }
-
-      public boolean isSource(final FluidState fluidState) {
-         return true;
-      }
-   }
-
-   public static class Flowing extends LavaFluid {
-      public Flowing() {
-         super();
-      }
-
-      protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
-         super.createFluidStateDefinition(builder);
-         builder.add(LEVEL);
-      }
-
-      public int getAmount(final FluidState fluidState) {
-         return (Integer)fluidState.getValue(LEVEL);
-      }
-
-      public boolean isSource(final FluidState fluidState) {
-         return false;
-      }
    }
 }

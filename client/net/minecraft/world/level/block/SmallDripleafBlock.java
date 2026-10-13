@@ -59,7 +59,7 @@ public class SmallDripleafBlock extends DoublePlantBlock implements SimpleWaterl
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {

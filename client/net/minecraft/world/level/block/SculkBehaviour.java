@@ -15,7 +15,7 @@ public interface SculkBehaviour {
          if (facings == null) {
             return ((SculkVeinBlock)Blocks.SCULK_VEIN).getSameSpaceSpreader().spreadAll(level.getBlockState(pos), level, pos, postProcess) > 0L;
          } else if (!facings.isEmpty()) {
-            return !state.isAir() && !state.getFluidState().is(Fluids.WATER) ? false : SculkVeinBlock.regrow(level, pos, state, facings);
+            return !state.isAir() && !state.getFluidState().isSourceOfType(Fluids.WATER) ? false : SculkVeinBlock.regrow(level, pos, state, facings);
          } else {
             return SculkBehaviour.super.attemptSpreadVein(level, pos, state, facings, postProcess);
          }

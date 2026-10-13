@@ -13,20 +13,19 @@ public class D3D12CommandQueue extends D3D12Pageable {
 
    public D3D12CommandQueue(final MemorySegment address) {
       super(address);
-      this.executeCommandLists = this.vtable(10L, FunctionDescriptor.of(COMUnknown.Types.HRESULT, COMUnknown.Types.SELF_PTR, COMUnknown.Types.UINT32.withName("commandListCount"), COMUnknown.Types.POINTER.withName("ppCommandLists")));
+      this.executeCommandLists = this.vtable(10L, FunctionDescriptor.ofVoid(COMUnknown.Types.SELF_PTR, COMUnknown.Types.UINT32.withName("commandListCount"), COMUnknown.Types.POINTER.withName("ppCommandLists")));
       this.signal = this.vtable(14L, FunctionDescriptor.of(COMUnknown.Types.HRESULT, COMUnknown.Types.SELF_PTR, COMUnknown.Types.POINTER.withName("fence"), COMUnknown.Types.UINT64.withName("value")));
       this.wait = this.vtable(15L, FunctionDescriptor.of(COMUnknown.Types.HRESULT, COMUnknown.Types.SELF_PTR, COMUnknown.Types.POINTER.withName("fence"), COMUnknown.Types.UINT64.withName("value")));
    }
 
-   public int executeCommandList(final D3D12GraphicsCommandList commandList) {
+   public void executeCommandList(final D3D12GraphicsCommandList commandList) {
       try {
          Arena arena = Arena.ofConfined();
 
-         int var4;
          try {
             MemorySegment listList = arena.allocate(COMUnknown.Types.POINTER);
             listList.set(COMUnknown.Types.POINTER, 0L, commandList.address());
-            var4 = this.executeCommandLists.invokeExact(this.address(), 1, listList);
+            this.executeCommandLists.invokeExact(this.address(), 1, listList);
          } catch (Throwable var6) {
             if (arena != null) {
                try {
@@ -43,7 +42,6 @@ public class D3D12CommandQueue extends D3D12Pageable {
             arena.close();
          }
 
-         return var4;
       } catch (Throwable e) {
          throw new RuntimeException(e);
       }

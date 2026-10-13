@@ -166,7 +166,7 @@ public class RecipeButton extends AbstractWidget {
    }
 
    protected boolean isValidClickButton(final MouseButtonInfo buttonInfo) {
-      return buttonInfo.button() == 1 || buttonInfo.button() == 3;
+      return buttonInfo.isLeftMouse() || buttonInfo.isRightMouse();
    }
 
    private static record ResolvedEntry(RecipeDisplayId id, List<ItemStack> displayItems) {

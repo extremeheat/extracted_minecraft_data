@@ -22,7 +22,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.GameLoadCookie;
-import net.minecraft.client.InputType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -247,8 +246,6 @@ public class Gui {
 
          this.minecraft.textInputManager().stopTextInput();
          oldScreen.removed();
-      } else {
-         this.minecraft.setLastInputType(InputType.NONE);
       }
 
       if (newScreen == null) {

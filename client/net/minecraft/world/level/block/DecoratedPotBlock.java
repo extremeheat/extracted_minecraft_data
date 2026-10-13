@@ -73,7 +73,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection())).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER))).setValue(CRACKED, false);
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection())).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER))).setValue(CRACKED, false);
    }
 
    protected InteractionResult useItemOn(final ItemStack itemStack, final BlockState state, final Level level, final BlockPos pos, final Player player, final InteractionHand hand, final BlockHitResult hitResult) {
@@ -172,7 +172,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected Optional<ResourceKey<BlockSoundSet>> getSounds(final BlockState state) {

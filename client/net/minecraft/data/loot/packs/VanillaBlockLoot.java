@@ -872,6 +872,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropWhenSilkTouch(Blocks.ICE);
       this.dropWhenSilkTouch(Blocks.PACKED_ICE);
       this.dropWhenSilkTouch(Blocks.BLUE_ICE);
+      this.dropWhenSilkTouch(Blocks.BRITTLE_ICE);
       this.dropWhenSilkTouch(Blocks.TURTLE_EGG);
       this.dropWhenSilkTouch(Blocks.MUSHROOM_STEM);
       this.dropWhenSilkTouch(Blocks.DEAD_TUBE_CORAL);

@@ -22,7 +22,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieR
    public void extractRenderState(final T entity, final S state, final float partialTicks) {
       super.extractRenderState(entity, state, partialTicks);
       state.isAggressive = entity.isAggressive();
-      state.isConverting = entity.isUnderWaterConverting();
+      state.isConverting = entity.isUnderWaterConverting() || entity.isFreezingConverting();
    }
 
    protected boolean isShaking(final S state) {

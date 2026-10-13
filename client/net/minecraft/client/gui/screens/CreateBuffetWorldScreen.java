@@ -137,8 +137,12 @@ public class CreateBuffetWorldScreen extends Screen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            BiomeList.this.setSelected(this);
-            return super.mouseClicked(event, doubleClick);
+            if (event.isLeftMouse()) {
+               BiomeList.this.setSelected(this);
+               return true;
+            } else {
+               return false;
+            }
          }
       }
    }

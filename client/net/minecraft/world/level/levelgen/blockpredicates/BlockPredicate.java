@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.blockpredicates;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.BiPredicate;
+import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Directional;
@@ -16,6 +17,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
@@ -23,6 +25,8 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
    Codec<BlockPredicate> CODEC = BuiltInRegistries.BLOCK_PREDICATE_TYPE.byNameCodec().dispatch(BlockPredicate::type, BlockPredicateType::codec);
    BlockPredicate ONLY_IN_AIR_PREDICATE = matchesTag(BlockTags.AIR);
    BlockPredicate ONLY_IN_AIR_OR_WATER_PREDICATE = anyOf(ONLY_IN_AIR_PREDICATE, matchesBlocks(Blocks.WATER));
+   StatePropertiesPredicate FLUID_SOURCE_BLOCK = StatePropertiesPredicate.Builder.properties().hasProperty(FlowingFluid.SOURCE, true).build();
+   StatePropertiesPredicate ANY_FLUID_STATE = StatePropertiesPredicate.EMPTY;
 
    BlockPredicateType<?> type();
 
@@ -75,15 +79,23 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
    }
 
    static BlockPredicate matchesFluids(final Directional directional, final Fluid... fluids) {
-      return matchesFluids(directional.getStep(), List.of(fluids));
+      return matchesFluids(directional.getStep(), List.of(fluids), ANY_FLUID_STATE);
    }
 
-   static BlockPredicate matchesFluids(final Vec3i offset, final List<Fluid> fluids) {
-      return new MatchingFluidsPredicate(offset, HolderSet.direct(Fluid::builtInRegistryHolder, fluids));
+   static BlockPredicate matchesSourceFluids(final Directional directional, final Fluid... fluids) {
+      return matchesFluids(directional.getStep(), List.of(fluids), FLUID_SOURCE_BLOCK);
+   }
+
+   static BlockPredicate matchesFluids(final Vec3i offset, final List<Fluid> fluids, final StatePropertiesPredicate stateProperties) {
+      return new MatchingFluidsPredicate(offset, HolderSet.direct(Fluid::builtInRegistryHolder, fluids), stateProperties);
    }
 
    static BlockPredicate matchesFluids(final Fluid... fluids) {
-      return matchesFluids(Vec3i.ZERO, List.of(fluids));
+      return matchesFluids(Vec3i.ZERO, List.of(fluids), ANY_FLUID_STATE);
+   }
+
+   static BlockPredicate matchesSourceFluids(final Fluid... fluids) {
+      return matchesFluids(Vec3i.ZERO, List.of(fluids), FLUID_SOURCE_BLOCK);
    }
 
    static BlockPredicate not(final BlockPredicate predicate) {
@@ -115,7 +127,7 @@ public interface BlockPredicate extends BiPredicate<LevelAccessor, BlockPos> {
    }
 
    static BlockPredicate noFluid() {
-      return matchesFluids(Vec3i.ZERO, List.of(Fluids.EMPTY));
+      return matchesFluids(Vec3i.ZERO, List.of(Fluids.EMPTY), ANY_FLUID_STATE);
    }
 
    static BlockPredicate insideWorld(final Vec3i offset) {

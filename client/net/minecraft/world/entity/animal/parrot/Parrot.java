@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.parrot;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ import org.jspecify.annotations.Nullable;
 
 public class Parrot extends ShoulderRidingEntity {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID;
-   private static final Predicate<Mob> NOT_PARROT_PREDICATE;
+   private static final Predicate<Mob> PARROT_CAN_IMITATE_SOUND;
    private static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP;
    public float flap;
    public float flapSpeed;
@@ -171,17 +170,15 @@ public class Parrot extends ShoulderRidingEntity {
    public static boolean imitateNearbyMobs(final Level level, final Entity entity) {
       RandomSource random = level.getRandom();
       if (entity.isAlive() && !entity.isSilent() && random.nextInt(2) == 0) {
-         List<Mob> mobs = level.getEntitiesOfClass(Mob.class, entity.getBoundingBox().inflate(20.0), NOT_PARROT_PREDICATE);
-         if (!mobs.isEmpty()) {
-            Mob mob = (Mob)mobs.get(random.nextInt(mobs.size()));
-            if (!mob.isSilent()) {
-               SoundEvent soundEvent = getImitatedSound(mob.getType());
-               level.playSound((Entity)null, entity.getX(), entity.getY(), entity.getZ(), soundEvent, entity.getSoundSource(), 0.7F, getPitch(random));
-               return true;
-            }
+         List<Mob> mobsToImitate = level.getEntitiesOfClass(Mob.class, entity.getBoundingBox().inflate(20.0), PARROT_CAN_IMITATE_SOUND);
+         if (!mobsToImitate.isEmpty()) {
+            Mob mob = (Mob)Util.getRandom(mobsToImitate, random);
+            SoundEvent soundEvent = (SoundEvent)MOB_SOUND_MAP.get(mob.getType());
+            level.playSound((Entity)null, entity.getX(), entity.getY(), entity.getZ(), soundEvent, entity.getSoundSource(), 0.7F, getPitch(random));
+            return true;
+         } else {
+            return false;
          }
-
-         return false;
       } else {
          return false;
       }
@@ -251,15 +248,11 @@ public class Parrot extends ShoulderRidingEntity {
 
    public static SoundEvent getAmbient(final Level level, final RandomSource random) {
       if (level.getDifficulty() != Difficulty.PEACEFUL && random.nextInt(1000) == 0) {
-         List<EntityType<?>> keys = Lists.newArrayList(MOB_SOUND_MAP.keySet());
-         return getImitatedSound((EntityType)keys.get(random.nextInt(keys.size())));
+         List<SoundEvent> values = List.copyOf(MOB_SOUND_MAP.values());
+         return (SoundEvent)Util.getRandom(values, random);
       } else {
          return SoundEvents.PARROT_AMBIENT;
       }
-   }
-
-   private static SoundEvent getImitatedSound(final EntityType<?> id) {
-      return (SoundEvent)MOB_SOUND_MAP.getOrDefault(id, SoundEvents.PARROT_AMBIENT);
    }
 
    protected SoundEvent getHurtSound(final DamageSource source) {
@@ -373,55 +366,12 @@ public class Parrot extends ShoulderRidingEntity {
 
    static {
       DATA_VARIANT_ID = SynchedEntityData.<Integer>defineId(Parrot.class, EntityDataSerializers.INT);
-      NOT_PARROT_PREDICATE = new Predicate<Mob>() {
-         public boolean test(final @Nullable Mob input) {
-            return input != null && Parrot.MOB_SOUND_MAP.containsKey(input.getType());
+      PARROT_CAN_IMITATE_SOUND = new Predicate<Mob>() {
+         public boolean test(final Mob input) {
+            return !input.isSilent() && Parrot.MOB_SOUND_MAP.containsKey(input.getType());
          }
       };
-      MOB_SOUND_MAP = (Map)Util.make(Maps.newHashMap(), (map) -> {
-         map.put(EntityTypes.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
-         map.put(EntityTypes.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED);
-         map.put(EntityTypes.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE);
-         map.put(EntityTypes.CAMEL_HUSK, SoundEvents.PARROT_IMITATE_CAMEL_HUSK);
-         map.put(EntityTypes.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
-         map.put(EntityTypes.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING);
-         map.put(EntityTypes.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
-         map.put(EntityTypes.DROWNED, SoundEvents.PARROT_IMITATE_DROWNED);
-         map.put(EntityTypes.ELDER_GUARDIAN, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
-         map.put(EntityTypes.ENDER_DRAGON, SoundEvents.PARROT_IMITATE_ENDER_DRAGON);
-         map.put(EntityTypes.ENDERMITE, SoundEvents.PARROT_IMITATE_ENDERMITE);
-         map.put(EntityTypes.EVOKER, SoundEvents.PARROT_IMITATE_EVOKER);
-         map.put(EntityTypes.GHAST, SoundEvents.PARROT_IMITATE_GHAST);
-         map.put(EntityTypes.HAPPY_GHAST, SoundEvents.EMPTY.value());
-         map.put(EntityTypes.GUARDIAN, SoundEvents.PARROT_IMITATE_GUARDIAN);
-         map.put(EntityTypes.HOGLIN, SoundEvents.PARROT_IMITATE_HOGLIN);
-         map.put(EntityTypes.HUSK, SoundEvents.PARROT_IMITATE_HUSK);
-         map.put(EntityTypes.ILLUSIONER, SoundEvents.PARROT_IMITATE_ILLUSIONER);
-         map.put(EntityTypes.MAGMA_CUBE, SoundEvents.PARROT_IMITATE_MAGMA_CUBE);
-         map.put(EntityTypes.PARCHED, SoundEvents.PARROT_IMITATE_PARCHED);
-         map.put(EntityTypes.PHANTOM, SoundEvents.PARROT_IMITATE_PHANTOM);
-         map.put(EntityTypes.PIGLIN, SoundEvents.PARROT_IMITATE_PIGLIN);
-         map.put(EntityTypes.PIGLIN_BRUTE, SoundEvents.PARROT_IMITATE_PIGLIN_BRUTE);
-         map.put(EntityTypes.PILLAGER, SoundEvents.PARROT_IMITATE_PILLAGER);
-         map.put(EntityTypes.RAVAGER, SoundEvents.PARROT_IMITATE_RAVAGER);
-         map.put(EntityTypes.SHULKER, SoundEvents.PARROT_IMITATE_SHULKER);
-         map.put(EntityTypes.SILVERFISH, SoundEvents.PARROT_IMITATE_SILVERFISH);
-         map.put(EntityTypes.SKELETON, SoundEvents.PARROT_IMITATE_SKELETON);
-         map.put(EntityTypes.SLIME, SoundEvents.PARROT_IMITATE_SLIME);
-         map.put(EntityTypes.SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
-         map.put(EntityTypes.STRAY, SoundEvents.PARROT_IMITATE_STRAY);
-         map.put(EntityTypes.VEX, SoundEvents.PARROT_IMITATE_VEX);
-         map.put(EntityTypes.VINDICATOR, SoundEvents.PARROT_IMITATE_VINDICATOR);
-         map.put(EntityTypes.WARDEN, SoundEvents.PARROT_IMITATE_WARDEN);
-         map.put(EntityTypes.WITCH, SoundEvents.PARROT_IMITATE_WITCH);
-         map.put(EntityTypes.WITHER, SoundEvents.PARROT_IMITATE_WITHER);
-         map.put(EntityTypes.WITHER_SKELETON, SoundEvents.PARROT_IMITATE_WITHER_SKELETON);
-         map.put(EntityTypes.ZOGLIN, SoundEvents.PARROT_IMITATE_ZOGLIN);
-         map.put(EntityTypes.ZOMBIE, SoundEvents.PARROT_IMITATE_ZOMBIE);
-         map.put(EntityTypes.ZOMBIE_HORSE, SoundEvents.PARROT_IMITATE_ZOMBIE_HORSE);
-         map.put(EntityTypes.ZOMBIE_NAUTILUS, SoundEvents.PARROT_IMITATE_ZOMBIE_NAUTILUS);
-         map.put(EntityTypes.ZOMBIE_VILLAGER, SoundEvents.PARROT_IMITATE_ZOMBIE_VILLAGER);
-      });
+      MOB_SOUND_MAP = ImmutableMap.builder().put(EntityTypes.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE).put(EntityTypes.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED).put(EntityTypes.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE).put(EntityTypes.CAMEL_HUSK, SoundEvents.PARROT_IMITATE_CAMEL_HUSK).put(EntityTypes.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER).put(EntityTypes.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING).put(EntityTypes.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER).put(EntityTypes.DROWNED, SoundEvents.PARROT_IMITATE_DROWNED).put(EntityTypes.ELDER_GUARDIAN, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN).put(EntityTypes.ENDER_DRAGON, SoundEvents.PARROT_IMITATE_ENDER_DRAGON).put(EntityTypes.ENDERMITE, SoundEvents.PARROT_IMITATE_ENDERMITE).put(EntityTypes.EVOKER, SoundEvents.PARROT_IMITATE_EVOKER).put(EntityTypes.GHAST, SoundEvents.PARROT_IMITATE_GHAST).put(EntityTypes.GUARDIAN, SoundEvents.PARROT_IMITATE_GUARDIAN).put(EntityTypes.HOGLIN, SoundEvents.PARROT_IMITATE_HOGLIN).put(EntityTypes.HUSK, SoundEvents.PARROT_IMITATE_HUSK).put(EntityTypes.ILLUSIONER, SoundEvents.PARROT_IMITATE_ILLUSIONER).put(EntityTypes.MAGMA_CUBE, SoundEvents.PARROT_IMITATE_MAGMA_CUBE).put(EntityTypes.PARCHED, SoundEvents.PARROT_IMITATE_PARCHED).put(EntityTypes.PHANTOM, SoundEvents.PARROT_IMITATE_PHANTOM).put(EntityTypes.PIGLIN, SoundEvents.PARROT_IMITATE_PIGLIN).put(EntityTypes.PIGLIN_BRUTE, SoundEvents.PARROT_IMITATE_PIGLIN_BRUTE).put(EntityTypes.PILLAGER, SoundEvents.PARROT_IMITATE_PILLAGER).put(EntityTypes.RAVAGER, SoundEvents.PARROT_IMITATE_RAVAGER).put(EntityTypes.SHULKER, SoundEvents.PARROT_IMITATE_SHULKER).put(EntityTypes.SILVERFISH, SoundEvents.PARROT_IMITATE_SILVERFISH).put(EntityTypes.SKELETON, SoundEvents.PARROT_IMITATE_SKELETON).put(EntityTypes.SLIME, SoundEvents.PARROT_IMITATE_SLIME).put(EntityTypes.SPIDER, SoundEvents.PARROT_IMITATE_SPIDER).put(EntityTypes.STRAY, SoundEvents.PARROT_IMITATE_STRAY).put(EntityTypes.VEX, SoundEvents.PARROT_IMITATE_VEX).put(EntityTypes.VINDICATOR, SoundEvents.PARROT_IMITATE_VINDICATOR).put(EntityTypes.WARDEN, SoundEvents.PARROT_IMITATE_WARDEN).put(EntityTypes.WITCH, SoundEvents.PARROT_IMITATE_WITCH).put(EntityTypes.WITHER, SoundEvents.PARROT_IMITATE_WITHER).put(EntityTypes.WITHER_SKELETON, SoundEvents.PARROT_IMITATE_WITHER_SKELETON).put(EntityTypes.ZOGLIN, SoundEvents.PARROT_IMITATE_ZOGLIN).put(EntityTypes.ZOMBIE, SoundEvents.PARROT_IMITATE_ZOMBIE).put(EntityTypes.ZOMBIE_HORSE, SoundEvents.PARROT_IMITATE_ZOMBIE_HORSE).put(EntityTypes.ZOMBIE_NAUTILUS, SoundEvents.PARROT_IMITATE_ZOMBIE_NAUTILUS).put(EntityTypes.ZOMBIE_VILLAGER, SoundEvents.PARROT_IMITATE_ZOMBIE_VILLAGER).build();
    }
 
    public static enum Variant implements StringRepresentable {

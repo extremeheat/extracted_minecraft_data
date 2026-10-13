@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.ParticleUtils;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 public class UntintedParticleLeavesBlock extends FallingParticlesLeavesBlock {
    protected final ParticleOptions leafParticle;
 
-   public UntintedParticleLeavesBlock(final float leafParticleChance, final ParticleOptions leafParticle, final AmbientLeavesBlockSoundPlayer ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
+   public UntintedParticleLeavesBlock(final float leafParticleChance, final ParticleOptions leafParticle, final Optional<AmbientLeavesBlockSoundPlayer> ambientLeavesBlockSoundPlayer, final BlockBehaviour.Properties properties) {
       super(leafParticleChance, ambientLeavesBlockSoundPlayer, properties);
       this.leafParticle = leafParticle;
    }

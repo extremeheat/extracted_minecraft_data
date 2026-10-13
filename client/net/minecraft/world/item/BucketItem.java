@@ -12,7 +12,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -126,7 +125,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                label98: {
                   if (block instanceof LiquidBlockContainer) {
                      LiquidBlockContainer container = (LiquidBlockContainer)block;
-                     if (container.canPlaceLiquid(user, level, pos, blockState, this.content)) {
+                     if (container.canPlaceLiquid(user, level, pos, blockState, this.content.defaultFluidState())) {
                         break label98;
                      }
                   }
@@ -142,7 +141,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean placeLiquid = var10000;
          boolean canPlaceFluidInsideBlock = blockState.isAir() || placeLiquid && (!shiftKeyDown || hitResult == null);
          if (canPlaceFluidInsideBlock) {
-            if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && this.content.is(FluidTags.WATER)) {
+            if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && this.content == Fluids.WATER) {
                int x = pos.getX();
                int y = pos.getY();
                int z = pos.getZ();
@@ -158,7 +157,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                if (block instanceof LiquidBlockContainer) {
                   LiquidBlockContainer container = (LiquidBlockContainer)block;
                   if (this.content == Fluids.WATER) {
-                     container.placeLiquid(level, pos, blockState, flowingFluid.getSource(false));
+                     container.placeLiquid(level, pos, blockState, flowingFluid.getSource());
                      this.playEmptySound(user, level, pos);
                      return true;
                   }
@@ -182,7 +181,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    }
 
    protected void playEmptySound(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos) {
-      SoundEvent soundEvent = this.content.is(FluidTags.LAVA) ? SoundEvents.BUCKET_EMPTY_LAVA : SoundEvents.BUCKET_EMPTY;
+      SoundEvent soundEvent = this.content == Fluids.LAVA ? SoundEvents.BUCKET_EMPTY_LAVA : SoundEvents.BUCKET_EMPTY;
       level.playSound(user, pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
       level.gameEvent(user, (Holder)GameEvent.FLUID_PLACE, (BlockPos)pos);
    }

@@ -233,8 +233,12 @@ public class CreateFlatWorldScreen extends Screen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            DetailsList.this.setSelected((Entry)this);
-            return super.mouseClicked(event, doubleClick);
+            if (event.isLeftMouse()) {
+               DetailsList.this.setSelected((Entry)this);
+               return true;
+            } else {
+               return false;
+            }
          }
 
          private void blitSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final ItemStack itemStack) {

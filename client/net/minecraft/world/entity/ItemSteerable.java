@@ -1,5 +1,5 @@
 package net.minecraft.world.entity;
 
-public interface ItemSteerable {
+public interface ItemSteerable extends Saddleable {
    boolean boost();
 }

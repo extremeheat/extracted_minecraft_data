@@ -83,7 +83,6 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.validation.ContentValidationException;
 import net.minecraft.world.level.validation.DirectoryValidator;
-import net.minecraft.world.level.validation.ForbiddenSymlinkInfo;
 import net.minecraft.world.level.validation.PathAllowList;
 import org.apache.commons.io.function.IORunnable;
 import org.jspecify.annotations.Nullable;
@@ -312,14 +311,7 @@ public class LevelStorageSource {
       Path dataFile = level.dataFile();
       if (Files.exists(dataFile, new LinkOption[0])) {
          try {
-            if (Files.isSymbolicLink(dataFile)) {
-               List<ForbiddenSymlinkInfo> issues = this.worldDirValidator.validateSymlink(dataFile);
-               if (!issues.isEmpty()) {
-                  LOGGER.warn("{}", ContentValidationException.getMessage(dataFile, issues));
-                  return new LevelSummary.SymlinkLevelSummary(level.directoryName(), level.iconFile());
-               }
-            }
-
+            this.worldDirValidator.validateAndResolveLink(dataFile);
             Tag result = readLightweightData(dataFile);
             if (result instanceof CompoundTag) {
                CompoundTag root = (CompoundTag)result;
@@ -330,6 +322,9 @@ public class LevelStorageSource {
             }
 
             LOGGER.warn("Invalid root tag in {}", dataFile);
+         } catch (ContentValidationException e) {
+            LOGGER.warn("{}", e.getMessage());
+            return new LevelSummary.SymlinkLevelSummary(level.directoryName(), level.iconFile());
          } catch (Exception e) {
             LOGGER.error("Exception reading {}", dataFile, e);
          }
@@ -417,12 +412,8 @@ public class LevelStorageSource {
 
    public LevelStorageAccess validateAndCreateAccess(final String levelId) throws IOException, ContentValidationException {
       Path levelPath = this.getLevelPath(levelId);
-      List<ForbiddenSymlinkInfo> validationResults = this.worldDirValidator.validateDirectory(levelPath, true);
-      if (!validationResults.isEmpty()) {
-         throw new ContentValidationException(levelPath, validationResults);
-      } else {
-         return new LevelStorageAccess(levelId, levelPath);
-      }
+      this.worldDirValidator.validateDirectory(levelPath, true);
+      return new LevelStorageAccess(levelId, levelPath);
    }
 
    public LevelStorageAccess createAccess(final String levelId) throws IOException {

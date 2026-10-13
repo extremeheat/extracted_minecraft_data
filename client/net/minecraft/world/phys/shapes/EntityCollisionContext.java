@@ -57,7 +57,7 @@ public class EntityCollisionContext implements CollisionContext {
       if (!(var4 instanceof LivingEntity livingEntity)) {
          return false;
       } else {
-         return livingEntity.canStandOnFluid(fluid) && !fluidStateAbove.getType().isSame(fluid.getType());
+         return livingEntity.canStandOnFluid(fluid) && !fluidStateAbove.is(fluid.getType());
       }
    }
 

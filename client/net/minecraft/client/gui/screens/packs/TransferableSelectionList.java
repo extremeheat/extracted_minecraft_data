@@ -185,31 +185,35 @@ public class TransferableSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-         if (this.showHoverOverlay()) {
-            int relX = (int)event.x() - this.getContentX();
-            int relY = (int)event.y() - this.getContentY();
-            if (this.pack.canSelect() && this.mouseOverIcon(relX, relY, 32)) {
-               this.handlePackSelection();
-               return true;
+         if (event.isLeftMouse()) {
+            if (this.showHoverOverlay()) {
+               int relX = (int)event.x() - this.getContentX();
+               int relY = (int)event.y() - this.getContentY();
+               if (this.pack.canSelect() && this.mouseOverIcon(relX, relY, 32)) {
+                  this.handlePackSelection();
+                  return true;
+               }
+
+               if (this.pack.canUnselect() && this.mouseOverLeftHalf(relX, relY, 32)) {
+                  this.pack.unselect();
+                  return true;
+               }
+
+               if (this.pack.canMoveUp() && this.mouseOverTopRightQuarter(relX, relY, 32)) {
+                  this.pack.moveUp();
+                  return true;
+               }
+
+               if (this.pack.canMoveDown() && this.mouseOverBottomRightQuarter(relX, relY, 32)) {
+                  this.pack.moveDown();
+                  return true;
+               }
             }
 
-            if (this.pack.canUnselect() && this.mouseOverLeftHalf(relX, relY, 32)) {
-               this.pack.unselect();
-               return true;
-            }
-
-            if (this.pack.canMoveUp() && this.mouseOverTopRightQuarter(relX, relY, 32)) {
-               this.pack.moveUp();
-               return true;
-            }
-
-            if (this.pack.canMoveDown() && this.mouseOverBottomRightQuarter(relX, relY, 32)) {
-               this.pack.moveDown();
-               return true;
-            }
+            return true;
+         } else {
+            return false;
          }
-
-         return super.mouseClicked(event, doubleClick);
       }
 
       public boolean keyPressed(final KeyEvent event) {

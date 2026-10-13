@@ -30,7 +30,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
       return (BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource);
    }
 
@@ -43,7 +43,7 @@ public class MangroveRootsBlock extends Block implements SimpleWaterloggedBlock 
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

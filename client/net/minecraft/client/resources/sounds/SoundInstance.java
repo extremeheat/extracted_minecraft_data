@@ -5,16 +5,15 @@ import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import org.jspecify.annotations.Nullable;
 
 public interface SoundInstance {
    Identifier getIdentifier();
 
-   @Nullable WeighedSoundEvents getOrResolve(SoundManager soundManager);
+   boolean resolveAndSelectSound(SoundManager soundManager);
 
-   @Nullable Sound getSound();
+   Sound getSound();
 
-   @Nullable WeighedSoundEvents getSoundEvent();
+   WeighedSoundEvents getSoundEvent();
 
    SoundSource getSource();
 

@@ -166,12 +166,16 @@ public class LanguageSelectScreen extends OptionsSubScreen {
          }
 
          public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            this.select();
-            if (doubleClick) {
-               LanguageSelectScreen.this.onDone();
-            }
+            if (event.isLeftMouse()) {
+               this.select();
+               if (doubleClick) {
+                  LanguageSelectScreen.this.onDone();
+               }
 
-            return super.mouseClicked(event, doubleClick);
+               return true;
+            } else {
+               return false;
+            }
          }
 
          private void select() {

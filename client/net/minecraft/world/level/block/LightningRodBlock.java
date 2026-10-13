@@ -37,7 +37,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
-      boolean isWaterSource = replacedFluidState.is(Fluids.WATER);
+      boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getClickedFace())).setValue(WATERLOGGED, isWaterSource);
    }
 
@@ -50,7 +50,7 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected int ownSignal(final BlockState state, final BlockGetter level, final BlockPos pos) {

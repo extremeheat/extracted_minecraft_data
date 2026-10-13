@@ -849,7 +849,6 @@ public class LocalPlayer extends AbstractClientPlayer {
          int speed = this.isSpectator() ? 10 : 1;
          this.waterVisionTime = Math.clamp((long)(this.waterVisionTime + speed), 0, 600);
       } else if (this.waterVisionTime > 0) {
-         this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Math.clamp((long)(this.waterVisionTime - 10), 0, 600);
       }
 

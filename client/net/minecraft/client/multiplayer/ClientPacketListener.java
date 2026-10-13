@@ -1255,11 +1255,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleExplosion(final ClientboundExplodePacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       Vec3 center = packet.center();
-      if (packet.playSound()) {
-         this.minecraft.level.playLocalSound(center.x(), center.y(), center.z(), (SoundEvent)packet.explosionSound().value(), SoundSource.BLOCKS, 4.0F, (1.0F + (this.minecraft.level.getRandom().nextFloat() - this.minecraft.level.getRandom().nextFloat()) * 0.2F) * 0.7F, false);
-      }
-
-      this.minecraft.level.addParticle(packet.explosionParticle(), center.x(), center.y(), center.z(), 1.0, 0.0, 0.0);
+      packet.explosionSound().ifPresent((explosionSound) -> this.minecraft.level.playLocalSound(center.x(), center.y(), center.z(), (SoundEvent)explosionSound.value(), SoundSource.BLOCKS, 4.0F, (1.0F + (this.minecraft.level.getRandom().nextFloat() - this.minecraft.level.getRandom().nextFloat()) * 0.2F) * 0.7F, false));
+      packet.explosionParticle().ifPresent((explosionParticle) -> this.minecraft.level.addParticle(explosionParticle, center.x(), center.y(), center.z(), 1.0, 0.0, 0.0));
       this.minecraft.level.trackExplosionEffects(center, packet.radius(), packet.blockCount(), packet.blockParticles());
       Optional var10000 = packet.playerKnockback();
       LocalPlayer var10001 = this.minecraft.player;

@@ -62,6 +62,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public static final Marker PACKET_RECEIVED_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_RECEIVED"), (m) -> m.add(PACKET_MARKER));
    public static final Marker PACKET_SENT_MARKER = (Marker)Util.make(MarkerFactory.getMarker("PACKET_SENT"), (m) -> m.add(PACKET_MARKER));
    private static final ProtocolInfo<ServerHandshakePacketListener> INITIAL_PROTOCOL;
+   public static final Component PACKET_HANDLER_ERROR_DISCONNECT_REASON;
    private final PacketFlow receiving;
    private volatile ClientboundDisconnectPacketType disconnectPacketType;
    private final Queue<Consumer<Connection>> pendingActions;
@@ -167,7 +168,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
                   this.disconnect((Component)Component.translatable("multiplayer.disconnect.server_shutdown"));
                } catch (ClassCastException exception) {
                   LOGGER.error("Received {} that couldn't be processed", packet.getClass(), exception);
-                  this.disconnect((Component)Component.translatable("multiplayer.disconnect.invalid_packet"));
+                  this.disconnect(PACKET_HANDLER_ERROR_DISCONNECT_REASON);
                }
 
                ++this.receivedPackets;
@@ -616,6 +617,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    static {
       INITIAL_PROTOCOL = HandshakeProtocols.SERVERBOUND;
+      PACKET_HANDLER_ERROR_DISCONNECT_REASON = Component.translatable("disconnect.packetError");
    }
 
    public static enum ClientboundDisconnectPacketType {

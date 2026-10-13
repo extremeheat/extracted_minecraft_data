@@ -46,6 +46,7 @@ public class References {
    public static final DSL.TypeReference ENTITY_TREE = reference("entity_tree");
    public static final DSL.TypeReference ENTITY = reference("entity");
    public static final DSL.TypeReference BLOCK_NAME = reference("block_name");
+   public static final DSL.TypeReference FLUID_NAME = reference("fluid_name");
    public static final DSL.TypeReference ITEM_NAME = reference("item_name");
    public static final DSL.TypeReference GAME_EVENT_NAME = reference("game_event_name");
    public static final DSL.TypeReference UNTAGGED_SPAWNER = reference("untagged_spawner");

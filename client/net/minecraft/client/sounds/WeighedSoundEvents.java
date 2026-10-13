@@ -1,33 +1,19 @@
 package net.minecraft.client.sounds;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 
 public class WeighedSoundEvents implements Weighted<Sound> {
-   private final List<Weighted<Sound>> list = Lists.newArrayList();
+   private final List<Weighted<Sound>> list = new ArrayList();
    private final @Nullable Component subtitle;
 
-   public WeighedSoundEvents(final Identifier location, final @Nullable String subtitle) {
+   public WeighedSoundEvents(final @Nullable Component subtitle) {
       super();
-      if (SharedConstants.DEBUG_SUBTITLES) {
-         MutableComponent components = Component.literal(location.getPath());
-         if ("FOR THE DEBUG!".equals(subtitle)) {
-            components = components.append((Component)Component.literal(" missing").withStyle(ChatFormatting.RED));
-         }
-
-         this.subtitle = components;
-      } else {
-         this.subtitle = subtitle == null ? null : Component.translatable(subtitle);
-      }
-
+      this.subtitle = subtitle;
    }
 
    public int getWeight() {
@@ -40,7 +26,7 @@ public class WeighedSoundEvents implements Weighted<Sound> {
       return sum;
    }
 
-   public Sound getSound(final RandomSource random) {
+   public @Nullable Sound getSound(final RandomSource random) {
       int weight = this.getWeight();
       if (!this.list.isEmpty() && weight != 0) {
          int index = random.nextInt(weight);
@@ -52,9 +38,9 @@ public class WeighedSoundEvents implements Weighted<Sound> {
             }
          }
 
-         return SoundManager.EMPTY_SOUND;
+         return null;
       } else {
-         return SoundManager.EMPTY_SOUND;
+         return null;
       }
    }
 

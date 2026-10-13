@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 5122;
+   public static final int WORLD_VERSION = 5124;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,7 +26,7 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 778;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 341;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 342;
    public static final int SNBT_NAG_VERSION = 5116;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
@@ -35,10 +35,10 @@ public class SharedConstants {
    public static final int RESOURCE_PACK_FORMAT_MAJOR = 100;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
+   public static final int RESOURCE_PACK_FORMAT_MINOR = 1;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 123;
+   public static final int DATA_PACK_FORMAT_MAJOR = 124;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -118,7 +118,6 @@ public class SharedConstants {
    public static final boolean DEBUG_DISABLE_BLENDING = debugFlag("DISABLE_BLENDING");
    public static final boolean DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION = debugFlag("DISABLE_BELOW_ZERO_RETROGENERATION");
    public static final int DEFAULT_MINECRAFT_PORT = 25565;
-   public static final boolean DEBUG_SUBTITLES = debugFlag("SUBTITLES");
    public static final int DEBUG_FAKE_LATENCY_MS = debugIntValue("FAKE_LATENCY_MS");
    public static final int DEBUG_FAKE_JITTER_MS = debugIntValue("FAKE_JITTER_MS");
    public static final ResourceLeakDetector.Level NETTY_LEAK_DETECTION;
@@ -220,7 +219,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742165;
+      return 1073742166;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

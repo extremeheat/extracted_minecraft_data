@@ -104,7 +104,7 @@ public class CamelHusk extends Camel {
       return SoundEvents.CAMEL_HUSK_SIT;
    }
 
-   protected Holder.Reference<SoundEvent> getSaddleSound() {
+   public Holder<SoundEvent> getSaddleEquipSound() {
       return SoundEvents.CAMEL_HUSK_SADDLE;
    }
 

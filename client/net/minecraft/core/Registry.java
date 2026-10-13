@@ -169,6 +169,10 @@ public interface Registry<T> extends IdMap<T>, Keyable, HolderLookup.RegistryLoo
       };
    }
 
+   default Iterable<Holder.Reference<T>> holders() {
+      return () -> this.listElements().iterator();
+   }
+
    PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> tags);
 
    DataComponentLookup<T> componentLookup();

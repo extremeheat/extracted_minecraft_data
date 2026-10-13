@@ -55,7 +55,7 @@ public abstract class AbstractCrystalClusterBlock extends Block implements Simpl
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       LevelAccessor level = context.getLevel();
       BlockPos pos = context.getClickedPos();
-      return (BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).is(Fluids.WATER))).setValue(FACING, context.getClickedFace());
+      return (BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(pos).isSourceOfType(Fluids.WATER))).setValue(FACING, context.getClickedFace());
    }
 
    protected BlockState rotate(final BlockState state, final Rotation rotation) {
@@ -67,7 +67,7 @@ public abstract class AbstractCrystalClusterBlock extends Block implements Simpl
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    protected void createBlockStateDefinition(final StateDefinition.Builder<Block, BlockState> builder) {

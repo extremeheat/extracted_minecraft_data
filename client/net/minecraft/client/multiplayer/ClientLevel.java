@@ -1021,7 +1021,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       return this.connection.enabledFeatures();
    }
 
-   public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final Level.ExplosionInteraction interactionType, final ParticleOptions smallExplosionParticles, final ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> secondaryParticles, final Holder<SoundEvent> explosionSound) {
+   public void explode(final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final double x, final double y, final double z, final float r, final boolean fire, final Level.ExplosionInteraction interactionType, final @Nullable ParticleOptions smallExplosionParticles, final @Nullable ParticleOptions largeExplosionParticles, final WeightedList<ExplosionParticleInfo> secondaryParticles, final @Nullable Holder<SoundEvent> explosionSound) {
    }
 
    public int getSeaLevel() {

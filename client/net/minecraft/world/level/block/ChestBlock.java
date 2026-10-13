@@ -152,7 +152,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          type = this.getChestType(context.getLevel(), context.getClickedPos(), facingDirection);
       }
 
-      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, facingDirection)).setValue(TYPE, type)).setValue(WATERLOGGED, replacedFluidState.is(Fluids.WATER));
+      return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, facingDirection)).setValue(TYPE, type)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 
    protected ChestType getChestType(final Level level, final BlockPos pos, final Direction facingDirection) {
@@ -164,7 +164,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    protected FluidState getFluidState(final BlockState state) {
-      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+      return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
    }
 
    private @Nullable Direction candidatePartnerFacing(final Level level, final BlockPos pos, final Direction neighbourDirection) {

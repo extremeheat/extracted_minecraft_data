@@ -28,8 +28,12 @@ public class ResourceKey<T> {
       return create(registryName.identifier, location);
    }
 
+   public static <T> ResourceKey<Registry<T>> createRegistryKey(final Identifier root, final Identifier identifier) {
+      return create(root, identifier);
+   }
+
    public static <T> ResourceKey<Registry<T>> createRegistryKey(final Identifier identifier) {
-      return create(Registries.ROOT_REGISTRY_NAME, identifier);
+      return createRegistryKey(Registries.ROOT_REGISTRY_NAME, identifier);
    }
 
    private static <T> ResourceKey<T> create(final Identifier registryName, final Identifier identifier) {

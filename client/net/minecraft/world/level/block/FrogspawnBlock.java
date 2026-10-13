@@ -74,9 +74,12 @@ public class FrogspawnBlock extends Block {
    }
 
    private static boolean mayPlaceOn(final BlockGetter level, final BlockPos pos) {
-      FluidState fluidState = level.getFluidState(pos);
       FluidState fluidAbove = level.getFluidState(pos.above());
-      return (fluidState.is(FluidTags.SUPPORTS_FROGSPAWN) || level.getBlockState(pos).is(BlockTags.SUPPORTS_FROGSPAWN)) && fluidAbove.is(Fluids.EMPTY);
+      return supportsFrogSpawn(level, pos) && fluidAbove.is(Fluids.EMPTY);
+   }
+
+   public static boolean supportsFrogSpawn(final BlockGetter level, final BlockPos pos) {
+      return level.getFluidState(pos).isSourceOfType(FluidTags.SUPPORTS_FROGSPAWN) || level.getBlockState(pos).is(BlockTags.SUPPORTS_FROGSPAWN);
    }
 
    private void hatchFrogspawn(final ServerLevel level, final BlockPos pos, final RandomSource random) {
