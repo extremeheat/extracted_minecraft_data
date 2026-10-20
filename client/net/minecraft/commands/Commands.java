@@ -151,6 +151,7 @@ import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
@@ -255,7 +256,7 @@ public class Commands {
          ChaseCommand.register(this.dispatcher);
       }
 
-      if (SharedConstants.DEBUG_DEV_COMMANDS || SharedConstants.IS_RUNNING_IN_IDE) {
+      if (SharedConstants.DEBUG_DEV_COMMANDS || DevUtil.IS_RUNNING_IN_IDE) {
          RaidCommand.register(this.dispatcher, context);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);
@@ -329,7 +330,7 @@ public class Commands {
          }
 
          sender.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(hover)))));
-         if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || SharedConstants.IS_RUNNING_IN_IDE) {
+         if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || DevUtil.IS_RUNNING_IN_IDE) {
             sender.sendFailure(Component.literal(Util.describeError(var12)));
             LOGGER.error("'/{}' threw an exception", commandString, var12);
          }

@@ -8,13 +8,15 @@ public interface ClientLoginPacketListener extends ClientCookiePacketListener {
       return ConnectionProtocol.LOGIN;
    }
 
-   void handleHello(ClientboundHelloPacket packet);
+   void handleKey(ClientboundKeyPacket packet);
 
    void handleLoginFinished(ClientboundLoginFinishedPacket packet);
 
    void handleDisconnect(ClientboundLoginDisconnectPacket packet);
 
-   void handleCompression(ClientboundLoginCompressionPacket packet);
+   void handleCompression(ClientboundSetupCompressionPacket packet);
+
+   void handleEnableOptions(ClientboundApplyOptionsPacket packet);
 
    void handleCustomQuery(ClientboundCustomQueryPacket packet);
 }

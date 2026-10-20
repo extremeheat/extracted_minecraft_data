@@ -27,7 +27,7 @@ import net.minecraft.client.gui.screens.social.SocialInteractionsPlayerList;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerSkin;
@@ -141,21 +141,21 @@ public class FriendsOverlayScreen extends Screen implements PresenceAwareScreen 
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.backgroundScreen != null) {
-         this.backgroundScreen.extractBackground(graphics, mouseX, mouseY, a);
+         this.backgroundScreen.extractBackground(graphics);
          graphics.nextStratum();
-         this.backgroundScreen.extractRenderState(graphics, -1, -1, a);
+         this.backgroundScreen.extractRenderState(graphics);
          graphics.nextStratum();
          this.extractBlurredBackground(graphics);
       } else {
-         super.extractBackground(graphics, mouseX, mouseY, a);
+         super.extractBackground(graphics);
       }
 
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
-      Tab var6 = this.tabManager.getCurrentTab();
-      if (var6 instanceof AbstractFriendsTab tab) {
-         tab.extractBackground(graphics, mouseX, mouseY, a);
+      Tab var3 = this.tabManager.getCurrentTab();
+      if (var3 instanceof AbstractFriendsTab tab) {
+         tab.extractBackground(graphics);
       }
 
    }
@@ -178,7 +178,7 @@ public class FriendsOverlayScreen extends Screen implements PresenceAwareScreen 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (super.mouseClicked(event, doubleClick)) {
          return true;
-      } else if (this.contentLayout != null && !this.contentLayout.getRectangle().expandInAllDirections(8).containsPoint((int)event.x(), (int)event.y())) {
+      } else if (event.isLeftMouse() && this.contentLayout != null && !this.contentLayout.getRectangle().expandInAllDirections(8).containsPoint((int)event.x(), (int)event.y())) {
          this.minecraft.gui.setScreen(this.backgroundScreen);
          return true;
       } else {

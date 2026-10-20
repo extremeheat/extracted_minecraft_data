@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -40,7 +40,7 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
    }
 
    public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
-      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
+      List<FoliagePlacer.FoliageAttachment> attachments = new ArrayList();
       BlockPos.MutableBlockPos logPos = new BlockPos.MutableBlockPos();
 
       for(int heightPos = 0; heightPos < treeHeight; ++heightPos) {

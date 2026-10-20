@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,7 +52,7 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    }
 
    public static @Nullable PiecesContainer load(final ListTag children, final StructurePieceSerializationContext context) {
-      List<StructurePiece> pieces = Lists.newArrayList();
+      List<StructurePiece> pieces = new ArrayList();
 
       for(int i = 0; i < children.size(); ++i) {
          CompoundTag pieceTag = children.getCompoundOrEmpty(i);

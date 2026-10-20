@@ -2,9 +2,9 @@ package net.minecraft.world.entity.ai;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
+import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -28,7 +28,7 @@ public record ActivityData<E extends LivingEntity>(Activity activityType, Immuta
    }
 
    public static <E extends LivingEntity> ActivityData<E> create(final Activity activity, final ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviorPriorityPairs) {
-      return create(activity, behaviorPriorityPairs, ImmutableSet.of(), Sets.newHashSet());
+      return create(activity, behaviorPriorityPairs, ImmutableSet.of(), new HashSet());
    }
 
    public static <E extends LivingEntity> ActivityData<E> create(final Activity activity, final int priorityOfFirstBehavior, final ImmutableList<? extends BehaviorControl<? super E>> behaviorList, final Set<Pair<MemoryModuleType<?>, MemoryStatus>> conditions) {
@@ -36,7 +36,7 @@ public record ActivityData<E extends LivingEntity>(Activity activityType, Immuta
    }
 
    public static <E extends LivingEntity> ActivityData<E> create(final Activity activity, final ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviorPriorityPairs, final Set<Pair<MemoryModuleType<?>, MemoryStatus>> conditions) {
-      return create(activity, behaviorPriorityPairs, conditions, Sets.newHashSet());
+      return create(activity, behaviorPriorityPairs, conditions, new HashSet());
    }
 
    public static <E extends LivingEntity> ActivityData<E> create(final Activity activity, final ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviorPriorityPairs, final Set<Pair<MemoryModuleType<?>, MemoryStatus>> conditions, final Set<MemoryModuleType<?>> memoriesToEraseWhenStopped) {

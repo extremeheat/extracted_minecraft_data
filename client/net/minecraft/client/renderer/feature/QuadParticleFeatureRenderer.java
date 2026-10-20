@@ -73,7 +73,13 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
       for(Map.Entry<SingleQuadParticle.Layer, StagedVertexBuffer.Draw> entry : group.layers.entrySet()) {
          StagedVertexBuffer.ExecuteInfo executeInfo = stagedBuffer.getExecuteInfo((StagedVertexBuffer.Draw)entry.getValue());
          if (executeInfo != null) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(stage != null ? getOitPipeline(stage, (SingleQuadParticle.Layer)entry.getKey()) : ((SingleQuadParticle.Layer)entry.getKey()).pipeline()));
+            RenderPipeline pipeline = (RenderPipeline)((SingleQuadParticle.Layer)entry.getKey()).pipelineProvider().apply(stage);
+            if (pipeline == null) {
+               String var10002 = String.valueOf(entry.getKey());
+               throw new IllegalStateException("No pipeline for particle layer " + var10002 + " with OIT stage " + String.valueOf(stage));
+            }
+
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
             renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             TextureHandle texture = (TextureHandle)group.textures.get(entry.getKey());
@@ -82,14 +88,6 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
          }
       }
 
-   }
-
-   private static RenderPipeline getOitPipeline(final OitStage stage, final SingleQuadParticle.Layer layer) {
-      if (layer.oitPipelineSet() == null) {
-         throw new IllegalStateException("OIT pipeline set for particle layer not specified.");
-      } else {
-         return layer.oitPipelineSet().getPipeline(stage);
-      }
    }
 
    public void finishExecute(final FeatureFrameContext context) {

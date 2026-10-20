@@ -1303,7 +1303,7 @@ public class Fox extends Animal {
       }
 
       public boolean canUse() {
-         return Fox.this.isInFluidDeeperThan(0.25, this.fluid) || Fox.this.isInLava();
+         return Fox.this.getFluidHeight(this.fluid) > 0.25 || Fox.this.isInLava();
       }
    }
 

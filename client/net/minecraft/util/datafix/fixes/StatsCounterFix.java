@@ -2,7 +2,6 @@ package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
@@ -10,12 +9,13 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
-import net.minecraft.util.datafix.schemas.V1451_6;
+import net.minecraft.util.datafix.schemas.NamespacedSchema;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
@@ -82,7 +82,7 @@ public class StatsCounterFix extends DataFix {
       Type<?> outputType = this.getOutputSchema().getType(References.STATS);
       return this.fixTypeEverywhereTyped("StatsCounterFix", inputType, outputType, (input) -> {
          Dynamic<?> tag = (Dynamic)input.get(DSL.remainderFinder());
-         Map<Dynamic<?>, Dynamic<?>> stats = Maps.newHashMap();
+         Map<Dynamic<?>, Dynamic<?>> stats = new HashMap();
          Optional<? extends Map<? extends Dynamic<?>, ? extends Dynamic<?>>> map = tag.getMapValues().result();
          if (map.isPresent()) {
             for(Map.Entry<? extends Dynamic<?>, ? extends Dynamic<?>> entry : ((Map)map.get()).entrySet()) {
@@ -116,8 +116,8 @@ public class StatsCounterFix extends DataFix {
                   if (statType == null) {
                      return "dummy";
                   } else {
-                     String var10000 = V1451_6.packNamespacedWithDot(statType.type);
-                     return var10000 + ":" + V1451_6.packNamespacedWithDot(statType.typeKey);
+                     String var10000 = NamespacedSchema.packNamespacedWithDot(statType.type);
+                     return var10000 + ":" + NamespacedSchema.packNamespacedWithDot(statType.typeKey);
                   }
                }
             });

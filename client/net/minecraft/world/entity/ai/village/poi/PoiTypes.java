@@ -2,7 +2,7 @@ package net.minecraft.world.entity.ai.village.poi;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Util;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
 public class PoiTypes {
-   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE = Maps.newHashMap();
+   private static final Map<BlockState, Holder<PoiType>> TYPE_BY_STATE = new HashMap();
    private static final Set<BlockState> BEDS;
    private static final Set<BlockState> CAULDRONS;
    private static final Set<BlockState> LIGHTNING_RODS;
@@ -64,7 +64,7 @@ public class PoiTypes {
       matchingStates.forEach((blockState) -> {
          Holder<PoiType> previous = (Holder)TYPE_BY_STATE.put(blockState, type);
          if (previous != null) {
-            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", blockState)));
+            throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException(String.format(Locale.ROOT, "%s is defined in more than one PoI type", blockState)));
          }
       });
    }

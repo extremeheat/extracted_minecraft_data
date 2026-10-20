@@ -542,6 +542,11 @@ public class Items {
    public static final ColorCollection<Item> CARPET;
    public static final Item TERRACOTTA;
    public static final Item PACKED_ICE;
+   public static final Item PACKED_ICE_BRICKS;
+   public static final Item PACKED_ICE_BRICK_SLAB;
+   public static final Item PACKED_ICE_BRICK_STAIRS;
+   public static final Item PACKED_ICE_BRICK_WALL;
+   public static final Item CHISELED_PACKED_ICE;
    public static final Item DIRT_PATH;
    public static final Item SUNFLOWER;
    public static final Item LILAC;
@@ -1887,6 +1892,11 @@ public class Items {
       CARPET = ColorCollection.registerBlockItems(BlockItemIds.CARPET, Blocks.CARPET, (id, block, color) -> registerBlock(id, block, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(color)).cookingFuel(ContextIntProviders.COOKING_TIME_WOOL_CARPETS))));
       TERRACOTTA = registerBlock(BlockItemIds.TERRACOTTA, Blocks.TERRACOTTA);
       PACKED_ICE = registerBlock(BlockItemIds.PACKED_ICE, Blocks.PACKED_ICE);
+      PACKED_ICE_BRICKS = registerBlock(BlockItemIds.PACKED_ICE_BRICKS, Blocks.PACKED_ICE_BRICKS);
+      PACKED_ICE_BRICK_SLAB = registerBlock(BlockItemIds.PACKED_ICE_BRICK_SLAB, Blocks.PACKED_ICE_BRICK_SLAB);
+      PACKED_ICE_BRICK_STAIRS = registerBlock(BlockItemIds.PACKED_ICE_BRICK_STAIRS, Blocks.PACKED_ICE_BRICK_STAIRS);
+      PACKED_ICE_BRICK_WALL = registerBlock(BlockItemIds.PACKED_ICE_BRICK_WALL, Blocks.PACKED_ICE_BRICK_WALL);
+      CHISELED_PACKED_ICE = registerBlock(BlockItemIds.CHISELED_PACKED_ICE, Blocks.CHISELED_PACKED_ICE);
       DIRT_PATH = registerBlock(BlockItemIds.DIRT_PATH, Blocks.DIRT_PATH);
       SUNFLOWER = registerBlock(BlockItemIds.SUNFLOWER, Blocks.SUNFLOWER, DoubleHighBlockItem::new, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
       LILAC = registerBlock(BlockItemIds.LILAC, Blocks.LILAC, DoubleHighBlockItem::new, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));

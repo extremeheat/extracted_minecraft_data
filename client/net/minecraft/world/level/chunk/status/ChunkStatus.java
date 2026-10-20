@@ -1,8 +1,8 @@
 package net.minecraft.world.level.chunk.status;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class ChunkStatus {
    }
 
    public static List<ChunkStatus> getStatusList() {
-      List<ChunkStatus> list = Lists.newArrayList();
+      List<ChunkStatus> list = new ArrayList();
 
       ChunkStatus status;
       for(status = FULL; status.getParent() != status; status = status.getParent()) {

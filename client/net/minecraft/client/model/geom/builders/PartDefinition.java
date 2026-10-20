@@ -1,7 +1,7 @@
 package net.minecraft.client.model.geom.builders;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +13,7 @@ import net.minecraft.client.model.geom.PartPose;
 public class PartDefinition {
    private final List<CubeDefinition> cubes;
    private final PartPose partPose;
-   private final Map<String, PartDefinition> children = Maps.newHashMap();
+   private final Map<String, PartDefinition> children = new HashMap();
 
    PartDefinition(final List<CubeDefinition> cubes, final PartPose partPose) {
       super();

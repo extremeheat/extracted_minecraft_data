@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,7 +29,7 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
       brain.setMemory(MemoryModuleType.NEAREST_REPELLENT, this.findNearestRepellent(level, body));
       Optional<Piglin> adultPiglin = Optional.empty();
       int adultPiglinCount = 0;
-      List<Hoglin> adultHoglins = Lists.newArrayList();
+      List<Hoglin> adultHoglins = new ArrayList();
       NearestVisibleLivingEntities visibleLivingEntities = (NearestVisibleLivingEntities)brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
 
       for(LivingEntity entity : visibleLivingEntities.findAll((entityx) -> !entityx.isBaby() && (entityx instanceof Piglin || entityx instanceof Hoglin))) {

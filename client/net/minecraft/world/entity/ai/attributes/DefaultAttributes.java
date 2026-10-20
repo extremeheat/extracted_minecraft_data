@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.Util;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
@@ -115,7 +115,7 @@ public class DefaultAttributes {
       Stream var10000 = BuiltInRegistries.ENTITY_TYPE.stream().filter((entityType) -> entityType.getCategory() != MobCategory.MISC).filter((entityType) -> !hasSupplier(entityType));
       DefaultedRegistry var10001 = BuiltInRegistries.ENTITY_TYPE;
       Objects.requireNonNull(var10001);
-      var10000.map(var10001::getKey).forEach((id) -> Util.logAndPauseIfInIde("Entity " + String.valueOf(id) + " has no attributes"));
+      var10000.map(var10001::getKey).forEach((id) -> DevUtil.logAndPauseIfInIde("Entity " + String.valueOf(id) + " has no attributes"));
    }
 
    static {

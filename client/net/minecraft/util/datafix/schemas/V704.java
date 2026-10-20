@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.schemas;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.schemas.Schema;
@@ -11,6 +10,7 @@ import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -19,7 +19,7 @@ import net.minecraft.util.datafix.fixes.References;
 
 public class V704 extends Schema {
    protected static final Map<String, String> ITEM_TO_BLOCKENTITY = (Map)DataFixUtils.make(() -> {
-      Map<String, String> map = Maps.newHashMap();
+      Map<String, String> map = new HashMap();
       map.put("minecraft:furnace", "minecraft:furnace");
       map.put("minecraft:lit_furnace", "minecraft:furnace");
       map.put("minecraft:chest", "minecraft:chest");

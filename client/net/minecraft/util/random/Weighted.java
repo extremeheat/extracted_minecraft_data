@@ -6,11 +6,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.function.Function;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 public record Weighted<T>(T value, int weight) {
@@ -19,9 +18,9 @@ public record Weighted<T>(T value, int weight) {
    public Weighted {
       super();
       if (weight < 0) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("Weight should be >= 0"));
+         throw (IllegalArgumentException)DevUtil.pauseInIde(new IllegalArgumentException("Weight should be >= 0"));
       } else {
-         if (weight == 0 && SharedConstants.IS_RUNNING_IN_IDE) {
+         if (weight == 0 && DevUtil.IS_RUNNING_IN_IDE) {
             LOGGER.warn("Found 0 weight, make sure this is intentional!");
          }
 

@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
@@ -22,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -148,7 +148,7 @@ public class DataPackCommand {
 
    private static int enablePack(final CommandSourceStack source, final Pack unopened, final Inserter inserter) throws CommandSyntaxException {
       PackRepository packRepository = source.getServer().getPackRepository();
-      List<Pack> selected = Lists.newArrayList(packRepository.getSelectedPacks());
+      List<Pack> selected = new ArrayList(packRepository.getSelectedPacks());
       inserter.apply(selected, unopened);
       source.sendSuccess(() -> Component.translatable("commands.datapack.modify.enable", unopened.getChatLink(true)), true);
       ReloadCommand.reloadPacks((Collection)selected.stream().map(Pack::getId).collect(Collectors.toList()), source);
@@ -157,7 +157,7 @@ public class DataPackCommand {
 
    private static int disablePack(final CommandSourceStack source, final Pack unopened) {
       PackRepository packRepository = source.getServer().getPackRepository();
-      List<Pack> selected = Lists.newArrayList(packRepository.getSelectedPacks());
+      List<Pack> selected = new ArrayList(packRepository.getSelectedPacks());
       selected.remove(unopened);
       source.sendSuccess(() -> Component.translatable("commands.datapack.modify.disable", unopened.getChatLink(true)), true);
       ReloadCommand.reloadPacks((Collection)selected.stream().map(Pack::getId).collect(Collectors.toList()), source);

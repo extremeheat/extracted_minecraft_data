@@ -172,15 +172,15 @@ public class PauseScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       if (this.rendersNowPlayingToast()) {
          NowPlayingToast.extractToast(graphics, this.font);
       }
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.showPauseMenu) {
          if (this.isTopmostScreen()) {
             this.extractBlurredBackground(graphics);

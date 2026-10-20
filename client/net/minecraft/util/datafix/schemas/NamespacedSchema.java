@@ -9,6 +9,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 
 public class NamespacedSchema extends Schema {
+   private static final String DEFAULT_NAMESPACE = "minecraft";
    public static final PrimitiveCodec<String> NAMESPACED_STRING_CODEC = new PrimitiveCodec<String>() {
       public <T> DataResult<String> read(final DynamicOps<T> ops, final T input) {
          return ops.getStringValue(input).map(NamespacedSchema::ensureNamespaced);
@@ -39,6 +40,32 @@ public class NamespacedSchema extends Schema {
             return separatorIndex > 0 ? input : "minecraft:" + input;
          }
       }
+   }
+
+   public static String packNamespacedWithDot(final String location) {
+      return replaceNamespaceSeparator(location, ':', '.');
+   }
+
+   public static String namespacedStringBySeparator(final String value, final char separator) {
+      return replaceNamespaceSeparator(value, separator, ':');
+   }
+
+   private static String replaceNamespaceSeparator(final String value, final char oldSeparator, final char newSeparator) {
+      int separatorIndex = value.indexOf(oldSeparator);
+      String namespace;
+      String path;
+      if (separatorIndex > 0) {
+         namespace = value.substring(0, separatorIndex);
+         path = value.substring(separatorIndex + 1);
+      } else if (separatorIndex == 0) {
+         namespace = "minecraft";
+         path = value.substring(1);
+      } else {
+         namespace = "minecraft";
+         path = value;
+      }
+
+      return namespace + newSeparator + path;
    }
 
    public static Type<String> namespacedString() {

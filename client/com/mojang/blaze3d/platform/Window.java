@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.device.GpuBackend;
-import com.mojang.renderpearl.api.device.GpuDevice;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
@@ -45,7 +44,6 @@ public final class Window implements AutoCloseable {
    private final MonitorManager monitorManager;
    private final long handle;
    private final boolean wayland;
-   private final boolean needsBorderlessFullscreenPadding;
    private int windowedX;
    private int windowedY;
    private int windowedWidth;
@@ -68,13 +66,14 @@ public final class Window implements AutoCloseable {
    private boolean focused = true;
    private boolean shouldClose;
    private @Nullable Runnable closeCallback;
+   private boolean needsBorderlessFullscreenPadding;
    private boolean allowCursorChanges;
    private boolean quitShortcuts;
    private CursorType currentCursor;
    private boolean exclusiveFullscreen;
    private boolean borderlessFullscreen;
 
-   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend, final GpuDevice gpuDevice, final int maximumSize) {
+   public Window(final WindowEventHandler eventHandler, final DisplayData displayData, final @Nullable String fullscreenVideoModeString, final boolean exclusiveFullscreen, final String title, final MonitorManager monitorManager, final GpuBackend backend, final int maximumSize) {
       super();
       this.currentCursor = CursorType.DEFAULT;
       this.monitorManager = monitorManager;
@@ -99,7 +98,6 @@ public final class Window implements AutoCloseable {
       String videoDriver = SDLVideo.SDL_GetCurrentVideoDriver();
       this.wayland = "wayland".equals(videoDriver);
       LOGGER.info("Created window using SDL video driver: {}", videoDriver);
-      this.needsBorderlessFullscreenPadding = gpuDevice.getDeviceInfo().hintsAndWorkarounds().needsImeFullscreenWorkaround();
       MacosUtil.disableCloseWindowMenuItem();
       if (initialMonitor != null) {
          this.windowedX = this.x = initialMonitor.x() + (initialMonitor.w() - this.width) / 2;
@@ -116,16 +114,16 @@ public final class Window implements AutoCloseable {
 
             this.windowedX = this.x = actualX.get(0);
             this.windowedY = this.y = actualY.get(0);
-         } catch (Throwable var17) {
+         } catch (Throwable var16) {
             if (stack != null) {
                try {
                   stack.close();
-               } catch (Throwable var16) {
-                  var17.addSuppressed(var16);
+               } catch (Throwable var15) {
+                  var16.addSuppressed(var15);
                }
             }
 
-            throw var17;
+            throw var16;
          }
 
          if (stack != null) {
@@ -830,6 +828,11 @@ public final class Window implements AutoCloseable {
 
    public void setWindowCloseCallback(final Runnable task) {
       this.closeCallback = task;
+   }
+
+   public void setNeedsBorderlessFullscreenPadding(final boolean needsPadding) {
+      this.needsBorderlessFullscreenPadding = needsPadding;
+      this.setMode();
    }
 
    public void setAllowCursorChanges(final boolean value) {

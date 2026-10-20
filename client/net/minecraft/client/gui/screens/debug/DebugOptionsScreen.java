@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.debug;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.floats.FloatComparators;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -135,8 +134,8 @@ public class DebugOptionsScreen extends Screen {
          this.updateSearch("");
       }
 
-      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-         super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+         super.extractWidgetRenderState(graphics);
       }
 
       public int getRowWidth() {
@@ -190,9 +189,9 @@ public class DebugOptionsScreen extends Screen {
          this.widget = FocusableTextWidget.builder(category, DebugOptionsScreen.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          this.widget.setPosition(this.getContentX() + this.getContentWidth() / 2 - this.widget.getWidth() / 2, this.getContentYMiddle() - this.widget.getHeight() / 2);
-         this.widget.extractRenderState(graphics, mouseX, mouseY, a);
+         this.widget.extractRenderState(graphics);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -220,7 +219,7 @@ public class DebugOptionsScreen extends Screen {
       public OptionEntry(final ResourceKey<DebugScreenEntry> key) {
          Objects.requireNonNull(DebugOptionsScreen.this);
          super();
-         this.children = Lists.newArrayList();
+         this.children = new ArrayList();
          this.key = key;
          DebugScreenEntry entry = (DebugScreenEntry)BuiltInClientRegistries.DEBUG_SCREEN_ENTRY.getValue(key);
          this.isAllowed = entry != null && entry.isAllowed(DebugOptionsScreen.this.minecraft.showOnlyReducedInfo());
@@ -265,13 +264,13 @@ public class DebugOptionsScreen extends Screen {
          return this.children;
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          int x = this.getContentX();
          int y = this.getContentY();
          graphics.text(DebugOptionsScreen.this.minecraft.font, this.name, x, y + 5, this.isAllowed ? -1 : -8355712);
          int buttonsStartX = x + this.getContentWidth() - this.never.getWidth() - this.overlay.getWidth() - this.always.getWidth();
-         if (!this.isAllowed && hovered && mouseX < buttonsStartX) {
-            graphics.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, mouseX, mouseY);
+         if (!this.isAllowed && hovered && graphics.mouseX() < buttonsStartX) {
+            graphics.setTooltipForNextFrame(DebugOptionsScreen.NOT_ALLOWED_TOOLTIP, graphics.mouseX(), graphics.mouseY());
          }
 
          this.never.setX(buttonsStartX);
@@ -280,9 +279,9 @@ public class DebugOptionsScreen extends Screen {
          this.always.setY(y);
          this.overlay.setY(y);
          this.never.setY(y);
-         this.always.extractRenderState(graphics, mouseX, mouseY, a);
-         this.overlay.extractRenderState(graphics, mouseX, mouseY, a);
-         this.never.extractRenderState(graphics, mouseX, mouseY, a);
+         this.always.extractRenderState(graphics);
+         this.overlay.extractRenderState(graphics);
+         this.never.extractRenderState(graphics);
       }
 
       public void refreshEntry() {

@@ -17,6 +17,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
@@ -31,9 +32,9 @@ import net.minecraft.client.model.Model;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState;
@@ -85,6 +86,7 @@ import org.jspecify.annotations.Nullable;
 
 public class GuiGraphicsExtractor {
    private static final int EXTRA_SPACE_AFTER_FIRST_TOOLTIP_LINE = 2;
+   private static final int MOUSE_OFF_SCREEN = -1;
    private final Minecraft minecraft;
    private final Matrix3x2fStack pose;
    private final ScissorStack scissorStack;
@@ -94,16 +96,17 @@ public class GuiGraphicsExtractor {
    private CursorType pendingCursor;
    private final int mouseX;
    private final int mouseY;
+   private boolean mouseSuppressed;
    private @Nullable Runnable deferredTooltip;
    private @Nullable Style hoveredTextStyle;
    private @Nullable Style clickableTextStyle;
    private @Nullable Renderable preeditOverlay;
 
-   private GuiGraphicsExtractor(final Minecraft minecraft, final Matrix3x2fStack pose, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
+   public GuiGraphicsExtractor(final Minecraft minecraft, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
       super();
       this.pendingCursor = CursorType.DEFAULT;
       this.minecraft = minecraft;
-      this.pose = pose;
+      this.pose = new Matrix3x2fStack(16);
       this.mouseX = mouseX;
       this.mouseY = mouseY;
       AtlasManager atlasManager = minecraft.getAtlasManager();
@@ -113,8 +116,32 @@ public class GuiGraphicsExtractor {
       this.scissorStack = new ScissorStack(new ScreenRectangle(0, 0, this.guiWidth(), this.guiHeight()));
    }
 
-   public GuiGraphicsExtractor(final Minecraft minecraft, final GuiRenderState guiRenderState, final int mouseX, final int mouseY) {
-      this(minecraft, new Matrix3x2fStack(16), guiRenderState, mouseX, mouseY);
+   public DeltaTracker deltaTracker() {
+      return this.minecraft.getDeltaTracker();
+   }
+
+   public int mouseX() {
+      return this.mouseSuppressed ? -1 : this.mouseX;
+   }
+
+   public int mouseY() {
+      return this.mouseSuppressed ? -1 : this.mouseY;
+   }
+
+   public void extractWithoutMouse(final Runnable extraction) {
+      boolean wasSuppressed = this.mouseSuppressed;
+      this.mouseSuppressed = true;
+
+      try {
+         extraction.run();
+      } finally {
+         this.mouseSuppressed = wasSuppressed;
+      }
+
+   }
+
+   public float partialTicks() {
+      return this.minecraft.getDeltaTracker().getGameTimeDeltaTicks();
    }
 
    public void requestCursor(final CursorType cursorType) {
@@ -708,9 +735,9 @@ public class GuiGraphicsExtractor {
       this.preeditOverlay = preeditOverlay;
    }
 
-   public void extractDeferredElements(final int mouseX, final int mouseY, final float a) {
+   public void extractDeferredElements() {
       if (this.hoveredTextStyle != null) {
-         this.componentHoverEffect(this.minecraft.font, this.hoveredTextStyle, mouseX, mouseY);
+         this.componentHoverEffect(this.minecraft.font, this.hoveredTextStyle, this.mouseX(), this.mouseY());
       }
 
       if (this.clickableTextStyle != null && this.clickableTextStyle.getClickEvent() != null) {
@@ -719,7 +746,7 @@ public class GuiGraphicsExtractor {
 
       if (this.preeditOverlay != null) {
          this.nextStratum();
-         this.preeditOverlay.extractRenderState(this, mouseX, mouseY, a);
+         this.preeditOverlay.extractRenderState(this);
       }
 
       if (this.deferredTooltip != null) {
@@ -910,7 +937,7 @@ public class GuiGraphicsExtractor {
          }
 
          if (needsFullStyleScan) {
-            ActiveTextCollector.findElementUnderCursor(renderState, (float)GuiGraphicsExtractor.this.mouseX, (float)GuiGraphicsExtractor.this.mouseY, this);
+            ActiveTextCollector.findElementUnderCursor(renderState, (float)GuiGraphicsExtractor.this.mouseX(), (float)GuiGraphicsExtractor.this.mouseY(), this);
          }
 
       }

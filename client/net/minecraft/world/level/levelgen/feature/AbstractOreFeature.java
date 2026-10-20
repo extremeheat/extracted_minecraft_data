@@ -43,17 +43,15 @@ public abstract class AbstractOreFeature implements Feature {
       return this.discardChanceOnAirExposure;
    }
 
-   public boolean canPlaceOre(final BlockState state, final Function<BlockPos, BlockState> blockGetter, final RandomSource random, final BlockReplacement targetState, final BlockPos.MutableBlockPos orePos) {
-      if (!targetState.target().test(state, orePos, random)) {
-         return false;
-      } else if (shouldSkipAirCheck(random, this.discardChanceOnAirExposure)) {
+   public boolean checkAirExposure(final Function<BlockPos, BlockState> blockGetter, final RandomSource random, final BlockPos.MutableBlockPos orePos) {
+      if (shouldSkipAirCheck(random, this.discardChanceOnAirExposure)) {
          return true;
       } else {
          return !isAdjacentToAir(blockGetter, orePos);
       }
    }
 
-   public static boolean isAdjacentToAir(final Function<BlockPos, BlockState> blockGetter, final BlockPos pos) {
+   private static boolean isAdjacentToAir(final Function<BlockPos, BlockState> blockGetter, final BlockPos pos) {
       return checkNeighbors(blockGetter, pos, BlockBehaviour.BlockStateBase::isAir);
    }
 

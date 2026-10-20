@@ -1,7 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -12,6 +10,8 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
@@ -168,7 +168,7 @@ public class SectionOcclusionGraph {
       this.fullUpdateTask = CompletableFuture.runAsync(() -> {
          GraphState newState = new GraphState(this.viewArea);
          this.nextSectionsToPropagateFrom = newState.sectionsToPropagateFrom;
-         Queue<Node> queue = Queues.newArrayDeque();
+         Queue<Node> queue = new ArrayDeque();
          this.initializeQueueForFullUpdate(camera.blockPos, queue);
          queue.forEach((node) -> newState.storage.sectionToNodeMap.put(node.section, node));
          this.runUpdates(newState.storage, camera.pos, queue, camera.smartCull, (node) -> {
@@ -195,7 +195,7 @@ public class SectionOcclusionGraph {
 
       });
       if (!state.sectionsToPropagateFrom.isEmpty()) {
-         Queue<Node> queue = Queues.newArrayDeque();
+         Queue<Node> queue = new ArrayDeque();
 
          while(!state.sectionsToPropagateFrom.isEmpty()) {
             SectionRenderDispatcher.RenderSection renderSection = (SectionRenderDispatcher.RenderSection)state.sectionsToPropagateFrom.poll();
@@ -225,7 +225,7 @@ public class SectionOcclusionGraph {
          boolean isBelowTheWorld = cameraSectionY < this.viewArea.minSectionY();
          int sectionY = isBelowTheWorld ? this.viewArea.minSectionY() : this.viewArea.maxSectionY();
          int viewDistance = this.viewArea.getViewDistance();
-         List<Node> toAdd = Lists.newArrayList();
+         List<Node> toAdd = new ArrayList();
          int cameraSectionX = SectionPos.x(cameraSectionNode);
          int cameraSectionZ = SectionPos.z(cameraSectionNode);
 

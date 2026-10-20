@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 public class SocialInteractionsPlayerList {
    private final Minecraft minecraft;
    private final SocialInteractionsScreen interactionsScreen;
-   private final List<PlayerEntry> players = Lists.newArrayList();
+   private final List<PlayerEntry> players = new ArrayList();
    private final FriendsListFilter filter;
    private final Comparator<PlayerEntry> comparator;
    private @Nullable PlayerInteractionsTab interactionsTab;

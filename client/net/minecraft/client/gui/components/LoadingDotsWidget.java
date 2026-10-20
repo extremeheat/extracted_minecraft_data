@@ -26,7 +26,7 @@ public class LoadingDotsWidget extends AbstractWidget {
       this.font = font;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       int centerX = this.getX() + this.getWidth() / 2;
       Component message = this.getMessage();
       graphics.text(this.font, (Component)message, centerX - this.font.width((FormattedText)message) / 2, this.getY() + 2, -1);

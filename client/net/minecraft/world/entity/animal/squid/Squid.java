@@ -241,7 +241,7 @@ public class Squid extends AgeableWaterCreature {
          int noActionTime = this.squid.getNoActionTime();
          if (noActionTime > 100) {
             this.squid.movementVector = Vec3.ZERO;
-         } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.wasTouchingWater || !this.squid.hasMovementVector()) {
+         } else if (this.squid.getRandom().nextInt(reducedTickDelay(50)) == 0 || !this.squid.isInWater() || !this.squid.hasMovementVector()) {
             float angle = this.squid.getRandom().nextFloat() * 6.2831855F;
             this.squid.movementVector = new Vec3((double)(Mth.cos((double)angle) * 0.2F), (double)(-0.1F + this.squid.getRandom().nextFloat() * 0.2F), (double)(Mth.sin((double)angle) * 0.2F));
          }

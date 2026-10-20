@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Maps;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.model.animal.llama.BabyLlamaModel;
 import net.minecraft.client.model.animal.llama.LlamaModel;
@@ -37,7 +37,7 @@ public class LlamaRenderer extends AgeableMobRenderer<Llama, LlamaRenderState, L
    }
 
    static {
-      TEXTURES = Maps.newEnumMap(Map.of(Llama.Variant.CREAMY, Identifier.withDefaultNamespace("textures/entity/llama/llama_creamy.png"), Llama.Variant.WHITE, Identifier.withDefaultNamespace("textures/entity/llama/llama_white.png"), Llama.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/llama/llama_brown.png"), Llama.Variant.GRAY, Identifier.withDefaultNamespace("textures/entity/llama/llama_gray.png")));
-      BABY_TEXTURES = Maps.newEnumMap(Map.of(Llama.Variant.CREAMY, Identifier.withDefaultNamespace("textures/entity/llama/llama_creamy_baby.png"), Llama.Variant.WHITE, Identifier.withDefaultNamespace("textures/entity/llama/llama_white_baby.png"), Llama.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/llama/llama_brown_baby.png"), Llama.Variant.GRAY, Identifier.withDefaultNamespace("textures/entity/llama/llama_gray_baby.png")));
+      TEXTURES = new EnumMap(Map.of(Llama.Variant.CREAMY, Identifier.withDefaultNamespace("textures/entity/llama/llama_creamy.png"), Llama.Variant.WHITE, Identifier.withDefaultNamespace("textures/entity/llama/llama_white.png"), Llama.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/llama/llama_brown.png"), Llama.Variant.GRAY, Identifier.withDefaultNamespace("textures/entity/llama/llama_gray.png")));
+      BABY_TEXTURES = new EnumMap(Map.of(Llama.Variant.CREAMY, Identifier.withDefaultNamespace("textures/entity/llama/llama_creamy_baby.png"), Llama.Variant.WHITE, Identifier.withDefaultNamespace("textures/entity/llama/llama_white_baby.png"), Llama.Variant.BROWN, Identifier.withDefaultNamespace("textures/entity/llama/llama_brown_baby.png"), Llama.Variant.GRAY, Identifier.withDefaultNamespace("textures/entity/llama/llama_gray_baby.png")));
    }
 }

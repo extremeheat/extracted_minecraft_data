@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -44,8 +44,8 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       --this.titleLabelY;
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -54,7 +54,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       int scrollerXStart = xo + 119;
       int scrollerYStart = yo + 15;
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerXStart, scrollerYStart + sy, 12, 15);
-      if (mouseX >= scrollerXStart && mouseY >= scrollerYStart && mouseX < scrollerXStart + 12 && mouseY < scrollerYStart + 54) {
+      if (graphics.mouseX() >= scrollerXStart && graphics.mouseY() >= scrollerYStart && graphics.mouseX() < scrollerXStart + 12 && graphics.mouseY() < scrollerYStart + 54) {
          if (this.isScrollBarActive()) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          } else {
@@ -65,12 +65,12 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       int x = this.leftPos + 52;
       int y = this.topPos + 14;
       int endIndex = this.startIndex + 12;
-      this.extractButtons(graphics, mouseX, mouseY, x, y, endIndex);
+      this.extractButtons(graphics, x, y, endIndex);
       this.extractRecipes(graphics, x, y, endIndex);
    }
 
-   protected void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      super.extractTooltip(graphics, mouseX, mouseY);
+   protected void extractTooltip(final GuiGraphicsExtractor graphics) {
+      super.extractTooltip(graphics);
       if (this.displayRecipes) {
          int edgeLeft = this.leftPos + 52;
          int edgeTop = this.topPos + 14;
@@ -81,17 +81,17 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             int posIndex = index - this.startIndex;
             int itemLeft = edgeLeft + posIndex % 4 * 16;
             int itemRight = edgeTop + posIndex / 4 * 18 + 2;
-            if (mouseX >= itemLeft && mouseX < itemLeft + 16 && mouseY >= itemRight && mouseY < itemRight + 18) {
+            if (graphics.mouseX() >= itemLeft && graphics.mouseX() < itemLeft + 16 && graphics.mouseY() >= itemRight && graphics.mouseY() < itemRight + 18) {
                ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
                SlotDisplay buttonIcon = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay();
-               graphics.setTooltipForNextFrame(this.font, buttonIcon.resolveForFirstStack(context), mouseX, mouseY);
+               graphics.setTooltipForNextFrame(this.font, buttonIcon.resolveForFirstStack(context), graphics.mouseX(), graphics.mouseY());
             }
          }
       }
 
    }
 
-   private void extractButtons(final GuiGraphicsExtractor graphics, final int xm, final int ym, final int x, final int y, final int endIndex) {
+   private void extractButtons(final GuiGraphicsExtractor graphics, final int x, final int y, final int endIndex) {
       for(int index = this.startIndex; index < endIndex && index < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++index) {
          int posIndex = index - this.startIndex;
          int posX = x + posIndex % 4 * 16;
@@ -100,7 +100,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          Identifier sprite;
          if (index == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
             sprite = RECIPE_SELECTED_SPRITE;
-         } else if (xm >= posX && ym >= posY && xm < posX + 16 && ym < posY + 18) {
+         } else if (graphics.mouseX() >= posX && graphics.mouseY() >= posY && graphics.mouseX() < posX + 16 && graphics.mouseY() < posY + 18) {
             sprite = RECIPE_HIGHLIGHTED_SPRITE;
          } else {
             sprite = RECIPE_SPRITE;
@@ -108,7 +108,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
          int textureY = posY - 1;
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, posX, textureY, 16, 18);
-         if (xm >= posX && ym >= textureY && xm < posX + 16 && ym < textureY + 18) {
+         if (graphics.mouseX() >= posX && graphics.mouseY() >= textureY && graphics.mouseX() < posX + 16 && graphics.mouseY() < textureY + 18) {
             graphics.requestCursor(CursorTypes.POINTING_HAND);
          }
       }

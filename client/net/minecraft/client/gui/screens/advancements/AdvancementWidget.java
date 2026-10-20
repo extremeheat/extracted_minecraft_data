@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,7 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -50,7 +50,7 @@ public class AdvancementWidget {
    private final List<FormattedCharSequence> description;
    private final Minecraft minecraft;
    private @Nullable AdvancementWidget parent;
-   private final List<AdvancementWidget> children = Lists.newArrayList();
+   private final List<AdvancementWidget> children = new ArrayList();
    private @Nullable AdvancementProgress progress;
    private final int x;
    private final int y;

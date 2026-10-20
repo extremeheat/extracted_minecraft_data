@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -174,7 +175,7 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public static void addPotionTooltip(final Iterable<MobEffectInstance> effects, final Consumer<Component> lines, final float durationScale, final float tickrate) {
-      List<Pair<Holder<Attribute>, AttributeModifier>> modifiers = Lists.newArrayList();
+      List<Pair<Holder<Attribute>, AttributeModifier>> modifiers = new ArrayList();
       boolean noEffects = true;
 
       for(MobEffectInstance effect : effects) {

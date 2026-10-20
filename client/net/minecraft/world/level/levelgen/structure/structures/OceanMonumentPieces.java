@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -196,7 +196,7 @@ public class OceanMonumentPieces {
       private static final int TOP_POSITION = 61;
       private RoomDefinition sourceRoom;
       private RoomDefinition coreRoom;
-      private final List<OceanMonumentPiece> childPieces = Lists.newArrayList();
+      private final List<OceanMonumentPiece> childPieces = new ArrayList();
 
       public MonumentBuilding(final RandomSource random, final int west, final int north, final Direction direction) {
          super(StructurePieceType.OCEAN_MONUMENT_BUILDING, direction, 0, makeBoundingBox(west, 39, north, direction, 58, 23, 58));
@@ -205,7 +205,7 @@ public class OceanMonumentPieces {
          this.sourceRoom.claimed = true;
          this.childPieces.add(new OceanMonumentEntryRoom(direction, this.sourceRoom));
          this.childPieces.add(new OceanMonumentCoreRoom(direction, this.coreRoom));
-         List<MonumentRoomFitter> fitters = Lists.newArrayList();
+         List<MonumentRoomFitter> fitters = new ArrayList();
          fitters.add(new FitDoubleXYRoom());
          fitters.add(new FitDoubleYZRoom());
          fitters.add(new FitDoubleZRoom());

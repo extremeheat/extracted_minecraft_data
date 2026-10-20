@@ -1,7 +1,6 @@
 package net.minecraft.world.level.chunk;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -10,6 +9,7 @@ import it.unimi.dsi.fastutil.shorts.ShortList;
 import it.unimi.dsi.fastutil.shorts.ShortListIterator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -98,7 +99,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
 
    public LevelChunk(final Level level, final ChunkPos pos, final UpgradeData upgradeData, final LevelChunkTicks<Block> blockTicks, final LevelChunkTicks<Fluid> fluidTicks, final long inhabitedTime, final LevelChunkSection @Nullable [] sections, final @Nullable PostLoadProcessor postLoad, final @Nullable BlendingData blendingData) {
       super(pos, upgradeData, level, level.palettedContainerFactory(), inhabitedTime, sections, blendingData);
-      this.tickersInLevel = Maps.newHashMap();
+      this.tickersInLevel = new HashMap();
       this.unsavedListener = (chunkPos) -> {
       };
       this.level = level;
@@ -212,7 +213,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
          } catch (Throwable t) {
             CrashReport report = CrashReport.forThrowable(t, "Getting block state");
             CrashReportCategory category = report.addCategory("Block being got");
-            category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+            category.setDetail("Location", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
             throw new ReportedException(report);
          }
       }
@@ -236,7 +237,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Getting fluid state");
          CrashReportCategory category = report.addCategory("Block being got");
-         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
          throw new ReportedException(report);
       }
    }

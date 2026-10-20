@@ -2,7 +2,8 @@ package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -142,10 +143,10 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public Map<BlockPos, List<String>> getGhostPois(final DebugValueAccess debugValues) {
-      Map<BlockPos, List<String>> ghostPois = Maps.newHashMap();
+      Map<BlockPos, List<String>> ghostPois = new HashMap();
       debugValues.forEachEntity(DebugSubscriptions.BRAINS, (entity, brainDump) -> {
          for(BlockPos poiPos : Iterables.concat(brainDump.pois(), brainDump.potentialPois())) {
-            ((List)ghostPois.computeIfAbsent(poiPos, (k) -> Lists.newArrayList())).add(brainDump.name());
+            ((List)ghostPois.computeIfAbsent(poiPos, (k) -> new ArrayList())).add(brainDump.name());
          }
 
       });

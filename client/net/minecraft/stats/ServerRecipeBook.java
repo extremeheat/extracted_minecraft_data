@@ -1,7 +1,6 @@
 package net.minecraft.stats;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -81,7 +80,7 @@ public class ServerRecipeBook extends RecipeBook {
    }
 
    public int removeRecipes(final Collection<RecipeHolder<?>> recipes, final ServerPlayer player) {
-      List<RecipeDisplayId> recipesToRemove = Lists.newArrayList();
+      List<RecipeDisplayId> recipesToRemove = new ArrayList();
 
       for(RecipeHolder<?> recipe : recipes) {
          ResourceKey<Recipe<?>> id = recipe.id();

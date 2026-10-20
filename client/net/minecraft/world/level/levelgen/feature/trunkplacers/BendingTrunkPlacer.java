@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -37,7 +37,7 @@ public class BendingTrunkPlacer extends TrunkPlacer {
       BlockPos.MutableBlockPos pos = origin.mutable();
       BlockPos belowPos = pos.below();
       placeBelowTrunkBlock(level, trunkSetter, random, belowPos, tree);
-      List<FoliagePlacer.FoliageAttachment> foliagePoints = Lists.newArrayList();
+      List<FoliagePlacer.FoliageAttachment> foliagePoints = new ArrayList();
 
       for(int i = 0; i <= logHeight; ++i) {
          if (i + 1 >= logHeight + random.nextInt(2)) {

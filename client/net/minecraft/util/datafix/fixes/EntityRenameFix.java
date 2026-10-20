@@ -9,8 +9,8 @@ import com.mojang.datafixers.types.templates.TaggedChoice;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DynamicOps;
 import java.util.Locale;
-import java.util.function.Function;
-import net.minecraft.util.Util;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class EntityRenameFix extends DataFix {
@@ -24,13 +24,13 @@ public abstract class EntityRenameFix extends DataFix {
    public TypeRewriteRule makeRule() {
       TaggedChoice.TaggedChoiceType<String> oldType = this.getInputSchema().findChoiceType(References.ENTITY);
       TaggedChoice.TaggedChoiceType<String> newType = this.getOutputSchema().findChoiceType(References.ENTITY);
-      Function<String, Type<?>> patchedInputTypes = Util.memoize((Function)((name) -> {
-         Type<?> type = (Type)oldType.types().get(name);
-         return ExtraDataFixUtils.patchSubType(type, oldType, newType);
-      }));
+      Map<String, Type<?>> patchedInputTypes = new ConcurrentHashMap();
       return this.fixTypeEverywhere(this.name, oldType, newType, (ops) -> (input) -> {
             String oldName = (String)input.getFirst();
-            Type<?> oldEntityType = (Type)patchedInputTypes.apply(oldName);
+            Type<?> oldEntityType = (Type)patchedInputTypes.computeIfAbsent(oldName, (name) -> {
+               Type<?> type = (Type)oldType.types().get(name);
+               return ExtraDataFixUtils.patchSubType(type, oldType, newType);
+            });
             Pair<String, Typed<?>> newEntity = this.fix(oldName, this.getEntity(input.getSecond(), ops, oldEntityType));
             Type<?> expectedType = (Type)newType.types().get(newEntity.getFirst());
             if (!expectedType.equals(((Typed)newEntity.getSecond()).getType(), true, true)) {

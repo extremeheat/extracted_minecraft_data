@@ -1,13 +1,13 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.OptionalDynamic;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -21,12 +21,12 @@ public class ShufflingList<U> implements Iterable<U> {
 
    public ShufflingList() {
       super();
-      this.entries = Lists.newArrayList();
+      this.entries = new ArrayList();
    }
 
    private ShufflingList(final List<WeightedEntry<U>> entries) {
       super();
-      this.entries = Lists.newArrayList(entries);
+      this.entries = new ArrayList(entries);
    }
 
    public static <U> Codec<ShufflingList<U>> codec(final Codec<U> elementCodec) {

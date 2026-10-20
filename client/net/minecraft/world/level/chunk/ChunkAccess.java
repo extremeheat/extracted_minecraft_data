@@ -1,7 +1,5 @@
 package net.minecraft.world.level.chunk;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -10,7 +8,10 @@ import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,14 +22,15 @@ import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Continuation;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
@@ -69,11 +71,11 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
    private @Nullable BiomeGenerationSettings carverBiomeSettings;
    protected final UpgradeData upgradeData;
    protected final @Nullable BlendingData blendingData;
-   protected final Map<Heightmap.Types, Heightmap> heightmaps = Maps.newEnumMap(Heightmap.Types.class);
+   protected final Map<Heightmap.Types, Heightmap> heightmaps = new EnumMap(Heightmap.Types.class);
    protected ChunkSkyLightSources skyLightSources;
-   private final Map<Structure, StructureStart> structureStarts = Maps.newHashMap();
-   private final Map<Structure, LongSet> structureReferences = Maps.newHashMap();
-   protected final Map<BlockPos, CompoundTag> pendingBlockEntities = Maps.newHashMap();
+   private final Map<Structure, StructureStart> structureStarts = new HashMap();
+   private final Map<Structure, LongSet> structureReferences = new HashMap();
+   protected final Map<BlockPos, CompoundTag> pendingBlockEntities = new HashMap();
    protected final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap();
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
@@ -145,7 +147,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
    }
 
    public Set<BlockPos> getBlockEntitiesPos() {
-      Set<BlockPos> result = Sets.newHashSet(this.pendingBlockEntities.keySet());
+      Set<BlockPos> result = new HashSet(this.pendingBlockEntities.keySet());
       result.addAll(this.blockEntities.keySet());
       return result;
    }
@@ -177,7 +179,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
    public Heightmap getHeightmap(final Heightmap.Types type) {
       Heightmap heightmap = (Heightmap)this.heightmaps.get(type);
       if (heightmap == null) {
-         if (SharedConstants.IS_RUNNING_IN_IDE && this instanceof LevelChunk) {
+         if (DevUtil.IS_RUNNING_IN_IDE && this instanceof LevelChunk) {
             LOGGER.error("Unprimed heightmap: {} {} {}", new Object[]{type, this.chunkPos.x(), this.chunkPos.z()});
          }
 
@@ -421,7 +423,7 @@ public abstract class ChunkAccess implements LightChunk, StructureAccess, BiomeR
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Getting biome");
          CrashReportCategory category = report.addCategory("Biome being got");
-         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
          throw new ReportedException(report);
       }
    }

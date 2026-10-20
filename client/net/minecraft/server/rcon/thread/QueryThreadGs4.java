@@ -1,6 +1,5 @@
 package net.minecraft.server.rcon.thread;
 
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -12,6 +11,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.server.ServerInterface;
@@ -68,7 +68,7 @@ public class QueryThreadGs4 extends GenericThread {
       }
 
       this.rulesResponse = new NetworkDataOutputStream(1460);
-      this.validChallenges = Maps.newHashMap();
+      this.validChallenges = new HashMap();
    }
 
    public static @Nullable QueryThreadGs4 create(final ServerInterface serverInterface) {

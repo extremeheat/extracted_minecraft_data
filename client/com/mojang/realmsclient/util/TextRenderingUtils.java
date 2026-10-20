@@ -1,8 +1,8 @@
 package com.mojang.realmsclient.util;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +29,10 @@ public class TextRenderingUtils {
 
    private static List<Line> insertLinks(final List<String> lines, final List<LineSegment> links) {
       int linkCount = 0;
-      List<Line> processedLines = Lists.newArrayList();
+      List<Line> processedLines = new ArrayList();
 
       for(String line : lines) {
-         List<LineSegment> segments = Lists.newArrayList();
+         List<LineSegment> segments = new ArrayList();
 
          for(String part : split(line, "%link")) {
             if ("%link".equals(part)) {
@@ -52,7 +52,7 @@ public class TextRenderingUtils {
       if (delimiter.isEmpty()) {
          throw new IllegalArgumentException("Delimiter cannot be the empty string");
       } else {
-         List<String> parts = Lists.newArrayList();
+         List<String> parts = new ArrayList();
 
          int searchStart;
          int matchIndex;

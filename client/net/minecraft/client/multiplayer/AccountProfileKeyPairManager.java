@@ -21,9 +21,9 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.SharedConstants;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.player.ProfileKeyPair;
@@ -60,7 +60,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
    private CompletableFuture<Optional<ProfileKeyPair>> readOrFetchProfileKeyPair(final Optional<ProfileKeyPair> cachedKeyPair) {
       return CompletableFuture.supplyAsync(() -> {
          if (cachedKeyPair.isPresent() && !((ProfileKeyPair)cachedKeyPair.get()).dueRefresh()) {
-            if (!SharedConstants.IS_RUNNING_IN_IDE) {
+            if (!DevUtil.IS_RUNNING_IN_IDE) {
                this.writeProfileKeyPair((ProfileKeyPair)null);
             }
 
@@ -121,7 +121,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
       }
 
       if (profileKeyPair != null) {
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
+         if (DevUtil.IS_RUNNING_IN_IDE) {
             ProfileKeyPair.CODEC.encodeStart(JsonOps.INSTANCE, profileKeyPair).ifSuccess((jsonStr) -> {
                try {
                   Files.createDirectories(this.profileKeyPairPath.getParent());

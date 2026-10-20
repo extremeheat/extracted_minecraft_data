@@ -22,9 +22,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StaticCache2D;
-import net.minecraft.util.Util;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.attribute.EnvironmentAttributeReader;
 import net.minecraft.world.attribute.EnvironmentAttributeSystem;
@@ -232,7 +232,7 @@ public class WorldGenRegion implements WorldGenLevel {
          if (!this.isWithinWriteZone(chunkX, chunkZ)) {
             int readDistance = Math.max(Math.abs(this.centerChunkX - chunkX), Math.abs(this.centerChunkZ - chunkZ));
             String warning = "Detected unsafe terrain read during worldgen: reading from chunk [" + chunkX + ", " + chunkZ + "] while generating chunk [" + this.centerChunkX + ", " + this.centerChunkZ + "] (distance: " + readDistance + ", write radius: " + this.writeRadius + "), step: " + this.generatingStep.targetStatus().getName() + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get());
-            Util.logAndPauseIfInIde(warning);
+            DevUtil.logAndPauseIfInIde(warning);
          }
 
       }
@@ -267,7 +267,7 @@ public class WorldGenRegion implements WorldGenLevel {
       if (!this.isWithinWriteZone(pos)) {
          int chunkX = SectionPos.blockToSectionCoord(pos.getX());
          int chunkZ = SectionPos.blockToSectionCoord(pos.getZ());
-         Util.logAndPauseIfInIde("Detected setBlock in a far chunk [" + chunkX + ", " + chunkZ + "], pos: " + String.valueOf(pos) + ", status: " + String.valueOf(this.generatingStep.targetStatus()) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
+         DevUtil.logAndPauseIfInIde("Detected setBlock in a far chunk [" + chunkX + ", " + chunkZ + "], pos: " + String.valueOf(pos) + ", status: " + String.valueOf(this.generatingStep.targetStatus()) + (this.currentlyGenerating == null ? "" : ", currently generating: " + (String)this.currentlyGenerating.get()));
          return false;
       } else if (this.center.isUpgrading()) {
          LevelHeightAccessor levelHeightAccessor = this.center.getHeightAccessorForGeneration();

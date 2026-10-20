@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -108,15 +108,15 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       return this.minecraft.gui.screen() instanceof TitleScreen;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       if ((Boolean)this.validClient.getNow(false)) {
          this.extractIcons(graphics);
       }
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
    }
 
    private void extractIcons(final GuiGraphicsExtractor graphics) {

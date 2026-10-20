@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.ClientRecipeBook;
@@ -30,7 +30,7 @@ public class RecipeBookPage {
    private static final Component PREVIOUS_PAGE_TEXT = Component.translatable("gui.recipebook.previous_page");
    private static final int TURN_PAGE_SPRITE_WIDTH = 12;
    private static final int TURN_PAGE_SPRITE_HEIGHT = 17;
-   private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
+   private final List<RecipeButton> buttons = new ArrayList(20);
    private @Nullable RecipeButton hoveredButton;
    private final OverlayRecipeComponent overlay;
    private Minecraft minecraft;
@@ -110,7 +110,7 @@ public class RecipeBookPage {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if (this.totalPages > 1) {
          Component pageNumbers = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
          int pWidth = this.minecraft.font.width((FormattedText)pageNumbers);
@@ -120,29 +120,29 @@ public class RecipeBookPage {
       this.hoveredButton = null;
 
       for(RecipeButton recipeBookButton : this.buttons) {
-         recipeBookButton.extractRenderState(graphics, mouseX, mouseY, a);
+         recipeBookButton.extractRenderState(graphics);
          if (recipeBookButton.isVisible() && recipeBookButton.isHoveredOrFocused()) {
             this.hoveredButton = recipeBookButton;
          }
       }
 
       if (this.forwardButton != null) {
-         this.forwardButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.forwardButton.extractRenderState(graphics);
       }
 
       if (this.backButton != null) {
-         this.backButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.backButton.extractRenderState(graphics);
       }
 
       graphics.nextStratum();
-      this.overlay.extractRenderState(graphics, mouseX, mouseY, a);
+      this.overlay.extractRenderState(graphics);
    }
 
-   public void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   public void extractTooltip(final GuiGraphicsExtractor graphics) {
       if (this.minecraft.gui.screen() != null && this.hoveredButton != null && !this.overlay.isVisible()) {
          ItemStack displayStack = this.hoveredButton.getDisplayStack();
          Identifier tooltipStyle = (Identifier)displayStack.get(DataComponents.TOOLTIP_STYLE);
-         graphics.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), mouseX, mouseY, tooltipStyle);
+         graphics.setComponentTooltipForNextFrame(this.minecraft.font, this.hoveredButton.getTooltipText(displayStack), graphics.mouseX(), graphics.mouseY(), tooltipStyle);
       }
 
    }

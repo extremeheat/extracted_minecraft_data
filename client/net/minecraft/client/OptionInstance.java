@@ -316,8 +316,8 @@ public final class OptionInstance<T> {
 
       }
 
-      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-         super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+         super.extractWidgetRenderState(graphics);
          if (this.delayedApplyAt != null && Util.getMillis() >= this.delayedApplyAt) {
             this.delayedApplyAt = null;
             this.applyUnsavedValue();

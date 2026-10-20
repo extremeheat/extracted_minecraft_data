@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.primitives.Ints;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.util.PlatformUtil;
+import com.sun.jna.platform.win32.Kernel32;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -68,6 +70,10 @@ public class NativeLibrariesBootstrap {
       createAndCheckDirectory((String)Configuration.SHARED_LIBRARY_EXTRACT_PATH.get(""));
       createAndCheckDirectory(System.getProperty("jna.tmpdir", ""));
       createAndCheckDirectory(System.getProperty("io.netty.native.workdir", ""));
+      if (PlatformUtil.IS_WINDOWS) {
+         setupWindowsEnvVariables();
+      }
+
       Boolean originalDebugLoader = (Boolean)Configuration.DEBUG_LOADER.get();
       Configuration.DEBUG_LOADER.set(true);
       Supplier<String> stopCapturing = setupLWJGLCapture();
@@ -111,6 +117,17 @@ public class NativeLibrariesBootstrap {
 
       long t = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
       LOGGER.debug("Library load time: {} ms", t);
+   }
+
+   private static void setupWindowsEnvVariables() {
+      try {
+         if (!System.getProperties().containsKey("allow_vulkan_ow")) {
+            Kernel32.INSTANCE.SetEnvironmentVariable("DISABLE_VULKAN_OW_OVERLAY_LAYER", "1");
+         }
+
+      } catch (Throwable t) {
+         throw new ReportedException(CrashReport.forThrowable(t, "Setting up environment variables"));
+      }
    }
 
    private static void createAndCheckDirectory(final String libraryDir) throws IOException {

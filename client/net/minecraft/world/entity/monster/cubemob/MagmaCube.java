@@ -1,12 +1,12 @@
 package net.minecraft.world.entity.monster.cubemob;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -26,6 +26,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidIds;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -86,13 +87,13 @@ public class MagmaCube extends AbstractCubeMob implements Enemy {
       this.needsSync = true;
    }
 
-   protected void jumpInLiquid(final TagKey<Fluid> type) {
-      if (type == FluidTags.LAVA) {
+   protected void jumpInLiquid(final List<Holder<Fluid>> fluidTypes) {
+      if (fluidTypes.size() == 1 && ((Holder)fluidTypes.getFirst()).is(FluidIds.LAVA)) {
          Vec3 movement = this.getDeltaMovement();
          this.setDeltaMovement(movement.x, (double)(0.22F + (float)this.getSize() * 0.05F), movement.z);
          this.needsSync = true;
       } else {
-         super.jumpInLiquid(type);
+         super.jumpInLiquid(fluidTypes);
       }
 
    }

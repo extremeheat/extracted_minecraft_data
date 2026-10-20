@@ -59,8 +59,8 @@ public class FrontendGpuDevice implements GpuDevice {
       this.strictValidation = debugOptions.strictValidation();
    }
 
-   public GpuSurface createSurface(final long windowHandle, final BooleanSupplier isIconified) {
-      return new FrontendGpuSurface(this.backend.createSurface(windowHandle, isIconified));
+   public GpuSurface createSurface(final long windowHandle, final BooleanSupplier isIconified, final boolean dxgi) {
+      return new FrontendGpuSurface(this.backend.createSurface(windowHandle, isIconified, dxgi));
    }
 
    public CommandEncoder createCommandEncoder() {

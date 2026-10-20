@@ -36,7 +36,7 @@ public class PlayerSkinWidget extends AbstractWidget {
       this.skin = skin;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       float scale = 0.97F * (float)this.getHeight() / 2.125F;
       float pivotY = -1.0625F;
       PlayerSkin skin = (PlayerSkin)this.skin.get();

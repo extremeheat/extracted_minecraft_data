@@ -41,11 +41,11 @@ public class IncomingEntry extends AbstractFriendsEntryContainerWidget {
       return Component.translatable("gui.friends.narration.entry.incoming", this.playerName);
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractWidgetRenderState(graphics);
       this.rejectButton.setPosition(this.getX() + this.getWidth() - this.rejectButton.getWidth(), this.getY() + (this.getHeight() - this.rejectButton.getHeight()) / 2);
-      this.rejectButton.extractRenderState(graphics, mouseX, mouseY, a);
+      this.rejectButton.extractRenderState(graphics);
       this.acceptButton.setPosition(this.rejectButton.getX() - this.acceptButton.getWidth() - 4, this.getY() + (this.getHeight() - this.acceptButton.getHeight()) / 2);
-      this.acceptButton.extractRenderState(graphics, mouseX, mouseY, a);
+      this.acceptButton.extractRenderState(graphics);
    }
 }

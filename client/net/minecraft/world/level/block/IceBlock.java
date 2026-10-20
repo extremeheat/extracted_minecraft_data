@@ -13,6 +13,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.sounds.AmbientIceBlockSoundsPlayer;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -53,6 +54,10 @@ public class IceBlock extends HalfTransparentBlock {
          this.melt(state, level, pos);
       }
 
+   }
+
+   public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {
+      AmbientIceBlockSoundsPlayer.playAmbientIceSounds(level, pos, random);
    }
 
    protected void melt(final BlockState state, final Level level, final BlockPos pos) {

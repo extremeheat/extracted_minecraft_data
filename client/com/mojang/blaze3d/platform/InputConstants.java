@@ -1,6 +1,5 @@
 package com.mojang.blaze3d.platform;
 
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -9,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -545,7 +545,7 @@ public class InputConstants {
       private final String name;
       private final Type type;
       private final int value;
-      private static final Map<String, Key> NAME_MAP = Maps.newHashMap();
+      private static final Map<String, Key> NAME_MAP = new HashMap();
 
       private Key(final String name, final Type type, final int value) {
          super();

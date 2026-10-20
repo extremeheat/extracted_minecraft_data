@@ -185,11 +185,11 @@ public class FireBlock extends BaseFireBlock {
    }
 
    private int getBurnOdds(final BlockState state) {
-      return state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.burnOdds.getInt(state.getBlock());
+      return (Boolean)state.getValueOrElse(BlockStateProperties.WATERLOGGED, false) ? 0 : this.burnOdds.getInt(state.getBlock());
    }
 
    private int getIgniteOdds(final BlockState state) {
-      return state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED) ? 0 : this.igniteOdds.getInt(state.getBlock());
+      return (Boolean)state.getValueOrElse(BlockStateProperties.WATERLOGGED, false) ? 0 : this.igniteOdds.getInt(state.getBlock());
    }
 
    private void checkBurnOut(final Level level, final BlockPos pos, final int chance, final RandomSource random, final int age) {

@@ -1,6 +1,5 @@
 package net.minecraft.network;
 
-import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -26,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import javax.crypto.Cipher;
@@ -84,7 +84,7 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    public Connection(final PacketFlow receiving) {
       super();
       this.disconnectPacketType = Connection.ClientboundDisconnectPacketType.NONE;
-      this.pendingActions = Queues.newConcurrentLinkedQueue();
+      this.pendingActions = new ConcurrentLinkedQueue();
       this.receiving = receiving;
    }
 
@@ -530,7 +530,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    public void setEncryptionKey(final Cipher decryptCipher, final Cipher encryptCipher) {
+      this.setInboundEncryptionKey(decryptCipher);
+      this.setOutboundEncryptionKey(encryptCipher);
+   }
+
+   public void setInboundEncryptionKey(final Cipher decryptCipher) {
       this.channel.pipeline().addBefore("splitter", "decrypt", new CipherDecoder(decryptCipher));
+   }
+
+   public void setOutboundEncryptionKey(final Cipher encryptCipher) {
       this.channel.pipeline().addBefore("prepender", "encrypt", new CipherEncoder(encryptCipher));
    }
 
@@ -559,21 +567,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    public void setupCompression(final int threshold, final boolean validateDecompressed) {
       if (threshold >= 0) {
-         ChannelHandler var4 = this.channel.pipeline().get("decompress");
-         if (var4 instanceof CompressionDecoder) {
-            CompressionDecoder compressionDecoder = (CompressionDecoder)var4;
-            compressionDecoder.setThreshold(threshold, validateDecompressed);
-         } else {
-            this.channel.pipeline().addAfter("splitter", "decompress", new CompressionDecoder(threshold, validateDecompressed));
-         }
-
-         var4 = this.channel.pipeline().get("compress");
-         if (var4 instanceof CompressionEncoder) {
-            CompressionEncoder compressionEncoder = (CompressionEncoder)var4;
-            compressionEncoder.setThreshold(threshold);
-         } else {
-            this.channel.pipeline().addAfter("prepender", "compress", new CompressionEncoder(threshold));
-         }
+         this.setupInboundCompression(threshold, validateDecompressed);
+         this.setupOutboundCompression(threshold);
       } else {
          if (this.channel.pipeline().get("decompress") instanceof CompressionDecoder) {
             this.channel.pipeline().remove("decompress");
@@ -582,6 +577,26 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
          if (this.channel.pipeline().get("compress") instanceof CompressionEncoder) {
             this.channel.pipeline().remove("compress");
          }
+      }
+
+   }
+
+   public void setupInboundCompression(final int threshold, final boolean validateDecompressed) {
+      ChannelHandler var4 = this.channel.pipeline().get("decompress");
+      if (var4 instanceof CompressionDecoder compressionDecoder) {
+         compressionDecoder.setThreshold(threshold, validateDecompressed);
+      } else {
+         this.channel.pipeline().addAfter("splitter", "decompress", new CompressionDecoder(threshold, validateDecompressed));
+      }
+
+   }
+
+   public void setupOutboundCompression(final int threshold) {
+      ChannelHandler var3 = this.channel.pipeline().get("compress");
+      if (var3 instanceof CompressionEncoder compressionEncoder) {
+         compressionEncoder.setThreshold(threshold);
+      } else {
+         this.channel.pipeline().addAfter("prepender", "compress", new CompressionEncoder(threshold));
       }
 
    }

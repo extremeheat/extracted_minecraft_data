@@ -1,8 +1,6 @@
 package net.minecraft.world.entity;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -21,6 +19,7 @@ import java.lang.annotation.Target;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -36,8 +35,8 @@ import java.util.stream.Stream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
-import net.minecraft.SharedConstants;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -87,10 +86,10 @@ import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.BlockUtil;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugEntityBlockIntersection;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debug.DebugValueSource;
@@ -133,6 +132,7 @@ import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidIds;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.portal.PortalShape;
@@ -202,12 +202,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public static final int FREEZE_HURT_FREQUENCY = 40;
    public static final int BASE_SAFE_FALL_DISTANCE = 3;
    private static final AABB INITIAL_AABB;
-   private static final double WATER_FLOW_SCALE = 0.014;
-   private static final double LAVA_FAST_FLOW_SCALE = 0.007;
-   private static final double LAVA_SLOW_FLOW_SCALE = 0.0023333333333333335;
    private static final int MAX_BLOCK_ITERATIONS_ALONG_TRAVEL_PER_TICK = 16;
    private static final double MAX_MOVEMENT_RESETTING_TRACE_DISTANCE = 8.0;
-   private static final Set<TagKey<Fluid>> FLUIDS_WITH_CURRENT;
    private static double viewScale;
    private final EntityType<?> type;
    private boolean requiresPrecisePosition;
@@ -249,8 +245,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    protected final RandomSource random;
    public int tickCount;
    private int remainingFireTicks;
-   private final EntityFluidInteraction fluidInteraction;
-   protected boolean wasTouchingWater;
+   protected final EntityFluidInteraction fluidInteraction;
    protected boolean wasEyeInWater;
    private int invulnerableTime;
    protected boolean firstTick;
@@ -311,13 +306,13 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       this.stuckSpeedMultiplier = Vec3.ZERO;
       this.nextStep = 1.0F;
       this.random = RandomSource.create();
-      this.fluidInteraction = new EntityFluidInteraction(FLUIDS_WITH_CURRENT);
+      this.fluidInteraction = new EntityFluidInteraction();
       this.firstTick = true;
       this.levelCallback = EntityInLevelCallback.NULL;
       this.packetPositionCodec = new VecDeltaCodec();
       this.uuid = Mth.createInsecureUUID(this.random);
       this.stringUUID = this.uuid.toString();
-      this.tags = Sets.newHashSet();
+      this.tags = new HashSet();
       this.pistonDeltas = new double[]{0.0, 0.0, 0.0};
       this.mainSupportingBlockPos = Optional.empty();
       this.onGroundNoBlocks = false;
@@ -761,8 +756,8 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void move(final MoverType moverType, Vec3 delta) {
-      if (SharedConstants.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
-         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement"));
+      if (DevUtil.IS_RUNNING_IN_IDE && !moverType.isServerAndClientSimulated() && !this.canSimulateMovement()) {
+         throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException("Attempted to move entity on a logical side not permitted to simulate movement"));
       } else if (this.noPhysics) {
          this.setPos(this.getX() + delta.x, this.getY() + delta.y, this.getZ() + delta.z);
          this.recordMovement(moverType, delta);
@@ -1396,7 +1391,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
                      } catch (Throwable t) {
                         CrashReport report = CrashReport.forThrowable(t, "Colliding entity with block");
                         CrashReportCategory category = report.addCategory("Block being collided with");
-                        CrashReportCategory.populateBlockDetails(category, this.level(), blockIntersection, state);
+                        CrashReportUtil.populateBlockDetails(category, this.level(), blockIntersection, state);
                         CrashReportCategory entityCategory = report.addCategory("Entity being checked for collision");
                         this.fillCrashReportCategory(entityCategory);
                         throw new ReportedException(report);
@@ -1544,6 +1539,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    }
 
+   public void playSound(final Holder<SoundEvent> sound) {
+      this.playSound(sound, 1.0F, 1.0F);
+   }
+
    public boolean isSilent() {
       return (Boolean)this.entityData.get(DATA_SILENT);
    }
@@ -1636,7 +1635,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public boolean isInWater() {
-      return this.wasTouchingWater;
+      return this.fluidInteraction.isInFluid(FluidTags.WATER);
    }
 
    private boolean isInRain() {
@@ -1690,27 +1689,26 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    protected boolean updateFluidInteraction() {
       boolean inAnyFluid = this.fluidInteraction.update(this, !this.isPushedByFluid());
       boolean inWater = this.fluidInteraction.isInFluid(FluidTags.WATER);
-      boolean inLava = this.fluidInteraction.isInFluid(FluidTags.LAVA);
       if (inWater) {
          this.resetFallDistance();
-         if (!this.wasTouchingWater && !this.firstTick) {
-            this.doWaterSplashEffect();
-         }
       }
 
-      this.wasTouchingWater = inWater;
-      if (this.isPushedByFluid()) {
-         if (inWater) {
-            this.fluidInteraction.applyCurrentTo(FluidTags.WATER, this, 0.014);
-         }
+      if (!this.firstTick) {
+         this.fluidInteraction.forEnteredFluids(this::onEnterFluid);
+      }
 
-         if (inLava) {
-            double lavaFlowScale = (Boolean)this.level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
-            this.fluidInteraction.applyCurrentTo(FluidTags.LAVA, this, lavaFlowScale);
-         }
+      if (this.isPushedByFluid()) {
+         this.fluidInteraction.applyCurrentsTo(this);
       }
 
       return inAnyFluid;
+   }
+
+   protected void onEnterFluid(final Holder<Fluid> fluid) {
+      if (fluid.is(FluidIds.WATER)) {
+         this.doWaterSplashEffect();
+      }
+
    }
 
    protected void doWaterSplashEffect() {
@@ -2429,7 +2427,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          Level var4 = this.level();
          if (var4 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var4;
-            serverLevel.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource());
+            serverLevel.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource(), 1.0F, 1.0F);
          }
       }
 
@@ -2593,7 +2591,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          if (this.passengers.isEmpty()) {
             this.passengers = ImmutableList.of(passenger);
          } else {
-            List<Entity> newPassengers = Lists.newArrayList(this.passengers);
+            List<Entity> newPassengers = new ArrayList(this.passengers);
             if (!this.level().isClientSide() && passenger instanceof Player && !(this.getFirstPassenger() instanceof Player)) {
                newPassengers.add(0, passenger);
             } else {
@@ -3379,7 +3377,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       category.setDetail("Entity ID", this.id);
       category.setDetail("Entity Name", (CrashReportDetail)(() -> this.getPlainTextName()));
       category.setDetail("Entity's Exact location", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", this.getX(), this.getY(), this.getZ()));
-      category.setDetail("Entity's Block location", CrashReportCategory.formatLocation(this.level(), Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ())));
+      category.setDetail("Entity's Block location", CrashReportUtil.formatLocation(this.level(), Mth.floor(this.getX()), Mth.floor(this.getY()), Mth.floor(this.getZ())));
       Vec3 movement = this.getDeltaMovement();
       category.setDetail("Entity's Momentum", String.format(Locale.ROOT, "%.2f, %.2f, %.2f", movement.x, movement.y, movement.z));
       category.setDetail("Entity's Passengers", (CrashReportDetail)(() -> this.getPassengers().toString()));
@@ -4023,7 +4021,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public boolean canFreeze() {
-      return !this.is(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES);
+      return !this.is(EntityTypeTags.IMMUNE_TO_FREEZING);
    }
 
    public boolean isFreezing() {
@@ -4040,7 +4038,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void setYRot(final float yRot) {
       if (!Float.isFinite(yRot)) {
-         Util.logAndPauseIfInIde("Invalid entity rotation: " + yRot + ", discarding.");
+         DevUtil.logAndPauseIfInIde("Invalid entity rotation: " + yRot + ", discarding.");
       } else {
          this.yRot = yRot;
       }
@@ -4052,7 +4050,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public void setXRot(final float xRot) {
       if (!Float.isFinite(xRot)) {
-         Util.logAndPauseIfInIde("Invalid entity rotation: " + xRot + ", discarding.");
+         DevUtil.logAndPauseIfInIde("Invalid entity rotation: " + xRot + ", discarding.");
       } else {
          this.xRot = Math.clamp(xRot % 360.0F, -90.0F, 90.0F);
       }
@@ -4148,17 +4146,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public RegistryAccess registryAccess() {
       return this.level().registryAccess();
-   }
-
-   protected void lerpPositionAndRotationStep(final int stepsToTarget, final double targetX, final double targetY, final double targetZ, final double targetYRot, final double targetXRot) {
-      double alpha = 1.0 / (double)stepsToTarget;
-      double x = Mth.lerp(alpha, this.getX(), targetX);
-      double y = Mth.lerp(alpha, this.getY(), targetY);
-      double z = Mth.lerp(alpha, this.getZ(), targetZ);
-      float yRot = (float)Mth.rotLerp(alpha, (double)this.getYRot(), targetYRot);
-      float xRot = (float)Mth.lerp(alpha, (double)this.getXRot(), targetXRot);
-      this.setPos(x, y, z);
-      this.setRot(yRot, xRot);
    }
 
    public RandomSource getRandom() {
@@ -4271,7 +4258,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    static {
       TAG_LIST_CODEC = Codec.STRING.sizeLimitedListOf(1024);
       INITIAL_AABB = new AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-      FLUIDS_WITH_CURRENT = Set.of(FluidTags.WATER, FluidTags.LAVA);
       viewScale = 1.0;
       DATA_SHARED_FLAGS_ID = SynchedEntityData.<Byte>defineId(Entity.class, EntityDataSerializers.BYTE);
       DATA_AIR_SUPPLY_ID = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);

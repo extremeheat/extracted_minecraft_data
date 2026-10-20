@@ -2,7 +2,6 @@ package net.minecraft.advancements.predicates.entity;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -11,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMaps;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -211,7 +211,7 @@ public record PlayerPredicate(MinMaxBounds.Ints level, FoodPredicate food, GameT
          this.gameType = GameTypePredicate.ANY;
          this.stats = ImmutableList.builder();
          this.recipes = new Object2BooleanOpenHashMap();
-         this.advancements = Maps.newHashMap();
+         this.advancements = new HashMap();
          this.lookingAt = Optional.empty();
          this.input = Optional.empty();
       }

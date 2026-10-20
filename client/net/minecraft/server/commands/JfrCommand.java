@@ -9,12 +9,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
 
@@ -43,7 +43,7 @@ public class JfrCommand {
    private static int stopJfr(final CommandSourceStack source) throws CommandSyntaxException {
       try {
          Path savedRecording = Paths.get(".").relativize(JvmProfiler.INSTANCE.stop().normalize());
-         Path clipboardPath = source.getServer().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? savedRecording : savedRecording.toAbsolutePath();
+         Path clipboardPath = source.getServer().isPublished() && !DevUtil.IS_RUNNING_IN_IDE ? savedRecording : savedRecording.toAbsolutePath();
          Component fileText = Component.literal(savedRecording.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((style) -> style.withClickEvent(new ClickEvent.CopyToClipboard(clipboardPath.toString())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click")))));
          source.sendSuccess(() -> Component.translatable("commands.jfr.stopped", fileText), false);
          return 1;

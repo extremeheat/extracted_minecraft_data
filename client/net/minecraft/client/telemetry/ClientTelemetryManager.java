@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
@@ -80,7 +81,7 @@ public class ClientTelemetryManager implements AutoCloseable {
                   loggerFuture.thenAccept((logger) -> {
                      if (!logger.isEmpty()) {
                         ((TelemetryEventLogger)logger.get()).log(event);
-                        if (!SharedConstants.IS_RUNNING_IN_IDE || !SharedConstants.DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND) {
+                        if (!DevUtil.IS_RUNNING_IN_IDE || !SharedConstants.DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND) {
                            event.export(telemetrySession).send();
                         }
 

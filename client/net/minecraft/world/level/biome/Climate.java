@@ -2,7 +2,6 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -141,15 +140,15 @@ public class Climate {
       }
 
       private static <T> List<SubTree<T>> bucketize(final List<? extends Node<T>> nodes, final int childrenPerNode) {
-         List<SubTree<T>> buckets = Lists.newArrayList();
-         List<Node<T>> children = Lists.newArrayList();
+         List<SubTree<T>> buckets = new ArrayList();
+         List<Node<T>> children = new ArrayList();
          int expectedChildrenCount = (int)Math.pow((double)childrenPerNode, Math.floor(Math.log((double)nodes.size() - 0.01) / Math.log((double)childrenPerNode)));
 
          for(Node<T> child : nodes) {
             children.add(child);
             if (children.size() >= expectedChildrenCount) {
                buckets.add(new SubTree(children));
-               children = Lists.newArrayList();
+               children = new ArrayList();
             }
          }
 
@@ -175,7 +174,7 @@ public class Climate {
             throw new IllegalArgumentException("SubTree needs at least one child");
          } else {
             int dimensions = 7;
-            List<Parameter> bounds = Lists.newArrayList();
+            List<Parameter> bounds = new ArrayList();
 
             for(int d = 0; d < 7; ++d) {
                bounds.add((Object)null);

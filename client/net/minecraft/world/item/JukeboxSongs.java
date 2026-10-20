@@ -38,7 +38,7 @@ public interface JukeboxSongs {
       return ResourceKey.create(Registries.JUKEBOX_SONG, Identifier.withDefaultNamespace(id));
    }
 
-   private static void register(final BootstrapContext<JukeboxSong> context, final ResourceKey<JukeboxSong> registryKey, final Holder.Reference<SoundEvent> soundEvent, final int lengthInSeconds, final int comparatorOutput) {
+   private static void register(final BootstrapContext<JukeboxSong> context, final ResourceKey<JukeboxSong> registryKey, final Holder<SoundEvent> soundEvent, final int lengthInSeconds, final int comparatorOutput) {
       context.register(registryKey, new JukeboxSong(soundEvent, Component.translatable(Util.makeDescriptionId("jukebox_song", registryKey.identifier())), (float)lengthInSeconds, comparatorOutput));
    }
 

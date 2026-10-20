@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
-import com.google.common.collect.Queues;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Deque;
@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.MusicToastDisplayState;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
@@ -20,13 +21,13 @@ import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jspecify.annotations.Nullable;
 
-public class ToastManager {
+public class ToastManager implements Renderable {
    private static final int SLOT_COUNT = 5;
    private static final int ALL_SLOTS_OCCUPIED = -1;
    private final Minecraft minecraft;
    private final List<ToastInstance<?>> visibleToasts = new ArrayList();
    private final BitSet occupiedSlots = new BitSet(5);
-   private final Deque<Toast> queued = Queues.newArrayDeque();
+   private final Deque<Toast> queued = new ArrayDeque();
    private final Set<SoundEvent> playedToastSounds = new HashSet();
    private @Nullable ToastInstance<NowPlayingToast> nowPlayingToast;
 

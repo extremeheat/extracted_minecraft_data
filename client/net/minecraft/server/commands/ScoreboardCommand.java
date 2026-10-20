@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -16,6 +15,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -94,7 +94,7 @@ public class ScoreboardCommand {
    }
 
    private static CompletableFuture<Suggestions> suggestTriggers(final CommandSourceStack source, final Collection<ScoreHolder> targets, final SuggestionsBuilder builder) {
-      List<String> result = Lists.newArrayList();
+      List<String> result = new ArrayList();
       Scoreboard scoreboard = source.getServer().getScoreboard();
 
       for(Objective objective : scoreboard.getObjectives()) {

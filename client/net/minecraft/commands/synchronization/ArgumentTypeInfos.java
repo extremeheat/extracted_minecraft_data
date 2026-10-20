@@ -1,6 +1,5 @@
 package net.minecraft.commands.synchronization;
 
-import com.google.common.collect.Maps;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -8,6 +7,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.commands.arguments.AngleArgument;
@@ -67,7 +67,7 @@ import net.minecraft.commands.synchronization.brigadier.StringArgumentSerializer
 import net.minecraft.core.Registry;
 
 public class ArgumentTypeInfos {
-   private static final Map<Class<?>, ArgumentTypeInfo<?, ?>> BY_CLASS = Maps.newHashMap();
+   private static final Map<Class<?>, ArgumentTypeInfo<?, ?>> BY_CLASS = new HashMap();
 
    public ArgumentTypeInfos() {
       super();

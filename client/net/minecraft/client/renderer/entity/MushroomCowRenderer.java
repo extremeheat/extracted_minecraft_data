@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.client.model.animal.cow.BabyCowModel;
 import net.minecraft.client.model.animal.cow.CowModel;
@@ -15,7 +15,7 @@ import net.minecraft.world.entity.animal.cow.MushroomCow;
 
 public class MushroomCowRenderer extends AgeableMobRenderer<MushroomCow, MushroomCowRenderState, CowModel> {
    public static final BlockDisplayContext BLOCK_DISPLAY_CONTEXT = BlockDisplayContext.create();
-   private static final Map<MushroomCow.Variant, MushroomCowTexture> TEXTURES = (Map)Util.make(Maps.newHashMap(), (map) -> {
+   private static final Map<MushroomCow.Variant, MushroomCowTexture> TEXTURES = (Map)Util.make(new HashMap(), (map) -> {
       map.put(MushroomCow.Variant.BROWN, new MushroomCowTexture(Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_brown.png"), Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_brown_baby.png")));
       map.put(MushroomCow.Variant.RED, new MushroomCowTexture(Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_red.png"), Identifier.withDefaultNamespace("textures/entity/cow/mooshroom_red_baby.png")));
    });

@@ -189,20 +189,20 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.resetFallDistance();
    }
 
-   public boolean canBreakBlockInAdventureMode(final ServerLevel level, final BlockInWorld blockInWorld) {
-      Entity owner = this.getOwner();
-      GameType worldGameMode = level.getServer().getDefaultGameType();
-      if (owner != null || worldGameMode == GameType.ADVENTURE) {
-         if (owner instanceof Player) {
-            Player player = (Player)owner;
-            if (player.gameMode() != GameType.ADVENTURE) {
-               return true;
-            }
-         }
-
-         return this.canBreak != null && this.canBreak.test(blockInWorld);
-      } else {
+   public boolean ownerCanBreakBlock(final ServerLevel level, final BlockInWorld blockInWorld) {
+      if (this.canBreak != null && this.canBreak.test(blockInWorld)) {
          return true;
+      } else {
+         Entity owner = this.getOwner();
+         GameType worldGameMode = level.getServer().getDefaultGameType();
+         if (owner == null) {
+            return worldGameMode != GameType.ADVENTURE;
+         } else if (owner instanceof Player) {
+            Player player = (Player)owner;
+            return player.gameMode() != GameType.ADVENTURE;
+         } else {
+            return (Boolean)level.getGameRules().get(GameRules.MOB_GRIEFING);
+         }
       }
    }
 
@@ -381,7 +381,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public boolean mayBreak(final ServerLevel level, final BlockPos pos) {
-      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS) && this.canBreakBlockInAdventureMode(level, new BlockInWorld(level, pos, false));
+      return this.is(EntityTypeTags.IMPACT_PROJECTILES) && (Boolean)level.getGameRules().get(GameRules.PROJECTILES_CAN_BREAK_BLOCKS) && this.ownerCanBreakBlock(level, new BlockInWorld(level, pos, false));
    }
 
    public boolean isPickable() {

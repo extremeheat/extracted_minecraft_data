@@ -1,11 +1,11 @@
 package com.mojang.realmsclient.util;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class RealmsTextureManager {
-   private static final Map<String, RealmsTexture> TEXTURES = Maps.newHashMap();
+   private static final Map<String, RealmsTexture> TEXTURES = new HashMap();
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Identifier TEMPLATE_ICON_LOCATION = Identifier.withDefaultNamespace("textures/gui/presets/isles.png");
 

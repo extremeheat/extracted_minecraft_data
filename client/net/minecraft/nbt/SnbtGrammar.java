@@ -57,7 +57,6 @@ public class SnbtGrammar {
    private static final DelayedException<CommandSyntaxException> ERROR_EMPTY_KEY = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.empty_key")));
    private static final DelayedException<CommandSyntaxException> ERROR_LEADING_ZERO_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.leading_zero_not_allowed")));
    private static final DelayedException<CommandSyntaxException> ERROR_INFINITY_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.infinity_not_allowed")));
-   private static final HexFormat HEX_ESCAPE = HexFormat.of().withUpperCase();
    private static final NumberRunParseRule BINARY_NUMERAL;
    private static final NumberRunParseRule DECIMAL_NUMERAL;
    private static final NumberRunParseRule HEX_NUMERAL;
@@ -71,32 +70,6 @@ public class SnbtGrammar {
 
    private static DelayedException<CommandSyntaxException> createNumberParseError(final NumberFormatException ex) {
       return DelayedException.create(ERROR_NUMBER_PARSE_FAILURE, ex.getMessage());
-   }
-
-   public static @Nullable String escapeControlCharacters(final char c) {
-      String var10000;
-      switch (c) {
-         case '\b':
-            var10000 = "b";
-            break;
-         case '\t':
-            var10000 = "t";
-            break;
-         case '\n':
-            var10000 = "n";
-            break;
-         case '\u000b':
-         default:
-            var10000 = c < ' ' ? "x" + HEX_ESCAPE.toHexDigits((byte)c) : null;
-            break;
-         case '\f':
-            var10000 = "f";
-            break;
-         case '\r':
-            var10000 = "r";
-      }
-
-      return var10000;
    }
 
    private static boolean isAllowedToStartUnquotedString(final char c) {

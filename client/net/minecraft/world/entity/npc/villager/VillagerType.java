@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.npc.villager;
 
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,7 +62,7 @@ public final class VillagerType {
    static {
       CODEC = RegistryCodecs.holder(Registries.VILLAGER_TYPE);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.VILLAGER_TYPE);
-      BY_BIOME = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      BY_BIOME = (Map)Util.make(new HashMap(), (map) -> {
          map.put(Biomes.BADLANDS, DESERT);
          map.put(Biomes.DESERT, DESERT);
          map.put(Biomes.ERODED_BADLANDS, DESERT);

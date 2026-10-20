@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface GpuDevice {
-   GpuSurface createSurface(long windowHandle, final BooleanSupplier isIconified);
+   GpuSurface createSurface(long windowHandle, final BooleanSupplier isIconified, boolean dxgi);
 
    CommandEncoder createCommandEncoder();
 

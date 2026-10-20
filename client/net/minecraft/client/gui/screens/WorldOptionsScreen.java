@@ -22,7 +22,7 @@ import net.minecraft.client.gui.screens.multiplayer.RestrictionsScreen;
 import net.minecraft.client.gui.screens.options.HasDifficultyReaction;
 import net.minecraft.client.gui.screens.options.HasGamemasterPermissionReaction;
 import net.minecraft.client.gui.screens.options.InWorldGameRulesScreen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -413,8 +413,8 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
       graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.INWORLD_MENU_LIST_BACKGROUND, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight() + (int)this.scrollArea.getScrollAmount()), this.width, this.layout.getContentHeight(), 32, 32);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       this.extractListSeparators(graphics, this.layout, 2);
    }
 

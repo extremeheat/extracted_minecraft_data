@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Maps;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.animal.equine.BabyHorseModel;
@@ -42,7 +42,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    }
 
    static {
-      LOCATION_BY_VARIANT = Maps.newEnumMap(Map.of(Variant.WHITE, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_white.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_white_baby.png")), Variant.CREAMY, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_creamy.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_creamy_baby.png")), Variant.CHESTNUT, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_chestnut.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_chestnut_baby.png")), Variant.BROWN, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_brown.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_brown_baby.png")), Variant.BLACK, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_black.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_black_baby.png")), Variant.GRAY, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_gray.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_gray_baby.png")), Variant.DARK_BROWN, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_darkbrown.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_darkbrown_baby.png"))));
+      LOCATION_BY_VARIANT = new EnumMap(Map.of(Variant.WHITE, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_white.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_white_baby.png")), Variant.CREAMY, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_creamy.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_creamy_baby.png")), Variant.CHESTNUT, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_chestnut.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_chestnut_baby.png")), Variant.BROWN, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_brown.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_brown_baby.png")), Variant.BLACK, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_black.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_black_baby.png")), Variant.GRAY, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_gray.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_gray_baby.png")), Variant.DARK_BROWN, new HorseTextures(Identifier.withDefaultNamespace("textures/entity/horse/horse_darkbrown.png"), Identifier.withDefaultNamespace("textures/entity/horse/horse_darkbrown_baby.png"))));
    }
 
    private static record HorseTextures(Identifier adult, Identifier baby) {

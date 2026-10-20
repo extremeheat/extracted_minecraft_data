@@ -1,7 +1,6 @@
 package net.minecraft.world.level.chunk.storage;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -18,6 +17,7 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +34,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -126,7 +127,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
             this.unpackChunk(SectionPos.of(sectionPos).chunk());
             r = this.get(sectionPos);
             if (r == null) {
-               throw (IllegalStateException)Util.pauseInIde(new IllegalStateException());
+               throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException());
             } else {
                return r;
             }
@@ -141,7 +142,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
    protected R getOrCreate(final long sectionPos) {
       if (this.outsideStoredRange(sectionPos)) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("sectionPos out of bounds"));
+         throw (IllegalArgumentException)DevUtil.pauseInIde(new IllegalArgumentException("sectionPos out of bounds"));
       } else {
          Optional<R> r = this.getOrLoad(sectionPos);
          if (r.isPresent()) {
@@ -235,7 +236,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
    }
 
    private <T> Dynamic<T> writeChunk(final ChunkPos chunkPos, final DynamicOps<T> ops) {
-      Map<T, T> sections = Maps.newHashMap();
+      Map<T, T> sections = new HashMap();
 
       for(int sectionY = this.levelHeightAccessor.getMinSectionY(); sectionY <= this.levelHeightAccessor.getMaxSectionY(); ++sectionY) {
          long key = getKey(chunkPos, sectionY);

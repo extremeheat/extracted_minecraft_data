@@ -23,7 +23,7 @@ public class PlainTextButton extends Button {
       this(x, y, width, height, message, onPress, DEFAULT_NARRATION, font);
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics) {
       Component messageToRender = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
       graphics.text(this.font, messageToRender, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
    }

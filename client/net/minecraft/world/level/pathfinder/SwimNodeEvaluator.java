@@ -1,8 +1,8 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,7 +43,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
 
    public int getNeighbors(final Node[] neighbors, final Node pos) {
       int count = 0;
-      Map<Direction, Node> nodes = Maps.newEnumMap(Direction.class);
+      Map<Direction, Node> nodes = new EnumMap(Direction.class);
 
       for(Direction direction : Direction.values()) {
          Node node = this.findAcceptedNode(pos.x + direction.getStepX(), pos.y + direction.getStepY(), pos.z + direction.getStepZ());

@@ -1,7 +1,7 @@
 package net.minecraft.client.data.models.model;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -16,8 +16,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.properties.BedPart;
 
 public class TextureMapping {
-   private final Map<TextureSlot, Material> slots = Maps.newHashMap();
-   private final Set<TextureSlot> forcedSlots = Sets.newHashSet();
+   private final Map<TextureSlot, Material> slots = new HashMap();
+   private final Set<TextureSlot> forcedSlots = new HashSet();
 
    public TextureMapping() {
       super();

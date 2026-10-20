@@ -1,12 +1,12 @@
 package net.minecraft.world.entity.raid;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -91,9 +91,9 @@ public class Raid {
    private static final int VALID_RAID_RADIUS = 96;
    public static final int VALID_RAID_RADIUS_SQR = 9216;
    public static final int RAID_REMOVAL_THRESHOLD_SQR = 12544;
-   private final Map<Integer, Raider> groupToLeaderMap = Maps.newHashMap();
-   private final Map<Integer, Set<Raider>> groupRaiderMap = Maps.newHashMap();
-   private final Set<UUID> heroesOfTheVillage = Sets.newHashSet();
+   private final Map<Integer, Raider> groupToLeaderMap = new HashMap();
+   private final Map<Integer, Set<Raider>> groupRaiderMap = new HashMap();
+   private final Set<UUID> heroesOfTheVillage = new HashSet();
    private long ticksActive;
    private BlockPos center;
    private boolean started;
@@ -169,7 +169,7 @@ public class Raid {
    }
 
    public Set<Raider> getAllRaiders() {
-      Set<Raider> raiders = Sets.newHashSet();
+      Set<Raider> raiders = new HashSet();
 
       for(Set<Raider> raiderSet : this.groupRaiderMap.values()) {
          raiders.addAll(raiderSet);
@@ -194,7 +194,7 @@ public class Raid {
    }
 
    private void updatePlayers(final ServerLevel level) {
-      Set<ServerPlayer> currentPlayersInRaid = Sets.newHashSet(this.raidEvent.getPlayers());
+      Set<ServerPlayer> currentPlayersInRaid = new HashSet(this.raidEvent.getPlayers());
       List<ServerPlayer> newPlayersInRaid = level.getPlayers(this.validPlayer());
 
       for(ServerPlayer player : newPlayersInRaid) {
@@ -435,7 +435,7 @@ public class Raid {
 
    private void updateRaiders(final ServerLevel level) {
       Iterator<Set<Raider>> raiders = this.groupRaiderMap.values().iterator();
-      Set<Raider> toRemove = Sets.newHashSet();
+      Set<Raider> toRemove = new HashSet();
 
       while(raiders.hasNext()) {
          Set<Raider> raiderSet = (Set)raiders.next();
@@ -657,7 +657,7 @@ public class Raid {
    }
 
    public boolean addWaveMob(final ServerLevel level, final int wave, final Raider raider, final boolean updateHealth) {
-      this.groupRaiderMap.computeIfAbsent(wave, (v) -> Sets.newHashSet());
+      this.groupRaiderMap.computeIfAbsent(wave, (v) -> new HashSet());
       Set<Raider> raiders = (Set)this.groupRaiderMap.get(wave);
       Raider existingCopy = null;
 

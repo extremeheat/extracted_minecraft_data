@@ -1,9 +1,10 @@
 package net.minecraft.world.entity.npc.villager;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.Holder;
@@ -231,7 +232,9 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
 
    @VisibleForTesting
    static void addOffersFromItemListings(final LootContext lootContext, final MerchantOffers merchantOffers, final HolderSet<VillagerTrade> potentialOffers, final int numberOfOffers) {
-      List<Holder<VillagerTrade>> potentialOffersList = Lists.newArrayList(potentialOffers);
+      List<Holder<VillagerTrade>> potentialOffersList = new ArrayList(potentialOffers.size());
+      Objects.requireNonNull(potentialOffersList);
+      potentialOffers.forEach(potentialOffersList::add);
       int offersFound = 0;
 
       while(offersFound < numberOfOffers && !potentialOffersList.isEmpty()) {
@@ -249,7 +252,9 @@ public abstract class AbstractVillager extends AgeableMob implements Npc, Mercha
    }
 
    private static void addOffersFromItemListingsWithoutDuplicates(final LootContext lootContext, final MerchantOffers merchantOffers, final HolderSet<VillagerTrade> potentialOffers, final int numberOfOffers) {
-      List<Holder<VillagerTrade>> leftoverOffers = Lists.newArrayList(potentialOffers);
+      List<Holder<VillagerTrade>> leftoverOffers = new ArrayList(potentialOffers.size());
+      Objects.requireNonNull(leftoverOffers);
+      potentialOffers.forEach(leftoverOffers::add);
       int offersFound = 0;
 
       while(offersFound < numberOfOffers && !leftoverOffers.isEmpty()) {

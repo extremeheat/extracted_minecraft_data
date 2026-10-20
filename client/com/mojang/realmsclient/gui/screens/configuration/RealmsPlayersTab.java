@@ -196,7 +196,7 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
          return ImmutableList.of(this.activeOpButton(), this.removeButton);
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          int inviteColor;
          if (!this.playerInfo.accepted) {
             inviteColor = -6250336;
@@ -215,12 +215,12 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
          int iconYPos = this.getContentYMiddle() - 10;
          int removeButtonXPos = this.getContentRight() - this.removeButton.getWidth();
          this.removeButton.setPosition(removeButtonXPos, iconYPos);
-         this.removeButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.removeButton.extractRenderState(graphics);
          int opButtonXPos = removeButtonXPos - this.activeOpButton().getWidth() - 8;
          this.makeOpButton.setPosition(opButtonXPos, iconYPos);
-         this.makeOpButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.makeOpButton.extractRenderState(graphics);
          this.removeOpButton.setPosition(opButtonXPos, iconYPos);
-         this.removeOpButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.removeOpButton.extractRenderState(graphics);
       }
    }
 
@@ -236,7 +236,7 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
          this.invitedWidget = FocusableTextWidget.builder(invitedText, RealmsPlayersTab.this.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          String numberOfInvites = RealmsPlayersTab.this.serverData.players != null ? Integer.toString(RealmsPlayersTab.this.serverData.players.size()) : "0";
          if (!numberOfInvites.equals(this.cachedNumberOfInvites)) {
             this.cachedNumberOfInvites = numberOfInvites;
@@ -245,7 +245,7 @@ public class RealmsPlayersTab extends GridLayoutTab implements RealmsConfigurati
          }
 
          this.invitedWidget.setPosition(RealmsPlayersTab.this.invitedList.getRowLeft() + RealmsPlayersTab.this.invitedList.getRowWidth() / 2 - this.invitedWidget.getWidth() / 2, this.getY() + this.getHeight() / 2 - this.invitedWidget.getHeight() / 2);
-         this.invitedWidget.extractRenderState(graphics, mouseX, mouseY, a);
+         this.invitedWidget.extractRenderState(graphics);
       }
 
       private int height(final int lineHeight) {

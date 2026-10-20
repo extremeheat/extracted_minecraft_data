@@ -1,42 +1,20 @@
 package net.minecraft.world.entity.monster.skeleton;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.BiomeTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Blocks;
 import org.jspecify.annotations.Nullable;
 
 public class Stray extends AbstractSkeleton {
    public Stray(final EntityType<? extends Stray> type, final Level level) {
       super(type, level);
-   }
-
-   public static boolean checkStraySpawnRules(final EntityType<Stray> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
-      boolean canSpawn = Monster.checkMonsterSpawnRules(type, level, spawnReason, pos, random);
-      if (level.getBiome(pos).is(BiomeTags.SPAWNS_STRAYS_WITHOUT_POWDER_SNOW)) {
-         return canSpawn;
-      } else {
-         BlockPos checkSkyPos = pos;
-
-         do {
-            checkSkyPos = checkSkyPos.above();
-         } while(level.getBlockState(checkSkyPos).is(Blocks.POWDER_SNOW));
-
-         return canSpawn && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(checkSkyPos.below()));
-      }
    }
 
    protected SoundEvent getAmbientSound() {

@@ -1,10 +1,10 @@
 package net.minecraft.nbt;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 public class SnbtPrinterTagVisitor implements TagVisitor {
    private static final Map<String, List<String>> KEY_ORDER = Map.of("{}", List.of("DataVersion", "author", "size", "data", "entities", "palette", "palettes"), "{}.data.[].{}", List.of("pos", "state", "nbt"), "{}.entities.[].{}", List.of("blockPos", "pos"));
-   private static final Set<String> NO_INDENTATION = Sets.newHashSet(new String[]{"{}.size.[]", "{}.data.[].{}", "{}.palette.[].{}", "{}.entities.[].{}"});
+   private static final Set<String> NO_INDENTATION = Set.of("{}.size.[]", "{}.data.[].{}", "{}.palette.[].{}", "{}.entities.[].{}");
    private static final Pattern SIMPLE_VALUE = Pattern.compile("[A-Za-z0-9._+-]+");
    private static final String NAME_VALUE_SEPARATOR = String.valueOf(':');
    private static final String ELEMENT_SEPARATOR = String.valueOf(',');
@@ -32,7 +32,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
    private String result;
 
    public SnbtPrinterTagVisitor() {
-      this("    ", 0, Lists.newArrayList());
+      this("    ", 0, new ArrayList());
    }
 
    public SnbtPrinterTagVisitor(final String indentation, final int depth, final List<String> path) {
@@ -195,8 +195,8 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
    }
 
    protected List<String> getKeys(final CompoundTag tag) {
-      Set<String> keys = Sets.newHashSet(tag.keySet());
-      List<String> strings = Lists.newArrayList();
+      Set<String> keys = new HashSet(tag.keySet());
+      List<String> strings = new ArrayList();
       List<String> order = (List)KEY_ORDER.get(this.pathString());
       if (order != null) {
          for(String key : order) {

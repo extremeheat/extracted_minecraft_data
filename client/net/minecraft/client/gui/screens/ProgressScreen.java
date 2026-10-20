@@ -48,14 +48,14 @@ public class ProgressScreen extends Screen implements ProgressListener {
       this.stop = true;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       if (this.stop) {
          if (this.clearScreenAfterStop) {
             this.minecraft.gui.setScreen((Screen)null);
          }
 
       } else {
-         super.extractRenderState(graphics, mouseX, mouseY, a);
+         super.extractRenderState(graphics);
          if (this.header != null) {
             graphics.centeredText(this.font, (Component)this.header, this.width / 2, 70, -1);
          }

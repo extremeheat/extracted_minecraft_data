@@ -1,6 +1,5 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
@@ -47,7 +46,7 @@ public class ServerStatusPinger {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withColor(-65536);
    private static final ResolutionContext DESCRIPTION_SANITIZE_CONTEXT;
-   private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
+   private final List<Connection> connections = Collections.synchronizedList(new ArrayList());
 
    public ServerStatusPinger() {
       super();

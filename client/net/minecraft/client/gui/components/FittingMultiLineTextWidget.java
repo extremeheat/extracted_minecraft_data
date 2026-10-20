@@ -40,10 +40,10 @@ public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
       return super.scrollable();
    }
 
-   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics) {
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)this.getInnerLeft(), (float)this.getInnerTop());
-      this.multilineWidget.extractRenderState(graphics, mouseX, mouseY, a);
+      this.multilineWidget.extractRenderState(graphics);
       graphics.pose().popMatrix();
    }
 

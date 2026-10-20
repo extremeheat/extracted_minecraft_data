@@ -1,6 +1,5 @@
 package net.minecraft.stats;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -23,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -45,7 +45,7 @@ public class ServerStatsCounter extends StatsCounter {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Codec<Map<Stat<?>, Integer>> STATS_CODEC;
    private final Path file;
-   private final Set<Stat<?>> dirty = Sets.newHashSet();
+   private final Set<Stat<?>> dirty = new HashSet();
 
    private static <T> Codec<Map<Stat<?>, Integer>> createTypedStatsCodec(final StatType<T> type) {
       Codec<T> valueCodec = type.getRegistry().byNameCodec();
@@ -124,12 +124,6 @@ public class ServerStatsCounter extends StatsCounter {
       this.dirty.add(stat);
    }
 
-   private Set<Stat<?>> getDirty() {
-      Set<Stat<?>> result = Sets.newHashSet(this.dirty);
-      this.dirty.clear();
-      return result;
-   }
-
    public void parse(final DataFixer fixerUpper, final JsonElement element) {
       Dynamic<JsonElement> data = new Dynamic(JsonOps.INSTANCE, element);
       data = DataFixTypes.STATS.updateToCurrentVersion(fixerUpper, data, NbtUtils.getDataVersion((Dynamic)data, 1343));
@@ -150,10 +144,11 @@ public class ServerStatsCounter extends StatsCounter {
    public void sendStats(final ServerPlayer player) {
       Object2IntMap<Stat<?>> statsToSend = new Object2IntOpenHashMap();
 
-      for(Stat<?> stat : this.getDirty()) {
+      for(Stat<?> stat : this.dirty) {
          statsToSend.put(stat, this.getValue(stat));
       }
 
+      this.dirty.clear();
       player.connection.send(new ClientboundAwardStatsPacket(statsToSend));
    }
 

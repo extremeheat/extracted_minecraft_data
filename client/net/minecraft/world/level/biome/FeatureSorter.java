@@ -1,7 +1,6 @@
 package net.minecraft.world.level.biome;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
@@ -44,7 +43,7 @@ public class FeatureSorter {
       int maxStep = 0;
 
       for(T featureSource : featureSources) {
-         List<FeatureData> featureList = Lists.newArrayList();
+         List<FeatureData> featureList = new ArrayList();
          List<HolderSet<PlacedFeature>> featuresForStep = (List)featureGetter.apply(featureSource);
          maxStep = Math.max(maxStep, featuresForStep.size());
 
@@ -65,7 +64,7 @@ public class FeatureSorter {
 
       Set<FeatureData> discovered = new TreeSet(featureDataComparator);
       Set<FeatureData> currentlyVisiting = new TreeSet(featureDataComparator);
-      List<FeatureData> sortedFeatures = Lists.newArrayList();
+      List<FeatureData> sortedFeatures = new ArrayList();
 
       for(FeatureData feature : edges.keySet()) {
          if (!currentlyVisiting.isEmpty()) {

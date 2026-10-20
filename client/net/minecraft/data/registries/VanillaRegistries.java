@@ -30,8 +30,8 @@ import net.minecraft.gametest.framework.GameTestInstances;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialogs;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.util.Util;
 import net.minecraft.world.clock.WorldClocks;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.SulfurCubeArchetypes;
@@ -96,12 +96,12 @@ public class VanillaRegistries {
                Holder.Reference<PlacedFeature> value = placedFeatures.getOrThrow(key);
                if (!validatePlacedFeature(value.value())) {
                   String var10000 = String.valueOf(key.identifier());
-                  Util.logAndPauseIfInIde("Placed feature " + var10000 + " in biome " + String.valueOf(biomeKey) + " is missing BiomeFilter.biome()");
+                  DevUtil.logAndPauseIfInIde("Placed feature " + var10000 + " in biome " + String.valueOf(biomeKey) + " is missing BiomeFilter.biome()");
                }
 
             }).ifRight((value) -> {
                if (!validatePlacedFeature(value)) {
-                  Util.logAndPauseIfInIde("Placed inline feature in biome " + String.valueOf(biome) + " is missing BiomeFilter.biome()");
+                  DevUtil.logAndPauseIfInIde("Placed inline feature in biome " + String.valueOf(biome) + " is missing BiomeFilter.biome()");
                }
 
             }));

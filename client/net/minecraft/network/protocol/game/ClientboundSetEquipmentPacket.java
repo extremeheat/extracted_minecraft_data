@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -25,7 +25,7 @@ public class ClientboundSetEquipmentPacket implements Packet<ClientGamePacketLis
    private ClientboundSetEquipmentPacket(final RegistryFriendlyByteBuf input) {
       super();
       this.entity = input.readVarInt();
-      this.slots = Lists.newArrayList();
+      this.slots = new ArrayList();
 
       int slotId;
       do {

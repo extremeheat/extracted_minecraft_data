@@ -1,8 +1,8 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.brigadier.context.CommandContext;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -65,8 +65,8 @@ public class TestFinder implements TestInstanceFinder, TestPosFinder {
 
       private static <Q> UnaryOperator<Supplier<Stream<Q>>> createCopies(final int amount) {
          return (source) -> {
-            List<Q> copyList = new LinkedList();
             List<Q> sourceList = ((Stream)source.get()).toList();
+            List<Q> copyList = new ArrayList(amount * sourceList.size());
 
             for(int i = 0; i < amount; ++i) {
                copyList.addAll(sourceList);

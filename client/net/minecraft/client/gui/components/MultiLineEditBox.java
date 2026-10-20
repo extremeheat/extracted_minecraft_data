@@ -120,7 +120,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       return true;
    }
 
-   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics) {
       String value = this.textField.value();
       if (value.isEmpty() && !this.isFocused()) {
          graphics.textWithWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), PLACEHOLDER_TEXT_COLOR);
@@ -203,9 +203,9 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
                      }
 
                      int var10001 = drawX + drawBegin;
-                     int var29 = drawX + drawEnd;
+                     int var26 = drawX + drawEnd;
                      Objects.requireNonNull(this.font);
-                     graphics.textHighlight(var10001, drawTop, var29, drawTop + 9, true);
+                     graphics.textHighlight(var10001, drawTop, var26, drawTop + 9, true);
                   }
 
                   Objects.requireNonNull(this.font);
@@ -221,9 +221,9 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          if (this.preeditOverlay == null) {
             if (this.capturesInput()) {
                TextInputManager var10000 = Minecraft.getInstance().textInputManager();
-               int var30 = cursorX + 1;
+               int var27 = cursorX + 1;
                Objects.requireNonNull(this.font);
-               var10000.setTextInputArea(cursorX, cursorY, var30, cursorY + 9 + 1);
+               var10000.setTextInputArea(cursorX, cursorY, var27, cursorY + 9 + 1);
             }
          } else {
             this.preeditOverlay.updateInputPosition(cursorX, cursorY);

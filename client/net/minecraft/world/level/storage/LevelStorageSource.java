@@ -1,6 +1,5 @@
 package net.minecraft.world.level.storage;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -24,6 +23,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -434,7 +434,7 @@ public class LevelStorageSource {
       private LevelStorageAccess(final String levelId, final Path path) throws IOException {
          Objects.requireNonNull(LevelStorageSource.this);
          super();
-         this.resources = Maps.newHashMap();
+         this.resources = new HashMap();
          this.levelId = levelId;
          this.levelDirectory = new LevelDirectory(path);
          this.createLock();

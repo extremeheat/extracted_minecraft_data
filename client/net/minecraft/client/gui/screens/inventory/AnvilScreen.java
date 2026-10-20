@@ -3,7 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -86,8 +86,8 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       }
    }
 
-   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
-      super.extractLabels(graphics, xm, ym);
+   protected void extractLabels(final GuiGraphicsExtractor graphics) {
+      super.extractLabels(graphics);
       int cost = ((AnvilMenu)this.menu).getCost();
       if (cost > 0) {
          int color = -8323296;
@@ -114,8 +114,8 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)(((AnvilMenu)this.menu).getSlot(0).hasItem() ? TEXT_FIELD_SPRITE : TEXT_FIELD_DISABLED_SPRITE), this.leftPos + 59, this.topPos + 20, 110, 16);
    }
 

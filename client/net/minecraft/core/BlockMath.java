@@ -1,8 +1,8 @@
 package net.minecraft.core;
 
-import com.google.common.collect.Maps;
 import com.mojang.math.MatrixUtil;
 import com.mojang.math.Transformation;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.util.Util;
 import org.joml.Matrix4f;
@@ -46,7 +46,7 @@ public class BlockMath {
    }
 
    static {
-      VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = Maps.newEnumMap(Map.of(Direction.SOUTH, Transformation.IDENTITY, Direction.EAST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.WEST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.NORTH, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3fc)null, (Quaternionfc)null), Direction.UP, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.DOWN, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3fc)null, (Quaternionfc)null)));
-      VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = Maps.newEnumMap(Util.mapValues(VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL, Transformation::inverse));
+      VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = new EnumMap(Map.of(Direction.SOUTH, Transformation.IDENTITY, Direction.EAST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.WEST, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.NORTH, new Transformation((Vector3fc)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3fc)null, (Quaternionfc)null), Direction.UP, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3fc)null, (Quaternionfc)null), Direction.DOWN, new Transformation((Vector3fc)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3fc)null, (Quaternionfc)null)));
+      VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = new EnumMap(Util.mapValues(VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL, Transformation::inverse));
    }
 }

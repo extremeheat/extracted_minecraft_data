@@ -1,12 +1,9 @@
 package net.minecraft.world.level.material;
 
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -16,8 +13,6 @@ import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.InsideBlockEffectType;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -27,18 +22,15 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
-import org.jspecify.annotations.Nullable;
 
 public class LavaFluid extends FlowingFluid {
    public static final int LIGHT_EMISSION = 15;
    public static final float MIN_LEVEL_CUTOFF = 0.44444445F;
+   private static final double FAST_FLOW_SCALE = 0.007;
+   private static final double SLOW_FLOW_SCALE = 0.0023333333333333335;
 
-   public LavaFluid() {
-      super();
-   }
-
-   public Item getBucket() {
-      return Items.LAVA_BUCKET;
+   public LavaFluid(final Fluid.Properties properties) {
+      super(properties);
    }
 
    public void animateTick(final Level level, final BlockPos pos, final FluidState fluidState, final RandomSource random) {
@@ -103,6 +95,10 @@ public class LavaFluid extends FlowingFluid {
       effectApplier.runAfter(InsideBlockEffectType.LAVA_IGNITE, Entity::lavaHurt);
    }
 
+   public double getFlowScale(final Level level) {
+      return (Boolean)level.environmentAttributes().getDimensionValue(EnvironmentAttributes.FAST_LAVA) ? 0.007 : 0.0023333333333333335;
+   }
+
    private boolean hasFlammableNeighbours(final LevelReader level, final BlockPos pos) {
       for(Direction direction : Direction.values()) {
          if (this.isFlammable(level, pos.relative(direction))) {
@@ -115,10 +111,6 @@ public class LavaFluid extends FlowingFluid {
 
    private boolean isFlammable(final LevelReader level, final BlockPos pos) {
       return level.isInsideBuildHeight(pos.getY()) && !level.hasChunkAt(pos) ? false : level.getBlockState(pos).ignitedByLava();
-   }
-
-   public @Nullable ParticleOptions getDripParticle() {
-      return ParticleTypes.DRIPPING_LAVA;
    }
 
    protected void beforeDestroyingBlock(final LevelAccessor level, final BlockPos pos, final BlockState state) {
@@ -176,18 +168,6 @@ public class LavaFluid extends FlowingFluid {
       }
 
       super.spreadTo(level, pos, state, direction, target);
-   }
-
-   protected boolean isRandomlyTicking() {
-      return true;
-   }
-
-   protected float getExplosionResistance() {
-      return 100.0F;
-   }
-
-   public Optional<SoundEvent> getPickupSound() {
-      return Optional.of(SoundEvents.BUCKET_FILL_LAVA);
    }
 
    private static boolean isFastLava(final LevelReader level) {

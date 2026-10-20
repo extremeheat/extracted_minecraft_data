@@ -1,9 +1,9 @@
 package net.minecraft.client;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,8 +18,8 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public class KeyMapping implements Comparable<KeyMapping> {
-   private static final Map<String, KeyMapping> ALL = Maps.newHashMap();
-   private static final Map<InputConstants.Key, List<KeyMapping>> MAP = Maps.newHashMap();
+   private static final Map<String, KeyMapping> ALL = new HashMap();
+   private static final Map<InputConstants.Key, List<KeyMapping>> MAP = new HashMap();
    private final String name;
    private final InputConstants.Key defaultKey;
    private final Category category;

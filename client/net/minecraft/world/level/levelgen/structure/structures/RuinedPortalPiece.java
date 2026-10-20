@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -84,7 +84,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
       HolderLookup.RegistryLookup<Block> blocks = registries.lookupOrThrow(Registries.BLOCK);
       BlockIgnoreProcessor ignoreProcessor = properties.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
-      List<ProcessorRule> rules = Lists.newArrayList();
+      List<ProcessorRule> rules = new ArrayList();
       rules.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));
       rules.add(getLavaProcessorRule(verticalPlacement, properties));
       if (!properties.cold) {

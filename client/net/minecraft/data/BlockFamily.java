@@ -1,6 +1,6 @@
 package net.minecraft.data;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.util.StringUtil;
@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 public class BlockFamily {
    private final Block baseBlock;
-   private final Map<Variant, Block> variants = Maps.newHashMap();
+   private final Map<Variant, Block> variants = new HashMap();
    private boolean generateModel = true;
    private boolean generateCraftingRecipe = true;
    private boolean generateSmeltingRecipe = true;

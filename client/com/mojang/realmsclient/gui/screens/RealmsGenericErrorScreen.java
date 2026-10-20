@@ -53,8 +53,8 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       return CommonComponents.joinForNarration(super.getNarrationMessage(), this.detail);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 80, -1);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       MultiLineLabel var10000 = this.splitDetail;

@@ -40,7 +40,7 @@ public interface CaveVines {
    }
 
    static boolean hasGlowBerries(final BlockState state) {
-      return state.hasProperty(BERRIES) && (Boolean)state.getValue(BERRIES);
+      return (Boolean)state.getValueOrElse(BERRIES, false);
    }
 
    static ToIntFunction<BlockState> emission(final int lightEmission) {

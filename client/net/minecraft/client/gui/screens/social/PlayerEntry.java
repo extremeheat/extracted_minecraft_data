@@ -25,8 +25,8 @@ public class PlayerEntry extends FriendEntry {
       this(minecraft, socialInteractionsScreen, id, playerName, visibility, skinGetter, chatReportable, new MutableBoolean());
    }
 
-   protected void extractPlayerFace(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractPlayerFace(graphics, mouseX, mouseY, a);
+   protected void extractPlayerFace(final GuiGraphicsExtractor graphics) {
+      super.extractPlayerFace(graphics);
       if (this.isRemoved) {
          int skinX = this.playerFaceWidget.getX() + 1;
          int skinY = this.playerFaceWidget.getY() + 1;

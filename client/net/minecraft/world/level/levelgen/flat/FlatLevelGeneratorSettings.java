@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.flat;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -74,10 +74,10 @@ public class FlatLevelGeneratorSettings {
 
    public FlatLevelGeneratorSettings(final Optional<HolderSet<StructureSet>> structureOverrides, final Holder<Biome> biome, final List<Holder<PlacedFeature>> lakes) {
       super();
-      this.layersInfo = Lists.newArrayList();
+      this.layersInfo = new ArrayList();
       this.structureOverrides = structureOverrides;
       this.biome = biome;
-      this.layers = Lists.newArrayList();
+      this.layers = new ArrayList();
       this.lakes = lakes;
    }
 

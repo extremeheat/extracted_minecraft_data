@@ -19,7 +19,6 @@ public class AmbientDesertBlockSoundsPlayer {
    private static final int SURROUNDING_BLOCKS_PLAY_SOUND_THRESHOLD = 3;
    private static final int SURROUNDING_BLOCKS_DISTANCE_HORIZONTAL_CHECK = 8;
    private static final int SURROUNDING_BLOCKS_DISTANCE_VERTICAL_CHECK = 5;
-   private static final int HORIZONTAL_DIRECTIONS = 4;
 
    public AmbientDesertBlockSoundsPlayer() {
       super();
@@ -60,29 +59,11 @@ public class AmbientDesertBlockSoundsPlayer {
    }
 
    private static boolean shouldPlayAmbientSandSound(final Level level, final BlockPos pos) {
-      int matchingBlocksFound = 0;
-      int sidesChecked = 0;
-      BlockPos.MutableBlockPos mutablePos = pos.mutable();
-
-      for(Direction dir : Direction.Plane.HORIZONTAL) {
-         mutablePos.set(pos).move(dir, 8);
-         if (columnContainsTriggeringBlock(level, mutablePos) && matchingBlocksFound++ >= 3) {
-            return true;
-         }
-
-         ++sidesChecked;
-         int remainingSides = 4 - sidesChecked;
-         int potentialMatches = remainingSides + matchingBlocksFound;
-         boolean canStillFindRequiredSoundTriggerBlocks = potentialMatches >= 3;
-         if (!canStillFindRequiredSoundTriggerBlocks) {
-            return false;
-         }
-      }
-
-      return false;
+      return level.findBlocksIn(BlockPos.horizontalAtDistance(pos, 8)).filterPos((surroundingPos) -> columnContainsTriggeringBlock(level, surroundingPos)).atLeastMatched(3);
    }
 
-   private static boolean columnContainsTriggeringBlock(final Level level, final BlockPos.MutableBlockPos mutablePos) {
+   private static boolean columnContainsTriggeringBlock(final Level level, final BlockPos pos) {
+      BlockPos.MutableBlockPos mutablePos = pos.mutable();
       int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, mutablePos) - 1;
       if (Math.abs(surfaceY - mutablePos.getY()) > 5) {
          mutablePos.move(Direction.UP, 6);

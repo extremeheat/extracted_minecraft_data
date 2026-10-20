@@ -4,7 +4,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.RandomSource;
+import java.util.Random;
 
 public class EntityZombieVillagerTypeFix extends NamedEntityFix {
    private static final int PROFESSION_MAX = 6;
@@ -18,7 +18,7 @@ public class EntityZombieVillagerTypeFix extends NamedEntityFix {
          if (input.get("ZombieType").result().isEmpty()) {
             int type = this.getVillagerProfession(input.get("VillagerProfession").asInt(-1));
             if (type == -1) {
-               type = this.getVillagerProfession(RandomSource.createThreadLocalInstance().nextInt(6));
+               type = this.getVillagerProfession((new Random()).nextInt(6));
             }
 
             input = input.set("ZombieType", input.createInt(type));

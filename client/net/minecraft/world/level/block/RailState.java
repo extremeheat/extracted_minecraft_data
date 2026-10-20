@@ -1,6 +1,6 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,7 +15,7 @@ public class RailState {
    private final BaseRailBlock block;
    private BlockState state;
    private final boolean isStraight;
-   private final List<BlockPos> connections = Lists.newArrayList();
+   private final List<BlockPos> connections = new ArrayList();
 
    public RailState(final Level level, final BlockPos pos, final BlockState state) {
       super();

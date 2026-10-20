@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -111,7 +111,7 @@ public class ShulkerBullet extends Projectile {
       Direction selection = null;
       if (!targetPos.closerToCenterThan(this.position(), 2.0)) {
          BlockPos current = this.blockPosition();
-         List<Direction> options = Lists.newArrayList();
+         List<Direction> options = new ArrayList();
          if (avoidAxis != Direction.Axis.X) {
             if (current.getX() < targetPos.getX() && this.level().isEmptyBlock(current.east())) {
                options.add(Direction.EAST);

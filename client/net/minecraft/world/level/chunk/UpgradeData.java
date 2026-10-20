@@ -1,14 +1,14 @@
 package net.minecraft.world.level.chunk;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +58,8 @@ public class UpgradeData {
    private UpgradeData(final LevelHeightAccessor levelHeightAccessor) {
       super();
       this.sides = EnumSet.noneOf(CompositeDirection.Direction8.class);
-      this.neighborBlockTicks = Lists.newArrayList();
-      this.neighborFluidTicks = Lists.newArrayList();
+      this.neighborBlockTicks = new ArrayList();
+      this.neighborFluidTicks = new ArrayList();
       this.index = new int[levelHeightAccessor.getSectionsCount()][];
    }
 
@@ -92,8 +92,8 @@ public class UpgradeData {
    private UpgradeData(final UpgradeData source) {
       super();
       this.sides = EnumSet.noneOf(CompositeDirection.Direction8.class);
-      this.neighborBlockTicks = Lists.newArrayList();
-      this.neighborFluidTicks = Lists.newArrayList();
+      this.neighborBlockTicks = new ArrayList();
+      this.neighborFluidTicks = new ArrayList();
       this.sides.addAll(source.sides);
       this.neighborBlockTicks.addAll(source.neighborBlockTicks);
       this.neighborFluidTicks.addAll(source.neighborFluidTicks);
@@ -262,7 +262,7 @@ public class UpgradeData {
       BLOCK_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.BLOCK.byNameCodec().orElse(Blocks.AIR)).listOf();
       FLUID_TICKS_CODEC = SavedTick.codec(BuiltInRegistries.FLUID.byNameCodec().orElse(Fluids.EMPTY)).listOf();
       MAP = new IdentityHashMap();
-      CHUNKY_FIXERS = Sets.newHashSet();
+      CHUNKY_FIXERS = new HashSet();
    }
 
    public interface BlockFixer {
@@ -310,7 +310,7 @@ public class UpgradeData {
          }
       },
       LEAVES(true, new Block[]{Blocks.ACACIA_LEAVES, Blocks.CHERRY_LEAVES, Blocks.BIRCH_LEAVES, Blocks.PALE_OAK_LEAVES, Blocks.RED_POPLAR_LEAVES, Blocks.ORANGE_POPLAR_LEAVES, Blocks.YELLOW_POPLAR_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.OAK_LEAVES, Blocks.SPRUCE_LEAVES}) {
-         private final ThreadLocal<List<ObjectSet<BlockPos>>> queue = ThreadLocal.withInitial(() -> Lists.newArrayListWithCapacity(7));
+         private final ThreadLocal<List<ObjectSet<BlockPos>>> queue = ThreadLocal.withInitial(() -> new ArrayList(7));
 
          public BlockState updateShape(final BlockState state, final Direction direction, final BlockState neighbour, final LevelAccessor level, final BlockPos pos, final BlockPos neighbourPos) {
             BlockState newState = state.updateShape(level, level, pos, direction, neighbourPos, level.getBlockState(neighbourPos), level.getRandom());

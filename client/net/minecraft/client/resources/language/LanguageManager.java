@@ -1,9 +1,9 @@
 package net.minecraft.client.resources.language;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +39,7 @@ public class LanguageManager implements ResourceManagerReloadListener {
    }
 
    private static Map<String, LanguageInfo> extractLanguages(final Stream<PackResources> resourcePacks) {
-      Map<String, LanguageInfo> result = Maps.newHashMap();
+      Map<String, LanguageInfo> result = new HashMap();
       resourcePacks.forEach((resourcePack) -> {
          try {
             LanguageMetadataSection languageMetadataSection = (LanguageMetadataSection)resourcePack.getMetadataSection(LanguageMetadataSection.TYPE);

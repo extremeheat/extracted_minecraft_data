@@ -1,10 +1,10 @@
 package net.minecraft.server.level;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -13,7 +13,7 @@ import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.world.BossEvent;
 
 public class ServerBossEvent extends BossEvent {
-   private final Set<ServerPlayer> players = Sets.newHashSet();
+   private final Set<ServerPlayer> players = new HashSet();
    private final Set<ServerPlayer> unmodifiablePlayers;
    private boolean visible;
 
@@ -116,7 +116,7 @@ public class ServerBossEvent extends BossEvent {
 
    public void removeAllPlayers() {
       if (!this.players.isEmpty()) {
-         for(ServerPlayer player : Lists.newArrayList(this.players)) {
+         for(ServerPlayer player : new ArrayList(this.players)) {
             this.removePlayer(player);
          }
       }

@@ -22,8 +22,8 @@ import net.minecraft.client.gui.screens.friends.PlayerProfileWidget;
 import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -293,9 +293,9 @@ public class PlayerOptionsScreen extends Screen {
       graphics.blit(RenderPipelines.GUI_TEXTURED, menuListBackground, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight()), this.width, this.layout.getContentHeight(), 32, 32);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       this.playerRenderState.skin = (PlayerSkin)this.skinGetter.get();
-      super.extractRenderState(graphics, xm, ym, a);
+      super.extractRenderState(graphics);
       this.extractListSeparators(graphics, this.layout, 2);
    }
 

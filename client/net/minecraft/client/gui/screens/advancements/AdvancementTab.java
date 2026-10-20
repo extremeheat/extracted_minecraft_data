@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -26,7 +26,7 @@ public class AdvancementTab {
    private final ItemStack icon;
    private final Component title;
    private final AdvancementWidget root;
-   private final Map<AdvancementHolder, AdvancementWidget> widgets = Maps.newLinkedHashMap();
+   private final Map<AdvancementHolder, AdvancementWidget> widgets = new LinkedHashMap();
    private double scrollX;
    private double scrollY;
    private int minX = 2147483647;
@@ -102,11 +102,11 @@ public class AdvancementTab {
 
    }
 
-   public void extractTab(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int mouseX, final int mouseY, final boolean selected) {
+   public void extractTab(final GuiGraphicsExtractor graphics, final int xo, final int yo, final boolean selected) {
       int tabX = xo + this.type.getX(this.index);
       int tabY = yo + this.type.getY(this.index);
       this.type.extractRenderState(graphics, tabX, tabY, selected, this.index);
-      if (!selected && mouseX > tabX && mouseY > tabY && mouseX < tabX + this.type.getWidth() && mouseY < tabY + this.type.getHeight()) {
+      if (!selected && graphics.mouseX() > tabX && graphics.mouseY() > tabY && graphics.mouseX() < tabX + this.type.getWidth() && graphics.mouseY() < tabY + this.type.getHeight()) {
          graphics.requestCursor(CursorTypes.POINTING_HAND);
       }
 

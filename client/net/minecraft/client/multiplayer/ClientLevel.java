@@ -1,10 +1,6 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -12,8 +8,11 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -21,10 +20,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
@@ -157,9 +158,9 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
    private final TickRateManager tickRateManager;
    private final @Nullable EndFlashState endFlashState;
    private final Minecraft minecraft = Minecraft.getInstance();
-   private final List<AbstractClientPlayer> players = Lists.newArrayList();
-   private final List<EnderDragonPart> dragonParts = Lists.newArrayList();
-   private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
+   private final List<AbstractClientPlayer> players = new ArrayList();
+   private final List<EnderDragonPart> dragonParts = new ArrayList();
+   private final Map<MapId, MapItemSavedData> mapData = new HashMap();
    private int skyFlashTime;
    private int rainSoundTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (cache) -> {
@@ -169,7 +170,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       cache.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((pos) -> this.calculateBlockTint(pos, BiomeColors.WATER_COLOR_RESOLVER)));
    });
    private final ClientChunkCache chunkSource;
-   private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
+   private final Deque<Runnable> lightUpdateQueue = new ArrayDeque();
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private final Set<BlockEntity> globallyRenderedBlockEntities = new ReferenceOpenHashSet();
@@ -759,7 +760,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
 
          entry.setProgress(progress);
          entry.updateTick(this.getGameTime());
-         ((SortedSet)this.destructionProgress.computeIfAbsent(entry.getPos().asLong(), (k) -> Sets.newTreeSet())).add(entry);
+         ((SortedSet)this.destructionProgress.computeIfAbsent(entry.getPos().asLong(), (k) -> new TreeSet())).add(entry);
       } else {
          BlockDestructionProgress removed = (BlockDestructionProgress)this.destroyingBlocks.remove(id);
          if (removed != null) {
@@ -779,7 +780,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       } catch (Throwable t) {
          CrashReport report = CrashReport.forThrowable(t, "Playing level event");
          CrashReportCategory category = report.addCategory("Level event being played");
-         category.setDetail("Block coordinates", CrashReportCategory.formatLocation(this, pos));
+         category.setDetail("Block coordinates", CrashReportUtil.formatLocation(this, pos));
          category.setDetail("Event source", source);
          category.setDetail("Event type", type);
          category.setDetail("Event data", data);
@@ -819,7 +820,7 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
          CrashReportCategory category = report.addCategory("Particle being added");
          category.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(particle.getType()));
          category.setDetail("Parameters", (CrashReportDetail)(() -> ParticleTypes.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), particle).toString()));
-         category.setDetail("Position", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, x, y, z)));
+         category.setDetail("Position", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
          throw new ReportedException(report);
       }
    }

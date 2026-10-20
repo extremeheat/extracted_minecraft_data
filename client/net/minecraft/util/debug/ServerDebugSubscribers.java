@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
+import net.minecraft.util.DevUtil;
 
 public class ServerDebugSubscribers {
    private final MinecraftServer server;
@@ -53,6 +53,6 @@ public class ServerDebugSubscribers {
 
    public boolean hasRequiredPermissions(final ServerPlayer player) {
       NameAndId nameAndId = player.nameAndId();
-      return SharedConstants.IS_RUNNING_IN_IDE && this.server.isSingleplayerOwner(nameAndId) ? true : this.server.getPlayerList().isOp(nameAndId);
+      return DevUtil.IS_RUNNING_IN_IDE && this.server.isSingleplayerOwner(nameAndId) ? true : this.server.getPlayerList().isOp(nameAndId);
    }
 }

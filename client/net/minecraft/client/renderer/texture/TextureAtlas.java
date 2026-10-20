@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;

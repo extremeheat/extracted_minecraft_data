@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens.options;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.MacosUtil;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,6 +24,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class VideoSettingsScreen extends OptionsSubScreen {
@@ -51,7 +52,11 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    private static OptionInstance<?>[] displayOptions(final Options options) {
-      List<OptionInstance<?>> result = Lists.newArrayList(new OptionInstance[]{options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma(), options.preferredGraphicsBackend()});
+      List<OptionInstance<?>> result = new ArrayList(List.of(options.framerateLimit(), options.enableVsync(), options.inactivityFpsLimit(), options.guiScale(), options.fullscreen(), options.exclusiveFullscreen(), options.gamma(), options.preferredGraphicsBackend()));
+      if (Util.getPlatform() == Util.OS.WINDOWS) {
+         result.add(options.preferDXGIPresent());
+      }
+
       if (MacosUtil.IS_MACOS) {
          result.add(options.macFullscreenMenuVisibility());
       }
@@ -164,7 +169,9 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (super.mouseClicked(event, doubleClick)) {
          if (this.gpuWarnlistManager.isShowingWarning()) {
-            List<Component> warningMessage = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
+            List<Component> warningMessage = new ArrayList();
+            warningMessage.add(WARNING_MESSAGE);
+            warningMessage.add(CommonComponents.NEW_LINE);
             String rendererWarnings = this.gpuWarnlistManager.getRendererWarnings();
             if (rendererWarnings != null) {
                warningMessage.add(CommonComponents.NEW_LINE);

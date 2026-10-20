@@ -91,8 +91,8 @@ public class RealmsInviteScreen extends RealmsScreen {
       this.minecraft.gui.setScreen(this.configureScreen);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       if (this.message != null && this.inviteButton != null) {
          graphics.centeredText(this.font, (Component)this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
       }

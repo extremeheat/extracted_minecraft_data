@@ -146,7 +146,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
             this.language = language.toComponent();
          }
 
-         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
             Font var10001 = LanguageSelectScreen.this.font;
             Component var10002 = this.language;
             int var10003 = LanguageSelectionList.this.width / 2;

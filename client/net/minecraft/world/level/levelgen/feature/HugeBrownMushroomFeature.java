@@ -38,11 +38,7 @@ public record HugeBrownMushroomFeature(Holder<BlockStateProvider> capProvider, H
                boolean east = maxX || zEdge && dx == this.foliageRadius - 1;
                boolean north = minZ || xEdge && dz == 1 - this.foliageRadius;
                boolean south = maxZ || xEdge && dz == this.foliageRadius - 1;
-               BlockState state = ((BlockStateProvider)this.capProvider.value()).getState(level, random, origin);
-               if (state.hasProperty(HugeMushroomBlock.WEST) && state.hasProperty(HugeMushroomBlock.EAST) && state.hasProperty(HugeMushroomBlock.NORTH) && state.hasProperty(HugeMushroomBlock.SOUTH)) {
-                  state = (BlockState)((BlockState)((BlockState)((BlockState)state.setValue(HugeMushroomBlock.WEST, west)).setValue(HugeMushroomBlock.EAST, east)).setValue(HugeMushroomBlock.NORTH, north)).setValue(HugeMushroomBlock.SOUTH, south);
-               }
-
+               BlockState state = (BlockState)((BlockState)((BlockState)((BlockState)((BlockStateProvider)this.capProvider.value()).getState(level, random, origin).trySetValue(HugeMushroomBlock.WEST, west)).trySetValue(HugeMushroomBlock.EAST, east)).trySetValue(HugeMushroomBlock.NORTH, north)).trySetValue(HugeMushroomBlock.SOUTH, south);
                this.placeMushroomBlock(level, blockPos, state);
             }
          }

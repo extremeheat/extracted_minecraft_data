@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -241,7 +239,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
       NORTH = BlockStateProperties.NORTH_WALL;
       SOUTH = BlockStateProperties.SOUTH_WALL;
       WEST = BlockStateProperties.WEST_WALL;
-      PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Maps.newEnumMap(Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST)));
+      PROPERTY_BY_DIRECTION = Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST);
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       TEST_SHAPE_POST = Block.column(2.0, 0.0, 16.0);
       TEST_SHAPES_WALL = Shapes.rotateHorizontal(Block.boxZ(2.0, 16.0, 0.0, 9.0));

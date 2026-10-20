@@ -6,8 +6,8 @@ import java.nio.IntBuffer;
 import java.util.HexFormat;
 import java.util.OptionalLong;
 import java.util.Set;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.debug.DebugFact;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.openal.AL;
@@ -299,7 +299,7 @@ public class Library {
 
       public @Nullable Channel acquire() {
          if (this.activeChannels.size() >= this.limit) {
-            if (SharedConstants.IS_RUNNING_IN_IDE) {
+            if (DevUtil.IS_RUNNING_IN_IDE) {
                Library.LOGGER.warn("Maximum sound pool size {} reached", this.limit);
             }
 

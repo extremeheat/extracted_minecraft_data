@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -261,7 +262,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
          var10002 = this.level.getBlockState(this.worldPosition);
          Objects.requireNonNull(var10002);
          category.setDetail("Actual block", var10002::toString);
-         CrashReportCategory.populateBlockLocationDetails(category, this.level, this.worldPosition);
+         CrashReportUtil.populateBlockLocationDetails(category, this.level, this.worldPosition);
       }
 
    }

@@ -1,8 +1,8 @@
 package net.minecraft.util;
 
-import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,7 +45,7 @@ public class CsvOutput {
    }
 
    public static class Builder {
-      private final List<String> headers = Lists.newArrayList();
+      private final List<String> headers = new ArrayList();
 
       public Builder() {
          super();

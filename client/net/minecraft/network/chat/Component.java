@@ -1,6 +1,5 @@
 package net.minecraft.network.chat;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.Message;
 import com.mojang.datafixers.util.Either;
 import java.net.URI;
@@ -111,7 +110,7 @@ public interface Component extends Message, FormattedText {
    }
 
    default List<Component> toFlatList(final Style rootStyle) {
-      List<Component> result = Lists.newArrayList();
+      List<Component> result = new ArrayList();
       this.visit((style, contents) -> {
          if (!contents.isEmpty()) {
             result.add(literal(contents).withStyle(style));

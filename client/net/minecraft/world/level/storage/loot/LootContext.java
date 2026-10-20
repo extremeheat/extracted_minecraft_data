@@ -1,6 +1,6 @@
 package net.minecraft.world.level.storage.loot;
 
-import com.google.common.collect.Sets;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class LootContext {
    private final LootParams params;
    private final RandomSource random;
    private final HolderGetter.Provider lootDataResolver;
-   private final Set<VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
+   private final Set<VisitedEntry<?>> visitedElements = new LinkedHashSet();
 
    private LootContext(final LootParams params, final RandomSource random, final HolderGetter.Provider lootDataResolver) {
       super();

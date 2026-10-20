@@ -2,7 +2,6 @@ package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
@@ -22,6 +21,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +77,7 @@ public class LeavesFix extends DataFix {
                   if (sectionMap.values().stream().allMatch(Section::isSkippable)) {
                      return sections;
                   } else {
-                     List<IntSet> queue = Lists.newArrayList();
+                     List<IntSet> queue = new ArrayList();
 
                      for(int i = 0; i < 7; ++i) {
                         queue.add(new IntOpenHashSet());

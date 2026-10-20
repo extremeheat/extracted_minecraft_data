@@ -1,18 +1,19 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -42,6 +43,7 @@ import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 public record TreeFeature(Holder<BlockStateProvider> trunkProvider, TrunkPlacer trunkPlacer, Holder<BlockStateProvider> foliageProvider, FoliagePlacer foliagePlacer, Optional<RootPlacer> rootPlacer, FeatureSize minimumSize, List<TreeDecorator> decorators, boolean ignoreVines, Holder<BlockStateProvider> belowTrunkProvider) implements Feature {
    public static final MapCodec<TreeFeature> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter(TreeFeature::trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter(TreeFeature::trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter(TreeFeature::foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter(TreeFeature::foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter(TreeFeature::rootPlacer), FeatureSize.CODEC.fieldOf("minimum_size").forGetter(TreeFeature::minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter(TreeFeature::decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter(TreeFeature::ignoreVines), BlockStateProvider.CODEC.fieldOf("below_trunk_provider").forGetter(TreeFeature::belowTrunkProvider)).apply(i, TreeFeature::new));
    private static final @Block.UpdateFlags int BLOCK_UPDATE_FLAGS = 19;
+   private static final Direction[] DIRECTIONS = Direction.values();
 
    public TreeFeature {
       super();
@@ -118,12 +120,12 @@ public record TreeFeature(Holder<BlockStateProvider> trunkProvider, TrunkPlacer 
    }
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
-      Set<BlockPos> rootPositions = Sets.newHashSet();
-      Set<BlockPos> trunks = Sets.newHashSet();
-      final Set<BlockPos> foliage = Sets.newHashSet();
-      Set<BlockPos> decorations = Sets.newHashSet();
+      Set<BlockPos> roots = new HashSet();
+      Set<BlockPos> trunks = new HashSet();
+      final Set<BlockPos> foliage = new HashSet();
+      Set<BlockPos> decorations = new HashSet();
       BiConsumer<BlockPos, BlockState> rootSetter = (pos, state) -> {
-         rootPositions.add(pos.immutable());
+         roots.add(pos.immutable());
          level.setBlock(pos, state, 19);
       };
       BiConsumer<BlockPos, BlockState> trunkSetter = (pos, state) -> {
@@ -151,12 +153,12 @@ public record TreeFeature(Holder<BlockStateProvider> trunkProvider, TrunkPlacer 
       boolean result = this.doPlace(level, random, origin, rootSetter, trunkSetter, foliageSetter);
       if (result && (!trunks.isEmpty() || !foliage.isEmpty())) {
          if (!this.decorators.isEmpty()) {
-            TreeDecorator.Context decoratorContext = new TreeDecorator.Context(level, decorationSetter, random, trunks, foliage, rootPositions);
+            TreeDecorator.Context decoratorContext = new TreeDecorator.Context(level, decorationSetter, random, trunks, foliage, roots);
             this.decorators.forEach((decorator) -> decorator.place(decoratorContext));
          }
 
-         return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(rootPositions, trunks, foliage, decorations)).map((bounds) -> {
-            DiscreteVoxelShape shape = updateLeaves(level, bounds, trunks, decorations, rootPositions);
+         return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(roots, trunks, foliage, decorations)).map((bounds) -> {
+            DiscreteVoxelShape shape = updateLeaves(level, bounds, trunks, decorations, roots);
             StructureTemplate.updateShapeAtEdge(level, 3, shape, bounds.minX(), bounds.minY(), bounds.minZ());
             return true;
          }).orElse(false);
@@ -165,70 +167,59 @@ public record TreeFeature(Holder<BlockStateProvider> trunkProvider, TrunkPlacer 
       }
    }
 
-   private static DiscreteVoxelShape updateLeaves(final LevelAccessor level, final BoundingBox bounds, final Set<BlockPos> logs, final Set<BlockPos> decorationSet, final Set<BlockPos> rootPositions) {
-      DiscreteVoxelShape shape = new BitSetDiscreteVoxelShape(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan());
-      int maxDistance = 7;
-      List<Set<BlockPos>> toCheck = Lists.newArrayList();
-
-      for(int i = 0; i < 7; ++i) {
-         toCheck.add(Sets.newHashSet());
-      }
-
-      for(BlockPos pos : Lists.newArrayList(Sets.union(decorationSet, rootPositions))) {
-         if (bounds.isInside(pos)) {
-            shape.fill(pos.getX() - bounds.minX(), pos.getY() - bounds.minY(), pos.getZ() - bounds.minZ());
-         }
-      }
-
+   private static DiscreteVoxelShape updateLeaves(final LevelAccessor level, final BoundingBox bounds, final Set<BlockPos> logs, final Set<BlockPos> decorations, final Set<BlockPos> roots) {
+      DiscreteVoxelShape updatedShape = new BitSetDiscreteVoxelShape(bounds.getXSpan(), bounds.getYSpan(), bounds.getZSpan());
+      Consumer<BlockPos> fillShape = (posx) -> updatedShape.fill(posx.getX() - bounds.minX(), posx.getY() - bounds.minY(), posx.getZ() - bounds.minZ());
+      logs.forEach(fillShape);
+      decorations.forEach(fillShape);
+      roots.forEach(fillShape);
+      BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
       BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
-      int smallestDistance = 0;
-      ((Set)toCheck.get(0)).addAll(logs);
+      int distance = 0;
+      LongArrayList blocksToCheck = new LongArrayList(logs.size());
 
-      while(true) {
-         while(smallestDistance >= 7 || !((Set)toCheck.get(smallestDistance)).isEmpty()) {
-            if (smallestDistance >= 7) {
-               return shape;
-            }
+      for(BlockPos log : logs) {
+         blocksToCheck.add(log.asLong());
+      }
 
-            Iterator<BlockPos> iterator = ((Set)toCheck.get(smallestDistance)).iterator();
-            BlockPos pos = (BlockPos)iterator.next();
-            iterator.remove();
-            if (bounds.isInside(pos)) {
-               if (smallestDistance != 0) {
-                  BlockState state = level.getBlockState(pos);
-                  setBlockKnownShape(level, pos, (BlockState)state.setValue(BlockStateProperties.DISTANCE, smallestDistance));
-               }
+      LongArrayList nextBlocksToCheck = new LongArrayList();
 
-               shape.fill(pos.getX() - bounds.minX(), pos.getY() - bounds.minY(), pos.getZ() - bounds.minZ());
+      while(!blocksToCheck.isEmpty() || !nextBlocksToCheck.isEmpty()) {
+         if (blocksToCheck.isEmpty()) {
+            blocksToCheck.addAll(nextBlocksToCheck);
+            nextBlocksToCheck.clear();
+            ++distance;
+         }
 
-               for(Direction direction : Direction.values()) {
-                  neighborPos.setWithOffset(pos, (Direction)direction);
-                  if (bounds.isInside(neighborPos)) {
-                     int xInShape = neighborPos.getX() - bounds.minX();
-                     int yInShape = neighborPos.getY() - bounds.minY();
-                     int zinShape = neighborPos.getZ() - bounds.minZ();
-                     if (!shape.isFull(xInShape, yInShape, zinShape)) {
-                        BlockState currentState = level.getBlockState(neighborPos);
-                        OptionalInt distance = LeavesBlock.getOptionalDistanceAt(currentState);
-                        if (!distance.isEmpty()) {
-                           int newDistance = Math.min(distance.getAsInt(), smallestDistance + 1);
-                           if (newDistance < 7) {
-                              ((Set)toCheck.get(newDistance)).add(neighborPos.immutable());
-                              smallestDistance = Math.min(smallestDistance, newDistance);
-                           }
-                        }
+         pos.set(blocksToCheck.popLong());
+         int neighborDistance = distance + 1;
+
+         for(Direction direction : DIRECTIONS) {
+            neighborPos.setWithOffset(pos, (Direction)direction);
+            if (bounds.isInside(neighborPos)) {
+               int neighborIndexX = neighborPos.getX() - bounds.minX();
+               int neighborIndexY = neighborPos.getY() - bounds.minY();
+               int neighborIndexZ = neighborPos.getZ() - bounds.minZ();
+               if (!updatedShape.isFull(neighborIndexX, neighborIndexY, neighborIndexZ)) {
+                  BlockState neighborState = level.getBlockState(neighborPos);
+                  OptionalInt existingNeighborDistance = LeavesBlock.getOptionalDistanceAt(neighborState);
+                  if (!existingNeighborDistance.isEmpty() && existingNeighborDistance.getAsInt() >= neighborDistance) {
+                     setBlockKnownShape(level, neighborPos, (BlockState)neighborState.setValue(BlockStateProperties.DISTANCE, neighborDistance));
+                     updatedShape.fill(neighborIndexX, neighborIndexY, neighborIndexZ);
+                     if (neighborDistance + 1 < 7) {
+                        nextBlocksToCheck.push(neighborPos.asLong());
                      }
                   }
                }
             }
          }
-
-         ++smallestDistance;
       }
+
+      return updatedShape;
    }
 
    public static List<BlockPos> getLowestTrunkOrRootOfTree(final TreeDecorator.Context context) {
-      List<BlockPos> blockPositions = Lists.newArrayList();
+      List<BlockPos> blockPositions = new ArrayList();
       List<BlockPos> roots = context.roots();
       List<BlockPos> logs = context.logs();
       if (roots.isEmpty()) {

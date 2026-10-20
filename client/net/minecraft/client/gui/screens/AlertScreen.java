@@ -45,8 +45,8 @@ public class AlertScreen extends Screen {
       this.addRenderableWidget(Button.builder(this.okButton, (button) -> this.callback.run()).bounds((this.width - 150) / 2, buttonY, 150, 20).build());
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 70, -1);
       MultiLineLabel var10000 = this.message;

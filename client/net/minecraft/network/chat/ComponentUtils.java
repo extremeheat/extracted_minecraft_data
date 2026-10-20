@@ -1,9 +1,9 @@
 package net.minecraft.network.chat;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DataFixUtils;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -110,7 +110,7 @@ public class ComponentUtils {
       } else if (values.size() == 1) {
          return (Component)formatter.apply((Comparable)values.iterator().next());
       } else {
-         List<T> sorted = Lists.newArrayList(values);
+         List<T> sorted = new ArrayList(values);
          sorted.sort(Comparable::compareTo);
          return formatList(sorted, formatter);
       }

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -38,7 +38,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    private static final Identifier CANCEL_SPRITE = Identifier.withDefaultNamespace("container/beacon/cancel");
    private static final Component PRIMARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.primary");
    private static final Component SECONDARY_EFFECT_LABEL = Component.translatable("block.minecraft.beacon.secondary");
-   private final List<BeaconButton> beaconButtons = Lists.newArrayList();
+   private final List<BeaconButton> beaconButtons = new ArrayList();
    private @Nullable Holder<MobEffect> primary;
    private @Nullable Holder<MobEffect> secondary;
 
@@ -109,13 +109,13 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       this.beaconButtons.forEach((b) -> b.updateStatus(levels));
    }
 
-   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
+   protected void extractLabels(final GuiGraphicsExtractor graphics) {
       graphics.centeredText(this.font, (Component)PRIMARY_EFFECT_LABEL, 62, 10, -2039584);
       graphics.centeredText(this.font, (Component)SECONDARY_EFFECT_LABEL, 169, 10, -2039584);
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BEACON_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -137,7 +137,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          super(x, y, 22, 22, component);
       }
 
-      public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      public void extractContents(final GuiGraphicsExtractor graphics) {
          Identifier sprite;
          if (!this.active) {
             sprite = BeaconScreen.BUTTON_DISABLED_SPRITE;

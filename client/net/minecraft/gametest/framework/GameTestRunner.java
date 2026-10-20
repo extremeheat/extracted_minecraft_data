@@ -1,10 +1,10 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -25,8 +25,8 @@ public class GameTestRunner {
    private final GameTestTicker testTicker;
    private final List<GameTestInfo> allTestInfos;
    private ImmutableList<GameTestBatch> batches;
-   private final List<GameTestBatchListener> batchListeners = Lists.newArrayList();
-   private final List<GameTestInfo> scheduledForRerun = Lists.newArrayList();
+   private final List<GameTestBatchListener> batchListeners = new ArrayList();
+   private final List<GameTestInfo> scheduledForRerun = new ArrayList();
    private final GameTestBatcher testBatcher;
    private boolean stopped = true;
    private TestEnvironmentDefinition.@Nullable Activation<?> currentEnvironment;

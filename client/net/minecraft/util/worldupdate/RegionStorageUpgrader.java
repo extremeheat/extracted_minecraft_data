@@ -1,6 +1,5 @@
 package net.minecraft.util.worldupdate;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
@@ -10,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -148,14 +148,14 @@ public class RegionStorageUpgrader {
       if (files == null) {
          return List.of();
       } else {
-         List<FileToUpgrade> regionFileChunks = Lists.newArrayList();
+         List<FileToUpgrade> regionFileChunks = new ArrayList();
 
          for(File regionFile : files) {
             Matcher regex = REGEX.matcher(regionFile.getName());
             if (regex.matches()) {
                int xOffset = Integer.parseInt(regex.group(1)) << 5;
                int zOffset = Integer.parseInt(regex.group(2)) << 5;
-               List<ChunkPos> chunkPositions = Lists.newArrayList();
+               List<ChunkPos> chunkPositions = new ArrayList();
 
                try (RegionFile regionSource = new RegionFile(info, regionFile.toPath(), regionFolder, true)) {
                   for(int x = 0; x < 32; ++x) {

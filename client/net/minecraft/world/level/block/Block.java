@@ -20,7 +20,6 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -37,6 +36,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -221,7 +221,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       this.createBlockStateDefinition(builder);
       this.stateDefinition = builder.create(Block::defaultBlockState, BlockState::new);
       this.registerDefaultState(this.stateDefinition.any());
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (DevUtil.IS_RUNNING_IN_IDE) {
          String className = this.getClass().getSimpleName();
          if (!className.endsWith("Block")) {
             LOGGER.error("Block classes should end with Block and {} doesn't.", className);

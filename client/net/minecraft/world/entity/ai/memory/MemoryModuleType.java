@@ -1,9 +1,9 @@
 package net.minecraft.world.entity.ai.memory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -225,8 +225,8 @@ public class MemoryModuleType<U> {
       IS_PREGNANT = register("is_pregnant", Unit.CODEC);
       IS_PANICKING = register("is_panicking", Codec.BOOL);
       UNREACHABLE_TONGUE_TARGETS = register("unreachable_tongue_targets");
-      VISITED_BLOCK_POSITIONS = register("visited_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
-      UNREACHABLE_TRANSPORT_BLOCK_POSITIONS = register("unreachable_transport_block_positions", GlobalPos.CODEC.listOf().xmap(Sets::newHashSet, Lists::newArrayList));
+      VISITED_BLOCK_POSITIONS = register("visited_block_positions", GlobalPos.CODEC.listOf().xmap(HashSet::new, ArrayList::new));
+      UNREACHABLE_TRANSPORT_BLOCK_POSITIONS = register("unreachable_transport_block_positions", GlobalPos.CODEC.listOf().xmap(HashSet::new, ArrayList::new));
       TRANSPORT_ITEMS_COOLDOWN_TICKS = register("transport_items_cooldown_ticks");
       CHARGE_COOLDOWN_TICKS = register("charge_cooldown_ticks", Codec.INT);
       ATTACK_TARGET_COOLDOWN = register("attack_target_cooldown", Codec.INT);

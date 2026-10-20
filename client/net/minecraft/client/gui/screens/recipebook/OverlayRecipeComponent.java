@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,7 +10,7 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.Identifier;
@@ -33,7 +32,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
    private static final int MAX_ROW_LARGE = 5;
    private static final float ITEM_RENDER_SCALE = 0.375F;
    public static final int BUTTON_SIZE = 25;
-   private final List<OverlayRecipeButton> recipeButtons = Lists.newArrayList();
+   private final List<OverlayRecipeButton> recipeButtons = new ArrayList();
    private boolean isVisible;
    private int x;
    private int y;
@@ -122,7 +121,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
       return false;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible) {
          int maxRow = this.recipeButtons.size() <= 16 ? 4 : 5;
          int width = Math.min(this.recipeButtons.size(), maxRow);
@@ -131,7 +130,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, width * 25 + 8, height * 25 + 8);
 
          for(OverlayRecipeButton component : this.recipeButtons) {
-            component.extractRenderState(graphics, mouseX, mouseY, a);
+            component.extractRenderState(graphics);
          }
 
       }
@@ -261,7 +260,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          this.defaultButtonNarrationText(output);
       }
 
-      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
          float gridPosX = (float)(this.getX() + 2);
          float gridPosY = (float)(this.getY() + 2);

@@ -1,6 +1,5 @@
 package net.minecraft.server.commands;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -10,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -163,7 +163,7 @@ public class TeamCommand {
 
    private static int emptyTeam(final CommandSourceStack source, final PlayerTeam team) throws CommandSyntaxException {
       Scoreboard scoreboard = source.getServer().getScoreboard();
-      Collection<String> members = Lists.newArrayList(team.getPlayers());
+      Collection<String> members = List.copyOf(team.getPlayers());
       if (members.isEmpty()) {
          throw ERROR_TEAM_ALREADY_EMPTY.create();
       } else {

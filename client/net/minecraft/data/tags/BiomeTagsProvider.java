@@ -50,7 +50,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.HAS_RUINED_PORTAL_OCEAN).addTag(BiomeTags.IS_OCEAN);
       this.tag(BiomeTags.HAS_RUINED_PORTAL_SWAMP).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.HAS_RUINED_PORTAL_MOUNTAIN).addTag(BiomeTags.IS_BADLANDS).addTag(BiomeTags.IS_HILL).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.STONY_SHORE).addTag(BiomeTags.IS_MOUNTAIN);
-      this.tag(BiomeTags.HAS_RUINED_PORTAL_STANDARD).addTag(BiomeTags.IS_BEACH).addTag(BiomeTags.IS_RIVER).addTag(BiomeTags.IS_TAIGA).addTag(BiomeTags.IS_FOREST).add(Biomes.MUSHROOM_FIELDS).add(Biomes.ICE_SPIKES).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.SULFUR_CAVES).add(Biomes.SAVANNA).add(Biomes.SNOWY_PLAINS).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS);
+      this.tag(BiomeTags.HAS_RUINED_PORTAL_STANDARD).addTag(BiomeTags.IS_BEACH).addTag(BiomeTags.IS_RIVER).addTag(BiomeTags.IS_TAIGA).addTag(BiomeTags.IS_FOREST).add(Biomes.MUSHROOM_FIELDS).add(Biomes.ICE_SPIKES).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.ICE_CAVES).add(Biomes.SULFUR_CAVES).add(Biomes.SAVANNA).add(Biomes.SNOWY_PLAINS).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS);
       this.tag(BiomeTags.HAS_SHIPWRECK_BEACHED).addTag(BiomeTags.IS_BEACH);
       this.tag(BiomeTags.HAS_SHIPWRECK).addTag(BiomeTags.IS_OCEAN);
       this.tag(BiomeTags.HAS_SWAMP_HUT).add(Biomes.SWAMP);
@@ -61,7 +61,7 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.HAS_VILLAGE_TAIGA).add(Biomes.TAIGA);
       this.tag(BiomeTags.HAS_TRAIL_RUINS).add(Biomes.TAIGA).add(Biomes.SNOWY_TAIGA).add(Biomes.OLD_GROWTH_PINE_TAIGA).add(Biomes.OLD_GROWTH_SPRUCE_TAIGA).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.JUNGLE);
       this.tag(BiomeTags.HAS_WOODLAND_MANSION).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN);
-      this.tag(BiomeTags.STRONGHOLD_BIASED_TO).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.DESERT).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.OLD_GROWTH_PINE_TAIGA).add(Biomes.OLD_GROWTH_SPRUCE_TAIGA).add(Biomes.TAIGA).add(Biomes.SNOWY_TAIGA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_HILLS).add(Biomes.WINDSWEPT_GRAVELLY_HILLS).add(Biomes.WINDSWEPT_FOREST).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.JUNGLE).add(Biomes.SPARSE_JUNGLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.BADLANDS).add(Biomes.ERODED_BADLANDS).add(Biomes.WOODED_BADLANDS).add(Biomes.MEADOW).add(Biomes.CHERRY_GROVE).add(Biomes.GROVE).add(Biomes.SNOWY_SLOPES).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.STONY_PEAKS).add(Biomes.MUSHROOM_FIELDS).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.SULFUR_CAVES);
+      this.tag(BiomeTags.STRONGHOLD_BIASED_TO).add(Biomes.PLAINS).add(Biomes.SUNFLOWER_PLAINS).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.DESERT).add(Biomes.FOREST).add(Biomes.FLOWER_FOREST).add(Biomes.BIRCH_FOREST).add(Biomes.DARK_FOREST).add(Biomes.PALE_GARDEN).add(Biomes.OLD_GROWTH_BIRCH_FOREST).add(Biomes.OLD_GROWTH_PINE_TAIGA).add(Biomes.OLD_GROWTH_SPRUCE_TAIGA).add(Biomes.TAIGA).add(Biomes.SNOWY_TAIGA).add(Biomes.SAVANNA).add(Biomes.SAVANNA_PLATEAU).add(Biomes.WINDSWEPT_HILLS).add(Biomes.WINDSWEPT_GRAVELLY_HILLS).add(Biomes.WINDSWEPT_FOREST).add(Biomes.WINDSWEPT_SAVANNA).add(Biomes.JUNGLE).add(Biomes.SPARSE_JUNGLE).add(Biomes.BAMBOO_JUNGLE).add(Biomes.BADLANDS).add(Biomes.ERODED_BADLANDS).add(Biomes.WOODED_BADLANDS).add(Biomes.MEADOW).add(Biomes.CHERRY_GROVE).add(Biomes.GROVE).add(Biomes.SNOWY_SLOPES).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.STONY_PEAKS).add(Biomes.MUSHROOM_FIELDS).add(Biomes.DRIPSTONE_CAVES).add(Biomes.LUSH_CAVES).add(Biomes.SULFUR_CAVES).add(Biomes.ICE_CAVES);
       this.tag(BiomeTags.HAS_STRONGHOLD).addTag(BiomeTags.IS_OVERWORLD);
       this.tag(BiomeTags.HAS_TRIAL_CHAMBERS).addAll(overworldBiomes.stream().filter((biomeKey) -> biomeKey != Biomes.DEEP_DARK));
       this.tag(BiomeTags.HAS_ABANDONED_CAMP_BAMBOO_JUNGLE).add(Biomes.BAMBOO_JUNGLE);
@@ -106,6 +106,6 @@ public class BiomeTagsProvider extends TagsProvider<Biome> {
       this.tag(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS).add(Biomes.SWAMP).add(Biomes.MANGROVE_SWAMP);
       this.tag(BiomeTags.SPAWNS_SNOW_FOXES).add(Biomes.SNOWY_PLAINS).add(Biomes.ICE_SPIKES).add(Biomes.FROZEN_OCEAN).add(Biomes.SNOWY_TAIGA).add(Biomes.FROZEN_RIVER).add(Biomes.SNOWY_BEACH).add(Biomes.FROZEN_PEAKS).add(Biomes.JAGGED_PEAKS).add(Biomes.SNOWY_SLOPES).add(Biomes.GROVE).add(Biomes.ICE_CAVES);
       this.tag(BiomeTags.SPAWNS_CORAL_VARIANT_ZOMBIE_NAUTILUS).add(Biomes.WARM_OCEAN);
-      this.tag(BiomeTags.SPAWNS_STRAYS_WITHOUT_POWDER_SNOW).add(Biomes.ICE_CAVES);
+      this.tag(BiomeTags.SPAWNS_COLD_VARIANTS_UNDERGROUND).add(Biomes.ICE_CAVES);
    }
 }

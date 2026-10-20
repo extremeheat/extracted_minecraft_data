@@ -1,6 +1,5 @@
 package net.minecraft.client.server;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -8,6 +7,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.DefaultUncaughtExceptionHandler;
@@ -23,7 +23,7 @@ public class LanServerDetection {
    }
 
    public static class LanServerList {
-      private final List<LanServer> servers = Lists.newArrayList();
+      private final List<LanServer> servers = new ArrayList();
       private boolean isDirty;
 
       public LanServerList() {

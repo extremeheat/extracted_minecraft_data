@@ -72,7 +72,11 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
-      level.setBlockAndUpdate(pos, updateDistance(state, level, pos));
+      BlockState newState = updateDistance(state, level, pos);
+      if (newState != state) {
+         level.setBlockAndUpdate(pos, newState);
+      }
+
    }
 
    protected int getLightDampening(final BlockState state) {
@@ -85,7 +89,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
       }
 
       int distanceFromNeighbor = getDistanceAt(neighbourState) + 1;
-      if (distanceFromNeighbor != 1 || (Integer)state.getValue(DISTANCE) != distanceFromNeighbor) {
+      if ((Integer)state.getValue(DISTANCE) != distanceFromNeighbor) {
          ticks.scheduleTick(pos, (Block)this, 1);
       }
 
@@ -115,7 +119,8 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
       if (state.is(BlockTags.PREVENTS_NEARBY_LEAF_DECAY)) {
          return OptionalInt.of(0);
       } else {
-         return state.hasProperty(DISTANCE) ? OptionalInt.of((Integer)state.getValue(DISTANCE)) : OptionalInt.empty();
+         Integer distance = (Integer)state.getValueOrElse(DISTANCE, (Comparable)null);
+         return distance != null ? OptionalInt.of(distance) : OptionalInt.empty();
       }
    }
 

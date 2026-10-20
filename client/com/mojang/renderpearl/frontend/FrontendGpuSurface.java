@@ -27,6 +27,10 @@ public class FrontendGpuSurface implements GpuSurface {
       }
    }
 
+   public boolean isDXGI() {
+      return this.backend.isDXGI();
+   }
+
    public void configure(final GpuSurface.Configuration config) throws SurfaceException {
       if (this.hasImageAcquired) {
          throw new IllegalStateException("Cannot configure a surface while it is acquired");

@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.blending;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -362,7 +362,7 @@ public class Blender {
    }
 
    public static DistanceGetter makeOldChunkDistanceGetter(final @Nullable BlendingData centerBlendingData, final Map<CompositeDirection.Direction8, BlendingData> oldSidesBlendingData) {
-      List<DistanceGetter> distanceGetters = Lists.newArrayList();
+      List<DistanceGetter> distanceGetters = new ArrayList();
       if (centerBlendingData != null) {
          distanceGetters.add(makeOffsetOldChunkDistanceGetter((CompositeDirection.Direction8)null, centerBlendingData));
       }

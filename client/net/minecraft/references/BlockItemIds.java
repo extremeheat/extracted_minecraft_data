@@ -466,6 +466,11 @@ public class BlockItemIds {
    public static final BlockItemId HAY_BLOCK = BlockItemId.create("hay_block");
    public static final BlockItemId TERRACOTTA = BlockItemId.create("terracotta");
    public static final BlockItemId PACKED_ICE = BlockItemId.create("packed_ice");
+   public static final BlockItemId PACKED_ICE_BRICKS = BlockItemId.create("packed_ice_bricks");
+   public static final BlockItemId PACKED_ICE_BRICK_SLAB = BlockItemId.create("packed_ice_brick_slab");
+   public static final BlockItemId PACKED_ICE_BRICK_STAIRS = BlockItemId.create("packed_ice_brick_stairs");
+   public static final BlockItemId PACKED_ICE_BRICK_WALL = BlockItemId.create("packed_ice_brick_wall");
+   public static final BlockItemId CHISELED_PACKED_ICE = BlockItemId.create("chiseled_packed_ice");
    public static final BlockItemId DIRT_PATH = BlockItemId.create("dirt_path");
    public static final BlockItemId SUNFLOWER = BlockItemId.create("sunflower");
    public static final BlockItemId LILAC = BlockItemId.create("lilac");

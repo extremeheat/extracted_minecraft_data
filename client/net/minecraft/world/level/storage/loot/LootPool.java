@@ -1,9 +1,9 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -45,7 +45,7 @@ public class LootPool implements Validatable {
 
    private void addRandomItem(final Consumer<ItemStack> result, final LootContext context) {
       RandomSource random = context.getRandom();
-      List<LootPoolEntry> validEntries = Lists.newArrayList();
+      List<LootPoolEntry> validEntries = new ArrayList();
       MutableInt totalWeight = new MutableInt();
 
       for(LootPoolEntryContainer entry : this.entries) {

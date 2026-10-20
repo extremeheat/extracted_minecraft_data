@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments.blocks;
 
-import com.google.common.collect.Maps;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
@@ -10,6 +9,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Either;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -53,8 +53,8 @@ public class BlockStateParser {
    private final StringReader reader;
    private final boolean forTesting;
    private final boolean allowNbt;
-   private final Map<Property<?>, Comparable<?>> properties = Maps.newHashMap();
-   private final Map<String, String> vagueProperties = Maps.newHashMap();
+   private final Map<Property<?>, Comparable<?>> properties = new HashMap();
+   private final Map<String, String> vagueProperties = new HashMap();
    private Identifier id = Identifier.withDefaultNamespace("");
    private @Nullable StateDefinition<Block, BlockState> definition;
    private @Nullable BlockState state;

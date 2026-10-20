@@ -1,16 +1,19 @@
 package net.minecraft.client.particle;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import java.util.function.Function;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.oit.OitPipelineSet;
+import net.minecraft.client.renderer.oit.OitStage;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.variant.ParticleRenderPipelineVariant;
 import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.jspecify.annotations.Nullable;
@@ -24,15 +27,18 @@ public abstract class SingleQuadParticle extends Particle {
    protected float roll;
    protected float oRoll;
    protected TextureAtlasSprite sprite;
+   protected UvFlip uvFlip;
 
    protected SingleQuadParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
       super(level, x, y, z);
+      this.uvFlip = SingleQuadParticle.UvFlip.NONE;
       this.sprite = sprite;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.5F) * 2.0F;
    }
 
    protected SingleQuadParticle(final ClientLevel level, final double x, final double y, final double z, final double xa, final double ya, final double za, final TextureAtlasSprite sprite) {
       super(level, x, y, z, xa, ya, za);
+      this.uvFlip = SingleQuadParticle.UvFlip.NONE;
       this.sprite = sprite;
       this.quadSize = 0.1F * (this.random.nextFloat() * 0.5F + 0.5F) * 2.0F;
    }
@@ -88,19 +94,19 @@ public abstract class SingleQuadParticle extends Particle {
    }
 
    protected float getU0() {
-      return this.sprite.getU0();
+      return this.uvFlip.flipU() ? this.sprite.getU1() : this.sprite.getU0();
    }
 
    protected float getU1() {
-      return this.sprite.getU1();
+      return this.uvFlip.flipU() ? this.sprite.getU0() : this.sprite.getU1();
    }
 
    protected float getV0() {
-      return this.sprite.getV0();
+      return this.uvFlip.flipV() ? this.sprite.getV1() : this.sprite.getV0();
    }
 
    protected float getV1() {
-      return this.sprite.getV1();
+      return this.uvFlip.flipV() ? this.sprite.getV0() : this.sprite.getV1();
    }
 
    protected abstract Layer getLayer();
@@ -127,17 +133,46 @@ public abstract class SingleQuadParticle extends Particle {
       void setRotation(final Quaternionf target, final Camera camera, final float partialTickTime);
    }
 
-   public static record Layer(boolean translucent, Identifier textureAtlasLocation, RenderPipeline pipeline, @Nullable OitPipelineSet oitPipelineSet) {
+   protected static enum UvFlip {
+      NONE,
+      HORIZONTAL,
+      VERTICAL,
+      BOTH;
+
+      private static final UvFlip[] VALUES = values();
+
+      private UvFlip() {
+      }
+
+      public static UvFlip random(final RandomSource random) {
+         return VALUES[random.nextInt(VALUES.length)];
+      }
+
+      public static UvFlip randomHorizontal(final RandomSource random) {
+         return random.nextBoolean() ? HORIZONTAL : NONE;
+      }
+
+      public boolean flipU() {
+         return this == HORIZONTAL || this == BOTH;
+      }
+
+      public boolean flipV() {
+         return this == VERTICAL || this == BOTH;
+      }
+
+      // $FF: synthetic method
+      private static UvFlip[] $values() {
+         return new UvFlip[]{NONE, HORIZONTAL, VERTICAL, BOTH};
+      }
+   }
+
+   public static record Layer(boolean translucent, Identifier textureAtlasLocation, Function<@Nullable OitStage, @Nullable RenderPipeline> pipelineProvider) {
       public static final Layer OPAQUE_TERRAIN;
       public static final Layer TRANSLUCENT_TERRAIN;
       public static final Layer OPAQUE_ITEMS;
       public static final Layer TRANSLUCENT_ITEMS;
       public static final Layer OPAQUE;
       public static final Layer TRANSLUCENT;
-
-      public Layer(final boolean translucent, final Identifier textureAtlasLocation, final RenderPipeline pipeline) {
-         this(translucent, textureAtlasLocation, pipeline, (OitPipelineSet)null);
-      }
 
       public Layer {
          super();
@@ -155,12 +190,12 @@ public abstract class SingleQuadParticle extends Particle {
       }
 
       static {
-         OPAQUE_TERRAIN = new Layer(false, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT_TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
-         OPAQUE_ITEMS = new Layer(false, TextureAtlas.LOCATION_ITEMS, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT_ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
-         OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.OPAQUE_PARTICLE);
-         TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, RenderPipelines.TRANSLUCENT_PARTICLE, RenderPipelines.OIT_PARTICLE);
+         OPAQUE_TERRAIN = new Layer(false, TextureAtlas.LOCATION_BLOCKS, (stage) -> stage == null ? RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.OPAQUE, stage)) : null);
+         TRANSLUCENT_TERRAIN = new Layer(true, TextureAtlas.LOCATION_BLOCKS, (stage) -> RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.TRANSLUCENT, stage)));
+         OPAQUE_ITEMS = new Layer(false, TextureAtlas.LOCATION_ITEMS, (stage) -> stage == null ? RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.OPAQUE, stage)) : null);
+         TRANSLUCENT_ITEMS = new Layer(true, TextureAtlas.LOCATION_ITEMS, (stage) -> RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.TRANSLUCENT, stage)));
+         OPAQUE = new Layer(false, TextureAtlas.LOCATION_PARTICLES, (stage) -> stage == null ? RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.OPAQUE, stage)) : null);
+         TRANSLUCENT = new Layer(true, TextureAtlas.LOCATION_PARTICLES, (stage) -> RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.TRANSLUCENT, stage)));
       }
    }
 }

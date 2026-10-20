@@ -1,8 +1,8 @@
 package net.minecraft.world.level;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -104,9 +104,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
    public static final int MIN_ENTITY_SPAWN_Y = -20000000;
    private static final WeightedList<ExplosionParticleInfo> DEFAULT_EXPLOSION_BLOCK_PARTICLES;
-   protected final List<TickingBlockEntity> blockEntityTickers = Lists.newArrayList();
+   protected final List<TickingBlockEntity> blockEntityTickers = new ArrayList();
    protected final CollectingNeighborUpdater neighborUpdater;
-   private final List<TickingBlockEntity> pendingBlockEntityTickers = Lists.newArrayList();
+   private final List<TickingBlockEntity> pendingBlockEntityTickers = new ArrayList();
    private boolean tickingBlockEntities;
    private final Thread thread;
    private final boolean isDebug;
@@ -543,7 +543,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public List<Entity> getEntities(final @Nullable Entity except, final AABB bb, final Predicate<? super Entity> selector) {
       Profiler.get().incrementCounter("getEntities");
-      List<Entity> output = Lists.newArrayList();
+      List<Entity> output = new ArrayList();
       this.getEntities().get(bb, (Consumer)((entity) -> {
          if (entity != except && selector.test(entity)) {
             output.add(entity);
@@ -561,7 +561,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public <T extends Entity> List<T> getEntities(final EntityTypeTest<Entity, T> type, final AABB bb, final Predicate<? super T> selector) {
-      List<T> output = Lists.newArrayList();
+      List<T> output = new ArrayList();
       this.getEntities(type, bb, selector, output);
       return output;
    }

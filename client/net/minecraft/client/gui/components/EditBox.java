@@ -16,7 +16,7 @@ import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.PreeditEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -423,7 +423,7 @@ public class EditBox extends AbstractWidget {
    public void playDownSound(final SoundManager soundManager) {
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible()) {
          if (this.isBordered()) {
             Identifier sprite = SPRITES.get(this.isActive(), this.isFocused());
@@ -477,9 +477,9 @@ public class EditBox extends AbstractWidget {
 
          if (showCursor) {
             if (insert) {
-               int var18 = this.textY;
+               int var15 = this.textY;
                Objects.requireNonNull(this.font);
-               TextCursorUtils.extractInsertCursor(graphics, cursorX, var18, color, 9 + 1);
+               TextCursorUtils.extractInsertCursor(graphics, cursorX, var15, color, 9 + 1);
             } else {
                TextCursorUtils.extractAppendCursor(graphics, this.font, cursorX, this.textY, color, this.textShadow);
             }
@@ -492,11 +492,11 @@ public class EditBox extends AbstractWidget {
          if (this.preeditOverlay == null) {
             if (this.canConsumeInput()) {
                TextInputManager var10000 = Minecraft.getInstance().textInputManager();
-               int var19 = this.textY;
-               int var20 = cursorX + 1;
-               int var21 = this.textY;
+               int var16 = this.textY;
+               int var17 = cursorX + 1;
+               int var18 = this.textY;
                Objects.requireNonNull(this.font);
-               var10000.setTextInputArea(cursorX, var19, var20, var21 + 9 + 1);
+               var10000.setTextInputArea(cursorX, var16, var17, var18 + 9 + 1);
             }
          } else {
             this.preeditOverlay.updateInputPosition(cursorX, this.textY);

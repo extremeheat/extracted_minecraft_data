@@ -1,16 +1,16 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TaggedChoice;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BlockEntityIdFix extends DataFix {
-   public static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
+   public static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(new HashMap(), (map) -> {
       map.put("Airportal", "minecraft:end_portal");
       map.put("Banner", "minecraft:banner");
       map.put("Beacon", "minecraft:beacon");

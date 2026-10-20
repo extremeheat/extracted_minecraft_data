@@ -16,8 +16,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
@@ -30,6 +30,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
@@ -38,7 +39,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.jspecify.annotations.Nullable;
 
-public class PlayerTabOverlay {
+public class PlayerTabOverlay implements Renderable {
    private static final Identifier PING_UNKNOWN_SPRITE = Identifier.withDefaultNamespace("icon/ping_unknown");
    private static final Identifier PING_1_SPRITE = Identifier.withDefaultNamespace("icon/ping_1");
    private static final Identifier PING_2_SPRITE = Identifier.withDefaultNamespace("icon/ping_2");
@@ -92,7 +93,20 @@ public class PlayerTabOverlay {
       return this.minecraft.player.connection.getListedOnlinePlayers().stream().sorted(PLAYER_COMPARATOR).limit(80L).toList();
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int screenWidth, final Scoreboard scoreboard, final @Nullable Objective displayObjective) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      Scoreboard scoreboard = this.minecraft.level.getScoreboard();
+      Objective displayObjective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
+      if (!this.minecraft.options.keyPlayerList.isDown() || this.minecraft.isLocalServer() && this.minecraft.player.connection.getListedOnlinePlayers().size() <= 1 && displayObjective == null) {
+         this.setVisible(false);
+      } else {
+         this.setVisible(true);
+         graphics.nextStratum();
+         this.extractContents(graphics, graphics.guiWidth(), scoreboard, displayObjective);
+      }
+
+   }
+
+   private void extractContents(final GuiGraphicsExtractor graphics, final int screenWidth, final Scoreboard scoreboard, final @Nullable Objective displayObjective) {
       List<PlayerInfo> playerInfos = this.getPlayerInfos();
       List<ScoreDisplayEntry> entriesToDisplay = new ArrayList(playerInfos.size());
       int spacerWidth = this.minecraft.font.width(" ");

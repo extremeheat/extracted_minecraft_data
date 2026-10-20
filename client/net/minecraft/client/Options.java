@@ -3,8 +3,6 @@ package net.minecraft.client;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -31,6 +29,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,13 +48,13 @@ import net.minecraft.client.gui.screens.options.OptionsSubScreen;
 import net.minecraft.client.input.InputQuirks;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.extract.LevelExtractor;
+import net.minecraft.client.renderer.state.OptionsRenderState;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.SoundPreviewHandler;
 import net.minecraft.client.tutorial.TutorialSteps;
-import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -108,6 +107,9 @@ public class Options {
    private PreferredGraphicsApi preferredGraphicsBackendFromStartup;
    private static final Component GRAPHICS_API_TOOLTIP = Component.translatable("options.graphicsApi.tooltip");
    private final OptionInstance<PreferredGraphicsApi> preferredGraphicsBackend;
+   private boolean preferDXGIFromStartup;
+   private static final Component PREFER_DXGI_TOOLTIP = Component.translatable("options.preferDXGIPresent.tooltip.experimental");
+   private final OptionInstance<Boolean> preferDXGIPresent;
    private boolean isApplyingGraphicsPreset;
    private final OptionInstance<GraphicsPreset> graphicsPreset;
    private static final Component INACTIVITY_FPS_LIMIT_TOOLTIP_MINIMIZED = Component.translatable("options.inactivityFpsLimit.minimized.tooltip");
@@ -375,8 +377,12 @@ public class Options {
       return this.preferredGraphicsBackend;
    }
 
+   public OptionInstance<Boolean> preferDXGIPresent() {
+      return this.preferDXGIPresent;
+   }
+
    public boolean isRestartRequiredToApplyVideoSettings() {
-      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup;
+      return this.preferredGraphicsBackend.get() != this.preferredGraphicsBackendFromStartup || (Boolean)this.preferDXGIPresent.get() != this.preferDXGIFromStartup;
    }
 
    public void applyGraphicsPreset(final GraphicsPreset value) {
@@ -855,6 +861,17 @@ public class Options {
          tooltipLines.add(GRAPHICS_API_TOOLTIP);
          return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
       }, (caption, value) -> value.caption(), new OptionInstance.Enum(List.of(PreferredGraphicsApi.values()), PreferredGraphicsApi.CODEC), PreferredGraphicsApi.CODEC, PreferredGraphicsApi.DEFAULT, OptionInstance.NO_ACTION);
+      this.preferDXGIFromStartup = false;
+      this.preferDXGIPresent = OptionInstance.createBoolean("options.preferDXGIPresent.experimental", (value) -> {
+         List<Component> tooltipLines = new ArrayList();
+         if (value != this.preferDXGIFromStartup) {
+            tooltipLines.add(TOOLTIP_NEEDS_RESTART);
+            tooltipLines.add(CommonComponents.EMPTY);
+         }
+
+         tooltipLines.add(PREFER_DXGI_TOOLTIP);
+         return Tooltip.create(CommonComponents.joinLines((Collection)tooltipLines));
+      }, false);
       this.graphicsPreset = new OptionInstance<GraphicsPreset>("options.graphics.preset", OptionInstance.cachedConstantTooltip(Component.translatable("options.graphics.preset.tooltip")), (caption, value) -> genericValueLabel(caption, Component.translatable(value.getKey())), new OptionInstance.SliderableEnum(List.of(GraphicsPreset.values()), GraphicsPreset.CODEC), GraphicsPreset.CODEC, GraphicsPreset.FANCY, this::applyGraphicsPreset);
       this.inactivityFpsLimit = new OptionInstance<InactivityFpsLimit>("options.inactivityFpsLimit", (value) -> {
          Tooltip var10000;
@@ -897,8 +914,8 @@ public class Options {
 
          return var10000;
       }, (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(PrioritizeChunkUpdates.values()), PrioritizeChunkUpdates.LEGACY_CODEC), PrioritizeChunkUpdates.NONE, (var1) -> this.setGraphicsPresetToCustom());
-      this.resourcePacks = Lists.newArrayList();
-      this.incompatibleResourcePacks = Lists.newArrayList();
+      this.resourcePacks = new ArrayList();
+      this.incompatibleResourcePacks = new ArrayList();
       this.chatVisibility = new OptionInstance<ChatVisiblity>("options.chat.visibility", OptionInstance.noTooltip(), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(ChatVisiblity.values()), ChatVisiblity.LEGACY_CODEC), ChatVisiblity.FULL, (var0) -> {
          LocalPlayer player = Minecraft.getInstance().player;
          if (player != null) {
@@ -1006,7 +1023,7 @@ public class Options {
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (value) -> value ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
          SoundManager soundManager = Minecraft.getInstance().getSoundManager();
          soundManager.reload();
-         soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (caption, value) -> value ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, OptionInstance.NO_ACTION);
       this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (value) -> {
@@ -1164,7 +1181,7 @@ public class Options {
       }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (device) -> Minecraft.getInstance().isRunning() && !isSoundDeviceDefault(device) && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(device) ? Optional.empty() : Optional.of(device), Codec.STRING), "", (var0) -> {
          SoundManager soundManager = Minecraft.getInstance().getSoundManager();
          soundManager.reload();
-         soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
       this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (value) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(value));
@@ -1207,6 +1224,7 @@ public class Options {
       access.process("glintSpeed", this.glintSpeed);
       access.process("glintStrength", this.glintStrength);
       access.process("preferredGraphicsBackend", this.preferredGraphicsBackend);
+      access.process("preferDXGIPresent", this.preferDXGIPresent);
       access.process("graphicsPreset", this.graphicsPreset);
       access.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       access.process("fullscreen", this.fullscreen);
@@ -1473,6 +1491,7 @@ public class Options {
       }
 
       this.preferredGraphicsBackendFromStartup = this.preferredGraphicsBackend.get();
+      this.preferDXGIFromStartup = (Boolean)this.preferDXGIPresent.get();
    }
 
    private static boolean isTrue(final String value) {
@@ -1617,7 +1636,7 @@ public class Options {
    }
 
    public void loadSelectedResourcePacks(final PackRepository repository) {
-      Set<String> selected = Sets.newLinkedHashSet();
+      Set<String> selected = new LinkedHashSet();
       Iterator<String> iterator = this.resourcePacks.iterator();
 
       while(iterator.hasNext()) {
@@ -1654,7 +1673,7 @@ public class Options {
 
    private static List<String> readListOfStrings(final String value) {
       List<String> result = (List)GsonHelper.fromNullableJson(GSON, value, LIST_OF_STRINGS_TYPE);
-      return (List<String>)(result != null ? result : Lists.newArrayList());
+      return (List<String>)(result != null ? result : new ArrayList());
    }
 
    public File getFile() {
@@ -1691,6 +1710,30 @@ public class Options {
 
    public int getEffectiveRenderDistance() {
       return this.serverRenderDistance > 0 ? Math.min((Integer)this.renderDistance.get(), this.serverRenderDistance) : (Integer)this.renderDistance.get();
+   }
+
+   public void extractRenderState(final OptionsRenderState optionsState) {
+      optionsState.cloudRange = (Integer)this.cloudRange().get();
+      optionsState.cutoutLeaves = (Boolean)this.cutoutLeaves().get();
+      optionsState.improvedTransparency = (Boolean)this.improvedTransparency().get();
+      optionsState.ambientOcclusion = (Boolean)this.ambientOcclusion().get();
+      optionsState.menuBackgroundBlurriness = this.getMenuBackgroundBlurriness();
+      optionsState.panoramaSpeed = (Double)this.panoramaSpeed().get();
+      optionsState.maxAnisotropyValue = this.maxAnisotropyValue();
+      optionsState.textureFiltering = (TextureFilteringMethod)this.textureFiltering().get();
+      optionsState.bobView = (Boolean)this.bobView().get();
+      optionsState.screenEffectScale = ((Double)this.screenEffectScale().get()).floatValue();
+      optionsState.glintSpeed = (Double)this.glintSpeed().get();
+      optionsState.glintStrength = (Double)this.glintStrength().get();
+      optionsState.damageTiltStrength = (Double)this.damageTiltStrength().get();
+      optionsState.backgroundForChatOnly = (Boolean)this.backgroundForChatOnly().get();
+      optionsState.textBackgroundOpacity = ((Double)this.textBackgroundOpacity().get()).floatValue();
+      optionsState.cloudStatus = this.getCloudStatus();
+      optionsState.cameraType = this.getCameraType();
+      optionsState.renderDistance = this.getEffectiveRenderDistance();
+      optionsState.chunkSectionFadeInTime = (Double)this.chunkSectionFadeInTime().get();
+      optionsState.prioritizeChunkUpdates = (PrioritizeChunkUpdates)this.prioritizeChunkUpdates().get();
+      optionsState.fov = (Integer)this.fov().get();
    }
 
    private static Component pixelValueLabel(final Component caption, final int value) {

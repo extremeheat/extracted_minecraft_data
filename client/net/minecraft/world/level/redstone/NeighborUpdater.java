@@ -4,6 +4,7 @@ import java.util.Locale;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,9 +43,9 @@ public interface NeighborUpdater {
          } catch (Throwable t) {
             CrashReport report = CrashReport.forThrowable(t, "Exception while updating neighbour shapes");
             CrashReportCategory ownCategory = report.addCategory("Block being updated");
-            CrashReportCategory.populateBlockDetails(ownCategory, level, pos, currentState);
+            CrashReportUtil.populateBlockDetails(ownCategory, level, pos, currentState);
             CrashReportCategory neighborCategory = report.addCategory("Neighbor block");
-            CrashReportCategory.populateBlockDetails(neighborCategory, level, neighborPos, neighborState);
+            CrashReportUtil.populateBlockDetails(neighborCategory, level, neighborPos, neighborState);
             throw new ReportedException(report);
          }
       }
@@ -63,7 +64,7 @@ public interface NeighborUpdater {
                return "ID #" + String.valueOf(BuiltInRegistries.BLOCK.getKey(changedBlock));
             }
          }));
-         CrashReportCategory.populateBlockDetails(category, level, pos, state);
+         CrashReportUtil.populateBlockDetails(category, level, pos, state);
          throw new ReportedException(report);
       }
    }

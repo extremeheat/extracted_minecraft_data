@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -70,21 +70,21 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, pitch);
    }
 
-   public void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot, final int mouseX, final int mouseY) {
+   public void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot) {
       if (slot instanceof CrafterSlot crafterSlot) {
          if (((CrafterMenu)this.menu).isSlotDisabled(slot.index)) {
             this.extractDisabledSlot(graphics, crafterSlot);
          } else {
-            super.extractSlot(graphics, slot, mouseX, mouseY);
+            super.extractSlot(graphics, slot);
          }
 
          int x0 = this.leftPos + crafterSlot.x - 2;
          int y0 = this.topPos + crafterSlot.y - 2;
-         if (mouseX > x0 && mouseY > y0 && mouseX < x0 + 19 && mouseY < y0 + 19) {
+         if (graphics.mouseX() > x0 && graphics.mouseY() > y0 && graphics.mouseX() < x0 + 19 && graphics.mouseY() < y0 + 19) {
             graphics.requestCursor(CursorTypes.POINTING_HAND);
          }
       } else {
-         super.extractSlot(graphics, slot, mouseX, mouseY);
+         super.extractSlot(graphics, slot);
       }
 
    }
@@ -93,11 +93,11 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISABLED_SLOT_LOCATION_SPRITE, cs.x - 1, cs.y - 1, 18, 18);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       this.extractRedstone(graphics);
       if (this.hoveredSlot instanceof CrafterSlot && !((CrafterMenu)this.menu).isSlotDisabled(this.hoveredSlot.index) && ((CrafterMenu)this.menu).getCarried().isEmpty() && !this.hoveredSlot.hasItem() && !this.player.isSpectator()) {
-         graphics.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, mouseX, mouseY);
+         graphics.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, graphics.mouseX(), graphics.mouseY());
       }
 
    }
@@ -115,8 +115,8 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)redstoneArrowTexture, xo, yo, 16, 16);
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
       graphics.blit(RenderPipelines.GUI_TEXTURED, CONTAINER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);

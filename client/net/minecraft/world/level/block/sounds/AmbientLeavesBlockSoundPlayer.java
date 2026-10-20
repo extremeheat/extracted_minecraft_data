@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.sounds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -54,5 +55,9 @@ public record AmbientLeavesBlockSoundPlayer(Holder<SoundEvent> ambientSound, int
          }
       }
 
+   }
+
+   private static boolean hasEnoughMatchingNeighbours(final Level level, final BlockPos pos, final Predicate<BlockState> predicate, final int required) {
+      return required <= 0 || level.findBlocksIn(BlockPos.horizontalAtDistance(pos, 1)).filterState(predicate).atLeastMatched(required);
    }
 }

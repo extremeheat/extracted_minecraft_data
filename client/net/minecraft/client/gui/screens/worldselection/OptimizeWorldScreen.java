@@ -101,8 +101,8 @@ public class OptimizeWorldScreen extends Screen {
       this.upgrader.close();
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 20, -1);
       int x0 = this.width / 2 - 150;
       int x1 = this.width / 2 + 150;

@@ -1,6 +1,6 @@
 package net.minecraft.world.effect;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
@@ -30,7 +30,7 @@ class WeavingMobEffect extends MobEffect {
    }
 
    private void spawnCobwebsRandomlyAround(final ServerLevel level, final RandomSource random, final BlockPos pos) {
-      Set<BlockPos> positionsToTransform = Sets.newHashSet();
+      Set<BlockPos> positionsToTransform = new HashSet();
       int cobwebCount = this.maxCobwebs.applyAsInt(random);
 
       for(BlockPos blockPos : BlockPos.randomInCube(random, 15, pos, 1)) {

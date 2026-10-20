@@ -1,14 +1,14 @@
 package net.minecraft.client.sounds;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.floats.FloatConsumer;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.lwjgl.BufferUtils;
 
 public class ChunkedSampleByteBuf implements FloatConsumer {
-   private final List<ByteBuffer> buffers = Lists.newArrayList();
+   private final List<ByteBuffer> buffers = new ArrayList();
    private final int bufferSize;
    private int byteCount;
    private ByteBuffer currentBuffer;

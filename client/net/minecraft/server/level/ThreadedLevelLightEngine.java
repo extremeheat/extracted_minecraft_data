@@ -11,6 +11,7 @@ import java.util.function.IntSupplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.thread.ConsecutiveExecutor;
 import net.minecraft.world.level.ChunkPos;
@@ -44,7 +45,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    public int runLightUpdates() {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran automatically on a different thread!"));
+      throw (UnsupportedOperationException)DevUtil.pauseInIde(new UnsupportedOperationException("Ran automatically on a different thread!"));
    }
 
    public void checkBlock(final BlockPos pos) {

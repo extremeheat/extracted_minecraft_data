@@ -1,6 +1,6 @@
 package net.minecraft.world.level.redstone;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +21,7 @@ public class DefaultRedstoneWireEvaluator extends RedstoneWireEvaluator {
             level.setBlock(pos, (BlockState)state.setValue(RedstoneWireBlock.POWER, targetStrength), 2);
          }
 
-         Set<BlockPos> toUpdate = Sets.newHashSet();
+         Set<BlockPos> toUpdate = new HashSet();
          toUpdate.add(pos);
 
          for(Direction direction : Direction.values()) {

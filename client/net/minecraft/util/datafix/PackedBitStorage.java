@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix;
 
-import net.minecraft.util.Mth;
 import org.apache.commons.lang3.Validate;
 
 public class PackedBitStorage {
@@ -11,7 +10,7 @@ public class PackedBitStorage {
    private final int size;
 
    public PackedBitStorage(final int bits, final int size) {
-      this(bits, size, new long[Mth.roundToward(size * bits, 64) / 64]);
+      this(bits, size, new long[roundToward(size * bits, 64) / 64]);
    }
 
    public PackedBitStorage(final int bits, final int size, final long[] data) {
@@ -21,7 +20,7 @@ public class PackedBitStorage {
       this.bits = bits;
       this.data = data;
       this.mask = (1L << bits) - 1L;
-      int requiredLength = Mth.roundToward(size * bits, 64) / 64;
+      int requiredLength = roundToward(size * bits, 64) / 64;
       if (data.length != requiredLength) {
          throw new IllegalArgumentException("Invalid length given for storage, got: " + data.length + " but expected: " + requiredLength);
       }
@@ -63,5 +62,13 @@ public class PackedBitStorage {
 
    public int getBits() {
       return this.bits;
+   }
+
+   private static int roundToward(final int input, final int multiple) {
+      return positiveCeilDiv(input, multiple) * multiple;
+   }
+
+   private static int positiveCeilDiv(final int input, final int divisor) {
+      return -Math.floorDiv(-input, divisor);
    }
 }

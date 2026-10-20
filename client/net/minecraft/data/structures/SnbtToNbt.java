@@ -1,6 +1,5 @@
 package net.minecraft.data.structures;
 
-import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import com.google.common.hash.HashingOutputStream;
@@ -11,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -36,7 +36,7 @@ public class SnbtToNbt implements DataProvider {
 
    public SnbtToNbt(final PackOutput output, final Iterable<Path> inputFolders) {
       super();
-      this.filters = Lists.newArrayList();
+      this.filters = new ArrayList();
       this.output = output;
       this.inputFolders = inputFolders;
    }
@@ -58,7 +58,7 @@ public class SnbtToNbt implements DataProvider {
 
    public CompletableFuture<?> run(final CachedOutput cache) {
       Path output = this.output.getOutputFolder();
-      List<CompletableFuture<?>> tasks = Lists.newArrayList();
+      List<CompletableFuture<?>> tasks = new ArrayList();
 
       for(Path input : this.inputFolders) {
          tasks.add(CompletableFuture.supplyAsync(() -> {

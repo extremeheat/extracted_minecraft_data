@@ -3,13 +3,13 @@ package net.minecraft.client;
 import com.mojang.blaze3d.platform.MessageBox;
 import com.mojang.logging.LogUtils;
 import com.mojang.text2speech.Narrator;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.main.SilentInitException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.DevUtil;
 import org.slf4j.Logger;
 
 public class GameNarrator {
@@ -77,7 +77,7 @@ public class GameNarrator {
    }
 
    private void logNarratedMessage(final String message) {
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (DevUtil.IS_RUNNING_IN_IDE) {
          LOGGER.debug("Narrating: {}", message.replaceAll("\n", "\\\\n"));
       }
 

@@ -1,7 +1,7 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 public class ServerScoreboard extends Scoreboard {
    private final MinecraftServer server;
-   private final Set<Objective> trackedObjectives = Sets.newHashSet();
+   private final Set<Objective> trackedObjectives = new HashSet();
    private boolean dirty;
 
    public ServerScoreboard(final MinecraftServer server) {
@@ -176,7 +176,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    public List<Packet<?>> getStartTrackingPackets(final Objective objective) {
-      List<Packet<?>> packets = Lists.newArrayList();
+      List<Packet<?>> packets = new ArrayList();
       packets.add(new ClientboundSetObjectivePacket(objective, 0));
 
       for(DisplaySlot slot : DisplaySlot.values()) {
@@ -205,7 +205,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    public List<Packet<?>> getStopTrackingPackets(final Objective objective) {
-      List<Packet<?>> packets = Lists.newArrayList();
+      List<Packet<?>> packets = new ArrayList();
       packets.add(new ClientboundSetObjectivePacket(objective, 1));
 
       for(DisplaySlot slot : DisplaySlot.values()) {

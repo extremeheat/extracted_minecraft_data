@@ -1,10 +1,10 @@
 package net.minecraft.advancements.triggers;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -37,8 +37,8 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
    }
 
    public void trigger(final ServerPlayer player, final Collection<Entity> victims, final @Nullable ItemStack firedByWeapon) {
-      List<LootContext> victimContexts = Lists.newArrayList();
-      Set<EntityType<?>> entityTypes = Sets.newHashSet();
+      List<LootContext> victimContexts = new ArrayList();
+      Set<EntityType<?>> entityTypes = new HashSet();
 
       for(Entity victim : victims) {
          entityTypes.add(victim.getType());
@@ -66,7 +66,7 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
       public boolean matches(final Collection<LootContext> victims, final int uniqueEntityTypes, final @Nullable ItemStack firedFromWeapon) {
          if (!this.firedFromWeapon.isPresent() || firedFromWeapon != null && ((ItemPredicate)this.firedFromWeapon.get()).test((ItemInstance)firedFromWeapon)) {
             if (!this.victims.isEmpty()) {
-               List<LootContext> victimsCopy = Lists.newArrayList(victims);
+               List<LootContext> victimsCopy = new ArrayList(victims);
 
                for(Holder<LootItemCondition> predicate : this.victims) {
                   boolean found = false;

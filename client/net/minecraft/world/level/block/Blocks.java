@@ -551,6 +551,11 @@ public class Blocks {
    public static final Block TERRACOTTA;
    public static final Block COAL_BLOCK;
    public static final Block PACKED_ICE;
+   public static final Block PACKED_ICE_BRICKS;
+   public static final Block PACKED_ICE_BRICK_SLAB;
+   public static final Block PACKED_ICE_BRICK_STAIRS;
+   public static final Block PACKED_ICE_BRICK_WALL;
+   public static final Block CHISELED_PACKED_ICE;
    public static final Block SUNFLOWER;
    public static final Block LILAC;
    public static final Block ROSE_BUSH;
@@ -1589,6 +1594,11 @@ public class Blocks {
       TERRACOTTA = register(BlockItemIds.TERRACOTTA, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
       COAL_BLOCK = register(BlockItemIds.COAL_BLOCK, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(5.0F, 6.0F));
       PACKED_ICE = register(BlockItemIds.PACKED_ICE, BlockBehaviour.Properties.of().mapColor(MapColor.ICE).instrument(NoteBlockInstrument.CHIME).friction(0.98F).strength(0.5F).sound(BlockSoundSets.PACKED_ICE));
+      PACKED_ICE_BRICKS = register(BlockItemIds.PACKED_ICE_BRICKS, BlockBehaviour.Properties.of().mapColor(MapColor.ICE).instrument(NoteBlockInstrument.CHIME).friction(0.6F).strength(0.5F).sound(BlockSoundSets.PACKED_ICE));
+      PACKED_ICE_BRICK_SLAB = registerSlab(BlockItemIds.PACKED_ICE_BRICK_SLAB, PACKED_ICE_BRICKS);
+      PACKED_ICE_BRICK_STAIRS = registerStair(BlockItemIds.PACKED_ICE_BRICK_STAIRS, PACKED_ICE_BRICKS);
+      PACKED_ICE_BRICK_WALL = registerWall(BlockItemIds.PACKED_ICE_BRICK_WALL, PACKED_ICE_BRICKS);
+      CHISELED_PACKED_ICE = register(BlockItemIds.CHISELED_PACKED_ICE, BlockBehaviour.Properties.ofFullCopy(PACKED_ICE_BRICKS));
       SUNFLOWER = register(BlockItemIds.SUNFLOWER, TallFlowerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(BlockSoundSets.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava().pushReaction(PushReaction.POPPED));
       LILAC = register(BlockItemIds.LILAC, TallFlowerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(BlockSoundSets.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava().pushReaction(PushReaction.POPPED));
       ROSE_BUSH = register(BlockItemIds.ROSE_BUSH, TallFlowerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollision().instabreak().sound(BlockSoundSets.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava().pushReaction(PushReaction.POPPED));
@@ -1855,7 +1865,7 @@ public class Blocks {
       TARGET = register(BlockItemIds.TARGET, TargetBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.QUARTZ).strength(0.5F).sound(BlockSoundSets.GRASS));
       BEE_NEST = register(BlockItemIds.BEE_NEST, BeehiveBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).instrument(NoteBlockInstrument.BASS).strength(0.3F).sound(BlockSoundSets.WOOD).ignitedByLava());
       BEEHIVE = register(BlockItemIds.BEEHIVE, BeehiveBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(0.6F).sound(BlockSoundSets.WOOD).ignitedByLava());
-      HONEY_BLOCK = register(BlockItemIds.HONEY_BLOCK, HoneyBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).speedFactor(0.4F).jumpFactor(0.5F).noOcclusion().sound(BlockSoundSets.HONEY_BLOCK));
+      HONEY_BLOCK = register(BlockItemIds.HONEY_BLOCK, HoneyBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).speedFactor(0.4F).jumpFactor(0.5F).noOcclusion().sound(BlockSoundSets.HONEY_BLOCK).isValidSpawn(Blocks::never));
       HONEYCOMB_BLOCK = register(BlockItemIds.HONEYCOMB_BLOCK, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).strength(0.6F).sound(BlockSoundSets.CORAL_BLOCK));
       NETHERITE_BLOCK = register(BlockItemIds.NETHERITE_BLOCK, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().strength(50.0F, 1200.0F).sound(BlockSoundSets.NETHERITE_BLOCK));
       ANCIENT_DEBRIS = register(BlockItemIds.ANCIENT_DEBRIS, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).requiresCorrectToolForDrops().strength(30.0F, 1200.0F).sound(BlockSoundSets.ANCIENT_DEBRIS));

@@ -4,13 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.minecraft.world.level.block.state.properties.Property;
+import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
 
 public abstract class StateHolder<O, S> {
@@ -98,8 +98,10 @@ public abstract class StateHolder<O, S> {
       return Optional.ofNullable(this.getNullableValue(property));
    }
 
-   public <T extends Comparable<T>> T getValueOrElse(final Property<T> property, final T defaultValue) {
-      return (T)(Objects.requireNonNullElse(this.getNullableValue(property), defaultValue));
+   @Contract("_,!null->!null;_,null->_")
+   public <T extends Comparable<T>> @Nullable T getValueOrElse(final Property<T> property, final @Nullable T defaultValue) {
+      T value = this.getNullableValue(property);
+      return (T)(value != null ? value : defaultValue);
    }
 
    public <T extends Comparable<T>, V extends T> S setValue(final Property<T> property, final V value) {

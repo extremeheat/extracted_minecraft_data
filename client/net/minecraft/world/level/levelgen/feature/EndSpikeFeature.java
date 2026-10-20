@@ -3,11 +3,11 @@ package net.minecraft.world.level.levelgen.feature;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -172,7 +172,7 @@ public record EndSpikeFeature(List<EndSpike> spikes, boolean crystalInvulnerable
 
       public List<EndSpike> load(final Long seed) {
          IntArrayList sizes = Util.toShuffledList(IntStream.range(0, 10), RandomSource.createThreadLocalInstance(seed));
-         List<EndSpike> result = Lists.newArrayList();
+         List<EndSpike> result = new ArrayList();
 
          for(int i = 0; i < 10; ++i) {
             int x = Mth.floor(42.0 * Math.cos(2.0 * (-3.141592653589793 + 0.3141592653589793 * (double)i)));

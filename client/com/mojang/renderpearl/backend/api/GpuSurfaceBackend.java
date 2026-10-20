@@ -7,6 +7,8 @@ import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.util.Collection;
 
 public interface GpuSurfaceBackend extends UncheckedAutoCloseable {
+   boolean isDXGI();
+
    void configure(GpuSurface.Configuration config) throws SurfaceException;
 
    boolean isSuboptimal();

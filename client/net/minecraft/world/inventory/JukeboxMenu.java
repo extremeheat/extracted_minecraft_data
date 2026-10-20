@@ -23,6 +23,6 @@ public class JukeboxMenu extends ChestMenu {
 
    public OptionalInt getPlayingNextPos() {
       int pos = this.data.get(0);
-      return pos != -1 ? JukeboxBlockEntity.findNextPlayListPosition(this.container, pos) : OptionalInt.empty();
+      return pos != -1 ? JukeboxBlockEntity.findNextPlaylistPosition(this.container, pos) : OptionalInt.empty();
    }
 }

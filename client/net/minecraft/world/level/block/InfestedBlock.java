@@ -1,6 +1,6 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Maps;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -20,9 +20,9 @@ import org.jspecify.annotations.Nullable;
 
 public class InfestedBlock extends Block {
    private final Block hostBlock;
-   private static final Map<Block, Block> BLOCK_BY_HOST_BLOCK = Maps.newIdentityHashMap();
-   private static final Map<BlockState, BlockState> HOST_TO_INFESTED_STATES = Maps.newIdentityHashMap();
-   private static final Map<BlockState, BlockState> INFESTED_TO_HOST_STATES = Maps.newIdentityHashMap();
+   private static final Map<Block, Block> BLOCK_BY_HOST_BLOCK = new IdentityHashMap();
+   private static final Map<BlockState, BlockState> HOST_TO_INFESTED_STATES = new IdentityHashMap();
+   private static final Map<BlockState, BlockState> INFESTED_TO_HOST_STATES = new IdentityHashMap();
 
    public InfestedBlock(final Block hostBlock, final BlockBehaviour.Properties properties) {
       super(properties.destroyTime(hostBlock.defaultDestroyTime() / 2.0F).explosionResistance(0.75F));

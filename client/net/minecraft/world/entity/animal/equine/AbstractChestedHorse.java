@@ -176,7 +176,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return Leashable.createQuadLeashOffsets(this, 0.04, 0.41, 0.18, 0.73);
    }
 
-   protected void playChestEquipsSound() {
+   public void playChestEquipsSound() {
       this.playSound(SoundEvents.DONKEY_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
    }
 

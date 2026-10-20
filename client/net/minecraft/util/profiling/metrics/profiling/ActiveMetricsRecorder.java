@@ -1,10 +1,10 @@
 package net.minecraft.util.profiling.metrics.profiling;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -112,7 +112,7 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
                sampler.onEndTick(this.currentTick);
                if (sampler.triggersThreshold()) {
                   RecordedDeviation recordedDeviation = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
-                  ((List)this.deviationsBySampler.computeIfAbsent(sampler, (ignored) -> Lists.newArrayList())).add(recordedDeviation);
+                  ((List)this.deviationsBySampler.computeIfAbsent(sampler, (ignored) -> new ArrayList())).add(recordedDeviation);
                }
             }
          }

@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -82,8 +81,8 @@ public class StructureTemplate {
    public static final String ENTITY_TAG_BLOCKPOS = "blockPos";
    public static final String ENTITY_TAG_NBT = "nbt";
    public static final String SIZE_TAG = "size";
-   private final List<Palette> palettes = Lists.newArrayList();
-   private final List<StructureEntityInfo> entityInfoList = Lists.newArrayList();
+   private final List<Palette> palettes = new ArrayList();
+   private final List<StructureEntityInfo> entityInfoList = new ArrayList();
    private Vec3i size;
    private String author;
 
@@ -111,9 +110,9 @@ public class StructureTemplate {
    private void fillFromWorld(final Level level, final BlockPos position, final Vec3i size, final boolean includeEntities, final List<Block> ignoreBlocks) {
       if (size.getX() >= 1 && size.getY() >= 1 && size.getZ() >= 1) {
          BlockPos corner2 = position.offset(size).offset(-1, -1, -1);
-         List<StructureBlockInfo> fullBlockList = Lists.newArrayList();
-         List<StructureBlockInfo> blockEntitiesList = Lists.newArrayList();
-         List<StructureBlockInfo> otherBlocksList = Lists.newArrayList();
+         List<StructureBlockInfo> fullBlockList = new ArrayList();
+         List<StructureBlockInfo> blockEntitiesList = new ArrayList();
+         List<StructureBlockInfo> otherBlocksList = new ArrayList();
          BlockPos minCorner = new BlockPos(Math.min(position.getX(), corner2.getX()), Math.min(position.getY(), corner2.getY()), Math.min(position.getZ(), corner2.getZ()));
          BlockPos maxCorner = new BlockPos(Math.max(position.getX(), corner2.getX()), Math.max(position.getY(), corner2.getY()), Math.max(position.getZ(), corner2.getZ()));
          this.size = size;
@@ -162,7 +161,7 @@ public class StructureTemplate {
       fullBlockList.sort(comparator);
       otherBlocksList.sort(comparator);
       blockEntitiesList.sort(comparator);
-      List<StructureBlockInfo> blockInfoList = Lists.newArrayList();
+      List<StructureBlockInfo> blockInfoList = new ArrayList();
       blockInfoList.addAll(fullBlockList);
       blockInfoList.addAll(otherBlocksList);
       blockInfoList.addAll(blockEntitiesList);
@@ -243,9 +242,9 @@ public class StructureTemplate {
          List<StructureBlockInfo> blockInfoList = settings.getRandomPalette(this.palettes, position).blocks();
          if ((!blockInfoList.isEmpty() || !settings.isIgnoreEntities() && !this.entityInfoList.isEmpty()) && this.size.getX() >= 1 && this.size.getY() >= 1 && this.size.getZ() >= 1) {
             BoundingBox boundingBox = settings.getBoundingBox();
-            List<BlockPos> toFill = Lists.newArrayListWithCapacity(settings.shouldApplyWaterlogging() ? blockInfoList.size() : 0);
-            List<BlockPos> lockedFluids = Lists.newArrayListWithCapacity(settings.shouldApplyWaterlogging() ? blockInfoList.size() : 0);
-            List<Pair<BlockPos, CompoundTag>> placed = Lists.newArrayListWithCapacity(blockInfoList.size());
+            List<BlockPos> toFill = new ArrayList(settings.shouldApplyWaterlogging() ? blockInfoList.size() : 0);
+            List<BlockPos> lockedFluids = new ArrayList(settings.shouldApplyWaterlogging() ? blockInfoList.size() : 0);
+            List<Pair<BlockPos, CompoundTag>> placed = new ArrayList(blockInfoList.size());
             int minX = 2147483647;
             int minY = 2147483647;
             int minZ = 2147483647;
@@ -585,7 +584,7 @@ public class StructureTemplate {
          tag.put("blocks", new ListTag());
          tag.put("palette", new ListTag());
       } else {
-         List<SimplePalette> palettes = Lists.newArrayList();
+         List<SimplePalette> palettes = new ArrayList();
          SimplePalette mainPalette = new SimplePalette();
          palettes.add(mainPalette);
 
@@ -695,9 +694,9 @@ public class StructureTemplate {
          palette.addMapping(NbtUtils.readBlockState(blockLookup, paletteList.getCompoundOrEmpty(i)), i);
       }
 
-      List<StructureBlockInfo> fullBlockList = Lists.newArrayList();
-      List<StructureBlockInfo> blockEntitiesList = Lists.newArrayList();
-      List<StructureBlockInfo> otherBlocksList = Lists.newArrayList();
+      List<StructureBlockInfo> fullBlockList = new ArrayList();
+      List<StructureBlockInfo> blockEntitiesList = new ArrayList();
+      List<StructureBlockInfo> otherBlocksList = new ArrayList();
       blockList.compoundStream().forEach((blockTag) -> {
          ListTag posTag = blockTag.getListOrEmpty("pos");
          BlockPos pos = new BlockPos(posTag.getIntOr(0, 0), posTag.getIntOr(1, 0), posTag.getIntOr(2, 0));

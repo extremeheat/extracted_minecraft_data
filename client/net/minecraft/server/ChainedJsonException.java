@@ -1,14 +1,14 @@
 package net.minecraft.server;
 
-import com.google.common.collect.Lists;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 public class ChainedJsonException extends IOException {
-   private final List<Entry> entries = Lists.newArrayList();
+   private final List<Entry> entries = new ArrayList();
    private final String message;
 
    public ChainedJsonException(final String message) {
@@ -52,7 +52,7 @@ public class ChainedJsonException extends IOException {
 
    public static class Entry {
       private @Nullable String filename;
-      private final List<String> jsonKeys = Lists.newArrayList();
+      private final List<String> jsonKeys = new ArrayList();
 
       private Entry() {
          super();

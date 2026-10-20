@@ -1,7 +1,7 @@
 package net.minecraft.world.level.gameevent;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -16,9 +16,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class EuclideanGameEventListenerRegistry implements GameEventListenerRegistry {
-   private final List<GameEventListener> listeners = Lists.newArrayList();
-   private final Set<GameEventListener> listenersToRemove = Sets.newHashSet();
-   private final List<GameEventListener> listenersToAdd = Lists.newArrayList();
+   private final List<GameEventListener> listeners = new ArrayList();
+   private final Set<GameEventListener> listenersToRemove = new HashSet();
+   private final List<GameEventListener> listenersToAdd = new ArrayList();
    private boolean processing;
    private final ServerLevel level;
    private final int sectionY;

@@ -25,7 +25,7 @@ public class ItemDisplayWidget extends AbstractWidget {
       this.tooltip = tooltip;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       graphics.item(this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, 0);
       if (this.decorations) {
          graphics.itemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
@@ -36,7 +36,7 @@ public class ItemDisplayWidget extends AbstractWidget {
       }
 
       if (this.tooltip && this.isHovered()) {
-         this.extractTooltip(graphics, mouseX, mouseY);
+         this.extractTooltip(graphics, graphics.mouseX(), graphics.mouseY());
       }
 
    }

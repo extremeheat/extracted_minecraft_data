@@ -129,6 +129,17 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       RenderPassDescriptor.Attachment<OptionalDouble> depthAttachment = descriptor.depthAttachment();
       int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), this.renderPassColorTextures, depthAttachment == null ? null : (GlTextureView)depthAttachment.textureView());
       this.stateManager._glBindFramebuffer(36160, fbo);
+      int[] drawBuffers = new int[this.renderPassColorTextures.size()];
+
+      for(int i = 0; i < this.renderPassColorTextures.size(); ++i) {
+         if (colorAttachments.get(i) != null) {
+            drawBuffers[i] = '\u8ce0' + i;
+         } else {
+            drawBuffers[i] = 0;
+         }
+      }
+
+      GL33C.glDrawBuffers(drawBuffers);
       int width = 0;
       int height = 0;
       if (!colorAttachments.isEmpty()) {
@@ -168,17 +179,6 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       }
 
       GL33C.glViewport(0, 0, width, height);
-      int[] drawBuffers = new int[this.renderPassColorTextures.size()];
-
-      for(int i = 0; i < this.renderPassColorTextures.size(); ++i) {
-         if (colorAttachments.get(i) != null) {
-            drawBuffers[i] = '\u8ce0' + i;
-         } else {
-            drawBuffers[i] = 0;
-         }
-      }
-
-      GL33C.glDrawBuffers(drawBuffers);
       this.lastPipeline = null;
       ScissorState scissorState = new ScissorState();
       scissorState.enable(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());

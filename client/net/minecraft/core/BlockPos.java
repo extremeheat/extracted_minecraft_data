@@ -384,6 +384,35 @@ public class BlockPos extends Vec3i {
          };
    }
 
+   public static Iterable<BlockPos> horizontalRays(final BlockPos origin, final int distance) {
+      return horizontalRays(origin, 1, distance);
+   }
+
+   public static Iterable<BlockPos> horizontalAtDistance(final BlockPos origin, final int distance) {
+      return horizontalRays(origin, distance, distance);
+   }
+
+   private static Iterable<BlockPos> horizontalRays(final BlockPos origin, final int minDistance, final int maxDistance) {
+      Direction[] directions = (Direction[])Direction.Plane.HORIZONTAL.stream().toArray((x$0) -> new Direction[x$0]);
+      int rayLength = Math.max(maxDistance - minDistance + 1, 0);
+      int stepCount = directions.length * rayLength;
+      return () -> new AbstractIterator<BlockPos>() {
+            private final MutableBlockPos cursor = new MutableBlockPos();
+            private int index;
+
+            protected BlockPos computeNext() {
+               if (this.index == stepCount) {
+                  return (BlockPos)this.endOfData();
+               } else {
+                  Direction direction = directions[this.index / rayLength];
+                  int distance = minDistance + this.index % rayLength;
+                  ++this.index;
+                  return this.cursor.setWithOffset(origin, direction.getStepX() * distance, 0, direction.getStepZ() * distance);
+               }
+            }
+         };
+   }
+
    public static Iterable<MutableBlockPos> spiralAround(final BlockPos center, final int radius, final Direction firstDirection, final Direction secondDirection) {
       Validate.validState(firstDirection.getAxis() != secondDirection.getAxis(), "The two directions cannot be on the same axis", new Object[0]);
       return () -> new AbstractIterator<MutableBlockPos>() {

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.oit.OitStage;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.level.WorldBorderRenderState;
 import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -138,24 +139,12 @@ public class WorldBorderRenderer implements AutoCloseable {
       }
    }
 
-   public void render(final WorldBorderRenderState state, final RenderPass renderPass, final Vec3 cameraPos, final double renderDistance) {
+   public void render(final WorldBorderRenderState state, final RenderPass renderPass, final Vec3 cameraPos, final double renderDistance, final @Nullable OitStage oitStage) {
       if (!(state.alpha <= 0.0) && this.texture != null) {
          List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
-         RenderPipeline renderPipeline = RenderPipelines.WORLD_BORDER;
+         RenderPipeline renderPipeline = RenderPipelines.worldBorder(oitStage);
          GpuBuffer indexBuffer = this.indices.getBuffer();
          GpuBufferSlice dynamicTransforms = this.prepareDynamicTransforms(state, cameraPos);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
-         this.prepareRenderPass(renderPass, dynamicTransforms, indexBuffer, this.texture);
-         this.draw(distancesPerDirection, renderDistance, cameraPos.x, cameraPos.z, indexBuffer, renderPass);
-      }
-   }
-
-   public void renderOit(final WorldBorderRenderState state, final Vec3 cameraPos, final double renderDistance, final OitStage stage, final RenderPass renderPass) {
-      if (!(state.alpha <= 0.0) && this.texture != null) {
-         List<WorldBorderRenderState.DistancePerDirection> distancesPerDirection = state.closestBorder(cameraPos.x, cameraPos.z);
-         GpuBuffer indexBuffer = this.indices.getBuffer();
-         GpuBufferSlice dynamicTransforms = this.prepareDynamicTransforms(state, cameraPos);
-         RenderPipeline renderPipeline = RenderPipelines.OIT_WORLD_BORDER.getPipeline(stage);
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
          this.prepareRenderPass(renderPass, dynamicTransforms, indexBuffer, this.texture);
          this.draw(distancesPerDirection, renderDistance, cameraPos.x, cameraPos.z, indexBuffer, renderPass);

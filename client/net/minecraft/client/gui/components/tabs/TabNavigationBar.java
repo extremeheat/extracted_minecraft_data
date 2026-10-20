@@ -144,12 +144,12 @@ public class TabNavigationBar extends AbstractContainerWidget {
 
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      UnmodifiableIterator var5 = this.tabButtons.iterator();
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      UnmodifiableIterator var2 = this.tabButtons.iterator();
 
-      while(var5.hasNext()) {
-         TabButton value = (TabButton)var5.next();
-         value.extractRenderState(graphics, mouseX, mouseY, a);
+      while(var2.hasNext()) {
+         TabButton value = (TabButton)var2.next();
+         value.extractRenderState(graphics);
       }
 
    }

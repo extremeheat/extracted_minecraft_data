@@ -1,7 +1,7 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -415,8 +415,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
    }
 
    static {
-      ADULT_ARMOR_PARTS_PER_SLOT = Maps.newEnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "body"), EquipmentSlot.FEET, Set.of("left_leg", "right_leg")));
-      BABY_ARMOR_PARTS_PER_SLOT = Maps.newEnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "waist"), EquipmentSlot.FEET, Set.of("left_foot", "right_foot")));
+      ADULT_ARMOR_PARTS_PER_SLOT = new EnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "body"), EquipmentSlot.FEET, Set.of("left_leg", "right_leg")));
+      BABY_ARMOR_PARTS_PER_SLOT = new EnumMap(Map.of(EquipmentSlot.HEAD, Set.of("head"), EquipmentSlot.CHEST, Set.of("body", "left_arm", "right_arm"), EquipmentSlot.LEGS, Set.of("left_leg", "right_leg", "waist"), EquipmentSlot.FEET, Set.of("left_foot", "right_foot")));
    }
 
    public static enum ArmPose {

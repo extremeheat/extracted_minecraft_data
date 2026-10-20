@@ -93,8 +93,8 @@ public class RealmsJoinRealmWithCodeScreen extends AbstractRealmsCodeScreen {
       this.minecraft.getNarrator().saySystemNow(message);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       if (this.message != null && this.joinButton != null) {
          graphics.centeredText(this.font, (Component)this.message, this.width / 2, this.joinButton.getY() + this.joinButton.getHeight() + 8, -1);
       }

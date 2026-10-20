@@ -21,7 +21,7 @@ public abstract class AbstractStringWidget extends AbstractWidget {
 
    public abstract void visitLines(ActiveTextCollector output);
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       GuiGraphicsExtractor.HoveredTextEffects effects;
       if (this.isHovered()) {
          if (this.componentClickHandler != null) {

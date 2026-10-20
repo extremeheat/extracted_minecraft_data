@@ -59,8 +59,8 @@ public class ChatComponent {
    private final Minecraft minecraft;
    private final CommandHistory commandHistory;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
-   private final List<GuiMessage> allMessages = Lists.newArrayList();
-   private final List<GuiMessage.Line> trimmedMessages = Lists.newArrayList();
+   private final List<GuiMessage> allMessages = new ArrayList();
+   private final List<GuiMessage.Line> trimmedMessages = new ArrayList();
    private int chatScrollbarPos;
    private boolean newMessageSinceScroll;
    private @Nullable Draft latestDraft;
@@ -104,9 +104,9 @@ public class ChatComponent {
       return count;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final int ticks, final int mouseX, final int mouseY, final DisplayMode displayMode, final boolean changeCursorOnInsertions) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final int ticks, final DisplayMode displayMode, final boolean changeCursorOnInsertions) {
       graphics.pose().pushMatrix();
-      this.extractRenderState((ChatGraphicsAccess)(displayMode.foreground ? new DrawingFocusedGraphicsAccess(graphics, font, mouseX, mouseY, changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, displayMode);
+      this.extractRenderState((ChatGraphicsAccess)(displayMode.foreground ? new DrawingFocusedGraphicsAccess(graphics, font, graphics.mouseX(), graphics.mouseY(), changeCursorOnInsertions) : new DrawingBackgroundGraphicsAccess(graphics)), graphics.guiHeight(), ticks, displayMode);
       graphics.pose().popMatrix();
    }
 

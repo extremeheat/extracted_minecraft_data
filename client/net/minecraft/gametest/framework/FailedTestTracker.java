@@ -1,12 +1,12 @@
 package net.minecraft.gametest.framework;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 
 public class FailedTestTracker {
-   private static final Set<Holder.Reference<GameTestInstance>> LAST_FAILED_TESTS = Sets.newHashSet();
+   private static final Set<Holder.Reference<GameTestInstance>> LAST_FAILED_TESTS = new HashSet();
 
    public FailedTestTracker() {
       super();

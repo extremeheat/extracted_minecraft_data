@@ -1,12 +1,12 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -157,7 +157,7 @@ public class LootTable implements Validatable {
    }
 
    private void shuffleAndSplitItems(final ObjectArrayList<ItemStack> result, final int availableSlots, final RandomSource random) {
-      List<ItemStack> splittableItems = Lists.newArrayList();
+      List<ItemStack> splittableItems = new ArrayList();
       Iterator<ItemStack> iterator = result.iterator();
 
       while(iterator.hasNext()) {

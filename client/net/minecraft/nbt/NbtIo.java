@@ -20,8 +20,8 @@ import java.util.zip.GZIPOutputStream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.util.DelegateDataOutput;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.FastBufferedInputStream;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class NbtIo {
@@ -417,7 +417,7 @@ public class NbtIo {
          try {
             super.writeUTF(s);
          } catch (UTFDataFormatException exception) {
-            Util.logAndPauseIfInIde("Failed to write NBT String", exception);
+            DevUtil.logAndPauseIfInIde("Failed to write NBT String", exception);
             super.writeUTF("");
          }
 

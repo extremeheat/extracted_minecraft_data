@@ -475,15 +475,7 @@ public class GameTestHelper {
    }
 
    public void setBlock(final BlockPos blockPos, final BlockState blockState, final Direction direction) {
-      BlockState state = blockState;
-      if (blockState.hasProperty(HorizontalDirectionalBlock.FACING)) {
-         state = (BlockState)blockState.setValue(HorizontalDirectionalBlock.FACING, direction);
-      }
-
-      if (blockState.hasProperty(BlockStateProperties.FACING)) {
-         state = (BlockState)blockState.setValue(BlockStateProperties.FACING, direction);
-      }
-
+      BlockState state = (BlockState)((BlockState)blockState.trySetValue(HorizontalDirectionalBlock.FACING, direction)).trySetValue(BlockStateProperties.FACING, direction);
       this.getLevel().setBlockAndUpdate(this.absolutePos(blockPos), state);
    }
 
@@ -545,22 +537,18 @@ public class GameTestHelper {
 
    public <T extends Comparable<T>> void assertBlockProperty(final BlockPos pos, final Property<T> property, final T value) {
       BlockState blockState = this.getBlockState(pos);
-      boolean hasProperty = blockState.hasProperty(property);
-      if (!hasProperty) {
+      T propertyValue = blockState.getValueOrElse(property, (Comparable)null);
+      if (propertyValue == null) {
          throw this.assertionException(pos, "test.error.block_property_missing", property.getName(), value);
-      } else if (!blockState.getValue(property).equals(value)) {
+      } else if (!propertyValue.equals(value)) {
          throw this.assertionException(pos, "test.error.block_property_mismatch", property.getName(), value, blockState.getValue(property));
       }
    }
 
    public <T extends Comparable<T>> void assertBlockProperty(final BlockPos pos, final Property<T> property, final Predicate<T> predicate, final Component errorMessage) {
       this.assertBlockState(pos, (blockState) -> {
-         if (!blockState.hasProperty(property)) {
-            return false;
-         } else {
-            T value = (T)blockState.getValue(property);
-            return predicate.test(value);
-         }
+         T value = (T)blockState.getValueOrElse(property, (Comparable)null);
+         return value != null && predicate.test(value);
       }, (state) -> errorMessage);
    }
 

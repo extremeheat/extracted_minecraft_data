@@ -1,6 +1,5 @@
 package net.minecraft.client.resources.model.cuboid;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -8,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
+import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.core.Direction;
@@ -133,7 +133,7 @@ public record CuboidModelElement(Vector3fc from, Vector3fc to, Map<Direction, Cu
       }
 
       private Map<Direction, CuboidFace> filterNullFromFaces(final JsonDeserializationContext context, final JsonObject object) {
-         Map<Direction, CuboidFace> result = Maps.newEnumMap(Direction.class);
+         Map<Direction, CuboidFace> result = new EnumMap(Direction.class);
          JsonObject faceObjects = GsonHelper.getAsJsonObject(object, "faces");
 
          for(Map.Entry<String, JsonElement> entry : faceObjects.entrySet()) {

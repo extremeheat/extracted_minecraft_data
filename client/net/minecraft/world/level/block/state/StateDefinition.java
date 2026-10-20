@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -162,7 +161,7 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
 
    public static class Builder<O, S extends StateHolder<O, S>> {
       private final O owner;
-      private final Map<String, Property<?>> properties = Maps.newHashMap();
+      private final Map<String, Property<?>> properties = new HashMap();
 
       public Builder(final O owner) {
          super();

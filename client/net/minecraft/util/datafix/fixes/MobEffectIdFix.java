@@ -10,51 +10,15 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import net.minecraft.util.Util;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class MobEffectIdFix extends DataFix {
-   private static final Int2ObjectMap<String> ID_MAP = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(), (m) -> {
-      m.put(1, "minecraft:speed");
-      m.put(2, "minecraft:slowness");
-      m.put(3, "minecraft:haste");
-      m.put(4, "minecraft:mining_fatigue");
-      m.put(5, "minecraft:strength");
-      m.put(6, "minecraft:instant_health");
-      m.put(7, "minecraft:instant_damage");
-      m.put(8, "minecraft:jump_boost");
-      m.put(9, "minecraft:nausea");
-      m.put(10, "minecraft:regeneration");
-      m.put(11, "minecraft:resistance");
-      m.put(12, "minecraft:fire_resistance");
-      m.put(13, "minecraft:water_breathing");
-      m.put(14, "minecraft:invisibility");
-      m.put(15, "minecraft:blindness");
-      m.put(16, "minecraft:night_vision");
-      m.put(17, "minecraft:hunger");
-      m.put(18, "minecraft:weakness");
-      m.put(19, "minecraft:poison");
-      m.put(20, "minecraft:wither");
-      m.put(21, "minecraft:health_boost");
-      m.put(22, "minecraft:absorption");
-      m.put(23, "minecraft:saturation");
-      m.put(24, "minecraft:glowing");
-      m.put(25, "minecraft:levitation");
-      m.put(26, "minecraft:luck");
-      m.put(27, "minecraft:unluck");
-      m.put(28, "minecraft:slow_falling");
-      m.put(29, "minecraft:conduit_power");
-      m.put(30, "minecraft:dolphins_grace");
-      m.put(31, "minecraft:bad_omen");
-      m.put(32, "minecraft:hero_of_the_village");
-      m.put(33, "minecraft:darkness");
-   });
+   private static final Int2ObjectMap<String> ID_MAP = Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, "minecraft:speed"), Int2ObjectMap.entry(2, "minecraft:slowness"), Int2ObjectMap.entry(3, "minecraft:haste"), Int2ObjectMap.entry(4, "minecraft:mining_fatigue"), Int2ObjectMap.entry(5, "minecraft:strength"), Int2ObjectMap.entry(6, "minecraft:instant_health"), Int2ObjectMap.entry(7, "minecraft:instant_damage"), Int2ObjectMap.entry(8, "minecraft:jump_boost"), Int2ObjectMap.entry(9, "minecraft:nausea"), Int2ObjectMap.entry(10, "minecraft:regeneration"), Int2ObjectMap.entry(11, "minecraft:resistance"), Int2ObjectMap.entry(12, "minecraft:fire_resistance"), Int2ObjectMap.entry(13, "minecraft:water_breathing"), Int2ObjectMap.entry(14, "minecraft:invisibility"), Int2ObjectMap.entry(15, "minecraft:blindness"), Int2ObjectMap.entry(16, "minecraft:night_vision"), Int2ObjectMap.entry(17, "minecraft:hunger"), Int2ObjectMap.entry(18, "minecraft:weakness"), Int2ObjectMap.entry(19, "minecraft:poison"), Int2ObjectMap.entry(20, "minecraft:wither"), Int2ObjectMap.entry(21, "minecraft:health_boost"), Int2ObjectMap.entry(22, "minecraft:absorption"), Int2ObjectMap.entry(23, "minecraft:saturation"), Int2ObjectMap.entry(24, "minecraft:glowing"), Int2ObjectMap.entry(25, "minecraft:levitation"), Int2ObjectMap.entry(26, "minecraft:luck"), Int2ObjectMap.entry(27, "minecraft:unluck"), Int2ObjectMap.entry(28, "minecraft:slow_falling"), Int2ObjectMap.entry(29, "minecraft:conduit_power"), Int2ObjectMap.entry(30, "minecraft:dolphins_grace"), Int2ObjectMap.entry(31, "minecraft:bad_omen"), Int2ObjectMap.entry(32, "minecraft:hero_of_the_village"), Int2ObjectMap.entry(33, "minecraft:darkness")});
    private static final Set<String> MOB_EFFECT_INSTANCE_CARRIER_ITEMS = Set.of("minecraft:potion", "minecraft:splash_potion", "minecraft:lingering_potion", "minecraft:tipped_arrow");
 
    public MobEffectIdFix(final Schema outputSchema) {

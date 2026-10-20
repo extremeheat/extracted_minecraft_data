@@ -50,23 +50,23 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    protected void onRecipeBookButtonClick() {
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.extractBackground(graphics, mouseX, mouseY, a);
+         this.extractBackground(graphics);
       } else {
-         super.extractContents(graphics, mouseX, mouseY, a);
+         super.extractContents(graphics);
       }
 
       graphics.nextStratum();
-      this.recipeBookComponent.extractRenderState(graphics, mouseX, mouseY, a);
+      this.recipeBookComponent.extractRenderState(graphics);
       graphics.nextStratum();
-      this.extractCarriedItem(graphics, mouseX, mouseY);
-      this.extractTooltip(graphics, mouseX, mouseY);
-      this.recipeBookComponent.extractTooltip(graphics, mouseX, mouseY, this.hoveredSlot);
+      this.extractCarriedItem(graphics);
+      this.extractTooltip(graphics);
+      this.recipeBookComponent.extractTooltip(graphics, this.hoveredSlot);
    }
 
-   protected void extractSlots(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      super.extractSlots(graphics, mouseX, mouseY);
+   protected void extractSlots(final GuiGraphicsExtractor graphics) {
+      super.extractSlots(graphics);
       this.recipeBookComponent.extractGhostRecipe(graphics, this.isBiggerResultSlot());
    }
 

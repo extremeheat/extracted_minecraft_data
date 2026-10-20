@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -18,8 +18,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -126,8 +126,8 @@ public class WinScreen extends Screen {
 
    protected void init() {
       if (this.lines == null) {
-         this.lines = Lists.newArrayList();
-         this.narratorComponents = Lists.newArrayList();
+         this.lines = new ArrayList();
+         this.narratorComponents = new ArrayList();
          this.centeredLines = new IntOpenHashSet();
          if (this.poem) {
             this.wrapCreditsIO(END_POEM_LOCATION, this::addPoemFile);
@@ -258,10 +258,10 @@ public class WinScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       this.extractVignette(graphics);
-      this.scroll = Math.max(0.0F, this.scroll + a * this.scrollSpeed);
+      this.scroll = Math.max(0.0F, this.scroll + graphics.partialTicks() * this.scrollSpeed);
       int logoX = this.width / 2 - 128;
       int logoY = this.height + 50;
       float yOffs = -this.scroll;
@@ -298,15 +298,15 @@ public class WinScreen extends Screen {
       graphics.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.poem) {
          TextureManager textureManager = Minecraft.getInstance().getTextureManager();
          TextureHandle skyTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_SKY_LOCATION);
          TextureHandle portalTexture = textureManager.getTexture(AbstractEndPortalRenderer.END_PORTAL_LOCATION);
          TextureSetup textureSetup = TextureSetup.doubleTexture(skyTexture.textureView(), skyTexture.sampler(), portalTexture.textureView(), portalTexture.sampler());
-         graphics.fill(RenderPipelines.END_PORTAL_GUI, textureSetup, 0, 0, this.width, this.height);
+         graphics.fill(RenderPipelines.endPortal(new RenderPipelines.EndPortalParameters(false, true)), textureSetup, 0, 0, this.width, this.height);
       } else {
-         super.extractBackground(graphics, mouseX, mouseY, a);
+         super.extractBackground(graphics);
       }
 
    }

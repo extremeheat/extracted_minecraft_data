@@ -1,20 +1,20 @@
 package net.minecraft.util.thread;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Queues;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
-import net.minecraft.SharedConstants;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsRegistry;
@@ -29,7 +29,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Executor
    private final boolean propagatesCrashes;
    private final String name;
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Queue<R> pendingRunnables = Queues.newConcurrentLinkedQueue();
+   private final Queue<R> pendingRunnables = new ConcurrentLinkedQueue();
    private int blockingCount;
 
    protected BlockableEventLoop(final String name, final boolean propagatesCrashes) {
@@ -157,7 +157,7 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Executor
 
    protected void doRunTask(final R task) {
       try {
-         Zone ignored = TracyClient.beginZone("Task", SharedConstants.IS_RUNNING_IN_IDE);
+         Zone ignored = TracyClient.beginZone("Task", DevUtil.IS_RUNNING_IN_IDE);
 
          try {
             task.run();

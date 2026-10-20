@@ -19,9 +19,9 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Util;
 import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -110,7 +110,7 @@ public class TrialSpawnerStateData {
 
    public int countAdditionalPlayers(final BlockPos pos) {
       if (this.detectedPlayers.isEmpty()) {
-         Util.logAndPauseIfInIde("Trial Spawner at " + String.valueOf(pos) + " has no detected players");
+         DevUtil.logAndPauseIfInIde("Trial Spawner at " + String.valueOf(pos) + " has no detected players");
       }
 
       return Math.max(0, this.detectedPlayers.size() - 1);

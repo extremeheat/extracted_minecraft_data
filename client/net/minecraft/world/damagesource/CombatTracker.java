@@ -1,6 +1,6 @@
 package net.minecraft.world.damagesource;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.component.DataComponents;
@@ -20,7 +20,7 @@ public class CombatTracker {
    public static final int RESET_DAMAGE_STATUS_TIME = 100;
    public static final int RESET_COMBAT_STATUS_TIME = 300;
    private static final Style INTENTIONAL_GAME_DESIGN_STYLE;
-   private final List<CombatEntry> entries = Lists.newArrayList();
+   private final List<CombatEntry> entries = new ArrayList();
    private final LivingEntity mob;
    private int lastDamageTime;
    private int combatStartTime;

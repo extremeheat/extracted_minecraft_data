@@ -1,7 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.animal.nautilus.NautilusArmorModel;
@@ -31,7 +31,7 @@ public class ZombieNautilusRenderer extends MobRenderer<ZombieNautilus, Nautilus
    }
 
    private static Map<ZombieNautilusVariant.ModelType, NautilusModel> bakeModels(final EntityRendererProvider.Context context) {
-      return Maps.newEnumMap(Map.of(ZombieNautilusVariant.ModelType.NORMAL, new NautilusModel(context.bakeLayer(ModelLayers.ZOMBIE_NAUTILUS)), ZombieNautilusVariant.ModelType.WARM, new ZombieNautilusCoralModel(context.bakeLayer(ModelLayers.ZOMBIE_NAUTILUS_CORAL))));
+      return new EnumMap(Map.of(ZombieNautilusVariant.ModelType.NORMAL, new NautilusModel(context.bakeLayer(ModelLayers.ZOMBIE_NAUTILUS)), ZombieNautilusVariant.ModelType.WARM, new ZombieNautilusCoralModel(context.bakeLayer(ModelLayers.ZOMBIE_NAUTILUS_CORAL))));
    }
 
    public void submit(final NautilusRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {

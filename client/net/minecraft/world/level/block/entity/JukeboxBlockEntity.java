@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.JukeboxSong;
 import net.minecraft.world.item.JukeboxSongPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.JukeboxBlock;
@@ -209,7 +210,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       return isMusicDisc(this.item) && isInPlaylistMode(this.level, this.worldPosition);
    }
 
-   public static boolean isInPlaylistMode(final Level level, final BlockPos pos) {
+   public static boolean isInPlaylistMode(final LevelReader level, final BlockPos pos) {
       BlockPos above = pos.above();
       BlockState blockAbove = level.getBlockState(above);
       BlockEntity entityAbove = level.getBlockEntity(above);
@@ -220,9 +221,11 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       return item.has(DataComponents.JUKEBOX_PLAYABLE);
    }
 
-   public static OptionalInt findNextPlayListPosition(final Container container, final int startPosition) {
+   public static OptionalInt findNextPlaylistPosition(final Container container, final int startPosition) {
+      int startIndex = Math.max(-1, startPosition);
+
       for(int offset = 1; offset <= container.getContainerSize(); ++offset) {
-         int slot = (startPosition + offset) % container.getContainerSize();
+         int slot = (startIndex + offset) % container.getContainerSize();
          if (isMusicDisc(container.getItem(slot))) {
             return OptionalInt.of(slot);
          }
@@ -244,7 +247,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    private void tryToAdvancePlaylist(final boolean replayCurrentSongOtherwise) {
       BlockEntity blockEntity = this.level.getBlockEntity(this.worldPosition.above());
       if (blockEntity instanceof Container container) {
-         this.playlistPosition = findNextPlayListPosition(container, this.playlistPosition.orElse(-1));
+         this.playlistPosition = findNextPlaylistPosition(container, this.playlistPosition.orElse(-1));
          this.playlistPosition.ifPresentOrElse((newPosition) -> this.advancePlaylist(container, newPosition), replayCurrentSongOtherwise ? this::replayCurrentSong : () -> {
          });
       }

@@ -25,7 +25,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -68,9 +68,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
    private static final Component PINGING_STATUS;
    private static final Component ONLINE_STATUS;
    private final JoinMultiplayerScreen screen;
-   private final List<OnlineServerEntry> onlineServers = Lists.newArrayList();
+   private final List<OnlineServerEntry> onlineServers = new ArrayList();
    private final Entry lanHeader = new LANHeader();
-   private final List<NetworkServerEntry> networkServers = Lists.newArrayList();
+   private final List<NetworkServerEntry> networkServers = new ArrayList();
 
    public ServerSelectionList(final JoinMultiplayerScreen screen, final Minecraft minecraft, final int width, final int height, final int y, final int itemHeight) {
       super(minecraft, width, height, y, itemHeight);
@@ -171,9 +171,9 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.loadingDotsWidget = new LoadingDotsWidget(this.minecraft.font, ServerSelectionList.SCANNING_LABEL);
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          this.loadingDotsWidget.setPosition(this.getContentXMiddle() - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, this.getContentY());
-         this.loadingDotsWidget.extractRenderState(graphics, mouseX, mouseY, a);
+         this.loadingDotsWidget.extractRenderState(graphics);
       }
 
       public Component getNarration() {
@@ -203,7 +203,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.minecraft = Minecraft.getInstance();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          graphics.text(this.minecraft.font, (Component)LAN_SERVER_HEADER, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
          graphics.text(this.minecraft.font, this.serverData.getMotd(), this.getContentX() + 32 + 3, this.getContentY() + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
@@ -285,7 +285,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          this.refreshStatus();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          if (this.serverData.state() == ServerData.State.INITIAL) {
             this.serverData.setState(ServerData.State.PINGING);
             this.serverData.motd = CommonComponents.EMPTY;
@@ -329,16 +329,16 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
                iconIndex = 8 - iconIndex;
             }
 
-            Identifier var17;
+            Identifier var14;
             switch (iconIndex) {
-               case 1 -> var17 = ServerSelectionList.PINGING_2_SPRITE;
-               case 2 -> var17 = ServerSelectionList.PINGING_3_SPRITE;
-               case 3 -> var17 = ServerSelectionList.PINGING_4_SPRITE;
-               case 4 -> var17 = ServerSelectionList.PINGING_5_SPRITE;
-               default -> var17 = ServerSelectionList.PINGING_1_SPRITE;
+               case 1 -> var14 = ServerSelectionList.PINGING_2_SPRITE;
+               case 2 -> var14 = ServerSelectionList.PINGING_3_SPRITE;
+               case 3 -> var14 = ServerSelectionList.PINGING_4_SPRITE;
+               case 4 -> var14 = ServerSelectionList.PINGING_5_SPRITE;
+               default -> var14 = ServerSelectionList.PINGING_1_SPRITE;
             }
 
-            this.statusIcon = var17;
+            this.statusIcon = var14;
          }
 
          int statusIconX = this.getContentRight() - 10 - 5;
@@ -360,20 +360,21 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int statusWidth = this.minecraft.font.width((FormattedText)status);
          int statusX = statusIconX - statusWidth - 5;
          graphics.text(this.minecraft.font, status, statusX, this.getContentY() + 1, -8355712);
-         if (this.statusIconTooltip != null && mouseX >= statusIconX && mouseX <= statusIconX + 10 && mouseY >= this.getContentY() && mouseY <= this.getContentY() + 8) {
-            graphics.setTooltipForNextFrame(this.statusIconTooltip, mouseX, mouseY);
-         } else if (this.onlinePlayersTooltip != null && mouseX >= statusX && mouseX <= statusX + statusWidth && mouseY >= this.getContentY()) {
-            int var18 = this.getContentY() - 1;
+         if (this.statusIconTooltip != null && graphics.mouseX() >= statusIconX && graphics.mouseX() <= statusIconX + 10 && graphics.mouseY() >= this.getContentY() && graphics.mouseY() <= this.getContentY() + 8) {
+            graphics.setTooltipForNextFrame(this.statusIconTooltip, graphics.mouseX(), graphics.mouseY());
+         } else if (this.onlinePlayersTooltip != null && graphics.mouseX() >= statusX && graphics.mouseX() <= statusX + statusWidth && graphics.mouseY() >= this.getContentY()) {
+            int var10000 = graphics.mouseY();
+            int var15 = this.getContentY() - 1;
             Objects.requireNonNull(this.minecraft.font);
-            if (mouseY <= var18 + 9) {
-               graphics.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), mouseX, mouseY);
+            if (var10000 <= var15 + 9) {
+               graphics.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), graphics.mouseX(), graphics.mouseY());
             }
          }
 
          if (hovered) {
             graphics.fill(this.getContentX(), this.getContentY(), this.getContentX() + 32, this.getContentY() + 32, -1601138544);
-            int relX = mouseX - this.getContentX();
-            int relY = mouseY - this.getContentY();
+            int relX = graphics.mouseX() - this.getContentX();
+            int relY = graphics.mouseY() - this.getContentY();
             if (this.mouseOverRightHalf(relX, relY, 32)) {
                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ServerSelectionList.JOIN_HIGHLIGHTED_SPRITE, this.getContentX(), this.getContentY(), 32, 32);
                ServerSelectionList.this.handleCursor(graphics);

@@ -1,6 +1,6 @@
 package net.minecraft.network.chat;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -24,7 +24,7 @@ public final class MutableComponent implements Component {
    }
 
    public static MutableComponent create(final ComponentContents contents) {
-      return new MutableComponent(contents, Lists.newArrayList(), Style.EMPTY);
+      return new MutableComponent(contents, new ArrayList(), Style.EMPTY);
    }
 
    public ComponentContents getContents() {

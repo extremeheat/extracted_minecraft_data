@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.EnumMap;
@@ -67,7 +66,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
    }
 
    static {
-      TEXTURES_BY_VARIANT = Maps.newEnumMap(Map.of(Fox.Variant.RED, new FoxTexturesByState(new FoxTexturesByAge(RED_FOX_TEXTURE, BABY_RED_FOX_TEXTURE), new FoxTexturesByAge(RED_FOX_SLEEP_TEXTURE, BABY_RED_FOX_SLEEP_TEXTURE)), Fox.Variant.SNOW, new FoxTexturesByState(new FoxTexturesByAge(SNOW_FOX_TEXTURE, BABY_SNOW_FOX_TEXTURE), new FoxTexturesByAge(SNOW_FOX_SLEEP_TEXTURE, BABY_SNOW_FOX_SLEEP_TEXTURE))));
+      TEXTURES_BY_VARIANT = new EnumMap(Map.of(Fox.Variant.RED, new FoxTexturesByState(new FoxTexturesByAge(RED_FOX_TEXTURE, BABY_RED_FOX_TEXTURE), new FoxTexturesByAge(RED_FOX_SLEEP_TEXTURE, BABY_RED_FOX_SLEEP_TEXTURE)), Fox.Variant.SNOW, new FoxTexturesByState(new FoxTexturesByAge(SNOW_FOX_TEXTURE, BABY_SNOW_FOX_TEXTURE), new FoxTexturesByAge(SNOW_FOX_SLEEP_TEXTURE, BABY_SNOW_FOX_SLEEP_TEXTURE))));
    }
 
    private static record FoxTexturesByAge(Identifier adult, Identifier baby) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.gossip;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -40,7 +39,7 @@ public class GossipContainer {
 
    @VisibleForDebug
    public Map<UUID, Object2IntMap<GossipType>> getGossipEntries() {
-      Map<UUID, Object2IntMap<GossipType>> result = Maps.newHashMap();
+      Map<UUID, Object2IntMap<GossipType>> result = new HashMap();
       this.gossips.keySet().forEach((uuid) -> {
          EntityGossips entityGossips = (EntityGossips)this.gossips.get(uuid);
          result.put(uuid, entityGossips.entries);

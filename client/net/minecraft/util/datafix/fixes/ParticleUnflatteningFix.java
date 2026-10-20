@@ -8,17 +8,13 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ParticleUnflatteningFix extends DataFix {
@@ -84,22 +80,9 @@ public class ParticleUnflatteningFix extends DataFix {
          itemStack = itemStack.set("id", result.createString(contents));
       } else {
          itemStack = itemStack.set("id", result.createString(contents.substring(0, tagPartStart)));
-         Dynamic<T> itemTag = parseTag(result.getOps(), contents.substring(tagPartStart));
-         if (itemTag != null) {
-            itemStack = itemStack.set("tag", itemTag);
-         }
       }
 
       return result.set("item", itemStack);
-   }
-
-   private static <T> @Nullable Dynamic<T> parseTag(final DynamicOps<T> ops, final String contents) {
-      try {
-         return new Dynamic(ops, TagParser.create(ops).parseFully(contents));
-      } catch (Exception e) {
-         LOGGER.warn("Failed to parse tag: {}", contents, e);
-         return null;
-      }
    }
 
    private <T> Dynamic<T> updateBlock(final Dynamic<T> result, final String contents) {
@@ -211,7 +194,7 @@ public class ParticleUnflatteningFix extends DataFix {
          float destZ = (float)reader.readDouble();
          reader.expect(' ');
          int arrivalInTicks = reader.readInt();
-         Dynamic<T> blockPos = result.createIntList(IntStream.of(new int[]{Mth.floor(destX), Mth.floor(destY), Mth.floor(destZ)}));
+         Dynamic<T> blockPos = result.createIntList(IntStream.of(new int[]{(int)Math.floor((double)destX), (int)Math.floor((double)destY), (int)Math.floor((double)destZ)}));
          Dynamic<T> positionSource = result.createMap(Map.of(result.createString("type"), result.createString("minecraft:block"), result.createString("pos"), blockPos));
          return result.set("destination", positionSource).set("arrival_in_ticks", result.createInt(arrivalInTicks));
       } catch (Exception e) {

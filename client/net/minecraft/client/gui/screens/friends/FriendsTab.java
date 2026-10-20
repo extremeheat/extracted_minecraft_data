@@ -18,7 +18,7 @@ import net.minecraft.client.gui.layouts.EqualSpacingLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -144,7 +144,7 @@ class FriendsTab extends AbstractFriendsTab {
       this.profileWidget.statusWidget().applyPresence(presenceStatus);
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_LIGHT_SPRITE, this.profileArea.getX() - 6, this.profileArea.getY() - 4, this.profileArea.getWidth() + 12, this.profileArea.getHeight() + 4 + 3);
    }
 

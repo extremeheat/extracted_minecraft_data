@@ -155,15 +155,15 @@ public class ScrollableLayout implements Layout {
          return ScrollableLayout.this.content.getHeight();
       }
 
-      protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
          graphics.enableScissor(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height);
 
          for(AbstractWidget child : this.children) {
-            child.extractRenderState(graphics, mouseX, mouseY, a);
+            child.extractRenderState(graphics);
          }
 
          graphics.disableScissor();
-         this.extractScrollbar(graphics, mouseX, mouseY);
+         this.extractScrollbar(graphics);
       }
 
       protected void updateWidgetNarration(final NarrationElementOutput output) {

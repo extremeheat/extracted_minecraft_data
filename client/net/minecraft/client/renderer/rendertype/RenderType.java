@@ -19,6 +19,7 @@ public class RenderType {
    public static final int SMALL_BUFFER_SIZE = 786432;
    public static final int TRANSIENT_BUFFER_SIZE = 1536;
    private final RenderSetup state;
+   private final RenderPipeline nonOitPipeline;
    private final boolean hasBlending;
    private final Optional<RenderType> outline;
    protected final String name;
@@ -27,7 +28,8 @@ public class RenderType {
       super();
       this.name = name;
       this.state = state;
-      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? Optional.ofNullable((RenderSetup.TextureBinding)state.textures.get(Objects.requireNonNullElse(state.outlineTextureName, "Sampler0"))).map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), state.pipeline.isCull())) : Optional.empty();
+      this.nonOitPipeline = (RenderPipeline)state.pipelineProvider.apply((Object)null);
+      this.outline = state.outlineProperty == RenderSetup.OutlineProperty.AFFECTS_OUTLINE ? Optional.ofNullable((RenderSetup.TextureBinding)state.textures.get(Objects.requireNonNullElse(state.outlineTextureName, "Sampler0"))).map((texture) -> (RenderType)RenderTypes.OUTLINE.apply(texture.location(), this.nonOitPipeline.isCull())) : Optional.empty();
       this.hasBlending = this.calculateHasBlending();
    }
 
@@ -45,7 +47,7 @@ public class RenderType {
    }
 
    private boolean calculateHasBlending() {
-      for(ColorTargetState colorTargetState : this.state.pipeline.getColorTargetStates()) {
+      for(ColorTargetState colorTargetState : this.nonOitPipeline.getColorTargetStates()) {
          if (colorTargetState != null && colorTargetState.blendFunction().isPresent()) {
             return true;
          }
@@ -57,7 +59,7 @@ public class RenderType {
    public PreparedRenderType prepare() {
       Minecraft minecraft = Minecraft.getInstance();
       List<PreparedRenderType.Texture> textures = this.state.prepareTextures(minecraft.getTextureManager(), RenderSystem.getSamplerCache(), minecraft.gameRenderer.overlayTexture().getTextureView(), minecraft.gameRenderer.lightmap());
-      return new PreparedRenderType(this.name, this.state.pipeline, this.state.oitPipelineSet, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), textures);
+      return new PreparedRenderType(this.name, this.state.pipelineProvider, this.writeDynamicTransforms(RenderSystem.getModelViewMatrixCopy()), textures);
    }
 
    private GpuBufferSlice writeDynamicTransforms(final Matrix4f modelViewMatrix) {
@@ -70,11 +72,11 @@ public class RenderType {
    }
 
    public VertexFormat format() {
-      return this.state.pipeline.getVertexFormatBinding(0);
+      return this.nonOitPipeline.getVertexFormatBinding(0);
    }
 
    public PrimitiveTopology primitiveTopology() {
-      return this.state.pipeline.getPrimitiveTopology();
+      return this.nonOitPipeline.getPrimitiveTopology();
    }
 
    public Optional<RenderType> outline() {
@@ -83,10 +85,6 @@ public class RenderType {
 
    public boolean isOutline() {
       return this.state.outlineProperty == RenderSetup.OutlineProperty.IS_OUTLINE;
-   }
-
-   public RenderPipeline pipeline() {
-      return this.state.pipeline;
    }
 
    public boolean affectsCrumbling() {

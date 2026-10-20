@@ -1,8 +1,8 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +48,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    protected LiquidBlock(final FlowingFluid fluid, final BlockBehaviour.Properties properties) {
       super(properties);
       this.fluid = fluid;
-      this.stateCache = Lists.newArrayList();
+      this.stateCache = new ArrayList();
       this.stateCache.add(fluid.getSource());
 
       for(int level = 1; level < 8; ++level) {
@@ -217,7 +217,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    public ItemStack pickupBlock(final @Nullable LivingEntity user, final LevelAccessor level, final BlockPos pos, final BlockState state) {
       if ((Integer)state.getValue(LEVEL) == 0) {
          level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
-         return new ItemStack(this.fluid.getBucket());
+         return new ItemStack(level.registryAccess().getOrThrow(this.fluid.getBucket()));
       } else {
          return ItemStack.EMPTY;
       }

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,8 +12,6 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractMountInventoryScreen<T extends AbstractMountInventoryMenu> extends AbstractContainerScreen<T> {
    protected final int inventoryColumns;
-   protected float xMouse;
-   protected float yMouse;
    protected final LivingEntity mount;
 
    public AbstractMountInventoryScreen(final T menu, final Inventory inventory, final Component title, final int inventoryColumns, final LivingEntity mount) {
@@ -22,8 +20,8 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
       this.mount = mount;
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
       graphics.blit(RenderPipelines.GUI_TEXTURED, this.getBackgroundTextureLocation(), xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -39,17 +37,11 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
          this.extractSlot(graphics, xo + 7, yo + 35);
       }
 
-      EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 18, xo + 78, yo + 70, 17.0F, 0.25F, this.xMouse, this.yMouse, this.mount);
+      EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 18, xo + 78, yo + 70, 17.0F, 0.25F, this.mount);
    }
 
    protected void extractSlot(final GuiGraphicsExtractor graphics, final int x, final int y) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getSlotSpriteLocation(), x, y, 18, 18);
-   }
-
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.xMouse = (float)mouseX;
-      this.yMouse = (float)mouseY;
-      super.extractRenderState(graphics, mouseX, mouseY, a);
    }
 
    protected abstract Identifier getBackgroundTextureLocation();

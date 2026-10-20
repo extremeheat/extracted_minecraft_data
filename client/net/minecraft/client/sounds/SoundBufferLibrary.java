@@ -1,11 +1,11 @@
 package net.minecraft.client.sounds;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.audio.SoundBuffer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -17,7 +17,7 @@ import net.minecraft.util.Util;
 
 public class SoundBufferLibrary {
    private final ResourceProvider resourceManager;
-   private final Map<Identifier, CompletableFuture<SoundBuffer>> cache = Maps.newHashMap();
+   private final Map<Identifier, CompletableFuture<SoundBuffer>> cache = new HashMap();
 
    public SoundBufferLibrary(final ResourceProvider resourceProvider) {
       super();

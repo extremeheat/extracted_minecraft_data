@@ -2,7 +2,6 @@ package net.minecraft.client.gui;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import java.util.Comparator;
@@ -21,6 +20,7 @@ import net.minecraft.client.gui.components.BossHealthOverlay;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
@@ -31,7 +31,7 @@ import net.minecraft.client.gui.contextualbar.LocatorBar;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Lightmap;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.WaypointStyleManager;
@@ -86,7 +86,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.TeamColor;
 import org.jspecify.annotations.Nullable;
 
-public class Hud {
+public class Hud implements Renderable {
    private static final Identifier CROSSHAIR_SPRITE = Identifier.withDefaultNamespace("hud/crosshair");
    private static final Identifier CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_full");
    private static final Identifier CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_background");
@@ -211,26 +211,26 @@ public class Hud {
       this.titleFadeOutTime = 20;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       this.minecraft.gameRenderer.gameRenderState().guiRenderState.isHudHidden = this.isHidden;
       if (!(this.minecraft.gui.screen() instanceof LevelLoadingScreen)) {
          if (!this.isHidden) {
-            this.extractCameraOverlays(graphics, deltaTracker);
-            this.extractCrosshair(graphics, deltaTracker);
+            this.extractCameraOverlays(graphics);
+            this.extractCrosshair(graphics);
             graphics.nextStratum();
-            this.extractHotbarAndDecorations(graphics, deltaTracker);
-            this.extractEffects(graphics, deltaTracker);
-            this.extractBossOverlay(graphics, deltaTracker);
+            this.extractHotbarAndDecorations(graphics);
+            this.extractEffects(graphics);
+            this.extractBossOverlay(graphics);
          }
 
-         this.extractSleepOverlay(graphics, deltaTracker);
+         this.extractSleepOverlay(graphics);
          if (!this.isHidden) {
-            this.extractDemoOverlay(graphics, deltaTracker);
-            this.extractScoreboardSidebar(graphics, deltaTracker);
-            this.extractOverlayMessage(graphics, deltaTracker);
-            this.extractTitle(graphics, deltaTracker);
-            this.extractChat(graphics, deltaTracker);
-            this.extractTabList(graphics, deltaTracker);
+            this.extractDemoOverlay(graphics);
+            this.extractScoreboardSidebar(graphics);
+            this.extractOverlayMessage(graphics);
+            this.extractTitle(graphics);
+            this.extractChat(graphics);
+            this.tabList.extractRenderState(graphics);
             this.extractSubtitleOverlay(graphics, this.minecraft.gui.screen() == null || this.minecraft.gui.screen().isInGameUi());
          } else if (this.minecraft.gui.screen() != null && this.minecraft.gui.screen().isInGameUi()) {
             this.extractSubtitleOverlay(graphics, true);
@@ -239,7 +239,7 @@ public class Hud {
       }
    }
 
-   private void extractBossOverlay(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractBossOverlay(final GuiGraphicsExtractor graphics) {
       this.bossOverlay.extractRenderState(graphics);
    }
 
@@ -265,14 +265,13 @@ public class Hud {
 
    }
 
-   private void extractCameraOverlays(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractCameraOverlays(final GuiGraphicsExtractor graphics) {
       if ((Boolean)this.minecraft.options.vignette().get()) {
          this.extractVignette(graphics, this.minecraft.getCameraEntity());
       }
 
       LocalPlayer player = this.minecraft.player;
-      float gameTimeDeltaTicks = deltaTracker.getGameTimeDeltaTicks();
-      this.scopeScale = Mth.lerp(0.5F * gameTimeDeltaTicks, this.scopeScale, 1.125F);
+      this.scopeScale = Mth.lerp(0.5F * graphics.deltaTracker().getGameTimeDeltaTicks(), this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
          if (player.isScoping()) {
             this.extractSpyglassOverlay(graphics, this.scopeScale);
@@ -293,7 +292,7 @@ public class Hud {
          this.extractTextureOverlay(graphics, POWDER_SNOW_OUTLINE_LOCATION, player.getPercentFrozen());
       }
 
-      float partialTicks = deltaTracker.getGameTimeDeltaPartialTick(false);
+      float partialTicks = graphics.deltaTracker().getGameTimeDeltaPartialTick(false);
       float portalIntensity = Mth.lerp(partialTicks, player.oPortalEffectIntensity, player.portalEffectIntensity);
       float nauseaIntensity = player.getEffectBlendFactor(MobEffects.NAUSEA, partialTicks);
       if (portalIntensity > 0.0F) {
@@ -308,7 +307,7 @@ public class Hud {
 
    }
 
-   private void extractSleepOverlay(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractSleepOverlay(final GuiGraphicsExtractor graphics) {
       if (this.minecraft.player.getSleepTimer() > 0) {
          Profiler.get().push("sleep");
          graphics.nextStratum();
@@ -324,11 +323,11 @@ public class Hud {
       }
    }
 
-   private void extractOverlayMessage(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractOverlayMessage(final GuiGraphicsExtractor graphics) {
       Font font = this.getFont();
       if (this.overlayMessageString != null && this.overlayMessageTime > 0) {
          Profiler.get().push("overlayMessage");
-         float t = (float)this.overlayMessageTime - deltaTracker.getGameTimeDeltaPartialTick(false);
+         float t = (float)this.overlayMessageTime - graphics.deltaTracker().getGameTimeDeltaPartialTick(false);
          int alpha = (int)(t * 255.0F / 20.0F);
          if (alpha > 255) {
             alpha = 255;
@@ -354,11 +353,11 @@ public class Hud {
       }
    }
 
-   private void extractTitle(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractTitle(final GuiGraphicsExtractor graphics) {
       if (this.title != null && this.titleTime > 0) {
          Font font = this.getFont();
          Profiler.get().push("titleAndSubtitle");
-         float t = (float)this.titleTime - deltaTracker.getGameTimeDeltaPartialTick(false);
+         float t = (float)this.titleTime - graphics.deltaTracker().getGameTimeDeltaPartialTick(false);
          int alpha = 255;
          if (this.titleTime > this.titleFadeOutTime + this.titleStayTime) {
             float time = (float)(this.titleFadeInTime + this.titleStayTime + this.titleFadeOutTime) - t;
@@ -395,18 +394,15 @@ public class Hud {
       }
    }
 
-   private void extractChat(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractChat(final GuiGraphicsExtractor graphics) {
       if (this.minecraft.player != null && !this.chat.isChatFocused()) {
-         Window window = this.minecraft.getWindow();
-         int mouseX = Mth.floor(this.minecraft.mouseHandler.getScaledXPos(window));
-         int mouseY = Mth.floor(this.minecraft.mouseHandler.getScaledYPos(window));
          graphics.nextStratum();
-         this.chat.extractRenderState(graphics, this.getFont(), this.tickCount, mouseX, mouseY, ChatComponent.DisplayMode.BACKGROUND, false);
+         this.chat.extractRenderState(graphics, this.getFont(), this.tickCount, ChatComponent.DisplayMode.BACKGROUND, false);
       }
 
    }
 
-   private void extractScoreboardSidebar(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractScoreboardSidebar(final GuiGraphicsExtractor graphics) {
       Scoreboard scoreboard = this.minecraft.level.getScoreboard();
       Objective teamObjective = null;
       PlayerTeam playerTeam = scoreboard.getPlayersTeam(this.minecraft.player.getScoreboardName());
@@ -425,20 +421,7 @@ public class Hud {
 
    }
 
-   private void extractTabList(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
-      Scoreboard scoreboard = this.minecraft.level.getScoreboard();
-      Objective displayObjective = scoreboard.getDisplayObjective(DisplaySlot.LIST);
-      if (!this.minecraft.options.keyPlayerList.isDown() || this.minecraft.isLocalServer() && this.minecraft.player.connection.getListedOnlinePlayers().size() <= 1 && displayObjective == null) {
-         this.tabList.setVisible(false);
-      } else {
-         this.tabList.setVisible(true);
-         graphics.nextStratum();
-         this.tabList.extractRenderState(graphics, graphics.guiWidth(), scoreboard, displayObjective);
-      }
-
-   }
-
-   private void extractCrosshair(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractCrosshair(final GuiGraphicsExtractor graphics) {
       Options options = this.minecraft.options;
       if (options.getCameraType().isFirstPerson()) {
          if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR || this.canRenderCrosshairForSpectator(this.minecraft.hitResult)) {
@@ -488,7 +471,7 @@ public class Hud {
       }
    }
 
-   private void extractEffects(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractEffects(final GuiGraphicsExtractor graphics) {
       Collection<MobEffectInstance> activeEffects = this.minecraft.player.getActiveEffects();
       if (!activeEffects.isEmpty() && (this.minecraft.gui.screen() == null || !this.minecraft.gui.screen().showsActiveEffects())) {
          int beneficialCount = 0;
@@ -536,13 +519,7 @@ public class Hud {
       return (Identifier)effect.unwrapKey().map(ResourceKey::identifier).map((id) -> id.withPrefix("mob_effect/")).orElseGet(MissingTextureAtlasSprite::getLocation);
    }
 
-   private void extractHotbarAndDecorations(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
-      if (this.minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
-         this.spectatorGui.extractHotbar(graphics);
-      } else {
-         this.extractItemHotbar(graphics, deltaTracker);
-      }
-
+   private void extractHotbarAndDecorations(final GuiGraphicsExtractor graphics) {
       if (this.minecraft.gameMode.canHurtPlayer()) {
          this.extractPlayerHealth(graphics);
       }
@@ -553,21 +530,22 @@ public class Hud {
          this.contextualInfoBar = Pair.of(nextContextualInfo, (ContextualBar)((Supplier)this.contextualInfoBars.get(nextContextualInfo)).get());
       }
 
-      ((ContextualBar)this.contextualInfoBar.getSecond()).extractBackground(graphics, deltaTracker);
+      ((ContextualBar)this.contextualInfoBar.getSecond()).extractBackground(graphics);
       if (this.minecraft.gameMode.hasExperience() && this.minecraft.player.experienceLevel > 0) {
          ContextualBar.extractExperienceLevel(graphics, this.minecraft.font, this.minecraft.player.experienceLevel);
       }
 
-      ((ContextualBar)this.contextualInfoBar.getSecond()).extractRenderState(graphics, deltaTracker);
-      if (this.minecraft.gameMode.getPlayerMode() != GameType.SPECTATOR) {
+      ((ContextualBar)this.contextualInfoBar.getSecond()).extractRenderState(graphics);
+      if (this.minecraft.gameMode.getPlayerMode() == GameType.SPECTATOR) {
+         this.spectatorGui.extractRenderState(graphics);
+      } else {
+         this.extractItemHotbar(graphics);
          this.extractSelectedItemName(graphics);
-      } else if (this.minecraft.player.isSpectator()) {
-         this.spectatorGui.extractAction(graphics);
       }
 
    }
 
-   private void extractItemHotbar(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractItemHotbar(final GuiGraphicsExtractor graphics) {
       Player player = this.getCameraPlayer();
       if (player != null) {
          ItemStack offhand = player.getOffhandItem();
@@ -590,15 +568,15 @@ public class Hud {
          for(int i = 0; i < 9; ++i) {
             int x = screenCenter - 90 + i * 20 + 2;
             int y = graphics.guiHeight() - 16 - 3;
-            this.extractSlot(graphics, x, y, deltaTracker, player, player.getInventory().getItem(i), seed++);
+            this.extractSlot(graphics, x, y, player, player.getInventory().getItem(i), seed++);
          }
 
          if (!offhand.isEmpty()) {
             int y = graphics.guiHeight() - 16 - 3;
             if (offhandArm == HumanoidArm.LEFT) {
-               this.extractSlot(graphics, screenCenter - 91 - 26, y, deltaTracker, player, offhand, seed++);
+               this.extractSlot(graphics, screenCenter - 91 - 26, y, player, offhand, seed++);
             } else {
-               this.extractSlot(graphics, screenCenter + 91 + 10, y, deltaTracker, player, offhand, seed++);
+               this.extractSlot(graphics, screenCenter + 91 + 10, y, player, offhand, seed++);
             }
          }
 
@@ -646,7 +624,7 @@ public class Hud {
 
    }
 
-   private void extractDemoOverlay(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   private void extractDemoOverlay(final GuiGraphicsExtractor graphics) {
       if (this.minecraft.isDemo()) {
          Profiler.get().push("demo");
          graphics.nextStratum();
@@ -1099,9 +1077,9 @@ public class Hud {
       graphics.pose().popMatrix();
    }
 
-   private void extractSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final DeltaTracker deltaTracker, final Player player, final ItemStack itemStack, final int seed) {
+   private void extractSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final Player player, final ItemStack itemStack, final int seed) {
       if (!itemStack.isEmpty()) {
-         float pop = (float)itemStack.getPopTime() - deltaTracker.getGameTimeDeltaPartialTick(false);
+         float pop = (float)itemStack.getPopTime() - graphics.deltaTracker().getGameTimeDeltaPartialTick(false);
          if (pop > 0.0F) {
             float squeeze = 1.0F + pop / 5.0F;
             graphics.pose().pushMatrix();

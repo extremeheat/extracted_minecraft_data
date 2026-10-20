@@ -1,8 +1,6 @@
 package com.mojang.realmsclient.dto;
 
 import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.logging.LogUtils;
@@ -83,7 +81,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
       super();
       this.state = RealmsServer.State.CLOSED;
       this.ownerUUID = Util.NIL_UUID;
-      this.players = Lists.newArrayList();
+      this.players = new ArrayList();
       this.slotList = createEmptySlots();
       this.slots = new HashMap();
       this.expiredTrial = false;
@@ -135,7 +133,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
 
    public static void finalize(final RealmsServer server) {
       if (server.players == null) {
-         server.players = Lists.newArrayList();
+         server.players = new ArrayList();
       }
 
       if (server.slotList == null) {
@@ -258,7 +256,7 @@ public class RealmsServer extends ValueObject implements ReflectionBasedSerializ
    }
 
    public Map<Integer, RealmsSlot> cloneSlots(final Map<Integer, RealmsSlot> slots) {
-      Map<Integer, RealmsSlot> newSlots = Maps.newHashMap();
+      Map<Integer, RealmsSlot> newSlots = new HashMap();
 
       for(Map.Entry<Integer, RealmsSlot> entry : slots.entrySet()) {
          newSlots.put((Integer)entry.getKey(), new RealmsSlot((Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.copy(), ((RealmsSlot)entry.getValue()).settings));

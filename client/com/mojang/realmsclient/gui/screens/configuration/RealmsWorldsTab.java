@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens.configuration;
 
-import com.google.common.collect.Lists;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsSlot;
 import com.mojang.realmsclient.dto.WorldTemplate;
@@ -13,6 +12,7 @@ import com.mojang.realmsclient.gui.screens.RealmsSelectWorldTemplateScreen;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -30,7 +30,7 @@ public class RealmsWorldsTab extends GridLayoutTab implements RealmsConfiguratio
    private final Button optionsButton;
    private final Button backupButton;
    private final Button resetWorldButton;
-   private final List<RealmsWorldSlotButton> slotButtonList = Lists.newArrayList();
+   private final List<RealmsWorldSlotButton> slotButtonList = new ArrayList();
 
    public RealmsWorldsTab(final RealmsConfigureWorldScreen configurationScreen, final Minecraft minecraft, final RealmsServer serverData) {
       super();

@@ -15,6 +15,7 @@ import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.texture.CubemapTextureProvider;
 import net.minecraft.client.renderer.texture.TextureHandle;

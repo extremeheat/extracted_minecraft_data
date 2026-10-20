@@ -1,11 +1,12 @@
 package net.minecraft.world.level.material;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2BooleanMap;
 import it.unimi.dsi.fastutil.shorts.Short2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
+import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.SharedConstants;
@@ -36,10 +37,10 @@ public abstract class FlowingFluid extends Fluid {
    public static final IntegerProperty LEVEL;
    private static final int CACHE_SIZE = 200;
    private static final ThreadLocal<Object2ByteLinkedOpenHashMap<BlockStatePairKey>> OCCLUSION_CACHE;
-   private final Map<FluidState, VoxelShape> shapes = Maps.newIdentityHashMap();
+   private final Map<FluidState, VoxelShape> shapes = new IdentityHashMap();
 
-   public FlowingFluid() {
-      super();
+   protected FlowingFluid(final Fluid.Properties properties) {
+      super(properties);
    }
 
    protected void createFluidStateDefinition(final StateDefinition.Builder<Fluid, FluidState> builder) {
@@ -270,6 +271,7 @@ public abstract class FlowingFluid extends Fluid {
       } else {
          if (!state.isAir()) {
             this.beforeDestroyingBlock(level, pos, state);
+            level.destroyBlock(pos, true);
          }
 
          level.setBlockAndUpdate(pos, target.createLegacyBlock());
@@ -343,7 +345,7 @@ public abstract class FlowingFluid extends Fluid {
 
    protected Map<Direction, FluidState> getSpread(final ServerLevel level, final BlockPos pos, final BlockState state) {
       int lowest = 1000;
-      Map<Direction, FluidState> result = Maps.newEnumMap(Direction.class);
+      Map<Direction, FluidState> result = new EnumMap(Direction.class);
       SpreadContext context = null;
 
       for(Direction direction : Direction.Plane.HORIZONTAL) {

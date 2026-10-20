@@ -27,7 +27,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.ReportedNbtException;
@@ -296,7 +295,7 @@ public class FileDownload {
       Pattern namePattern = Pattern.compile(".*-([0-9]+)$");
       int number = 1;
 
-      for(char replacer : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
+      for(char replacer : FileUtil.ILLEGAL_FILE_CHARACTERS) {
          name = name.replace(replacer, '_');
       }
 

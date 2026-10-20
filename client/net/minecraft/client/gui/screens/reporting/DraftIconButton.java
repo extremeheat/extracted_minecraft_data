@@ -27,7 +27,7 @@ public class DraftIconButton extends SpriteIconButton {
       this(0, 0, width, height, message, onPress, tooltip, isRelevant);
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics) {
       Report report = Minecraft.getInstance().getReportingContext().getDraftReport();
       if (report != null && this.isRelevant.test(report)) {
          this.setDisplayState(SpriteIconButton.DisplayState.TEXT_AND_ICON);
@@ -37,6 +37,6 @@ public class DraftIconButton extends SpriteIconButton {
          this.setTooltip((Tooltip)null);
       }
 
-      super.extractContents(graphics, mouseX, mouseY, a);
+      super.extractContents(graphics);
    }
 }

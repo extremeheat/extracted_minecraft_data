@@ -12,7 +12,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.stream.LongStream;
-import net.minecraft.util.Mth;
 
 public class BitStorageAlignFix extends DataFix {
    private static final int BIT_TO_LONG_SHIFT = 6;
@@ -44,8 +43,12 @@ public class BitStorageAlignFix extends DataFix {
    private static Typed<?> updateSections(final OpticFinder<?> sectionsFinder, final OpticFinder<?> sectionFinder, final OpticFinder<List<Pair<String, Dynamic<?>>>> paletteFinder, final Typed<?> level) {
       return level.updateTyped(sectionsFinder, (sections) -> sections.updateTyped(sectionFinder, (section) -> {
             int bits = (Integer)section.getOptional(paletteFinder).map((palette) -> Math.max(4, DataFixUtils.ceillog2(palette.size()))).orElse(0);
-            return bits != 0 && !Mth.isPowerOfTwo(bits) ? section.update(DSL.remainderFinder(), (tag) -> tag.update("BlockStates", (states) -> updateBitStorage(tag, states, 4096, bits))) : section;
+            return bits != 0 && !isPowerOfTwo(bits) ? section.update(DSL.remainderFinder(), (tag) -> tag.update("BlockStates", (states) -> updateBitStorage(tag, states, 4096, bits))) : section;
          }));
+   }
+
+   private static boolean isPowerOfTwo(final int input) {
+      return input != 0 && (input & input - 1) == 0;
    }
 
    private static Dynamic<?> updateBitStorage(final Dynamic<?> tag, final Dynamic<?> storage, final int size, final int bits) {

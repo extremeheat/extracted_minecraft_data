@@ -197,9 +197,11 @@ public class OreFeature extends AbstractOreFeature {
                            BlockState blockState = section.getBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ);
 
                            for(BlockReplacement targetState : this.targetStates) {
-                              if (this.canPlaceOre(blockState, getBlockState, random, targetState, orePos)) {
-                                 section.setBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ, targetState.state(), false);
-                                 ++placed;
+                              if (targetState.target().test(blockState, orePos, random)) {
+                                 if (this.checkAirExposure(getBlockState, random, orePos)) {
+                                    section.setBlockState(sectionRelativeX, sectionRelativeY, sectionRelativeZ, targetState.state(), false);
+                                    ++placed;
+                                 }
                                  break;
                               }
                            }

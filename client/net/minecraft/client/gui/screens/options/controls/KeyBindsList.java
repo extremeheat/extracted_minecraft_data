@@ -80,9 +80,9 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.categoryName = FocusableTextWidget.builder(category.label().copy().withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD), KeyBindsList.this.minecraft.font).alwaysShowBorder(false).backgroundFill(FocusableTextWidget.BackgroundFill.ON_FOCUS).build();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          this.categoryName.setPosition(KeyBindsList.this.width / 2 - this.categoryName.getWidth() / 2, this.getContentBottom() - this.categoryName.getHeight());
-         this.categoryName.extractRenderState(graphics, mouseX, mouseY, a);
+         this.categoryName.extractRenderState(graphics);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -123,15 +123,15 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.refreshEntry();
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          this.updateChangeButtonMessage();
          int resetButtonX = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
          int buttonY = this.getContentY() - 2;
          this.resetButton.setPosition(resetButtonX, buttonY);
-         this.resetButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.resetButton.extractRenderState(graphics);
          int changeButtonX = resetButtonX - 5 - this.changeButton.getWidth();
          this.changeButton.setPosition(changeButtonX, buttonY);
-         this.changeButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.changeButton.extractRenderState(graphics);
          Font var10001 = KeyBindsList.this.minecraft.font;
          Component var10002 = this.name;
          int var10003 = this.getContentX();

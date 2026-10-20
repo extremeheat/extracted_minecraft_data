@@ -1,7 +1,7 @@
 package net.minecraft.world.level.chunk;
 
 import java.util.Arrays;
-import net.minecraft.util.Util;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.VisibleForDebug;
 import org.jspecify.annotations.Nullable;
 
@@ -27,7 +27,7 @@ public class DataLayer {
       this.data = data;
       this.defaultValue = 0;
       if (data.length != 2048) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException("DataLayer should be 2048 bytes not: " + data.length));
+         throw (IllegalArgumentException)DevUtil.pauseInIde(new IllegalArgumentException("DataLayer should be 2048 bytes not: " + data.length));
       }
    }
 

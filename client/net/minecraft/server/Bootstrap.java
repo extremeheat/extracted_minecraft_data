@@ -11,12 +11,14 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.SuppressForbidden;
+import net.minecraft.SystemReport;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -50,6 +52,7 @@ public class Bootstrap {
       if (!isBootstrapped) {
          isBootstrapped = true;
          Instant start = Instant.now();
+         SystemReport.setVersionDetails(SharedConstants.getCurrentVersion().name(), SharedConstants.getCurrentVersion().id(), "MC_DEBUG_");
          if (BuiltInRegistries.REGISTRY.keySet().isEmpty()) {
             throw new IllegalStateException("Unable to load registries");
          } else {
@@ -126,7 +129,7 @@ public class Bootstrap {
 
    public static void validate() {
       checkBootstrapCalled(() -> "validate");
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (DevUtil.IS_RUNNING_IN_IDE) {
          getMissingTranslations(Language.DEFAULT_INSTANCE).forEach((key) -> LOGGER.error("Missing translations: {}", key));
          Commands.validate();
       }

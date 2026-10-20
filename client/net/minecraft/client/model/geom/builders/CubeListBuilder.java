@@ -1,7 +1,7 @@
 package net.minecraft.client.model.geom.builders;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +9,7 @@ import net.minecraft.core.Direction;
 
 public class CubeListBuilder {
    private static final Set<Direction> ALL_VISIBLE = EnumSet.allOf(Direction.class);
-   private final List<CubeDefinition> cubes = Lists.newArrayList();
+   private final List<CubeDefinition> cubes = new ArrayList();
    private int xTexOffs;
    private int yTexOffs;
    private boolean mirror;

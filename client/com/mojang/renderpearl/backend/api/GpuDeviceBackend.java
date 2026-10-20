@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 public interface GpuDeviceBackend {
-   GpuSurfaceBackend createSurface(long windowHandle, BooleanSupplier isIconified);
+   GpuSurfaceBackend createSurface(long windowHandle, BooleanSupplier isIconified, boolean dxgi);
 
    CommandEncoderBackend createCommandEncoder();
 

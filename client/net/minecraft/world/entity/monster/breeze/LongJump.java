@@ -1,8 +1,8 @@
 package net.minecraft.world.entity.monster.breeze;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -39,7 +39,7 @@ public class LongJump extends Behavior<Breeze> {
    private static final float DEFAULT_FOLLOW_RANGE = 24.0F;
    private static final float DEFAULT_MAX_JUMP_VELOCITY = 1.4F;
    private static final float MAX_JUMP_VELOCITY_MULTIPLIER = 0.058333334F;
-   private static final ObjectArrayList<Integer> ALLOWED_ANGLES = new ObjectArrayList(Lists.newArrayList(new Integer[]{40, 55, 60, 75, 80}));
+   private static final ObjectArrayList<Integer> ALLOWED_ANGLES = new ObjectArrayList(List.of(40, 55, 60, 75, 80));
 
    @VisibleForTesting
    public LongJump() {
@@ -49,7 +49,7 @@ public class LongJump extends Behavior<Breeze> {
    public static boolean canRun(final ServerLevel level, final Breeze breeze) {
       if (!breeze.onGround() && !breeze.isInWater()) {
          return false;
-      } else if (!breeze.isInFluidDeeperThan(breeze.getFluidJumpThreshold(), FluidTags.ENTITY_FLOATABLE) && !breeze.isInLava()) {
+      } else if (!breeze.isFluidDeepEnoughToSwim(FluidTags.ENTITY_FLOATABLE) && !breeze.isInLava()) {
          if (breeze.getBrain().checkMemory(MemoryModuleType.BREEZE_JUMP_TARGET, MemoryStatus.VALUE_PRESENT)) {
             return true;
          } else {

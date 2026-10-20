@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.goal;
 
-import com.google.common.collect.Sets;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -53,7 +53,7 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
    private void recruitNearby(final Raid raid) {
       if (raid.isActive()) {
          ServerLevel level = getServerLevel(this.mob.level());
-         Set<Raider> raidersToAdd = Sets.newHashSet();
+         Set<Raider> raidersToAdd = new HashSet();
          List<Raider> raidersNearby = level.getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (mob) -> !mob.hasActiveRaid() && Raids.canJoinRaid(mob));
          raidersToAdd.addAll(raidersNearby);
 

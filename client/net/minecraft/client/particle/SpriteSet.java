@@ -9,4 +9,6 @@ public interface SpriteSet {
    TextureAtlasSprite get(RandomSource random);
 
    TextureAtlasSprite first();
+
+   int size();
 }

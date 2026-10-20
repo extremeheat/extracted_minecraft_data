@@ -64,8 +64,8 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       Font var10001 = this.font;
       Component var10002 = this.title;
@@ -74,11 +74,11 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
       Objects.requireNonNull(this.font);
       graphics.centeredText(var10001, (Component)var10002, var10003, var10004 - 9 * 2, -1);
       MultiLineLabel var10000 = this.messageLines;
-      TextAlignment var6 = TextAlignment.CENTER;
-      int var7 = this.width / 2;
+      TextAlignment var3 = TextAlignment.CENTER;
+      int var4 = this.width / 2;
       var10003 = this.contentTop;
       Objects.requireNonNull(this.font);
-      var10000.visitLines(var6, var7, var10003, 9, textRenderer);
+      var10000.visitLines(var3, var4, var10003, 9, textRenderer);
    }
 
    public boolean shouldCloseOnEsc() {

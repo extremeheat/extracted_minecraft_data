@@ -22,6 +22,7 @@ import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.jspecify.annotations.Nullable;
 
@@ -46,7 +47,7 @@ public class ClientPackSource extends BuiltInPackSource {
    }
 
    private @Nullable Path findExplodedAssetPacks(final Path externalAssetSource) {
-      if (SharedConstants.IS_RUNNING_IN_IDE && externalAssetSource.getFileSystem() == FileSystems.getDefault()) {
+      if (DevUtil.IS_RUNNING_IN_IDE && externalAssetSource.getFileSystem() == FileSystems.getDefault()) {
          Path devAssetDir = externalAssetSource.getParent().resolve("resourcepacks");
          if (Files.isDirectory(devAssetDir, new LinkOption[0])) {
             return devAssetDir;

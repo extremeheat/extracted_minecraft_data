@@ -1,9 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +59,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    private static final int MIN_TICKS_BEFORE_REENTERING_HIVE = 400;
    private static final int MIN_OCCUPATION_TICKS_NECTAR = 2400;
    public static final int MIN_OCCUPATION_TICKS_NECTARLESS = 600;
-   private final List<BeeData> stored = Lists.newArrayList();
+   private final List<BeeData> stored = new ArrayList();
    private @Nullable BlockPos savedFlowerPos;
 
    public BeehiveBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
@@ -106,7 +106,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    private List<Entity> releaseAllOccupants(final BlockState state, final BeeReleaseStatus releaseStatus) {
-      List<Entity> spawned = Lists.newArrayList();
+      List<Entity> spawned = new ArrayList();
       this.stored.removeIf((occupantEntry) -> releaseOccupant(this.level, this.worldPosition, state, occupantEntry.toOccupant(), spawned, releaseStatus, this.savedFlowerPos));
       if (!spawned.isEmpty()) {
          super.setChanged();

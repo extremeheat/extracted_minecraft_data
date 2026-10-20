@@ -1,13 +1,13 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.UserApiService;
 import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.FriendsService.ResultCode;
 import com.mojang.authlib.services.response.FriendData;
 import com.mojang.authlib.services.response.FriendDto;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,11 +29,11 @@ public class PlayerSocialManager {
    private static final Component FRIEND_ACTION_UNAUTHORIZED = Component.translatable("gui.friends.error.unauthorized");
    private static final Component FRIEND_ACTION_UNAVAILABLE_MESSAGE = Component.translatable("gui.friends.error.unavailable.message");
    private final Minecraft minecraft;
-   private final Set<UUID> hiddenPlayers = Sets.newHashSet();
+   private final Set<UUID> hiddenPlayers = new HashSet();
    private final UserApiService service;
    private final FriendsService friendsService;
    private final PresenceHandler presenceHandler;
-   private final Map<String, UUID> discoveredNamesToUUID = Maps.newHashMap();
+   private final Map<String, UUID> discoveredNamesToUUID = new HashMap();
    private boolean onlineMode;
    private CompletableFuture<?> pendingBlockListRefresh = CompletableFuture.completedFuture((Object)null);
    private final RemoteFriendListUpdateHandler remoteFriendListUpdateHandler;

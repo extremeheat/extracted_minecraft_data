@@ -1,11 +1,11 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Shorts;
 import com.google.common.primitives.SignedBytes;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -454,7 +454,7 @@ public class MultiPlayerGameMode {
       } else {
          NonNullList<Slot> slots = containerMenu.slots;
          int slotCount = slots.size();
-         List<ItemStack> itemsBeforeClick = Lists.newArrayListWithCapacity(slotCount);
+         List<ItemStack> itemsBeforeClick = new ArrayList(slotCount);
 
          for(Slot slot : slots) {
             itemsBeforeClick.add(slot.getItem().copy());

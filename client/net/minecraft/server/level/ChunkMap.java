@@ -1,8 +1,6 @@
 package net.minecraft.server.level;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
@@ -35,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
@@ -63,6 +62,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.CsvOutput;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.TriState;
@@ -162,7 +162,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.chunkTypeCache = new Long2ByteOpenHashMap();
       this.nextChunkSaveTime = new Long2LongOpenHashMap();
       this.chunksToEagerlySave = new LongLinkedOpenHashSet();
-      this.unloadQueue = Queues.newConcurrentLinkedQueue();
+      this.unloadQueue = new ConcurrentLinkedQueue();
       this.activeChunkWrites = new AtomicInteger();
       Path storageFolder = levelStorage.getDimensionPath(level.dimension());
       this.level = level;
@@ -1113,7 +1113,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          int range = type.clientTrackingRange() * 16;
          if (range != 0) {
             if (this.entityMap.containsKey(entity.getId())) {
-               throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Entity is already tracked!"));
+               throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException("Entity is already tracked!"));
             } else {
                UpdateInterval updateInterval = type.hasUpdateInterval() ? UpdateInterval.periodic(type.updateInterval()) : UpdateInterval.NEVER;
                TrackedEntity trackedEntity = new TrackedEntity(entity, range, updateInterval, type.trackDeltas());
@@ -1160,7 +1160,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
          this.updateChunkTracking(player);
       }
 
-      List<ServerPlayer> movedPlayers = Lists.newArrayList();
+      List<ServerPlayer> movedPlayers = new ArrayList();
       List<ServerPlayer> players = this.level.players();
       ObjectIterator var3 = this.entityMap.values().iterator();
 

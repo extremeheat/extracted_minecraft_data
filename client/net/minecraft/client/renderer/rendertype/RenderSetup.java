@@ -10,16 +10,16 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
-import net.minecraft.client.renderer.oit.OitPipelineSet;
+import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
 public final class RenderSetup {
-   final RenderPipeline pipeline;
-   final @Nullable OitPipelineSet oitPipelineSet;
+   final Function<@Nullable OitStage, RenderPipeline> pipelineProvider;
    final Map<String, TextureBinding> textures;
    final TextureTransform textureTransform;
    final OutlineProperty outlineProperty;
@@ -31,10 +31,9 @@ public final class RenderSetup {
    final LayeringTransform layeringTransform;
    final boolean forceSolidModelPhase;
 
-   private RenderSetup(final RenderPipeline pipeline, final @Nullable OitPipelineSet oitPipelineSet, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final @Nullable String outlineTextureName, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
+   private RenderSetup(final Function<@Nullable OitStage, @Nullable RenderPipeline> pipelineProvider, final Map<String, TextureBinding> textures, final boolean useLightmap, final boolean useOverlay, final LayeringTransform layeringTransform, final TextureTransform textureTransform, final OutlineProperty outlineProperty, final @Nullable String outlineTextureName, final boolean affectsCrumbling, final boolean sortOnUpload, final boolean forceSolidModelPhase) {
       super();
-      this.pipeline = pipeline;
-      this.oitPipelineSet = oitPipelineSet;
+      this.pipelineProvider = pipelineProvider;
       this.textures = textures;
       this.textureTransform = textureTransform;
       this.useLightmap = useLightmap;
@@ -52,8 +51,12 @@ public final class RenderSetup {
       return "RenderSetup[layeringTransform=" + var10000 + ", textureTransform=" + String.valueOf(this.textureTransform) + ", textures=" + String.valueOf(this.textures) + ", outlineProperty=" + String.valueOf(this.outlineProperty) + ", useLightmap=" + this.useLightmap + ", useOverlay=" + this.useOverlay + "]";
    }
 
-   public static RenderSetupBuilder builder(final RenderPipeline pipeline) {
-      return new RenderSetupBuilder(pipeline);
+   public static RenderSetupBuilder builder(final Function<@Nullable OitStage, @Nullable RenderPipeline> pipelineProvider) {
+      return new RenderSetupBuilder(pipelineProvider);
+   }
+
+   public static RenderSetupBuilder nonOitBuilder(final RenderPipeline pipeline) {
+      return new RenderSetupBuilder((stage) -> stage == null ? pipeline : null);
    }
 
    public List<PreparedRenderType.Texture> prepareTextures(final TextureManager textureManager, final SamplerCache samplerCache, final GpuTextureView overlayTexture, final GpuTextureView lightmapTexture) {
@@ -101,8 +104,7 @@ public final class RenderSetup {
    }
 
    public static class RenderSetupBuilder {
-      private final RenderPipeline pipeline;
-      private @Nullable OitPipelineSet oitPipelineSet;
+      private Function<@Nullable OitStage, @Nullable RenderPipeline> pipelineProvider;
       private boolean useLightmap = false;
       private boolean useOverlay = false;
       private LayeringTransform layeringTransform;
@@ -114,7 +116,7 @@ public final class RenderSetup {
       private final Map<String, TextureBinding> textures;
       private boolean forceSolidModelPhase;
 
-      private RenderSetupBuilder(final RenderPipeline pipeline) {
+      private RenderSetupBuilder(final Function<@Nullable OitStage, @Nullable RenderPipeline> pipelineProvider) {
          super();
          this.layeringTransform = LayeringTransform.NO_LAYERING;
          this.textureTransform = TextureTransform.DEFAULT_TEXTURING;
@@ -122,7 +124,7 @@ public final class RenderSetup {
          this.sortOnUpload = false;
          this.outlineProperty = RenderSetup.OutlineProperty.NONE;
          this.textures = new HashMap();
-         this.pipeline = pipeline;
+         this.pipelineProvider = pipelineProvider;
       }
 
       public RenderSetupBuilder withTexture(final String name, final Identifier texture) {
@@ -177,18 +179,13 @@ public final class RenderSetup {
          return this;
       }
 
-      public RenderSetupBuilder setOitPipelines(final OitPipelineSet oitPipelineSet) {
-         this.oitPipelineSet = oitPipelineSet;
-         return this;
-      }
-
       public RenderSetupBuilder withForcedSolidModelPhase() {
          this.forceSolidModelPhase = true;
          return this;
       }
 
       public RenderSetup createRenderSetup() {
-         return new RenderSetup(this.pipeline, this.oitPipelineSet, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.outlineTextureName, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
+         return new RenderSetup(this.pipelineProvider, this.textures, this.useLightmap, this.useOverlay, this.layeringTransform, this.textureTransform, this.outlineProperty, this.outlineTextureName, this.affectsCrumbling, this.sortOnUpload, this.forceSolidModelPhase);
       }
    }
 

@@ -2,8 +2,6 @@ package net.minecraft.world.level.material;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
@@ -13,12 +11,8 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class EmptyFluid extends Fluid {
-   public EmptyFluid() {
-      super();
-   }
-
-   public Item getBucket() {
-      return Items.AIR;
+   protected EmptyFluid(final Fluid.Properties properties) {
+      super(properties);
    }
 
    public boolean canBeReplacedWith(final FluidState state, final BlockGetter level, final BlockPos pos, final FluidState other, final Direction direction) {
@@ -35,10 +29,6 @@ public class EmptyFluid extends Fluid {
 
    protected boolean isEmpty() {
       return true;
-   }
-
-   protected float getExplosionResistance() {
-      return 0.0F;
    }
 
    public float getHeight(final FluidState fluidState, final BlockGetter level, final BlockPos pos) {

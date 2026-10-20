@@ -72,12 +72,12 @@ public class ManageServerScreen extends Screen {
       this.addButton.active = ServerAddress.isValidAddress(this.ipEdit.getValue());
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
       graphics.text(this.font, (Component)NAME_LABEL, this.width / 2 - 100 + 1, 53, -6250336);
       graphics.text(this.font, (Component)IP_LABEL, this.width / 2 - 100 + 1, 94, -6250336);
-      this.nameEdit.extractRenderState(graphics, mouseX, mouseY, a);
-      this.ipEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.nameEdit.extractRenderState(graphics);
+      this.ipEdit.extractRenderState(graphics);
    }
 }

@@ -14,7 +14,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
 import net.minecraft.client.gui.screens.friends.AbstractFriendsTab;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
@@ -107,7 +107,7 @@ class PlayerInteractionsTab extends AbstractFriendsTab {
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_LIGHT_SPRITE, this.headerFrame.getX(), this.headerFrame.getY(), this.headerFrame.getWidth(), this.headerFrame.getHeight() - 2);
    }
 

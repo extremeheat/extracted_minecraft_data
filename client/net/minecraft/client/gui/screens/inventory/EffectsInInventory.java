@@ -10,7 +10,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.ComponentRenderUtils;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -21,7 +22,7 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 
-public class EffectsInInventory {
+public class EffectsInInventory implements Renderable {
    private static final Identifier EFFECT_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("container/inventory/effect_background");
    private static final Identifier EFFECT_BACKGROUND_AMBIENT_SPRITE = Identifier.withDefaultNamespace("container/inventory/effect_background_ambient");
    private static final int ICON_SIZE = 18;
@@ -43,7 +44,7 @@ public class EffectsInInventory {
       return availableWidth >= 32;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       int xo = this.screen.leftPos + this.screen.imageWidth + 2;
       int availableWidth = this.screen.width - xo;
       Collection<MobEffectInstance> activeEffects = this.minecraft.player.getActiveEffects();
@@ -54,11 +55,11 @@ public class EffectsInInventory {
             yStep = 132 / (activeEffects.size() - 1);
          }
 
-         this.extractEffects(graphics, activeEffects, xo, yStep, mouseX, mouseY, maxWidth);
+         this.extractEffects(graphics, activeEffects, xo, yStep, maxWidth);
       }
    }
 
-   private void extractEffects(final GuiGraphicsExtractor graphics, final Collection<MobEffectInstance> activeEffects, final int x0, final int yStep, final int mouseX, final int mouseY, final int maxWidth) {
+   private void extractEffects(final GuiGraphicsExtractor graphics, final Collection<MobEffectInstance> activeEffects, final int x0, final int yStep, final int maxWidth) {
       Iterable<MobEffectInstance> sortedEffects = Ordering.natural().sortedCopy(activeEffects);
       int y0 = this.screen.topPos;
       Font font = this.screen.getFont();
@@ -68,7 +69,7 @@ public class EffectsInInventory {
          Component effectText = this.getEffectName(effect);
          Component duration = MobEffectUtil.formatDuration(effect, 1.0F, this.minecraft.level.tickRateManager().tickrate());
          int textureWidth = this.extractBackground(graphics, font, effectText, duration, x0, y0, isAmbient, maxWidth);
-         this.extractText(graphics, effectText, duration, font, x0, y0, textureWidth, yStep, mouseX, mouseY);
+         this.extractText(graphics, effectText, duration, font, x0, y0, textureWidth, yStep);
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)Hud.getMobEffectSprite(effect.getEffect()), x0 + 7, y0 + 7, 18, 18);
          y0 += yStep;
       }
@@ -83,7 +84,7 @@ public class EffectsInInventory {
       return textureWidth;
    }
 
-   private void extractText(final GuiGraphicsExtractor graphics, final Component effectText, final Component duration, final Font font, final int x0, final int y0, final int textureWidth, final int yStep, final int mouseX, final int mouseY) {
+   private void extractText(final GuiGraphicsExtractor graphics, final Component effectText, final Component duration, final Font font, final int x0, final int y0, final int textureWidth, final int yStep) {
       int textX = x0 + 32;
       int textY = y0 + 7;
       int maxTextWidth = textureWidth - 32 - 7;
@@ -99,8 +100,8 @@ public class EffectsInInventory {
          isCompact = true;
       }
 
-      if (isCompact && mouseX >= x0 && mouseX <= x0 + textureWidth && mouseY >= y0 && mouseY <= y0 + yStep) {
-         graphics.setTooltipForNextFrame(this.screen.getFont(), List.of(effectText, duration), Optional.empty(), mouseX, mouseY);
+      if (isCompact && graphics.mouseX() >= x0 && graphics.mouseX() <= x0 + textureWidth && graphics.mouseY() >= y0 && graphics.mouseY() <= y0 + yStep) {
+         graphics.setTooltipForNextFrame(this.screen.getFont(), List.of(effectText, duration), Optional.empty(), graphics.mouseX(), graphics.mouseY());
       }
 
    }

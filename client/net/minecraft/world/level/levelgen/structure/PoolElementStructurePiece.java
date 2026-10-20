@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.structure;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.core.BlockPos;
@@ -29,7 +29,7 @@ public class PoolElementStructurePiece extends StructurePiece {
    protected BlockPos position;
    private final int groundLevelDelta;
    protected final Rotation rotation;
-   private final List<JigsawJunction> junctions = Lists.newArrayList();
+   private final List<JigsawJunction> junctions = new ArrayList();
    private final StructureTemplateManager structureTemplateManager;
    private final LiquidSettings liquidSettings;
 

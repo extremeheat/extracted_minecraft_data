@@ -1,9 +1,9 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity, SkullBlockRenderState> {
    public static final WallAndGroundTransformations<Transformation> TRANSFORMATIONS = new WallAndGroundTransformations<Transformation>(SkullBlockRenderer::createWallTransformation, SkullBlockRenderer::createGroundTransformation, 16);
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
-   private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (map) -> {
+   private static final Map<SkullBlock.Type, Identifier> SKIN_BY_TYPE = (Map)Util.make(new HashMap(), (map) -> {
       map.put(SkullBlock.Types.SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
       map.put(SkullBlock.Types.WITHER_SKELETON, Identifier.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
       map.put(SkullBlock.Types.ZOMBIE, Identifier.withDefaultNamespace("textures/entity/zombie/zombie.png"));

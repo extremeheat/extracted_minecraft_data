@@ -39,8 +39,4 @@ public interface RuleTest {
    static RuleTest not(final RuleTest predicate) {
       return new NotRuleTest(predicate);
    }
-
-   static RuleTest either(final RuleTest condition, final RuleTest ifTrue, final RuleTest ifFalse) {
-      return anyOf(allOf(condition, ifTrue), allOf(not(condition), ifFalse));
-   }
 }

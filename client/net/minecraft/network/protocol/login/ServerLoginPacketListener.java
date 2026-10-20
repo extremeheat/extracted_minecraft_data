@@ -14,5 +14,7 @@ public interface ServerLoginPacketListener extends ServerCookiePacketListener {
 
    void handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket packet);
 
+   void handleOptionsEnabled(ServerboundOptionsAppliedPacket packet);
+
    void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket packet);
 }

@@ -61,11 +61,11 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
 
    public void extractRenderState(final T blockEntity, final ChestRenderState state, final float partialTicks, final Vec3 cameraPosition, final ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
       DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combineResult;
-      label30: {
+      label25: {
          BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
          boolean hasLevel = blockEntity.getLevel() != null;
          BlockState blockState = hasLevel ? blockEntity.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
-         state.type = blockState.hasProperty(ChestBlock.TYPE) ? (ChestType)blockState.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
+         state.type = (ChestType)blockState.getValueOrElse(ChestBlock.TYPE, ChestType.SINGLE);
          state.facing = (Direction)blockState.getValue(ChestBlock.FACING);
          state.material = getChestMaterial(blockEntity, this.xmasTextures);
          if (hasLevel) {
@@ -73,7 +73,7 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
             if (var10 instanceof ChestBlock) {
                ChestBlock chestBlock = (ChestBlock)var10;
                combineResult = chestBlock.combine(blockState, blockEntity.getLevel(), blockEntity.getBlockPos(), true);
-               break label30;
+               break label25;
             }
          }
 

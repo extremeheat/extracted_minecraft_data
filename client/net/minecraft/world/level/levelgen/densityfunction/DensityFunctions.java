@@ -26,7 +26,6 @@ import net.minecraft.world.level.levelgen.densityfunction.op.BlendDensityFunctio
 import net.minecraft.world.level.levelgen.densityfunction.op.CacheFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.ClampFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.FindTopSurfaceFunction;
-import net.minecraft.world.level.levelgen.densityfunction.op.InterpolatedFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.IntervalSelectFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.LerpFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.PowFunction;
@@ -35,6 +34,7 @@ import net.minecraft.world.level.levelgen.densityfunction.op.RoundFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.SliceFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.SplineFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.UnaryFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.upscale.UpscaleFunction;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
@@ -80,7 +80,7 @@ public final class DensityFunctions {
       register(registry, "interval_select", IntervalSelectFunction.CODEC);
       register(registry, "cache", CacheFunction.CODEC);
       register(registry, "blend_density", BlendDensityFunction.CODEC);
-      register(registry, "interpolated", InterpolatedFunction.CODEC);
+      register(registry, "upscale", UpscaleFunction.CODEC);
       register(registry, "slice", SliceFunction.CODEC);
       register(registry, "find_top_surface", FindTopSurfaceFunction.CODEC);
       register(registry, "old_blended_noise", BlendedNoise.CODEC);
@@ -147,8 +147,30 @@ public final class DensityFunctions {
       return new UnaryFunction(UnaryFunction.Type.SIGN, input);
    }
 
-   public static DensityFunction interpolated(final DensityFunction function, final int cellSizeXz, final int cellSizeY) {
-      return new InterpolatedFunction(function, cellSizeXz, cellSizeY);
+   public static DensityFunction nearestNeighborUpscale(final DensityFunction input, final int cellSizeXz, final int cellSizeY) {
+      return upscale(input, UpscaleFunction.Mode.NEAREST_NEIGHBOR, cellSizeXz, cellSizeY);
+   }
+
+   public static DensityFunction linearUpscale(final DensityFunction input, final int cellSizeXz, final int cellSizeY) {
+      return upscale(input, UpscaleFunction.Mode.INTERPOLATE_LINEAR, cellSizeXz, cellSizeY);
+   }
+
+   public static DensityFunction cubicUpscale(final DensityFunction input, final int cellSizeXz, final int cellSizeY) {
+      return upscale(input, UpscaleFunction.Mode.INTERPOLATE_CUBIC, cellSizeXz, cellSizeY);
+   }
+
+   public static DensityFunction cubicBSplineUpscale(final DensityFunction input, final int cellSizeXz, final int cellSizeY) {
+      return upscale(input, UpscaleFunction.Mode.B_SPLINE_CUBIC, cellSizeXz, cellSizeY);
+   }
+
+   public static UpscaleFunction upscale(final DensityFunction input, final UpscaleFunction.Mode mode, final int cellSizeXz, final int cellSizeY) {
+      return upscale(input, mode, cellSizeXz, mode, cellSizeY);
+   }
+
+   public static UpscaleFunction upscale(final DensityFunction input, final UpscaleFunction.Mode modeXz, final int cellSizeXz, final UpscaleFunction.Mode modeY, final int cellSizeY) {
+      UpscaleFunction.Axis xz = new UpscaleFunction.Axis(modeXz, cellSizeXz);
+      UpscaleFunction.Axis y = new UpscaleFunction.Axis(modeY, cellSizeY);
+      return new UpscaleFunction(input, xz, y, xz);
    }
 
    public static DensityFunction cache(final DensityFunction function) {

@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.debug;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gizmos.GizmoStyle;
@@ -12,7 +12,7 @@ import net.minecraft.world.phys.Vec3;
 public class GameTestBlockHighlightRenderer {
    private static final int SHOW_POS_DURATION_MS = 10000;
    private static final float PADDING = 0.02F;
-   private final Map<BlockPos, Marker> markers = Maps.newHashMap();
+   private final Map<BlockPos, Marker> markers = new HashMap();
 
    public GameTestBlockHighlightRenderer() {
       super();

@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.audio.ListenerTransform;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -20,11 +19,11 @@ import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class SubtitleOverlay implements SoundEventListener {
+public class SubtitleOverlay implements SoundEventListener, Renderable {
    private static final int LOOPING_DISPLAY_FULL_BRIGHTNESS_TIME = 500;
    private static final long DISPLAY_TIME = 3000L;
    private final Minecraft minecraft;
-   private final List<Subtitle> subtitles = Lists.newArrayList();
+   private final List<Subtitle> subtitles = new ArrayList();
    private boolean isListening;
    private final List<Subtitle> audibleSubtitles = new ArrayList();
 

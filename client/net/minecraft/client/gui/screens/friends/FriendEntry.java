@@ -84,21 +84,21 @@ public class FriendEntry extends AbstractFriendsEntryContainerWidget {
       return 9 * 2 + 2;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractWidgetRenderState(graphics);
       int x = this.playerFaceWidget.getX() + 1;
       int y = this.playerFaceWidget.getY() + 1;
       this.profileButton.setPosition(x, y);
       if (this.isHoveredOrFocused()) {
          graphics.fill(x, y, x + this.profileButton.getWidth(), y + this.profileButton.getHeight(), -1601138544);
-         this.profileButton.extractRenderState(graphics, mouseX, mouseY, a);
+         this.profileButton.extractRenderState(graphics);
       }
 
       int statusWidgetX = this.playerFaceWidget.getRight() + 5;
       int statusWidth = this.getRight() - statusWidgetX - 2;
       this.statusWidget.setMaxWidth(statusWidth, StringWidget.TextOverflow.SCROLLING);
       this.statusWidget.setPosition(statusWidgetX, this.nameWidget.getBottom() + 2);
-      this.statusWidget.extractRenderState(graphics, mouseX, mouseY, a);
+      this.statusWidget.extractRenderState(graphics);
       if (this.profileButton.isFocused()) {
          graphics.outline(this.getX() - 1, this.getY(), this.getWidth() + 1, this.getHeight() - 1, ARGB.white(this.alpha));
       }

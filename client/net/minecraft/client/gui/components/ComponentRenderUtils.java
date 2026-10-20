@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
@@ -31,12 +31,12 @@ public class ComponentRenderUtils {
          collector.append(FormattedText.of(stripColor(contents), style));
          return Optional.empty();
       }, Style.EMPTY);
-      List<FormattedCharSequence> result = Lists.newArrayList();
+      List<FormattedCharSequence> result = new ArrayList();
       font.getSplitter().splitLines(collector.getResultOrEmpty(), maxWidth, Style.EMPTY, (text, wrapped) -> {
          FormattedCharSequence reorderedText = Language.getInstance().getVisualOrder(text);
          result.add(wrapped ? FormattedCharSequence.composite(INDENT, reorderedText) : reorderedText);
       });
-      return (List<FormattedCharSequence>)(result.isEmpty() ? Lists.newArrayList(new FormattedCharSequence[]{FormattedCharSequence.EMPTY}) : result);
+      return result.isEmpty() ? List.of(FormattedCharSequence.EMPTY) : result;
    }
 
    public static FormattedCharSequence clipText(final Component text, final Font font, final int width) {

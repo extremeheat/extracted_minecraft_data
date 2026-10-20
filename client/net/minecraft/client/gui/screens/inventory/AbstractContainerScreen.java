@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.google.common.collect.Sets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -14,7 +14,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -61,7 +61,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    public AbstractContainerScreen(final T menu, final Inventory inventory, final Component title, final int imageWidth, final int imageHeight) {
       super(title);
-      this.quickCraftSlots = Sets.newHashSet();
+      this.quickCraftSlots = new HashSet();
       this.lastQuickMoved = ItemStack.EMPTY;
       this.menu = menu;
       this.playerInventoryTitle = inventory.getDisplayName();
@@ -94,23 +94,23 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       this.itemSlotMouseActions.add(itemSlotMouseAction);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.extractContents(graphics, mouseX, mouseY, a);
-      this.extractCarriedItem(graphics, mouseX, mouseY);
-      this.extractTooltip(graphics, mouseX, mouseY);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      this.extractContents(graphics);
+      this.extractCarriedItem(graphics);
+      this.extractTooltip(graphics);
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics) {
       int xo = this.leftPos;
       int yo = this.topPos;
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+      super.extractRenderState(graphics);
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)xo, (float)yo);
-      this.extractLabels(graphics, mouseX, mouseY);
+      this.extractLabels(graphics);
       Slot previouslyHoveredSlot = this.hoveredSlot;
-      this.hoveredSlot = this.getHoveredSlot((double)mouseX, (double)mouseY);
+      this.hoveredSlot = this.getHoveredSlot((double)graphics.mouseX(), (double)graphics.mouseY());
       this.extractSlotHighlightBack(graphics);
-      this.extractSlots(graphics, mouseX, mouseY);
+      this.extractSlots(graphics);
       this.extractSlotHighlightFront(graphics);
       if (previouslyHoveredSlot != null && previouslyHoveredSlot != this.hoveredSlot) {
          this.onStopHovering(previouslyHoveredSlot);
@@ -119,7 +119,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       graphics.pose().popMatrix();
    }
 
-   public void extractCarriedItem(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   public void extractCarriedItem(final GuiGraphicsExtractor graphics) {
       ItemStack carried = this.menu.getCarried();
       if (!carried.isEmpty()) {
          int xOffset = 8;
@@ -133,15 +133,15 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          }
 
          graphics.nextStratum();
-         this.extractFloatingItem(graphics, carried, mouseX - 8, mouseY - 8, itemCount);
+         this.extractFloatingItem(graphics, carried, graphics.mouseX() - 8, graphics.mouseY() - 8, itemCount);
       }
 
    }
 
-   protected void extractSlots(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   protected void extractSlots(final GuiGraphicsExtractor graphics) {
       for(Slot slot : this.menu.slots) {
          if (slot.isActive()) {
-            this.extractSlot(graphics, slot, mouseX, mouseY);
+            this.extractSlot(graphics, slot);
          }
       }
 
@@ -173,11 +173,11 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    }
 
-   protected void extractTooltip(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   protected void extractTooltip(final GuiGraphicsExtractor graphics) {
       if (this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
          ItemStack item = this.hoveredSlot.getItem();
          if (this.menu.getCarried().isEmpty() || this.showTooltipWithItemInHand(item)) {
-            graphics.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(item), item.getTooltipImage(), mouseX, mouseY, (Identifier)item.get(DataComponents.TOOLTIP_STYLE), true);
+            graphics.setTooltipForNextFrame(this.font, this.getTooltipFromContainerItem(item), item.getTooltipImage(), graphics.mouseX(), graphics.mouseY(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), true);
          }
 
       }
@@ -196,12 +196,12 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       graphics.itemDecorations(this.font, carried, x, y, itemCount);
    }
 
-   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
+   protected void extractLabels(final GuiGraphicsExtractor graphics) {
       graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
       graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
    }
 
-   protected void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot, final int mouseX, final int mouseY) {
+   protected void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot) {
       int x = slot.x;
       int y = slot.y;
       ItemStack itemStack = slot.getItem();

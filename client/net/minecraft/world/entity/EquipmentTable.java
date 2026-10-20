@@ -1,9 +1,9 @@
 package net.minecraft.world.entity;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,7 +27,7 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
    }
 
    private static Map<EquipmentSlot, Float> createForAllSlots(final List<EquipmentSlot> slots, final float dropChance) {
-      Map<EquipmentSlot, Float> values = Maps.newHashMap();
+      Map<EquipmentSlot, Float> values = new HashMap();
 
       for(EquipmentSlot slot : slots) {
          values.put(slot, dropChance);

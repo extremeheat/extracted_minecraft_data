@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
@@ -12,13 +11,14 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class EntityBlockStateFix extends DataFix {
-   private static final Map<String, Integer> MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
+   private static final Map<String, Integer> MAP = (Map)DataFixUtils.make(new HashMap(), (map) -> {
       map.put("minecraft:air", 0);
       map.put("minecraft:stone", 1);
       map.put("minecraft:grass", 2);

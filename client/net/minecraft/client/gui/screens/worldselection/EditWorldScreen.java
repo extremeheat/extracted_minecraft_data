@@ -163,8 +163,8 @@ public class EditWorldScreen extends Screen {
       }, minecraft);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 15, -1);
    }
 

@@ -1,16 +1,16 @@
 package net.minecraft.gametest.framework;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
-import net.minecraft.util.Util;
+import java.util.concurrent.CopyOnWriteArrayList;
+import net.minecraft.util.DevUtil;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class GameTestTicker {
    public static final GameTestTicker SINGLETON = new GameTestTicker();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Collection<GameTestInfo> testInfos = Lists.newCopyOnWriteArrayList();
+   private final Collection<GameTestInfo> testInfos = new CopyOnWriteArrayList();
    private @Nullable GameTestRunner runner;
    private State state;
 
@@ -38,7 +38,7 @@ public class GameTestTicker {
 
    public void setRunner(final GameTestRunner runner) {
       if (this.runner != null) {
-         Util.logAndPauseIfInIde("The runner was already set in GameTestTicker");
+         DevUtil.logAndPauseIfInIde("The runner was already set in GameTestTicker");
       }
 
       this.runner = runner;

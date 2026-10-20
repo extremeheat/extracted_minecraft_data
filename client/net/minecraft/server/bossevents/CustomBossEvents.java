@@ -1,8 +1,8 @@
 package net.minecraft.server.bossevents;
 
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -21,7 +21,7 @@ public class CustomBossEvents extends SavedData {
    private static final Codec<Map<Identifier, CustomBossEvent.Packed>> EVENTS_CODEC;
    private static final Codec<CustomBossEvents> CODEC;
    public static final SavedDataType<CustomBossEvents> TYPE;
-   private final Map<Identifier, CustomBossEvent> events = Maps.newHashMap();
+   private final Map<Identifier, CustomBossEvent> events = new HashMap();
 
    public CustomBossEvents() {
       super();

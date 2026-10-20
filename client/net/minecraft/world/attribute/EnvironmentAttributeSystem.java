@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
-import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.level.Level;
@@ -99,7 +99,7 @@ public class EnvironmentAttributeSystem implements EnvironmentAttributeReader {
    }
 
    public <Value> Value getDimensionValue(final EnvironmentAttribute<Value> attribute) {
-      if (SharedConstants.IS_RUNNING_IN_IDE && attribute.isPositional()) {
+      if (DevUtil.IS_RUNNING_IN_IDE && attribute.isPositional()) {
          throw new IllegalStateException("Position must always be provided for positional attribute " + String.valueOf(attribute));
       } else {
          ValueSampler<Value> sampler = this.<Value>getValueSampler(attribute);

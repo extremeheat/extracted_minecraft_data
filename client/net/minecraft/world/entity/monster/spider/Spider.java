@@ -114,10 +114,6 @@ public class Spider extends Monster {
 
    }
 
-   public boolean canBeAffected(final MobEffectInstance newEffect) {
-      return newEffect.is(MobEffects.POISON) ? false : super.canBeAffected(newEffect);
-   }
-
    public boolean isClimbing() {
       return ((Byte)this.entityData.get(DATA_FLAGS_ID) & 1) != 0;
    }

@@ -1,14 +1,14 @@
 package net.minecraft.client.gui.narration;
 
-import com.google.common.collect.Maps;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 public class ScreenNarrationCollector {
    private int generation;
-   private final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((e) -> e.type).thenComparing((e) -> e.depth));
+   private final Map<EntryKey, NarrationEntry> entries = new TreeMap(Comparator.comparing((e) -> e.type).thenComparing((e) -> e.depth));
 
    public ScreenNarrationCollector() {
       super();

@@ -76,8 +76,8 @@ public class GenericWaitingScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       ActiveTextCollector textRenderer = graphics.textRenderer();
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 80, -1);
       int messageY = 120;

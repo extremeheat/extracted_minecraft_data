@@ -1,12 +1,12 @@
 package net.minecraft.client;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.FormattedText;
 import org.jspecify.annotations.Nullable;
 
 public class ComponentCollector {
-   private final List<FormattedText> parts = Lists.newArrayList();
+   private final List<FormattedText> parts = new ArrayList();
 
    public ComponentCollector() {
       super();

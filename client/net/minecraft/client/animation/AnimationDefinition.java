@@ -1,7 +1,7 @@
 package net.minecraft.client.animation;
 
-import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.client.model.geom.ModelPart;
@@ -17,7 +17,7 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
 
    public static class Builder {
       private final float length;
-      private final Map<String, List<AnimationChannel>> animationByBone = Maps.newHashMap();
+      private final Map<String, List<AnimationChannel>> animationByBone = new HashMap();
       private boolean looping;
 
       public static Builder withLength(final float lengthInSeconds) {

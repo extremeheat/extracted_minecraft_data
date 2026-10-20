@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
@@ -39,7 +39,7 @@ public class DualNoiseProvider extends NoiseProvider {
    public BlockState getState(final LevelAccessor level, final RandomSource random, final BlockPos pos) {
       double varietyNoise = (double)this.getSlowNoiseValue(pos);
       int localVariety = (int)Mth.clampedMap(varietyNoise, -1.0, 1.0, (double)(Integer)this.variety.minInclusive(), (double)((Integer)this.variety.maxInclusive() + 1));
-      List<BlockState> possibleStates = Lists.newArrayListWithCapacity(localVariety);
+      List<BlockState> possibleStates = new ArrayList(localVariety);
 
       for(int i = 0; i < localVariety; ++i) {
          possibleStates.add(this.getRandomState(this.states, this.getSlowNoiseValue(pos.offset(i * '\ud511', 0, i * '\u85ba'))));

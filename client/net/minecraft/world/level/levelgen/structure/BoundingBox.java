@@ -15,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class BoundingBox {
       this.maxY = maxY;
       this.maxZ = maxZ;
       if (maxX < minX || maxY < minY || maxZ < minZ) {
-         Util.logAndPauseIfInIde("Invalid bounding box data, inverted bounds for: " + String.valueOf(this));
+         DevUtil.logAndPauseIfInIde("Invalid bounding box data, inverted bounds for: " + String.valueOf(this));
          this.minX = Math.min(minX, maxX);
          this.minY = Math.min(minY, maxY);
          this.minZ = Math.min(minZ, maxZ);

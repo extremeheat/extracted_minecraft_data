@@ -13,6 +13,9 @@ import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import net.minecraft.client.renderer.oit.OitStage;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.variant.LineRenderPipelineVariant;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -61,8 +64,8 @@ public class DebugCrosshairRenderer implements AutoCloseable {
       modelViewStack.rotateY(cameraState.yRot * 0.017453292F);
       float crosshairScale = 0.01F * (float)guiScale;
       modelViewStack.scale(-crosshairScale, crosshairScale, -crosshairScale);
-      RenderPipeline renderPipelineOutline = RenderPipelines.LINES;
-      RenderPipeline renderPipelineFill = RenderPipelines.LINES_DEPTH_BIAS;
+      RenderPipeline renderPipelineOutline = RenderPipelines.lines(new RenderPipelines.LinesParameters(LineRenderPipelineVariant.SOLID, (OitStage)null));
+      RenderPipeline renderPipelineFill = RenderPipelines.lines(new RenderPipelines.LinesParameters(LineRenderPipelineVariant.SOLID_WITH_DEPTH_BIAS, (OitStage)null));
       GpuBuffer indexBuffer = this.crosshairIndicies.getBuffer(36);
       GpuBufferSlice dynamicTransform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
 

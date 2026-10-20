@@ -14,8 +14,6 @@ import net.minecraft.util.parsing.packrat.commands.Grammar;
 public class TagParser<T> {
    public static final SimpleCommandExceptionType ERROR_TRAILING_DATA = new SimpleCommandExceptionType(Component.translatable("argument.nbt.trailing"));
    public static final SimpleCommandExceptionType ERROR_EXPECTED_COMPOUND = new SimpleCommandExceptionType(Component.translatable("argument.nbt.expected.compound"));
-   public static final char ELEMENT_SEPARATOR = ',';
-   public static final char NAME_VALUE_SEPARATOR = ':';
    private static final TagParser<Tag> NBT_OPS_PARSER;
    public static final Codec<CompoundTag> FLATTENED_CODEC;
    public static final Codec<CompoundTag> LENIENT_CODEC;

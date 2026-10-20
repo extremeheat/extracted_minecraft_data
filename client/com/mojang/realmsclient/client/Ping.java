@@ -1,10 +1,10 @@
 package com.mojang.realmsclient.client;
 
-import com.google.common.collect.Lists;
 import com.mojang.realmsclient.dto.RegionPingResult;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.util.Util;
@@ -20,7 +20,7 @@ public class Ping {
          ping(region.endpoint);
       }
 
-      List<RegionPingResult> results = Lists.newArrayList();
+      List<RegionPingResult> results = new ArrayList();
 
       for(Region region : regions) {
          results.add(new RegionPingResult(region.name, ping(region.endpoint)));

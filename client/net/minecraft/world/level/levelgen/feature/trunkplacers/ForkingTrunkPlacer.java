@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.BiConsumer;
@@ -27,7 +27,7 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
 
    public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
       placeBelowTrunkBlock(level, trunkSetter, random, origin.below(), tree);
-      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
+      List<FoliagePlacer.FoliageAttachment> attachments = new ArrayList();
       Direction leanDirection = Direction.Plane.HORIZONTAL.getRandomDirection(random);
       int leanHeight = treeHeight - random.nextInt(4) - 1;
       int leanSteps = 3 - random.nextInt(3);

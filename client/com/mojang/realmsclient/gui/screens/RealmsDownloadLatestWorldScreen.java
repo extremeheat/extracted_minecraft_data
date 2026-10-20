@@ -1,12 +1,12 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.Unit;
 import com.mojang.realmsclient.client.FileDownload;
 import com.mojang.realmsclient.dto.WorldDownload;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -101,7 +101,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    }
 
    private Component createProgressNarrationMessage() {
-      List<Component> elements = Lists.newArrayList();
+      List<Component> elements = new ArrayList();
       elements.add(this.downloadTitle);
       elements.add(this.status);
       if (this.progress != null) {
@@ -125,8 +125,8 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       this.minecraft.gui.setScreen(this.lastScreen);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.downloadTitle, this.width / 2, 20, -1);
       graphics.centeredText(this.font, (Component)this.status, this.width / 2, 50, -1);
       if (this.showDots) {

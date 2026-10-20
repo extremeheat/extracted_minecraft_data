@@ -1,7 +1,6 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -68,7 +67,7 @@ public class PathFinder {
       boolean captureDebug = this.captureDebug.getAsBoolean();
       Set<Node> closedSet = (Set<Node>)(captureDebug ? new HashSet() : Set.of());
       int count = 0;
-      Set<Target> reachedTargets = Sets.newHashSetWithExpectedSize(targets.size());
+      Set<Target> reachedTargets = new HashSet(targets.size());
       int maxVisitedNodesAdjusted = (int)((float)this.maxVisitedNodes * maxVisitedNodesMultiplier);
 
       while(!this.openSet.isEmpty()) {
@@ -149,7 +148,7 @@ public class PathFinder {
    }
 
    private Path reconstructPath(final Node closest, final BlockPos target, final boolean reached) {
-      List<Node> nodes = Lists.newArrayList();
+      List<Node> nodes = new ArrayList();
       Node node = closest;
       nodes.add(0, closest);
 

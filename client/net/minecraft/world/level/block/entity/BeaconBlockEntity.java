@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -130,7 +129,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       BlockPos checkPos;
       if (entity.lastCheckY < y) {
          checkPos = pos;
-         entity.checkingBeamSections = Lists.newArrayList();
+         entity.checkingBeamSections = new ArrayList();
          entity.lastCheckY = pos.getY() - 1;
       } else {
          checkPos = new BlockPos(x, entity.lastCheckY + 1, z);

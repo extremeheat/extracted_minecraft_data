@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.packs;
 
-import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -17,6 +16,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +77,7 @@ public class PackSelectionScreen extends Screen {
    private @Nullable EditBox search;
    private final Path packDir;
    private @Nullable Button doneButton;
-   private final Map<String, Identifier> packIcons = Maps.newHashMap();
+   private final Map<String, Identifier> packIcons = new HashMap();
 
    public PackSelectionScreen(final PackRepository repository, final Consumer<PackRepository> output, final Path packDir, final Component title) {
       super(title);

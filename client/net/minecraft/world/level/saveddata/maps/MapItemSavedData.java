@@ -1,14 +1,15 @@
 package net.minecraft.world.level.saveddata.maps;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -70,11 +71,11 @@ public class MapItemSavedData extends SavedData {
    private MapItemSavedData(final int centerX, final int centerZ, final byte scale, final boolean trackingPosition, final boolean unlimitedTracking, final boolean locked, final ResourceKey<Level> dimension) {
       super();
       this.colors = new byte[16384];
-      this.carriedBy = Lists.newArrayList();
-      this.carriedByPlayers = Maps.newHashMap();
-      this.bannerMarkers = Maps.newHashMap();
-      this.decorations = Maps.newLinkedHashMap();
-      this.frameMarkers = Maps.newHashMap();
+      this.carriedBy = new ArrayList();
+      this.carriedByPlayers = new HashMap();
+      this.bannerMarkers = new HashMap();
+      this.decorations = new LinkedHashMap();
+      this.frameMarkers = new HashMap();
       this.scale = scale;
       this.centerX = centerX;
       this.centerZ = centerZ;

@@ -25,8 +25,8 @@ public class RealmsConfirmScreen extends RealmsScreen {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_NO, (button) -> this.callback.accept(false)).bounds(this.width / 2 + 5, row(9), 100, 20).build());
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title1, this.width / 2, row(3), -1);
       graphics.centeredText(this.font, (Component)this.title2, this.width / 2, row(5), -1);
    }

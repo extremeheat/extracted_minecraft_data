@@ -10,6 +10,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
@@ -24,6 +25,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -96,10 +98,10 @@ public class CloneCommands {
             if (toDimension.isDebug()) {
                throw ERROR_FAILED.create();
             } else {
-               List<CloneBlockInfo> solidList = Lists.newArrayList();
-               List<CloneBlockInfo> blockEntitiesList = Lists.newArrayList();
-               List<CloneBlockInfo> otherBlocksList = Lists.newArrayList();
-               Deque<BlockPos> clearBlocksList = Lists.newLinkedList();
+               List<CloneBlockInfo> solidList = new ArrayList();
+               List<CloneBlockInfo> blockEntitiesList = new ArrayList();
+               List<CloneBlockInfo> otherBlocksList = new ArrayList();
+               Deque<BlockPos> clearBlocksList = new ArrayListDeque<BlockPos>();
                int count = 0;
                ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER);
 
@@ -146,7 +148,7 @@ public class CloneCommands {
                      }
                   }
 
-                  List<CloneBlockInfo> blockInfoList = Lists.newArrayList();
+                  List<CloneBlockInfo> blockInfoList = new ArrayList();
                   blockInfoList.addAll(solidList);
                   blockInfoList.addAll(blockEntitiesList);
                   blockInfoList.addAll(otherBlocksList);

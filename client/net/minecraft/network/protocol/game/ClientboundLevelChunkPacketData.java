@@ -1,8 +1,8 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class ClientboundLevelChunkPacketData {
       this.heightmaps = (Map)levelChunk.getHeightmaps().stream().filter((entryx) -> ((Heightmap.Types)entryx.getKey()).sendToClient()).collect(Collectors.toMap(Map.Entry::getKey, (entryx) -> (long[])((Heightmap)entryx.getValue()).getRawData().clone()));
       this.buffer = new byte[calculateChunkSize(levelChunk)];
       extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), levelChunk);
-      this.blockEntitiesData = Lists.newArrayList();
+      this.blockEntitiesData = new ArrayList();
 
       for(Map.Entry<BlockPos, BlockEntity> entry : levelChunk.getBlockEntities().entrySet()) {
          this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)entry.getValue()));

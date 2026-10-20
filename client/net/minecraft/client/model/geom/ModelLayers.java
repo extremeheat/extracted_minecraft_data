@@ -1,6 +1,6 @@
 package net.minecraft.client.model.geom;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.client.renderer.entity.ArmorModelSet;
@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 
 public class ModelLayers {
    private static final String DEFAULT_LAYER = "main";
-   private static final Set<ModelLayerLocation> ALL_MODELS = Sets.newHashSet();
+   private static final Set<ModelLayerLocation> ALL_MODELS = new HashSet();
    public static final ModelLayerLocation ACACIA_BOAT = register("boat/acacia");
    public static final ModelLayerLocation ACACIA_CHEST_BOAT = register("chest_boat/acacia");
    public static final ModelLayerLocation ALLAY = register("allay");

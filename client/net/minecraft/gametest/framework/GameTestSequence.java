@@ -1,6 +1,6 @@
 package net.minecraft.gametest.framework;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 
 public class GameTestSequence {
    private final GameTestInfo parent;
-   private final List<GameTestEvent> events = Lists.newArrayList();
+   private final List<GameTestEvent> events = new ArrayList();
    private int lastTick;
 
    public GameTestSequence(final GameTestInfo parent) {

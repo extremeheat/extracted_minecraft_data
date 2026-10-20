@@ -59,7 +59,7 @@ public class FocusableTextWidget extends MultiLineTextWidget {
       this.hoveredUsageNarration = hovered;
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       int borderColor = this.alwaysShowBorder && !this.isFocused() ? ARGB.color(this.alpha, -6250336) : ARGB.white(this.alpha);
       switch (this.backgroundFill.ordinal()) {
          case 0:
@@ -76,7 +76,7 @@ public class FocusableTextWidget extends MultiLineTextWidget {
          graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), borderColor);
       }
 
-      super.extractWidgetRenderState(graphics, mouseX, mouseY, a);
+      super.extractWidgetRenderState(graphics);
    }
 
    protected int getTextX() {

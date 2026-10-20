@@ -2,6 +2,7 @@ package net.minecraft.client.renderer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.PanoramaRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;

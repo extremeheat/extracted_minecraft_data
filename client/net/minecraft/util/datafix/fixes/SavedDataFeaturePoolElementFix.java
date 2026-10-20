@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -19,8 +18,8 @@ import java.util.stream.Stream;
 
 public class SavedDataFeaturePoolElementFix extends DataFix {
    private static final Pattern INDEX_PATTERN = Pattern.compile("\\[(\\d+)\\]");
-   private static final Set<String> PIECE_TYPE = Sets.newHashSet(new String[]{"minecraft:jigsaw", "minecraft:nvi", "minecraft:pcp", "minecraft:bastionremnant", "minecraft:runtime"});
-   private static final Set<String> FEATURES = Sets.newHashSet(new String[]{"minecraft:tree", "minecraft:flower", "minecraft:block_pile", "minecraft:random_patch"});
+   private static final Set<String> PIECE_TYPE = Set.of("minecraft:jigsaw", "minecraft:nvi", "minecraft:pcp", "minecraft:bastionremnant", "minecraft:runtime");
+   private static final Set<String> FEATURES = Set.of("minecraft:tree", "minecraft:flower", "minecraft:block_pile", "minecraft:random_patch");
 
    public SavedDataFeaturePoolElementFix(final Schema outputSchema) {
       super(outputSchema, false);

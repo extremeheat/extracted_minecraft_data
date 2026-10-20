@@ -1,14 +1,15 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -32,9 +33,9 @@ public class GameTestInfo {
    private final Holder.Reference<GameTestInstance> test;
    private @Nullable BlockPos testBlockPos;
    private final ServerLevel level;
-   private final Collection<GameTestListener> listeners = Lists.newArrayList();
+   private final Collection<GameTestListener> listeners = new ArrayList();
    private final int timeoutTicks;
-   private final Collection<GameTestSequence> sequences = Lists.newCopyOnWriteArrayList();
+   private final Collection<GameTestSequence> sequences = new CopyOnWriteArrayList();
    private final Object2LongMap<Runnable> runAtTickTimeMap = new Object2LongOpenHashMap();
    private boolean placedStructure;
    private boolean chunksLoaded;

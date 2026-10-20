@@ -1,6 +1,6 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
 import java.util.Set;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -27,6 +27,6 @@ public record ClientboundLoginPacket(int playerId, boolean hardcore, Set<Resourc
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, ClientboundLoginPacket::playerId, ByteBufCodecs.BOOL, ClientboundLoginPacket::hardcore, ResourceKey.streamCodec(Registries.DIMENSION).apply(ByteBufCodecs.collection(Sets::newHashSetWithExpectedSize)), ClientboundLoginPacket::levels, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::maxPlayers, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::chunkRadius, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::simulationDistance, ByteBufCodecs.BOOL, ClientboundLoginPacket::reducedDebugInfo, ByteBufCodecs.BOOL, ClientboundLoginPacket::showDeathScreen, ByteBufCodecs.BOOL, ClientboundLoginPacket::doLimitedCrafting, CommonPlayerSpawnInfo.STREAM_CODEC, ClientboundLoginPacket::commonPlayerSpawnInfo, ByteBufCodecs.BOOL, ClientboundLoginPacket::onlineMode, ByteBufCodecs.BOOL, ClientboundLoginPacket::enforcesSecureChat, ClientboundLoginPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, ClientboundLoginPacket::playerId, ByteBufCodecs.BOOL, ClientboundLoginPacket::hardcore, ResourceKey.streamCodec(Registries.DIMENSION).apply(ByteBufCodecs.collection(HashSet::new)), ClientboundLoginPacket::levels, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::maxPlayers, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::chunkRadius, ByteBufCodecs.VAR_INT, ClientboundLoginPacket::simulationDistance, ByteBufCodecs.BOOL, ClientboundLoginPacket::reducedDebugInfo, ByteBufCodecs.BOOL, ClientboundLoginPacket::showDeathScreen, ByteBufCodecs.BOOL, ClientboundLoginPacket::doLimitedCrafting, CommonPlayerSpawnInfo.STREAM_CODEC, ClientboundLoginPacket::commonPlayerSpawnInfo, ByteBufCodecs.BOOL, ClientboundLoginPacket::onlineMode, ByteBufCodecs.BOOL, ClientboundLoginPacket::enforcesSecureChat, ClientboundLoginPacket::new);
    }
 }

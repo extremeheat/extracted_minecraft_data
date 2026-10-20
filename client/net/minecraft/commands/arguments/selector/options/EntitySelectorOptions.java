@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments.selector.options;
 
-import com.google.common.collect.Maps;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -8,6 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,7 +57,7 @@ import org.slf4j.Logger;
 
 public class EntitySelectorOptions {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<String, Option> OPTIONS = Maps.newHashMap();
+   private static final Map<String, Option> OPTIONS = new HashMap();
    private static final Predicate<EntitySelectorParser> ALWAYS_AVAILABLE = (var0) -> true;
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.unknown", name));
    public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((name) -> Component.translatableEscape("argument.entity.options.inapplicable", name));
@@ -319,7 +319,7 @@ public class EntitySelectorOptions {
          }, ALWAYS_AVAILABLE, Component.translatable("argument.entity.options.nbt.description"));
          register("scores", (parser) -> {
             StringReader reader = parser.getReader();
-            Map<String, MinMaxBounds.Ints> expected = Maps.newHashMap();
+            Map<String, MinMaxBounds.Ints> expected = new HashMap();
             reader.expect('{');
             reader.skipWhitespace();
 
@@ -366,7 +366,7 @@ public class EntitySelectorOptions {
          }, (s) -> s.scoresOption().canParse(), Component.translatable("argument.entity.options.scores.description"));
          register("advancements", (parser) -> {
             StringReader reader = parser.getReader();
-            Map<Identifier, Predicate<AdvancementProgress>> expected = Maps.newHashMap();
+            Map<Identifier, Predicate<AdvancementProgress>> expected = new HashMap();
             reader.expect('{');
             reader.skipWhitespace();
 
@@ -377,7 +377,7 @@ public class EntitySelectorOptions {
                reader.expect('=');
                reader.skipWhitespace();
                if (reader.canRead() && reader.peek() == '{') {
-                  Map<String, Predicate<CriterionProgress>> progress = Maps.newHashMap();
+                  Map<String, Predicate<CriterionProgress>> progress = new HashMap();
                   reader.skipWhitespace();
                   reader.expect('{');
                   reader.skipWhitespace();

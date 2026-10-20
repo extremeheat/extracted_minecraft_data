@@ -2,11 +2,11 @@ package net.minecraft.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +14,9 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
-   private final Map<Class<?>, List<T>> byClass = Maps.newHashMap();
+   private final Map<Class<?>, List<T>> byClass = new HashMap();
    private final Class<T> baseClass;
-   private final List<T> allInstances = Lists.newArrayList();
+   private final List<T> allInstances = new ArrayList();
 
    public ClassInstanceMultiMap(final Class<T> baseClass) {
       super();

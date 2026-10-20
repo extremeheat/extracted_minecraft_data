@@ -1,6 +1,6 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -119,7 +119,7 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    static {
       LIT = AbstractCandleBlock.LIT;
       SHAPE = Shapes.or(Block.column(2.0, 8.0, 14.0), Block.column(14.0, 0.0, 8.0));
-      BY_CANDLE = Maps.newHashMap();
+      BY_CANDLE = new HashMap();
       PARTICLE_OFFSETS = List.of((new Vec3(8.0, 16.0, 8.0)).scale(0.0625));
    }
 }

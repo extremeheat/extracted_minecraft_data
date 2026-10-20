@@ -2,13 +2,12 @@ package net.minecraft.world.inventory;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,7 +53,7 @@ public abstract class AbstractContainerMenu {
    public static final int SLOT_SIZE = 18;
    private final NonNullList<ItemStack> lastSlots = NonNullList.<ItemStack>create();
    public final NonNullList<Slot> slots = NonNullList.<Slot>create();
-   private final List<DataSlot> dataSlots = Lists.newArrayList();
+   private final List<DataSlot> dataSlots = new ArrayList();
    private ItemStack carried;
    private final NonNullList<RemoteSlot> remoteSlots;
    private final IntList remoteDataSlots;
@@ -76,8 +75,8 @@ public abstract class AbstractContainerMenu {
       this.remoteDataSlots = new IntArrayList();
       this.remoteCarried = RemoteSlot.PLACEHOLDER;
       this.quickcraftType = -1;
-      this.quickcraftSlots = Sets.newHashSet();
-      this.containerListeners = Lists.newArrayList();
+      this.quickcraftSlots = new HashSet();
+      this.containerListeners = new ArrayList();
       this.menuType = menuType;
       this.containerId = containerId;
    }

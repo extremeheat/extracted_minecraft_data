@@ -1,7 +1,5 @@
 package net.minecraft.server.players;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,7 +12,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +29,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Gson GSON = (new GsonBuilder()).setPrettyPrinting().create();
    private final File file;
-   private final Map<String, V> map = Maps.newHashMap();
+   private final Map<String, V> map = new HashMap();
    protected final NotificationService notificationService;
 
    public StoredUserList(final File file, final NotificationService notificationService) {
@@ -112,7 +112,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    }
 
    private void removeExpired() {
-      List<K> toRemove = Lists.newArrayList();
+      List<K> toRemove = new ArrayList();
 
       for(V entry : this.map.values()) {
          if (entry.hasExpired()) {

@@ -1,6 +1,5 @@
 package net.minecraft;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -10,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,7 +26,7 @@ public class CrashReport {
    private static final DateTimeFormatter DATE_TIME_FORMATTER;
    private final String title;
    private final Throwable exception;
-   private final List<CrashReportCategory> details = Lists.newArrayList();
+   private final List<CrashReportCategory> details = new ArrayList();
    private @Nullable Path saveFile;
    private boolean trackingStackTrace = true;
    private StackTraceElement[] uncategorizedStackTrace = new StackTraceElement[0];

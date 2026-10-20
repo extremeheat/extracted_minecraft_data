@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments;
 
-import com.google.common.collect.Maps;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,6 +9,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -61,7 +61,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
       FEET("feet", (p, e) -> p),
       EYES("eyes", (p, e) -> new Vec3(p.x, p.y + (double)e.getEyeHeight(), p.z));
 
-      private static final Map<String, Anchor> BY_NAME = (Map)Util.make(Maps.newHashMap(), (map) -> {
+      private static final Map<String, Anchor> BY_NAME = (Map)Util.make(new HashMap(), (map) -> {
          for(Anchor anchor : values()) {
             map.put(anchor.name, anchor);
          }

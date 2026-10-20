@@ -1,13 +1,13 @@
 package net.minecraft.world.level.storage;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.OptionalDynamic;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -67,7 +67,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    public PrimaryLevelData(final LevelSettings levelSettings, final SpecialWorldProperty specialWorldProperty, final Lifecycle lifecycle) {
-      this((UUID)null, false, LevelData.RespawnData.DEFAULT, 0L, 19133, false, Sets.newLinkedHashSet(), new HashSet(), levelSettings.copy(), specialWorldProperty, lifecycle, List.of());
+      this((UUID)null, false, LevelData.RespawnData.DEFAULT, 0L, 19133, false, new LinkedHashSet(), new HashSet(), levelSettings.copy(), specialWorldProperty, lifecycle, List.of());
    }
 
    public static <T> PrimaryLevelData parse(final Dynamic<T> input, final LevelSettings settings, final SpecialWorldProperty specialWorldProperty, final Lifecycle worldGenSettingsLifecycle) {
@@ -76,7 +76,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       OptionalDynamic var10002 = input.get("singleplayer_uuid");
       Codec var10003 = UUIDUtil.CODEC;
       Objects.requireNonNull(var10003);
-      return new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle, input.get("version_history").orElseEmptyList().asList((d) -> d.asInt(-1)));
+      return new PrimaryLevelData((UUID)var10002.flatMap(var10003::parse).result().orElse((Object)null), input.get("WasModded").asBoolean(false), (LevelData.RespawnData)input.get("spawn").read(LevelData.RespawnData.CODEC).result().orElse(LevelData.RespawnData.DEFAULT), gameTime, levelVersion.levelDataVersion(), input.get("initialized").asBoolean(true), (Set)input.get("ServerBrands").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toCollection(LinkedHashSet::new)), (Set)input.get("removed_features").asStream().flatMap((b) -> b.asString().result().stream()).collect(Collectors.toSet()), settings, specialWorldProperty, worldGenSettingsLifecycle, input.get("version_history").orElseEmptyList().asList((d) -> d.asInt(-1)));
    }
 
    public CompoundTag createTag(@Nullable UUID singlePlayerUUID) {

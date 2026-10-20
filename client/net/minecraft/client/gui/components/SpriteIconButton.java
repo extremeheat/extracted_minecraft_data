@@ -23,7 +23,7 @@ public class SpriteIconButton extends LoadingButton {
       this.displayState = displayState;
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractContents(final GuiGraphicsExtractor graphics) {
       if (!this.extractLoadingStateIfLoading(graphics)) {
          this.extractDefaultSprite(graphics);
          if (this.displayState == SpriteIconButton.DisplayState.ICON_ONLY) {
@@ -31,13 +31,13 @@ public class SpriteIconButton extends LoadingButton {
          } else if (this.displayState == SpriteIconButton.DisplayState.TEXT_ONLY) {
             this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
          } else {
-            this.extractTextAndIcon(graphics, mouseX, mouseY, a);
+            this.extractTextAndIcon(graphics);
          }
 
       }
    }
 
-   protected void extractTextAndIcon(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractTextAndIcon(final GuiGraphicsExtractor graphics) {
       int left = this.getX() + 2;
       int right = this.getX() + this.getWidth() - this.sprite.width() - 4;
       int centerX = this.getX() + this.getWidth() / 2;

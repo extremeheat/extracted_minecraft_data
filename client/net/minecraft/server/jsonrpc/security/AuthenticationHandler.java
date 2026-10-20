@@ -1,6 +1,5 @@
 package net.minecraft.server.jsonrpc.security;
 
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
@@ -18,7 +17,9 @@ import io.netty.util.ReferenceCountUtil;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -36,7 +37,7 @@ public class AuthenticationHandler extends ChannelDuplexHandler {
    public AuthenticationHandler(final SecurityConfig securityConfig, final String allowedOrigins) {
       super();
       this.securityConfig = securityConfig;
-      this.allowedOrigins = Sets.newHashSet(allowedOrigins.split(","));
+      this.allowedOrigins = (Set)Arrays.stream(allowedOrigins.split(",")).collect(Collectors.toUnmodifiableSet());
    }
 
    public void channelRead(final ChannelHandlerContext context, final Object msg) throws Exception {

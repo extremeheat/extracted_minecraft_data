@@ -132,7 +132,7 @@ public class CreateBuffetWorldScreen extends Screen {
             return Component.translatable("narrator.select", this.name);
          }
 
-         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
             graphics.text(CreateBuffetWorldScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
          }
 

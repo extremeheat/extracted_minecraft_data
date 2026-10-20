@@ -387,6 +387,12 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.SULFUR_BRICK_WALL);
+         buildingBlocks.accept((ItemLike)Items.PACKED_ICE);
+         buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICKS);
+         buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_SLAB);
+         buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_WALL);
+         buildingBlocks.accept((ItemLike)Items.CHISELED_PACKED_ICE);
          buildingBlocks.accept((ItemLike)Items.SEA_LANTERN);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE_STAIRS);
@@ -520,6 +526,8 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.PACKED_ICE);
          naturalBlocks.accept((ItemLike)Items.BLUE_ICE);
          naturalBlocks.accept((ItemLike)Items.BRITTLE_ICE);
+         naturalBlocks.accept((ItemLike)Items.ICICLE);
+         naturalBlocks.accept((ItemLike)Items.ICE_CRYSTAL);
          naturalBlocks.accept((ItemLike)Items.SNOW_BLOCK);
          naturalBlocks.accept((ItemLike)Items.SNOW);
          naturalBlocks.accept((ItemLike)Items.MOSS_BLOCK);
@@ -537,7 +545,6 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.DRIPSTONE_BLOCK);
          naturalBlocks.accept((ItemLike)Items.POINTED_DRIPSTONE);
          naturalBlocks.accept((ItemLike)Items.PRISMARINE);
-         naturalBlocks.accept((ItemLike)Items.ICICLE);
          naturalBlocks.accept((ItemLike)Items.CINNABAR);
          naturalBlocks.accept((ItemLike)Items.SULFUR);
          naturalBlocks.accept((ItemLike)Items.SULFUR_SPIKE);
@@ -584,7 +591,6 @@ public class CreativeModeTabs {
          naturalBlocks.accept((ItemLike)Items.MEDIUM_AMETHYST_BUD);
          naturalBlocks.accept((ItemLike)Items.LARGE_AMETHYST_BUD);
          naturalBlocks.accept((ItemLike)Items.AMETHYST_CLUSTER);
-         naturalBlocks.accept((ItemLike)Items.ICE_CRYSTAL);
          naturalBlocks.accept((ItemLike)Items.OAK_LOG);
          naturalBlocks.accept((ItemLike)Items.SPRUCE_LOG);
          naturalBlocks.accept((ItemLike)Items.BIRCH_LOG);

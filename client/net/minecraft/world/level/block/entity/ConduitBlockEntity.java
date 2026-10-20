@@ -1,6 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -42,7 +42,7 @@ public class ConduitBlockEntity extends BlockEntity {
    private float activeRotation;
    private boolean isActive;
    private boolean isHunting;
-   private final List<BlockPos> effectBlocks = Lists.newArrayList();
+   private final List<BlockPos> effectBlocks = new ArrayList();
    private @Nullable EntityReference<LivingEntity> destroyTarget;
    private long nextAmbientSoundActivation;
 

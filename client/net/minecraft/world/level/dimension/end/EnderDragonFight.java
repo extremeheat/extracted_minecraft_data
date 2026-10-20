@@ -3,14 +3,13 @@ package net.minecraft.world.level.dimension.end;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -352,14 +351,14 @@ public class EnderDragonFight extends SavedData {
    }
 
    private void updatePlayers() {
-      Set<ServerPlayer> newPlayers = Sets.newHashSet();
+      Set<ServerPlayer> newPlayers = new HashSet();
 
       for(ServerPlayer player : this.level.getPlayers(this.validPlayer)) {
          this.dragonEvent.addPlayer(player);
          newPlayers.add(player);
       }
 
-      Set<ServerPlayer> toRemove = Sets.newHashSet(this.dragonEvent.getPlayers());
+      Set<ServerPlayer> toRemove = new HashSet(this.dragonEvent.getPlayers());
       toRemove.removeAll(newPlayers);
 
       for(ServerPlayer player : toRemove) {
@@ -510,7 +509,7 @@ public class EnderDragonFight extends SavedData {
             location = this.exitPortalLocation;
          }
 
-         List<EndCrystal> crystals = Lists.newArrayList();
+         List<EndCrystal> crystals = new ArrayList();
          BlockPos center = location.above(1);
 
          for(Direction direction : Direction.Plane.HORIZONTAL) {

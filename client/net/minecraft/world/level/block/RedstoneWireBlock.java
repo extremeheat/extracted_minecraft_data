@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -436,7 +434,7 @@ public class RedstoneWireBlock extends Block {
       SOUTH = BlockStateProperties.SOUTH_REDSTONE;
       WEST = BlockStateProperties.WEST_REDSTONE;
       POWER = BlockStateProperties.POWER;
-      PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Maps.newEnumMap(Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST)));
+      PROPERTY_BY_DIRECTION = Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST);
       COLORS = (int[])Util.make(new int[16], (list) -> {
          for(int i = 0; i <= 15; ++i) {
             float power = (float)i / 15.0F;

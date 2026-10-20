@@ -1,6 +1,6 @@
 package net.minecraft.server.notifications;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.gamerules.GameRule;
 import org.jspecify.annotations.Nullable;
 
 public class NotificationManager implements NotificationService {
-   private final List<NotificationService> notificationServices = Lists.newArrayList();
+   private final List<NotificationService> notificationServices = new ArrayList();
    private @Nullable DedicatedServer server;
 
    public NotificationManager() {

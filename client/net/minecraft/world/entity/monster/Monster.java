@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -24,6 +25,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.gamerules.GameRules;
 
@@ -99,6 +101,21 @@ public abstract class Monster extends PathfinderMob implements Enemy {
 
    public static boolean checkSurfaceMonstersSpawnRules(final EntityType<? extends Mob> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
       return checkMonsterSpawnRules(type, level, spawnReason, pos, random) && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(pos));
+   }
+
+   public static boolean checkColdVariantSpawnRules(final EntityType<? extends Monster> type, final ServerLevelAccessor level, final EntitySpawnReason spawnReason, final BlockPos pos, final RandomSource random) {
+      boolean canSpawn = checkMonsterSpawnRules(type, level, spawnReason, pos, random);
+      if (level.getBiome(pos).is(BiomeTags.SPAWNS_COLD_VARIANTS_UNDERGROUND)) {
+         return canSpawn;
+      } else {
+         BlockPos checkSkyPos = pos;
+
+         do {
+            checkSkyPos = checkSkyPos.above();
+         } while(level.getBlockState(checkSkyPos).is(Blocks.POWDER_SNOW));
+
+         return canSpawn && (EntitySpawnReason.isSpawner(spawnReason) || level.canSeeSky(checkSkyPos.below()));
+      }
    }
 
    public static AttributeSupplier.Builder createMonsterAttributes() {

@@ -1,8 +1,8 @@
 package net.minecraft.world.phys.shapes;
 
-import com.google.common.collect.Lists;
 import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,8 +10,8 @@ import net.minecraft.core.AxisCycle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
-import net.minecraft.util.Util;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -39,7 +39,7 @@ public abstract class VoxelShape {
 
    public AABB bounds() {
       if (this.isEmpty()) {
-         throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("No bounds for empty shape."));
+         throw (UnsupportedOperationException)DevUtil.pauseInIde(new UnsupportedOperationException("No bounds for empty shape."));
       } else {
          return new AABB(this.min(Direction.Axis.X), this.min(Direction.Axis.Y), this.min(Direction.Axis.Z), this.max(Direction.Axis.X), this.max(Direction.Axis.Y), this.max(Direction.Axis.Z));
       }
@@ -89,7 +89,7 @@ public abstract class VoxelShape {
    }
 
    public List<AABB> toAabbs() {
-      List<AABB> list = Lists.newArrayList();
+      List<AABB> list = new ArrayList();
       this.forAllBoxes((x1, y1, z1, x2, y2, z2) -> list.add(new AABB(x1, y1, z1, x2, y2, z2)));
       return list;
    }

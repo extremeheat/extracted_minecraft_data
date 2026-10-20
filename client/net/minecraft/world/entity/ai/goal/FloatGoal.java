@@ -23,7 +23,7 @@ public class FloatGoal extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.isInFluidDeeperThan(this.mob.getFluidJumpThreshold(), this.fluid) || this.mob.isInLava();
+      return this.mob.isFluidDeepEnoughToSwim(this.fluid) || this.mob.isInLava();
    }
 
    public boolean requiresUpdateEveryTick() {

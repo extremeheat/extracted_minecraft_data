@@ -30,7 +30,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -58,6 +57,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.InCommandFunction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -295,7 +295,7 @@ public class TestCommand {
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
       LiteralArgumentBuilder<CommandSourceStack> testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> verify(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> locate(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("resetclosest").executes((c) -> reset(TestFinder.builder().nearest(c))))).then(Commands.literal("resetthese").executes((c) -> reset(TestFinder.builder().allNearby(c))))).then(Commands.literal("resetthat").executes((c) -> reset(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthat").executes((c) -> clear(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthese").executes((c) -> clear(TestFinder.builder().allNearby(c))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((c) -> clear(TestFinder.builder().radius(c, 250)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((c) -> clear(TestFinder.builder().radius(c, Math.clamp((long)IntegerArgumentType.getInteger(c, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((c) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((c) -> showPos((CommandSourceStack)c.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((c) -> showPos((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "height"), IntegerArgumentType.getInteger(c, "depth"))))))));
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (DevUtil.IS_RUNNING_IN_IDE) {
          testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)testCommand.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> exportTestStructure((CommandSourceStack)c.getSource(), ResourceArgument.getResource(c, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((c) -> export(TestFinder.builder().nearest(c))))).then(Commands.literal("exportthese").executes((c) -> export(TestFinder.builder().allNearby(c))))).then(Commands.literal("exportthat").executes((c) -> export(TestFinder.builder().lookedAt(c))));
       }
 

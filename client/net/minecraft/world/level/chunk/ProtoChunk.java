@@ -1,8 +1,8 @@
 package net.minecraft.world.level.chunk;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.shorts.ShortList;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -59,7 +59,7 @@ public class ProtoChunk extends ChunkAccess {
    public ProtoChunk(final ChunkPos chunkPos, final UpgradeData upgradeData, final LevelChunkSection @Nullable [] sections, final ProtoChunkTicks<Block> blockTicks, final ProtoChunkTicks<Fluid> fluidTicks, final LevelHeightAccessor levelHeightAccessor, final PalettedContainerFactory containerFactory, final @Nullable BlendingData blendingData) {
       super(chunkPos, upgradeData, levelHeightAccessor, containerFactory, 0L, sections, blendingData);
       this.status = ChunkStatus.EMPTY;
-      this.entities = Lists.newArrayList();
+      this.entities = new ArrayList();
       this.blockTicks = blockTicks;
       this.fluidTicks = fluidTicks;
    }

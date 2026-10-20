@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.monster;
 
-import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -205,7 +205,7 @@ public class Strider extends Animal implements ItemSteerable {
 
    public Vec3 getDismountLocationForPassenger(final LivingEntity passenger) {
       Vec3[] directions = new Vec3[]{getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), passenger.getYRot()), getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), passenger.getYRot() - 22.5F), getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), passenger.getYRot() + 22.5F), getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), passenger.getYRot() - 45.0F), getCollisionHorizontalEscapeVector((double)this.getBbWidth(), (double)passenger.getBbWidth(), passenger.getYRot() + 45.0F)};
-      Set<BlockPos> targetBlockPositions = Sets.newLinkedHashSet();
+      Set<BlockPos> targetBlockPositions = new LinkedHashSet();
       double colliderTop = this.getBoundingBox().maxY;
       double colliderBottom = this.getBoundingBox().minY - 0.5;
       BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos();

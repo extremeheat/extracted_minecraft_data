@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.packs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,9 +32,9 @@ public class PackSelectionModel {
       this.onListChanged = onListChanged;
       this.iconGetter = iconGetter;
       this.repository = repository;
-      this.selected = Lists.newArrayList(repository.getSelectedPacks());
+      this.selected = new ArrayList(repository.getSelectedPacks());
       Collections.reverse(this.selected);
-      this.unselected = Lists.newArrayList(repository.getAvailablePacks());
+      this.unselected = new ArrayList(repository.getAvailablePacks());
       this.unselected.removeAll(this.selected);
       this.output = output;
    }

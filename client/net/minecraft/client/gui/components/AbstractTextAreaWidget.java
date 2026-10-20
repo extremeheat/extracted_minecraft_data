@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -46,7 +46,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
       return super.keyPressed(event);
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible()) {
          if (this.showBackground) {
             this.extractBackground(graphics);
@@ -55,10 +55,10 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
          graphics.enableScissor(this.getX() + 1, this.getY() + 1, this.getX() + this.width - 1, this.getY() + this.height - 1);
          graphics.pose().pushMatrix();
          graphics.pose().translate(0.0F, (float)(-this.scrollAmount()));
-         this.extractContents(graphics, mouseX, mouseY, a);
+         this.extractContents(graphics);
          graphics.pose().popMatrix();
          graphics.disableScissor();
-         this.extractScrollbar(graphics, mouseX, mouseY);
+         this.extractScrollbar(graphics);
          if (this.showDecorations) {
             this.extractDecorations(graphics);
          }
@@ -104,7 +104,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
 
    protected abstract int getInnerHeight();
 
-   protected abstract void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a);
+   protected abstract void extractContents(final GuiGraphicsExtractor graphics);
 
    protected int getInnerLeft() {
       return this.getX() + this.innerPadding();

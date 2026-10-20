@@ -1,8 +1,5 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.hash.HashCode;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
@@ -21,7 +18,9 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -370,7 +369,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private final GameProfile localGameProfile;
    private ClientLevel level;
    private ClientLevel.ClientLevelData levelData;
-   private final Map<UUID, PlayerInfo> playerInfoMap = Maps.newHashMap();
+   private final Map<UUID, PlayerInfo> playerInfoMap = new HashMap();
    private final Set<PlayerInfo> listedPlayers = new ReferenceOpenHashSet();
    private final ClientAdvancements advancements;
    private final ClientSuggestionProvider suggestionsProvider;
@@ -477,9 +476,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
       this.minecraft.gameMode = new MultiPlayerGameMode(this.minecraft, this);
       CommonPlayerSpawnInfo spawnInfo = packet.commonPlayerSpawnInfo();
-      List<ResourceKey<Level>> levels = Lists.newArrayList(packet.levels());
+      List<ResourceKey<Level>> levels = new ArrayList(packet.levels());
       Collections.shuffle(levels);
-      this.levels = Sets.newLinkedHashSet(levels);
+      this.levels = new LinkedHashSet(levels);
       ResourceKey<Level> dimension = spawnInfo.dimension();
       Holder<DimensionType> dimensionType = spawnInfo.dimensionType();
       this.serverChunkRadius = packet.chunkRadius();

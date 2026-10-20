@@ -1,10 +1,10 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -372,7 +372,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    public List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(final ServerLevel level, final Vec3 position) {
-      List<RecipeHolder<?>> recipesToAward = Lists.newArrayList();
+      List<RecipeHolder<?>> recipesToAward = new ArrayList();
       ObjectIterator var4 = this.recipesUsed.reference2IntEntrySet().iterator();
 
       while(var4.hasNext()) {

@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
@@ -49,7 +48,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec2;
 import org.jspecify.annotations.Nullable;
 
-public class CommandSuggestions {
+public class CommandSuggestions implements Renderable {
    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("(\\s+)");
    private static final Style UNPARSED_STYLE;
    private static final Style LITERAL_STYLE;
@@ -69,7 +68,7 @@ public class CommandSuggestions {
    private final int suggestionLineLimit;
    private final boolean anchorToBottom;
    private final int fillColor;
-   private final List<FormattedCharSequence> commandUsage = Lists.newArrayList();
+   private final List<FormattedCharSequence> commandUsage = new ArrayList();
    private int commandUsagePosition;
    private int commandUsageWidth;
    private @Nullable ParseResults<ClientSuggestionProvider> currentParse;
@@ -177,8 +176,8 @@ public class CommandSuggestions {
       String partialCommand = this.input.getValue().substring(0, this.input.getCursorPosition());
       int lastWordIndex = getLastWordIndex(partialCommand);
       String lastWord = partialCommand.substring(lastWordIndex).toLowerCase(Locale.ROOT);
-      List<Suggestion> suggestionList = Lists.newArrayList();
-      List<Suggestion> partial = Lists.newArrayList();
+      List<Suggestion> suggestionList = new ArrayList();
+      List<Suggestion> partial = new ArrayList();
 
       for(Suggestion suggestion : suggestions.getList()) {
          if (!suggestion.getText().startsWith(lastWord) && !suggestion.getText().startsWith("minecraft:" + lastWord)) {
@@ -373,7 +372,7 @@ public class CommandSuggestions {
    }
 
    private static FormattedCharSequence formatText(final ParseResults<ClientSuggestionProvider> currentParse, final String text, final int offset) {
-      List<FormattedCharSequence> parts = Lists.newArrayList();
+      List<FormattedCharSequence> parts = new ArrayList();
       int unformattedStart = 0;
       int nextColor = -1;
       CommandContextBuilder<ClientSuggestionProvider> context = currentParse.getContext().getLastChild();
@@ -411,16 +410,16 @@ public class CommandSuggestions {
       return FormattedCharSequence.composite(parts);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      if (!this.extractSuggestions(graphics, mouseX, mouseY)) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      if (!this.extractSuggestions(graphics)) {
          this.extractUsage(graphics);
       }
 
    }
 
-   public boolean extractSuggestions(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+   public boolean extractSuggestions(final GuiGraphicsExtractor graphics) {
       if (this.suggestions != null) {
-         this.suggestions.extractRenderState(graphics, mouseX, mouseY);
+         this.suggestions.extractRenderState(graphics);
          return true;
       } else {
          return false;
@@ -463,7 +462,7 @@ public class CommandSuggestions {
       MESSAGES_NOT_ALLOWED_TEXT = Component.translatable("chat_screen.messages_not_allowed").withStyle(ChatFormatting.RED);
    }
 
-   public class SuggestionsList {
+   public class SuggestionsList implements Renderable {
       private final Rect2i rect;
       private final String originalContents;
       private final List<Suggestion> suggestionList;
@@ -486,15 +485,15 @@ public class CommandSuggestions {
          this.select(0);
       }
 
-      public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
+      public void extractRenderState(final GuiGraphicsExtractor graphics) {
          int limit = Math.min(this.suggestionList.size(), CommandSuggestions.this.suggestionLineLimit);
          int unselectedColor = -5592406;
          boolean hasPrevious = this.offset > 0;
          boolean hasNext = this.suggestionList.size() > this.offset + limit;
          boolean limited = hasPrevious || hasNext;
-         boolean mouseMoved = this.lastMouse.x != (float)mouseX || this.lastMouse.y != (float)mouseY;
+         boolean mouseMoved = this.lastMouse.x != (float)graphics.mouseX() || this.lastMouse.y != (float)graphics.mouseY();
          if (mouseMoved) {
-            this.lastMouse = new Vec2((float)mouseX, (float)mouseY);
+            this.lastMouse = new Vec2((float)graphics.mouseX(), (float)graphics.mouseY());
          }
 
          if (limited) {
@@ -522,7 +521,7 @@ public class CommandSuggestions {
          for(int i = 0; i < limit; ++i) {
             Suggestion suggestion = (Suggestion)this.suggestionList.get(i + this.offset);
             graphics.fill(this.rect.getX(), this.rect.getY() + 12 * i, this.rect.getX() + this.rect.getWidth(), this.rect.getY() + 12 * i + 12, CommandSuggestions.this.fillColor);
-            if (mouseX > this.rect.getX() && mouseX < this.rect.getX() + this.rect.getWidth() && mouseY > this.rect.getY() + 12 * i && mouseY < this.rect.getY() + 12 * i + 12) {
+            if (graphics.mouseX() > this.rect.getX() && graphics.mouseX() < this.rect.getX() + this.rect.getWidth() && graphics.mouseY() > this.rect.getY() + 12 * i && graphics.mouseY() < this.rect.getY() + 12 * i + 12) {
                if (mouseMoved) {
                   this.select(i + this.offset);
                }
@@ -536,11 +535,11 @@ public class CommandSuggestions {
          if (hovered) {
             Message tooltip = ((Suggestion)this.suggestionList.get(this.current)).getTooltip();
             if (tooltip != null) {
-               graphics.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(tooltip), mouseX, mouseY);
+               graphics.setTooltipForNextFrame(CommandSuggestions.this.font, ComponentUtils.fromMessage(tooltip), graphics.mouseX(), graphics.mouseY());
             }
          }
 
-         if (this.rect.contains(mouseX, mouseY)) {
+         if (this.rect.contains(graphics.mouseX(), graphics.mouseY())) {
             graphics.requestCursor(CursorTypes.POINTING_HAND);
          }
 

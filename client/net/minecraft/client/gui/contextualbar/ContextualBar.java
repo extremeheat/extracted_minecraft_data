@@ -2,21 +2,21 @@ package net.minecraft.client.gui.contextualbar;
 
 import com.mojang.blaze3d.platform.Window;
 import java.util.Objects;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 
-public interface ContextualBar {
+public interface ContextualBar extends Renderable {
    int WIDTH = 182;
    int HEIGHT = 5;
    int MARGIN_BOTTOM = 24;
    ContextualBar EMPTY = new ContextualBar() {
-      public void extractBackground(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+      public void extractBackground(final GuiGraphicsExtractor graphics) {
       }
 
-      public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+      public void extractRenderState(final GuiGraphicsExtractor graphics) {
       }
    };
 
@@ -28,9 +28,7 @@ public interface ContextualBar {
       return window.getGuiScaledHeight() - 24 - 5;
    }
 
-   void extractBackground(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker);
-
-   void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker);
+   void extractBackground(GuiGraphicsExtractor graphics);
 
    static void extractExperienceLevel(final GuiGraphicsExtractor graphics, final Font font, final int experienceLevel) {
       Component str = Component.translatable("gui.experience.level", experienceLevel);

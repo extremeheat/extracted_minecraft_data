@@ -3,6 +3,7 @@ package net.minecraft.world.entity;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -227,7 +229,7 @@ public class ExperienceOrb extends Entity {
       this.setDeltaMovement(movement.x * 0.9900000095367432, Math.min(movement.y + 5.000000237487257E-4, 0.05999999865889549), movement.z * 0.9900000095367432);
    }
 
-   protected void doWaterSplashEffect() {
+   protected void onEnterFluid(final Holder<Fluid> fluid) {
    }
 
    public final boolean hurtClient(final DamageSource source) {

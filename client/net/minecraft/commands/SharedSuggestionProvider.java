@@ -2,11 +2,11 @@ package net.minecraft.commands;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -154,7 +154,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
    }
 
    static CompletableFuture<Suggestions> suggestCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
-      List<String> result = Lists.newArrayList();
+      List<String> result = new ArrayList();
       if (Strings.isNullOrEmpty(currentInput)) {
          for(TextCoordinates coordinate : allSuggestions) {
             String fullValue = coordinate.x + " " + coordinate.y + " " + coordinate.z;
@@ -188,7 +188,7 @@ public interface SharedSuggestionProvider extends PermissionSetSupplier {
    }
 
    static CompletableFuture<Suggestions> suggest2DCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
-      List<String> result = Lists.newArrayList();
+      List<String> result = new ArrayList();
       if (Strings.isNullOrEmpty(currentInput)) {
          for(TextCoordinates coordinate : allSuggestions) {
             String fullValue = coordinate.x + " " + coordinate.z;

@@ -1,14 +1,14 @@
 package net.minecraft.world.ticks;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 
 public class ProtoChunkTicks<T> implements TickContainerAccess<T>, SerializableTickContainer<T> {
-   private final List<SavedTick<T>> ticks = Lists.newArrayList();
+   private final List<SavedTick<T>> ticks = new ArrayList();
    private final Set<SavedTick<?>> ticksPerPosition;
 
    public ProtoChunkTicks() {

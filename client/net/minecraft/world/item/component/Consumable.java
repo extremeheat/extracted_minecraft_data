@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -29,11 +30,11 @@ import net.minecraft.world.item.consume_effects.PlaySoundConsumeEffect;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holder<SoundEvent> sound, boolean hasConsumeParticles, List<ConsumeEffect> onConsumeEffects) {
+public record Consumable(float consumeSeconds, ItemUseAnimation animation, Optional<Holder<SoundEvent>> sound, boolean hasConsumeParticles, List<ConsumeEffect> onConsumeEffects) {
    public static final float DEFAULT_CONSUME_SECONDS = 1.6F;
    private static final int CONSUME_EFFECTS_INTERVAL = 4;
    private static final float CONSUME_EFFECTS_START_FRACTION = 0.21875F;
-   public static final Codec<Consumable> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("consume_seconds", 1.6F).forGetter(Consumable::consumeSeconds), ItemUseAnimation.CODEC.optionalFieldOf("animation", ItemUseAnimation.EAT).forGetter(Consumable::animation), SoundEvent.CODEC.optionalFieldOf("sound", SoundEvents.GENERIC_EAT).forGetter(Consumable::sound), Codec.BOOL.optionalFieldOf("has_consume_particles", true).forGetter(Consumable::hasConsumeParticles), ConsumeEffect.CODEC.listOf().optionalFieldOf("on_consume_effects", List.of()).forGetter(Consumable::onConsumeEffects)).apply(i, Consumable::new));
+   public static final Codec<Consumable> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.NON_NEGATIVE_FLOAT.optionalFieldOf("consume_seconds", 1.6F).forGetter(Consumable::consumeSeconds), ItemUseAnimation.CODEC.optionalFieldOf("animation", ItemUseAnimation.EAT).forGetter(Consumable::animation), SoundEvent.CODEC.optionalFieldOf("sound").forGetter(Consumable::sound), Codec.BOOL.optionalFieldOf("has_consume_particles", true).forGetter(Consumable::hasConsumeParticles), ConsumeEffect.CODEC.listOf().optionalFieldOf("on_consume_effects", List.of()).forGetter(Consumable::onConsumeEffects)).apply(i, Consumable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Consumable> STREAM_CODEC;
 
    public Consumable {
@@ -87,25 +88,28 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
    }
 
    public void emitParticlesAndSounds(final RandomSource random, final LivingEntity user, final ItemStack itemStack, final int particleCount) {
-      float eatVolume = random.nextBoolean() ? 0.5F : 1.0F;
-      float eatPitch = random.triangle(1.0F, 0.2F);
-      float drinkVolume = 0.5F;
-      float drinkPitch = Mth.randomBetween(random, 0.9F, 1.0F);
-      float consumableVolume = this.animation == ItemUseAnimation.DRINK ? 0.5F : eatVolume;
-      float consumablePitch = this.animation == ItemUseAnimation.DRINK ? drinkPitch : eatPitch;
       if (this.hasConsumeParticles) {
          user.spawnItemParticles(itemStack, particleCount);
       }
 
-      SoundEvent var10000;
-      if (user instanceof OverrideConsumeSound override) {
-         var10000 = override.getConsumeSound(itemStack);
-      } else {
-         var10000 = this.sound.value();
-      }
+      this.getConsumingSound(user, itemStack).ifPresent((consumingSound) -> {
+         float consumableVolume;
+         float consumablePitch;
+         if (this.animation == ItemUseAnimation.DRINK) {
+            consumableVolume = 0.5F;
+            consumablePitch = Mth.randomBetween(random, 0.9F, 1.0F);
+         } else {
+            consumableVolume = random.nextBoolean() ? 0.5F : 1.0F;
+            consumablePitch = random.triangle(1.0F, 0.2F);
+         }
 
-      SoundEvent consumeSound = var10000;
-      user.playSound(consumeSound, consumableVolume, consumablePitch);
+         user.playSound(consumingSound, consumableVolume, consumablePitch);
+      });
+   }
+
+   private Optional<Holder<SoundEvent>> getConsumingSound(final LivingEntity user, final ItemStack itemStack) {
+      Optional<Holder<SoundEvent>> override = user.getConsumeSoundOverride(itemStack);
+      return override.isPresent() ? override : this.sound;
    }
 
    public boolean shouldEmitParticlesAndSounds(final int useItemRemainingTicks) {
@@ -120,20 +124,20 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, Consumable::consumeSeconds, ItemUseAnimation.STREAM_CODEC, Consumable::animation, SoundEvent.STREAM_CODEC, Consumable::sound, ByteBufCodecs.BOOL, Consumable::hasConsumeParticles, ConsumeEffect.STREAM_CODEC.apply(ByteBufCodecs.list()), Consumable::onConsumeEffects, Consumable::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, Consumable::consumeSeconds, ItemUseAnimation.STREAM_CODEC, Consumable::animation, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), Consumable::sound, ByteBufCodecs.BOOL, Consumable::hasConsumeParticles, ConsumeEffect.STREAM_CODEC.apply(ByteBufCodecs.list()), Consumable::onConsumeEffects, Consumable::new);
    }
 
    public static class Builder {
       private float consumeSeconds = 1.6F;
       private ItemUseAnimation animation;
-      private Holder<SoundEvent> sound;
+      private Optional<Holder<SoundEvent>> sound;
       private boolean hasConsumeParticles;
       private final List<ConsumeEffect> onConsumeEffects;
 
       private Builder() {
          super();
          this.animation = ItemUseAnimation.EAT;
-         this.sound = SoundEvents.GENERIC_EAT;
+         this.sound = Optional.of(SoundEvents.GENERIC_EAT);
          this.hasConsumeParticles = true;
          this.onConsumeEffects = new ArrayList();
       }
@@ -148,8 +152,13 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
          return this;
       }
 
+      public Builder noSound() {
+         this.sound = Optional.empty();
+         return this;
+      }
+
       public Builder sound(final Holder<SoundEvent> sound) {
-         this.sound = sound;
+         this.sound = Optional.of(sound);
          return this;
       }
 
@@ -170,9 +179,5 @@ public record Consumable(float consumeSeconds, ItemUseAnimation animation, Holde
       public Consumable build() {
          return new Consumable(this.consumeSeconds, this.animation, this.sound, this.hasConsumeParticles, this.onConsumeEffects);
       }
-   }
-
-   public interface OverrideConsumeSound {
-      SoundEvent getConsumeSound(final ItemStack itemStack);
    }
 }

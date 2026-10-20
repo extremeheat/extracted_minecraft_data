@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.chunk;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.oit.OitStage;
 import org.jspecify.annotations.Nullable;
 
 public abstract class ChunkSectionsToRender {
@@ -29,17 +28,15 @@ public abstract class ChunkSectionsToRender {
       this.terrainTransformUBO = terrainTransformUBO;
    }
 
-   protected abstract void render(final ChunkSectionLayer layer, final RenderPass renderPass, @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, final boolean cloudsBackground, final @Nullable RenderPipeline renderPipelineOverride, final @Nullable RenderPipeline renderPipelineOverrideMultidraw);
+   protected abstract void render(final ChunkSectionLayer layer, final RenderPass renderPass, @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, boolean improvedFog, boolean wireframe, @Nullable OitStage oitStage);
 
-   public void renderGroup(final ChunkSectionLayerGroup group, final RenderPass renderPass, final GpuSampler sampler, final GpuTextureView atlas, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean renderWireframeTerrain) {
+   public void renderGroup(final ChunkSectionLayerGroup group, final RenderPass renderPass, final GpuSampler sampler, final GpuTextureView atlas, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe) {
       GameRenderer gameRenderer = Minecraft.getInstance().gameRenderer;
       GpuTextureView lightmap = gameRenderer.lightmap();
-      RenderPipeline wireframePipeline = RenderPipelines.WIREFRAME;
-      RenderPipeline wireframeMultiDrawPipeline = RenderPipelines.WIREFRAME_MULTIDRAW;
-      this.renderLayers(group.layers(), sampler, renderPass, atlas, lightmap, improvedFogTextures, renderWireframeTerrain ? wireframePipeline : null, renderWireframeTerrain ? wireframeMultiDrawPipeline : null);
+      this.renderLayers(group.layers(), sampler, renderPass, atlas, lightmap, improvedFogTextures, wireframe, (OitStage)null);
    }
 
-   public void renderLayers(final ChunkSectionLayer[] layers, final GpuSampler sampler, final RenderPass renderPass, final GpuTextureView atlas, final GpuTextureView lightmap, final @Nullable ImprovedFogTextures improvedFogTextures, final @Nullable RenderPipeline renderPipelineOverride, final @Nullable RenderPipeline renderPipelineOverrideMultidraw) {
+   public void renderLayers(final ChunkSectionLayer[] layers, final GpuSampler sampler, final RenderPass renderPass, final GpuTextureView atlas, final GpuTextureView lightmap, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe, final @Nullable OitStage oitStage) {
       RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer defaultIndexBuffer = this.maxIndicesRequired == 0 ? null : autoIndices.getBuffer();
       IndexType defaultIndexType = this.maxIndicesRequired == 0 ? null : autoIndices.type();
@@ -56,7 +53,7 @@ public abstract class ChunkSectionsToRender {
 
       for(ChunkSectionLayer layer : layers) {
          renderPass.pushDebugGroup(() -> "Terrain layer: " + layer.label());
-         this.render(layer, renderPass, defaultIndexBuffer, defaultIndexType, improvedFog, renderPipelineOverride, renderPipelineOverrideMultidraw);
+         this.render(layer, renderPass, defaultIndexBuffer, defaultIndexType, improvedFog, wireframe, oitStage);
          renderPass.popDebugGroup();
       }
 
@@ -72,8 +69,8 @@ public abstract class ChunkSectionsToRender {
          this.chunkSectionInfos = chunkSectionInfos;
       }
 
-      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean cloudsInFog, final @Nullable RenderPipeline renderPipelineOverride, final @Nullable RenderPipeline renderPipelineOverrideMultidraw) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineOverride != null ? renderPipelineOverride : layer.pipeline(false, cloudsInFog)));
+      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, wireframe, oitStage)));
          List<RenderPass.Draw<GpuBufferSlice[]>> draws = (List)this.drawsPerLayer.get(layer);
          if (!draws.isEmpty()) {
             renderPass.drawMultipleIndexed(draws, defaultIndexBuffer, defaultIndexType, List.of("ChunkSection"), this.chunkSectionInfos);
@@ -98,8 +95,8 @@ public abstract class ChunkSectionsToRender {
          this.chunkSectionInfos = chunkSectionInfos;
       }
 
-      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean cloudsInFog, final @Nullable RenderPipeline renderPipelineOverride, final @Nullable RenderPipeline renderPipelineOverrideMultidraw) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipelineOverrideMultidraw != null ? renderPipelineOverrideMultidraw : layer.pipeline(true, cloudsInFog)));
+      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(true, improvedFog, wireframe, oitStage)));
          DeviceLimits deviceLimits = RenderSystem.getDevice().getDeviceInfo().limits();
          int maxDrawIndirectDrawCount = deviceLimits.maxDrawIndirectDrawCount();
          List<GpuMultiDrawIndexedIndirect> drawGroups = (List)this.drawGroupsPerLayer.get(layer);

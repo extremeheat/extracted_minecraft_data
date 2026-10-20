@@ -186,20 +186,20 @@ public class JigsawBlockEditScreen extends Screen {
       }
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.text(this.font, (Component)POOL_LABEL, this.width / 2 - 153, 10, -6250336);
-      this.poolEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.poolEdit.extractRenderState(graphics);
       graphics.text(this.font, (Component)NAME_LABEL, this.width / 2 - 153, 45, -6250336);
-      this.nameEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.nameEdit.extractRenderState(graphics);
       graphics.text(this.font, (Component)TARGET_LABEL, this.width / 2 - 153, 80, -6250336);
-      this.targetEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.targetEdit.extractRenderState(graphics);
       graphics.text(this.font, (Component)FINAL_STATE_LABEL, this.width / 2 - 153, 115, -6250336);
-      this.finalStateEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.finalStateEdit.extractRenderState(graphics);
       graphics.text(this.font, (Component)SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, -6250336);
-      this.placementPriorityEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.placementPriorityEdit.extractRenderState(graphics);
       graphics.text(this.font, (Component)PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, -6250336);
-      this.selectionPriorityEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.selectionPriorityEdit.extractRenderState(graphics);
       if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
          graphics.text(this.font, (Component)JOINT_LABEL, this.width / 2 + 53, 150, -6250336);
       }

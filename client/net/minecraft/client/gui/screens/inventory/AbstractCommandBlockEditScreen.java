@@ -137,19 +137,19 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
       return this.commandSuggestions.mouseClicked(event) ? true : super.mouseClicked(event, doubleClick);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)SET_COMMAND_LABEL, this.width / 2, 20, -1);
       graphics.text(this.font, (Component)COMMAND_LABEL, this.width / 2 - 150 + 1, 40, -6250336);
-      this.commandEdit.extractRenderState(graphics, mouseX, mouseY, a);
+      this.commandEdit.extractRenderState(graphics);
       int y = 75;
       if (!this.previousEdit.getValue().isEmpty()) {
          Objects.requireNonNull(this.font);
          y += 5 * 9 + 1 + this.getPreviousY() - 135;
          graphics.text(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150 + 1, y + 4, -6250336);
-         this.previousEdit.extractRenderState(graphics, mouseX, mouseY, a);
+         this.previousEdit.extractRenderState(graphics);
       }
 
-      this.commandSuggestions.extractRenderState(graphics, mouseX, mouseY);
+      this.commandSuggestions.extractRenderState(graphics);
    }
 }

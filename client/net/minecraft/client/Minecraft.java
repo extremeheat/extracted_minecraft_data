@@ -220,6 +220,7 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DialogTags;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.FileUtil;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
@@ -420,7 +421,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.vanillaPackResources = clientPackSource.getVanillaPack();
       this.proxy = gameConfig.user.proxy;
       this.offlineDeveloperMode = gameConfig.game.offlineDeveloperMode;
-      MinecraftServicesDiscoveryService discoveryService = MinecraftServicesDiscoveryService.create(this.proxy, !this.offlineDeveloperMode);
+      MinecraftServicesDiscoveryService discoveryService = MinecraftServicesDiscoveryService.create(this.proxy, !this.offlineDeveloperMode, SharedConstants.getCurrentVersion().id());
       this.services = Services.create(discoveryService, this.gameDirectory);
       this.user = gameConfig.user.user;
       this.profileFuture = this.offlineDeveloperMode ? CompletableFuture.completedFuture((Object)null) : CompletableFuture.supplyAsync(() -> this.services.sessionService().fetchProfile(this.user.getProfileId(), true), Util.nonCriticalIoPool());
@@ -487,7 +488,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          try {
             backendToTry.loadLibrary();
             libraryLoaded = true;
-            device = backendToTry.createDevice("Minecraft Java Edition", SharedConstants.getCurrentVersion().dataVersion().version(), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation, SharedConstants.IS_RENDERDOC_ATTACHED, SharedConstants.IS_RUNNING_IN_IDE));
+            device = backendToTry.createDevice("Minecraft Java Edition", SharedConstants.getCurrentVersion().dataVersion().version(), new GpuDebugOptions(this.options.glDebugVerbosity, SharedConstants.DEBUG_SYNCHRONOUS_GL_LOGS, gameConfig.game.renderDebugLabels, gameConfig.game.vulkanValidation, SharedConstants.IS_RENDERDOC_ATTACHED, DevUtil.IS_RUNNING_IN_IDE));
             backend = backendToTry;
             break;
          } catch (BackendCreationException var31) {
@@ -516,7 +517,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          LOGGER.info("Using graphics device: {} ({})", deviceInfo.name(), deviceInfo.vendorName());
          LOGGER.info("Using graphics device extensions: {}", String.join(", ", deviceInfo.underlyingExtensions()));
          int maxSize = deviceInfo.limits().maxTextureSizeForFormat(GpuFormat.RGBA8_UNORM);
-         this.window = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend, device, maxSize);
+         this.window = new Window(this, displayData, this.options.fullscreenVideoModeString, (Boolean)this.options.exclusiveFullscreen().get(), initialWindowTitle, this.monitorManager, backend, maxSize);
 
          try {
             this.window.setIcon(this.vanillaPackResources.fullResources(), SharedConstants.getCurrentVersion().stable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
@@ -527,7 +528,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          long var10002 = this.window.handle();
          Window var10003 = this.window;
          Objects.requireNonNull(var10003);
-         this.windowSurface = device.createSurface(var10002, var10003::isIconified);
+         this.windowSurface = device.createSurface(var10002, var10003::isIconified, (Boolean)this.options.preferDXGIPresent().get() && deviceInfo.features().dxgiSurface());
+         this.window.setNeedsBorderlessFullscreenPadding(Util.getPlatform() == Util.OS.WINDOWS && !this.windowSurface.isDXGI());
          this.sdlEventHandler = new SDLEventHandler(this, this.window);
          this.textInputManager = new TextInputManager(this.window);
          this.sdlEventHandler.flushInputEvents();
@@ -670,7 +672,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
          GameLoadCookie loadCookie = new GameLoadCookie(realmsClient, gameConfig.quickPlay);
          this.gui.setOverlay(new LoadingOverlay(this, reloadInstance, (maybeT) -> Util.ifElse(maybeT, (t) -> this.rollbackResourcePacks(t, loadCookie), () -> {
-               if (SharedConstants.IS_RUNNING_IN_IDE) {
+               if (DevUtil.IS_RUNNING_IN_IDE) {
                   this.selfTest();
                }
 
@@ -2228,7 +2230,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public boolean allowsTelemetry() {
-      return SharedConstants.IS_RUNNING_IN_IDE && !SharedConstants.DEBUG_FORCE_TELEMETRY ? false : this.userProperties().flag(UserFlag.TELEMETRY_ENABLED);
+      return DevUtil.IS_RUNNING_IN_IDE && !SharedConstants.DEBUG_FORCE_TELEMETRY ? false : this.userProperties().flag(UserFlag.TELEMETRY_ENABLED);
    }
 
    public boolean allowsMultiplayer() {
@@ -2447,6 +2449,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       systemReport.setDetail("Surface Info", (CrashReportDetail)(() -> {
          if (minecraft != null && minecraft.windowSurface != null) {
             StringBuilder builder = new StringBuilder();
+            if (minecraft.windowSurface.isDXGI()) {
+               builder.append("DXGI, ");
+            }
+
             if (minecraft.windowSurface.isAcquired()) {
                builder.append("acquired, ");
             }

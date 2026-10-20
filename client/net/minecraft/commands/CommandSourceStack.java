@@ -1,6 +1,5 @@
 package net.minecraft.commands;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,6 +9,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -319,7 +319,7 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
    }
 
    public Collection<String> getOnlinePlayerNames() {
-      return Lists.newArrayList(this.server.getPlayerNames());
+      return List.of(this.server.getPlayerNames());
    }
 
    public Collection<String> getAllTeams() {

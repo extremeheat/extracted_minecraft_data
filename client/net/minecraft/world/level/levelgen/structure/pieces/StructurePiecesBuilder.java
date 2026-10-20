@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -8,7 +8,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import org.jspecify.annotations.Nullable;
 
 public class StructurePiecesBuilder {
-   private final List<StructurePiece> pieces = Lists.newArrayList();
+   private final List<StructurePiece> pieces = new ArrayList();
 
    public StructurePiecesBuilder() {
       super();

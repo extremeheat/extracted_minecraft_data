@@ -31,6 +31,10 @@ public record DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int 
       this(sizeX, sizeY, sizeZ, minBlockX, minBlockY, minBlockZ, 1, 1, 1);
    }
 
+   public boolean fitsOnGrid(final int stepBlockX, final int stepBlockY, final int stepBlockZ) {
+      return (this.sizeX == 1 || Mth.isMultipleOf(this.stepBlockX, stepBlockX)) && (this.sizeY == 1 || Mth.isMultipleOf(this.stepBlockY, stepBlockY)) && (this.sizeZ == 1 || Mth.isMultipleOf(this.stepBlockZ, stepBlockZ)) && Math.floorMod(this.minBlockX, stepBlockX) == 0 && Math.floorMod(this.minBlockY, stepBlockY) == 0 && Math.floorMod(this.minBlockZ, stepBlockZ) == 0;
+   }
+
    public int indexUnchecked(final int indexX, final int indexY, final int indexZ) {
       return indexY + (indexX + indexZ * this.sizeX) * this.sizeY;
    }
@@ -48,19 +52,31 @@ public record DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int 
    }
 
    public int maxBlockX() {
-      return this.minBlockX + this.sizeX * this.stepBlockX - 1;
+      return this.blockX(this.sizeX - 1);
    }
 
    public int maxBlockY() {
-      return this.minBlockY + this.sizeY * this.stepBlockY - 1;
+      return this.blockY(this.sizeY - 1);
    }
 
    public int maxBlockZ() {
-      return this.minBlockZ + this.sizeZ * this.stepBlockZ - 1;
+      return this.blockZ(this.sizeZ - 1);
    }
 
    public int size() {
       return this.sizeX * this.sizeY * this.sizeZ;
+   }
+
+   public int strideX() {
+      return this.sizeY;
+   }
+
+   public int strideY() {
+      return 1;
+   }
+
+   public int strideZ() {
+      return this.sizeX * this.sizeY;
    }
 
    public boolean intersects(final BoundingBox box) {

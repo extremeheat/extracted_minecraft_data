@@ -17,7 +17,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -207,7 +207,7 @@ public class RealmsPdpScreen extends RealmsScreen {
          this.subtitle = subtitle;
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          int textY = graphics.textWithWordWrap(RealmsPdpScreen.this.font, this.title, this.titleX(), this.getContentY() + 4, 182, -1) + 4;
          if (this.subtitle != null) {
             int iconX = this.getContentXMiddle() - Math.min(182, RealmsPdpScreen.this.font.width((FormattedText)this.subtitle.subTitle)) / 2 - 12;
@@ -281,7 +281,7 @@ public class RealmsPdpScreen extends RealmsScreen {
          return height;
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          int contentY = this.getContentY() + 4;
          graphics.blit(RenderPipelines.GUI_TEXTURED, this.image, this.getContentX() + 4, contentY, 0.0F, 0.0F, 80, 45, 80, 45);
          int textY = graphics.textWithWordWrap(RealmsPdpScreen.this.font, this.title, this.titleX(), contentY, 182, -1) + 4;

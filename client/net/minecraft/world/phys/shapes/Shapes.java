@@ -1,17 +1,18 @@
 package net.minecraft.world.phys.shapes;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import com.google.common.math.DoubleMath;
 import com.google.common.math.IntMath;
 import com.mojang.math.OctahedralGroup;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import net.minecraft.core.AxisCycle;
 import net.minecraft.core.Direction;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.AABB;
@@ -115,7 +116,7 @@ public final class Shapes {
 
    public static VoxelShape joinUnoptimized(final VoxelShape first, final VoxelShape second, final BooleanOp op) {
       if (op.apply(false, false)) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
+         throw (IllegalArgumentException)DevUtil.pauseInIde(new IllegalArgumentException());
       } else if (first == second) {
          return op.apply(true, true) ? first : empty();
       } else {
@@ -137,7 +138,7 @@ public final class Shapes {
 
    public static boolean joinIsNotEmpty(final VoxelShape first, final VoxelShape second, final BooleanOp op) {
       if (op.apply(false, false)) {
-         throw (IllegalArgumentException)Util.pauseInIde(new IllegalArgumentException());
+         throw (IllegalArgumentException)DevUtil.pauseInIde(new IllegalArgumentException());
       } else {
          boolean firstEmpty = first.isEmpty();
          boolean secondEmpty = second.isEmpty();
@@ -308,7 +309,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateHorizontalAxis(final VoxelShape zAxis, final Vec3 rotationCenter) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, zAxis, Direction.Axis.X, rotate(zAxis, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter)));
+      return new EnumMap(Map.of(Direction.Axis.Z, zAxis, Direction.Axis.X, rotate(zAxis, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter)));
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(final VoxelShape north) {
@@ -316,7 +317,7 @@ public final class Shapes {
    }
 
    public static Map<Direction.Axis, VoxelShape> rotateAllAxis(final VoxelShape north, final Vec3 rotationCenter) {
-      return Maps.newEnumMap(Map.of(Direction.Axis.Z, north, Direction.Axis.X, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter), Direction.Axis.Y, rotate(north, OctahedralGroup.BLOCK_ROT_X_90, rotationCenter)));
+      return new EnumMap(Map.of(Direction.Axis.Z, north, Direction.Axis.X, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90, rotationCenter), Direction.Axis.Y, rotate(north, OctahedralGroup.BLOCK_ROT_X_90, rotationCenter)));
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(final VoxelShape north) {
@@ -328,7 +329,7 @@ public final class Shapes {
    }
 
    public static Map<Direction, VoxelShape> rotateHorizontal(final VoxelShape north, final OctahedralGroup initial, final Vec3 rotationCenter) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter)));
+      return new EnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter)));
    }
 
    public static Map<Direction, VoxelShape> rotateAll(final VoxelShape north) {
@@ -340,7 +341,7 @@ public final class Shapes {
    }
 
    public static Map<Direction, VoxelShape> rotateAll(final VoxelShape north, final OctahedralGroup initial, final Vec3 rotationCenter) {
-      return Maps.newEnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter), Direction.UP, rotate(north, OctahedralGroup.BLOCK_ROT_X_270.compose(initial), rotationCenter), Direction.DOWN, rotate(north, OctahedralGroup.BLOCK_ROT_X_90.compose(initial), rotationCenter)));
+      return new EnumMap(Map.of(Direction.NORTH, rotate(north, initial), Direction.EAST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_90.compose(initial), rotationCenter), Direction.SOUTH, rotate(north, OctahedralGroup.BLOCK_ROT_Y_180.compose(initial), rotationCenter), Direction.WEST, rotate(north, OctahedralGroup.BLOCK_ROT_Y_270.compose(initial), rotationCenter), Direction.UP, rotate(north, OctahedralGroup.BLOCK_ROT_X_270.compose(initial), rotationCenter), Direction.DOWN, rotate(north, OctahedralGroup.BLOCK_ROT_X_90.compose(initial), rotationCenter)));
    }
 
    public static Map<AttachFace, Map<Direction, VoxelShape>> rotateAttachFace(final VoxelShape north) {

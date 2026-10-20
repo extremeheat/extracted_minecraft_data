@@ -1,9 +1,9 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,7 +48,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    }
 
    public Collection<String> getOnlinePlayerNames() {
-      List<String> result = Lists.newArrayList();
+      List<String> result = new ArrayList();
 
       for(PlayerInfo info : this.connection.getOnlinePlayers()) {
          result.add(info.getProfile().name());

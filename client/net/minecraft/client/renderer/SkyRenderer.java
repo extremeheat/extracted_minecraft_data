@@ -19,6 +19,7 @@ import java.util.function.Supplier;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.level.SkyRenderState;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -186,7 +187,7 @@ public class SkyRenderer implements AutoCloseable {
    private void renderSkyDisc(final RenderPass renderPass, final Vector3fc skyColor, final boolean withDepthAttachment) {
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), new Vector4f(skyColor, 1.0F));
       renderPass.pushDebugGroup(() -> "Sky disc");
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.SKY_WITH_DEPTH_ATTACHMENT : RenderPipelines.SKY));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.SKY_DISC, withDepthAttachment))));
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setVertexBuffer(0, this.topSkyBuffer.slice());
       renderPass.draw(10, 1, 0, 0);
@@ -196,7 +197,7 @@ public class SkyRenderer implements AutoCloseable {
    private void renderSkyOccluder(final RenderPass renderPass, final Vector4f color, final boolean withDepthAttachment) {
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy(), color);
       renderPass.pushDebugGroup(() -> "Sky occluder");
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.SKY_OCCLUDER_WITH_DEPTH_ATTACHMENT : RenderPipelines.SKY_OCCLUDER));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.SKY_OCCLUDER, withDepthAttachment))));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setUniform("SkyOccluderInfo", this.skyOccluderUbo.currentBuffer());
@@ -259,7 +260,7 @@ public class SkyRenderer implements AutoCloseable {
 
    private void drawCelestialBody(final Supplier<String> label, final RenderPass renderPass, final GpuBufferSlice dynamicTransforms, final GpuBuffer indexBuffer, final GpuBuffer vertexBuffer, final int baseVertex, final boolean withDepthAttachment) {
       renderPass.pushDebugGroup(label);
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.CELESTIAL_WITH_DEPTH_ATTACHMENT : RenderPipelines.CELESTIAL));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.CELESTIAL, withDepthAttachment))));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       TextureResources texture = this.celestialsAtlas.getTexture();
@@ -277,7 +278,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuBuffer indexBuffer = this.quadIndices.getBuffer(this.starIndexCount);
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(starBrightness, starBrightness, starBrightness, starBrightness));
       renderPass.pushDebugGroup(() -> "Stars");
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.STARS_WITH_DEPTH_ATTACHMENT : RenderPipelines.STARS));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.STARS, withDepthAttachment))));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setVertexBuffer(0, this.starBuffer.slice());
@@ -300,7 +301,7 @@ public class SkyRenderer implements AutoCloseable {
          modelViewStack.scale(1.0F, 1.0F, alpha);
          GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack), new Vector4f(sunriseAndSunsetColor));
          renderPass.pushDebugGroup(() -> "Sunrise sunset");
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.SUNRISE_SUNSET_WITH_DEPTH_ATTACHMENT : RenderPipelines.SUNRISE_SUNSET));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.SUNRISE_SUNSET, withDepthAttachment))));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.setVertexBuffer(0, this.sunriseBuffer.slice());
@@ -316,7 +317,7 @@ public class SkyRenderer implements AutoCloseable {
       GpuBuffer indexBuffer = autoIndices.getBuffer(36);
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
       renderPass.pushDebugGroup(() -> "End sky");
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(withDepthAttachment ? RenderPipelines.END_SKY_WITH_DEPTH_ATTACHMENT : RenderPipelines.END_SKY));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.sky(new RenderPipelines.SkyParameters(SkyRenderer.SkyElement.END_SKY, withDepthAttachment))));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setUniform("Sampler0", this.endSkyTexture.textureView(), this.endSkyTexture.sampler());
@@ -497,5 +498,22 @@ public class SkyRenderer implements AutoCloseable {
       this.endSkyBuffer.close();
       this.sunriseBuffer.close();
       this.endFlashBuffer.close();
+   }
+
+   public static enum SkyElement {
+      SKY_DISC,
+      SKY_OCCLUDER,
+      SUNRISE_SUNSET,
+      CELESTIAL,
+      STARS,
+      END_SKY;
+
+      private SkyElement() {
+      }
+
+      // $FF: synthetic method
+      private static SkyElement[] $values() {
+         return new SkyElement[]{SKY_DISC, SKY_OCCLUDER, SUNRISE_SUNSET, CELESTIAL, STARS, END_SKY};
+      }
    }
 }

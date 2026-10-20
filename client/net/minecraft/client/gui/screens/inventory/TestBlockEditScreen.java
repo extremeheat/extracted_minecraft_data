@@ -51,8 +51,8 @@ public class TestBlockEditScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
       if (this.mode != TestBlockMode.START) {
          graphics.text(this.font, (Component)MESSAGE_LABEL, this.width / 2 - 153, 70, -6250336);

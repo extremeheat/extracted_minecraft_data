@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
@@ -10,6 +9,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,7 +17,7 @@ import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackSpawnEggFix extends DataFix {
    private final String itemType;
-   private static final Map<String, String> MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
+   private static final Map<String, String> MAP = (Map)DataFixUtils.make(new HashMap(), (map) -> {
       map.put("minecraft:bat", "minecraft:bat_spawn_egg");
       map.put("minecraft:blaze", "minecraft:blaze_spawn_egg");
       map.put("minecraft:cave_spider", "minecraft:cave_spider_spawn_egg");

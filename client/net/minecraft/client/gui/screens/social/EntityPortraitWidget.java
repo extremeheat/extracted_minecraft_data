@@ -33,19 +33,19 @@ public class EntityPortraitWidget extends AbstractWidget {
    protected void updateWidgetNarration(final NarrationElementOutput output) {
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       int x = this.getX();
       int y = this.getY();
       float size = (float)this.height * 0.45F;
-      extractEntityInInventoryFollowsMouse(graphics, x, y, x + this.width, y + this.height, size, 0.0625F, this.rotationScale, (float)mouseX, (float)mouseY, this.renderState);
+      extractEntityInInventoryFollowsMouse(graphics, x, y, x + this.width, y + this.height, size, 0.0625F, this.rotationScale, this.renderState);
    }
 
-   public static void extractEntityInInventoryFollowsMouse(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1, final float size, final float offsetY, final float rotationScale, final float mouseX, final float mouseY, final EntityRenderState renderState) {
+   public static void extractEntityInInventoryFollowsMouse(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1, final float size, final float offsetY, final float rotationScale, final EntityRenderState renderState) {
       float translateY = renderState.boundingBoxHeight / 2.0F + offsetY;
       float centerX = (float)(x0 + x1) / 2.0F;
       float centerY = (float)(y0 + y1) / 2.0F + (translateY - renderState.eyeHeight) * size;
-      float xAngle = (float)Math.atan((double)((centerX - mouseX) * rotationScale));
-      float yAngle = (float)Math.atan((double)((centerY - mouseY) * rotationScale));
+      float xAngle = (float)Math.atan((double)((centerX - (float)graphics.mouseX()) * rotationScale));
+      float yAngle = (float)Math.atan((double)((centerY - (float)graphics.mouseY()) * rotationScale));
       Quaternionf rotation = (new Quaternionf()).rotateZ(3.1415927F);
       Quaternionf xRotation = (new Quaternionf()).rotateX(yAngle * 20.0F * 0.017453292F);
       rotation.mul(xRotation);
@@ -63,9 +63,9 @@ public class EntityPortraitWidget extends AbstractWidget {
       graphics.entity(renderState, size, translation, rotation, xRotation, x0, y0, x1, y1);
    }
 
-   public static void extractEntityInInventoryFollowsMouse(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1, final float size, final float offsetY, final float mouseX, final float mouseY, final Entity entity) {
+   public static void extractEntityInInventoryFollowsMouse(final GuiGraphicsExtractor graphics, final int x0, final int y0, final int x1, final int y1, final float size, final float offsetY, final Entity entity) {
       EntityRenderState renderState = extractRenderState(entity);
-      extractEntityInInventoryFollowsMouse(graphics, x0, y0, x1, y1, size, offsetY, 0.025F, mouseX, mouseY, renderState);
+      extractEntityInInventoryFollowsMouse(graphics, x0, y0, x1, y1, size, offsetY, 0.025F, renderState);
    }
 
    private static EntityRenderState extractRenderState(final Entity entity) {

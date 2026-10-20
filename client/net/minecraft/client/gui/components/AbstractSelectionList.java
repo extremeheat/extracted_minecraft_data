@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import com.google.common.collect.Lists;
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,7 +22,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -204,14 +204,14 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return totalHeight + 4;
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.hovered = this.isMouseOver((double)mouseX, (double)mouseY) ? this.getEntryAtPosition((double)mouseX, (double)mouseY) : null;
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      this.hovered = this.isMouseOver((double)graphics.mouseX(), (double)graphics.mouseY()) ? this.getEntryAtPosition((double)graphics.mouseX(), (double)graphics.mouseY()) : null;
       this.extractListBackground(graphics);
       this.enableScissor(graphics);
-      this.extractListItems(graphics, mouseX, mouseY, a);
+      this.extractListItems(graphics);
       graphics.disableScissor();
       this.extractListSeparators(graphics);
-      this.extractScrollbar(graphics, mouseX, mouseY);
+      this.extractScrollbar(graphics);
    }
 
    protected void extractListSeparators(final GuiGraphicsExtractor graphics) {
@@ -332,22 +332,22 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return null;
    }
 
-   protected void extractListItems(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractListItems(final GuiGraphicsExtractor graphics) {
       for(E child : this.children) {
          if (child.getY() + child.getHeight() >= this.getY() && child.getY() <= this.getBottom()) {
-            this.extractItem(graphics, mouseX, mouseY, a, child);
+            this.extractItem(graphics, child);
          }
       }
 
    }
 
-   protected void extractItem(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a, final E entry) {
+   protected void extractItem(final GuiGraphicsExtractor graphics, final E entry) {
       if (this.entriesCanBeSelected() && this.getSelected() == entry) {
          int outlineColor = this.isFocused() ? -1 : -8355712;
          this.extractSelection(graphics, entry, outlineColor);
       }
 
-      entry.extractContent(graphics, mouseX, mouseY, Objects.equals(this.hovered, entry), a);
+      entry.extractContent(graphics, Objects.equals(this.hovered, entry));
    }
 
    protected void extractSelection(final GuiGraphicsExtractor graphics, final E entry, final int outlineColor) {
@@ -443,7 +443,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
          return this.list.getFocused() == this;
       }
 
-      public abstract void extractContent(final GuiGraphicsExtractor graphics, int mouseX, int mouseY, boolean hovered, float a);
+      public abstract void extractContent(final GuiGraphicsExtractor graphics, boolean hovered);
 
       public boolean isMouseOver(final double mx, final double my) {
          return this.getRectangle().containsPoint((int)mx, (int)my);
@@ -527,7 +527,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       private TrackedList() {
          Objects.requireNonNull(AbstractSelectionList.this);
          super();
-         this.delegate = Lists.newArrayList();
+         this.delegate = new ArrayList();
       }
 
       public E get(final int index) {

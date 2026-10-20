@@ -1,9 +1,9 @@
 package net.minecraft.client.particle;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,9 +22,9 @@ import org.jspecify.annotations.Nullable;
 public class ParticleEngine {
    private static final List<ParticleRenderType> RENDER_ORDER;
    protected ClientLevel level;
-   private final Map<ParticleRenderType, ParticleGroup<?>> particles = Maps.newIdentityHashMap();
-   private final Queue<TrackingEmitter> trackingEmitters = Queues.newArrayDeque();
-   private final Queue<Particle> particlesToAdd = Queues.newArrayDeque();
+   private final Map<ParticleRenderType, ParticleGroup<?>> particles = new IdentityHashMap();
+   private final Queue<TrackingEmitter> trackingEmitters = new ArrayDeque();
+   private final Queue<Particle> particlesToAdd = new ArrayDeque();
    private final Object2IntOpenHashMap<ParticleLimit> trackedParticleCounts = new Object2IntOpenHashMap();
    private final ParticleResources resourceManager;
    private final RandomSource random = RandomSource.create();
@@ -78,7 +78,7 @@ public class ParticleEngine {
          Profiler.get().pop();
       });
       if (!this.trackingEmitters.isEmpty()) {
-         List<TrackingEmitter> removed = Lists.newArrayList();
+         List<TrackingEmitter> removed = new ArrayList();
 
          for(TrackingEmitter emitter : this.trackingEmitters) {
             emitter.tick();

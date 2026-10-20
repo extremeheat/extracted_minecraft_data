@@ -1,6 +1,5 @@
 package net.minecraft.client.server;
 
-import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
@@ -350,7 +349,7 @@ public class IntegratedServer extends MinecraftServer {
          this.getConnection().stopTcpServerListener();
          Component reason = Component.translatable("multiplayer.disconnect.server_shutdown");
 
-         for(ServerPlayer player : Lists.newArrayList(this.getPlayerList().getPlayers())) {
+         for(ServerPlayer player : List.copyOf(this.getPlayerList().getPlayers())) {
             if (!player.getUUID().equals(this.uuid)) {
                player.connection.disconnect(reason);
             }
@@ -368,7 +367,7 @@ public class IntegratedServer extends MinecraftServer {
 
    public void halt(final boolean wait) {
       this.executeBlocking(() -> {
-         for(ServerPlayer player : Lists.newArrayList(this.getPlayerList().getPlayers())) {
+         for(ServerPlayer player : List.copyOf(this.getPlayerList().getPlayers())) {
             if (!player.getUUID().equals(this.uuid)) {
                this.getPlayerList().remove(player);
             }

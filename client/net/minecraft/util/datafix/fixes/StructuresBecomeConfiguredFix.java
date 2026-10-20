@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
@@ -41,7 +40,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
    private Dynamic<?> updateStarts(final Dynamic<?> starts, final Dynamic<?> chunk) {
       Map<? extends Dynamic<?>, ? extends Dynamic<?>> values = (Map)starts.getMapValues().result().orElse(Map.of());
-      HashMap<Dynamic<?>, Dynamic<?>> newMap = Maps.newHashMap();
+      HashMap<Dynamic<?>, Dynamic<?>> newMap = new HashMap();
       values.forEach((key, start) -> {
          if (!start.get("id").asString("INVALID").equals("INVALID")) {
             Dynamic<?> newKey = this.findUpdatedStructureType(key, chunk);
@@ -57,7 +56,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
    private Dynamic<?> updateReferences(final Dynamic<?> references, final Dynamic<?> chunk) {
       Map<? extends Dynamic<?>, ? extends Dynamic<?>> values = (Map)references.getMapValues().result().orElse(Map.of());
-      HashMap<Dynamic<?>, Dynamic<?>> newMap = Maps.newHashMap();
+      HashMap<Dynamic<?>, Dynamic<?>> newMap = new HashMap();
       values.forEach((key, refList) -> {
          if (refList.asLongStream().count() != 0L) {
             Dynamic<?> newKey = this.findUpdatedStructureType(key, chunk);

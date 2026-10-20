@@ -1,8 +1,8 @@
 package net.minecraft.world.level.border;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
@@ -42,7 +42,7 @@ public class WorldBorder extends SavedData {
 
    public WorldBorder(final Settings settings) {
       super();
-      this.listeners = Lists.newArrayList();
+      this.listeners = new ArrayList();
       this.damagePerBlock = 0.2;
       this.safeZone = 5.0;
       this.warningTime = 15;
@@ -215,8 +215,8 @@ public class WorldBorder extends SavedData {
 
    }
 
-   protected List<BorderChangeListener> getListeners() {
-      return Lists.newArrayList(this.listeners);
+   private List<BorderChangeListener> getListeners() {
+      return List.copyOf(this.listeners);
    }
 
    public void addListener(final BorderChangeListener listener) {

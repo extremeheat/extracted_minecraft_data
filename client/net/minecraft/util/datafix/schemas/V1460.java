@@ -1,11 +1,11 @@
 package net.minecraft.util.datafix.schemas;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
 import com.mojang.datafixers.util.Pair;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
@@ -24,7 +24,7 @@ public class V1460 extends NamespacedSchema {
    }
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
-      Map<String, Supplier<TypeTemplate>> map = Maps.newHashMap();
+      Map<String, Supplier<TypeTemplate>> map = new HashMap();
       schema.register(map, "minecraft:area_effect_cloud", (name) -> DSL.optionalFields("Particle", References.PARTICLE.in(schema)));
       registerMob(schema, map, "minecraft:armor_stand");
       schema.register(map, "minecraft:arrow", (name) -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(schema)));
@@ -112,7 +112,7 @@ public class V1460 extends NamespacedSchema {
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(final Schema schema) {
-      Map<String, Supplier<TypeTemplate>> map = Maps.newHashMap();
+      Map<String, Supplier<TypeTemplate>> map = new HashMap();
       registerInventory(schema, map, "minecraft:furnace");
       registerInventory(schema, map, "minecraft:chest");
       registerInventory(schema, map, "minecraft:trapped_chest");

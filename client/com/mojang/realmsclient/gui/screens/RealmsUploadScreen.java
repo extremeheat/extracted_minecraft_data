@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.Unit;
@@ -139,8 +138,8 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       }
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       if (!this.uploadFinished && this.uploadStatus.uploadStarted() && this.uploadStatus.uploadCompleted() && this.cancelButton != null) {
          this.status = VERIFYING_TEXT;
          this.cancelButton.active = false;
@@ -201,7 +200,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    }
 
    private Component createProgressNarrationMessage() {
-      List<Component> elements = Lists.newArrayList();
+      List<Component> elements = new ArrayList();
       elements.add(this.status);
       if (this.progress != null) {
          elements.add(Component.translatable("mco.upload.percent", this.progress));

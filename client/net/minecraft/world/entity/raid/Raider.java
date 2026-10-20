@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.raid;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -463,7 +463,7 @@ public abstract class Raider extends PatrollingMonster {
       private final Raider raider;
       private final double speedModifier;
       private BlockPos poiPos;
-      private final List<BlockPos> visited = Lists.newArrayList();
+      private final List<BlockPos> visited = new ArrayList();
       private final int distanceToPoi;
       private boolean stuck;
 

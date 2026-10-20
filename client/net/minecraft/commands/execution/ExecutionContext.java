@@ -1,9 +1,9 @@
 package net.minecraft.commands.execution;
 
-import com.google.common.collect.Queues;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +25,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    private @Nullable TraceCallbacks tracer;
    private int commandQuota;
    private boolean queueOverflow;
-   private final Deque<CommandQueueEntry<T>> commandQueue = Queues.newArrayDeque();
+   private final Deque<CommandQueueEntry<T>> commandQueue = new ArrayDeque();
    private final List<CommandQueueEntry<T>> newTopCommands = new ObjectArrayList();
    private int currentFrameDepth;
 

@@ -137,9 +137,9 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
          return List.of(this.widget);
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          this.widget.setPosition(this.screen.width / 2 - this.widget.getWidth() / 2, this.getContentY() + this.paddingTop);
-         this.widget.extractRenderState(graphics, mouseX, mouseY, a);
+         this.widget.extractRenderState(graphics);
       }
 
       public List<? extends GuiEventListener> children() {
@@ -180,13 +180,13 @@ public class OptionsList extends ContainerObjectSelectionList<AbstractEntry> {
          return optionB == null ? new Entry(List.of(new OptionInstanceWidget(buttonA, optionA)), screen) : new Entry(List.of(new OptionInstanceWidget(buttonA, optionA), new OptionInstanceWidget(optionB.createButton(options), optionB)), screen);
       }
 
-      public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+      public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          int xOffset = 0;
          int x = this.screen.width / 2 - 155;
 
          for(OptionInstanceWidget optionInstanceWidget : this.children) {
             optionInstanceWidget.widget().setPosition(x + xOffset, this.getContentY());
-            optionInstanceWidget.widget().extractRenderState(graphics, mouseX, mouseY, a);
+            optionInstanceWidget.widget().extractRenderState(graphics);
             xOffset += 160;
          }
 

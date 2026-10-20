@@ -23,8 +23,8 @@ public class ErrorScreen extends Screen {
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (button) -> this.minecraft.gui.setScreen((Screen)null)).bounds(this.width / 2 - 100, 140, 200, 20).build());
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 90, -1);
       MultiLineLabel var10000 = this.message;
       TextAlignment var10001 = TextAlignment.CENTER;
@@ -33,7 +33,7 @@ public class ErrorScreen extends Screen {
       var10000.visitLines(var10001, var10002, 110, 9, graphics.textRenderer());
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       graphics.fillGradient(0, 0, this.width, this.height, -12574688, -11530224);
    }
 

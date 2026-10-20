@@ -32,15 +32,24 @@ public class SystemReport {
    public static final long BYTES_PER_MEBIBYTE = 1048576L;
    private static final long ONE_GIGA = 1000000000L;
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static String versionName = "Unknown";
+   private static String versionId = "Unknown";
+   private static String debugFlagPrefix = "MC_DEBUG_";
    private static final String OPERATING_SYSTEM;
    private static final String JAVA_VERSION;
    private static final String JAVA_VM_VERSION;
    private final List<CrashReportCategory.Entry> entries = new ArrayList();
 
+   public static void setVersionDetails(final String name, final String id, final String debugPrefix) {
+      versionName = name;
+      versionId = id;
+      debugFlagPrefix = debugPrefix;
+   }
+
    public SystemReport() {
       super();
-      this.setDetail("Minecraft Version", (CrashReportDetail)(() -> SharedConstants.getCurrentVersion().name()));
-      this.setDetail("Minecraft Version ID", (CrashReportDetail)(() -> SharedConstants.getCurrentVersion().id()));
+      this.setDetail("Minecraft Version", versionName);
+      this.setDetail("Minecraft Version ID", versionId);
       this.setDetail("Operating System", OPERATING_SYSTEM);
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);
@@ -60,7 +69,7 @@ public class SystemReport {
       this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
       this.ignoreErrors("software", () -> this.putSoftware(new SystemInfo()));
       this.setDetail("JVM Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-X"))));
-      this.setDetail("Debug Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-DMC_DEBUG_"))));
+      this.setDetail("Debug Flags", (CrashReportDetail)(() -> printJvmFlags((arg) -> arg.startsWith("-D" + debugFlagPrefix))));
    }
 
    private static String printMemoryUsage(final MemoryUsage memoryUsage) {

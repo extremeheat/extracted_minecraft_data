@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.font;
 
-import com.google.common.collect.Sets;
 import com.mojang.blaze3d.font.GlyphBitmap;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.font.GlyphProvider;
@@ -12,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -104,7 +104,7 @@ public class FontSet implements AutoCloseable {
          }
       }
 
-      Set<GlyphProvider> usedProviders = Sets.newHashSet();
+      Set<GlyphProvider> usedProviders = new HashSet();
       supportedGlyphs.forEach((codepoint) -> {
          for(GlyphProvider provider : selectedProviders) {
             UnbakedGlyph glyph = provider.getGlyph(codepoint);

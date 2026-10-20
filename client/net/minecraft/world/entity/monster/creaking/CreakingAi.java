@@ -44,15 +44,15 @@ public class CreakingAi {
    }
 
    private static ActivityData<Creaking> initFightActivity(final Creaking body) {
-      return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(Creaking::canMove, 40), StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((level, target) -> !isAttackTargetStillReachable(body, target)))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)));
+      return ActivityData.create(Activity.FIGHT, 10, ImmutableList.of(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(Creaking::canMove, 40), StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((var1, target) -> !isAttackTargetStillValid(body, target)))), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT)));
    }
 
-   private static boolean isAttackTargetStillReachable(final Creaking creaking, final LivingEntity target) {
+   private static boolean isAttackTargetStillValid(final Creaking creaking, final LivingEntity target) {
       Optional<List<Player>> visibleAttackablePlayers = creaking.getBrain().<List<Player>>getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYERS);
       return (Boolean)visibleAttackablePlayers.map((players) -> {
          boolean var10000;
          if (target instanceof Player player) {
-            if (players.contains(player)) {
+            if (players.contains(player) && creaking.canAttack(target)) {
                var10000 = true;
                return var10000;
             }

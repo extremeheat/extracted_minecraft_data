@@ -1,10 +1,10 @@
 package net.minecraft.client.resources.language;
 
-import com.google.common.collect.Lists;
 import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.Bidi;
 import com.ibm.icu.text.BidiRun;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.SubStringSource;
@@ -19,7 +19,7 @@ public class FormattedBidiReorder {
       SubStringSource source = SubStringSource.create(text, UCharacter::getMirror, FormattedBidiReorder::shape);
       Bidi bidi = new Bidi(source.getPlainText(), defaultRightToLeft ? 127 : 126);
       bidi.setReorderingMode(0);
-      List<FormattedCharSequence> result = Lists.newArrayList();
+      List<FormattedCharSequence> result = new ArrayList();
       int runCount = bidi.countRuns();
 
       for(int i = 0; i < runCount; ++i) {

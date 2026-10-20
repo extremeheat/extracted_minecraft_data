@@ -3,13 +3,13 @@ package net.minecraft.server.packs.repository;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.server.packs.PackResources;
@@ -41,7 +41,7 @@ public class PackRepository {
    }
 
    private Map<String, Pack> discoverAvailable() {
-      Map<String, Pack> discovered = Maps.newTreeMap();
+      Map<String, Pack> discovered = new TreeMap();
 
       for(RepositorySource source : this.sources) {
          source.loadPacks((pack) -> discovered.put(pack.getId(), pack));
@@ -62,7 +62,7 @@ public class PackRepository {
    public boolean addPack(final String packId) {
       Pack pack = (Pack)this.available.get(packId);
       if (pack != null && !this.selected.contains(pack)) {
-         List<Pack> selectedCopy = Lists.newArrayList(this.selected);
+         List<Pack> selectedCopy = new ArrayList(this.selected);
          selectedCopy.add(pack);
          this.selected = selectedCopy;
          return true;
@@ -74,7 +74,7 @@ public class PackRepository {
    public boolean removePack(final String packId) {
       Pack pack = (Pack)this.available.get(packId);
       if (pack != null && this.selected.contains(pack)) {
-         List<Pack> selectedCopy = Lists.newArrayList(this.selected);
+         List<Pack> selectedCopy = new ArrayList(this.selected);
          selectedCopy.remove(pack);
          this.selected = selectedCopy;
          return true;

@@ -1,7 +1,6 @@
 package net.minecraft.server.packs;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +8,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -65,7 +65,7 @@ public class FilePackResources extends AbstractPackMetadataResources implements 
          return Set.of();
       } else {
          Enumeration<? extends ZipEntry> entries = zipFile.entries();
-         Set<String> namespaces = Sets.newHashSet();
+         Set<String> namespaces = new HashSet();
          String typePrefix = this.addPrefix(type.getDirectory() + "/");
 
          while(entries.hasMoreElements()) {

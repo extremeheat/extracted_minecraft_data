@@ -1078,9 +1078,9 @@ public class BlockModelGenerators {
          Identifier icicleTemplate = ModelTemplates.ICICLE.createWithSuffix(block, thicknessSuffix, mapping, this.modelOutput);
          Identifier icicleBaseTemplate = ModelTemplates.ICICLE_BASE.createWithSuffix(block, thicknessSuffix + "_base", baseMapping, this.modelOutput);
          generator.select(Direction.DOWN, speleothemThickness, false, plainVariant(icicleTemplate));
-         generator.select(Direction.DOWN, speleothemThickness, true, plainVariant(icicleBaseTemplate));
+         generator.select(Direction.DOWN, speleothemThickness, true, plainVariant(icicleBaseTemplate).with(UV_LOCK));
          generator.select(Direction.UP, speleothemThickness, false, plainVariant(icicleTemplate).with(Z_ROT_180));
-         generator.select(Direction.UP, speleothemThickness, true, plainVariant(icicleBaseTemplate).with(Z_ROT_180));
+         generator.select(Direction.UP, speleothemThickness, true, plainVariant(icicleBaseTemplate).with(X_ROT_180));
       }
 
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(block).with(generator));
@@ -2062,7 +2062,6 @@ public class BlockModelGenerators {
       this.createNonTemplateModelBlock(Blocks.POTTED_MANGROVE_PROPAGULE);
       this.createTrivialCube(Blocks.NETHER_WART_BLOCK);
       this.createTrivialCube(Blocks.NOTE_BLOCK);
-      this.createTrivialCube(Blocks.PACKED_ICE);
       this.createTrivialCube(Blocks.OBSIDIAN);
       this.createTrivialCube(Blocks.SEA_LANTERN);
       this.createTrivialCube(Blocks.SHROOMLIGHT);

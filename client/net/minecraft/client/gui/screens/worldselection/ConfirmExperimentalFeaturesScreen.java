@@ -136,7 +136,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
             this.splitMessage = splitMessage;
          }
 
-         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
             ActiveTextCollector textRenderer = graphics.textRenderer();
             graphics.text(DetailsScreen.this.minecraft.font, (Component)this.packId, this.getContentX(), this.getContentY(), -1);
             MultiLineLabel var10000 = this.splitMessage;

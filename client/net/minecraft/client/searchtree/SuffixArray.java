@@ -1,7 +1,5 @@
 package net.minecraft.client.searchtree;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
@@ -10,7 +8,9 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class SuffixArray<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int END_OF_TEXT_MARKER = -1;
    private static final int END_OF_DATA = -2;
-   protected final List<T> list = Lists.newArrayList();
+   protected final List<T> list = new ArrayList();
    private final IntList chars = new IntArrayList();
    private final IntList wordStarts = new IntArrayList();
    private IntList suffixToT = new IntArrayList();
@@ -210,13 +210,13 @@ public class SuffixArray<T> {
 
          int[] ints = matches.toIntArray();
          java.util.Arrays.sort(ints);
-         Set<T> result = Sets.newLinkedHashSet();
+         Set<T> result = new LinkedHashSet();
 
          for(int t : ints) {
             result.add(this.list.get(t));
          }
 
-         return Lists.newArrayList(result);
+         return List.copyOf(result);
       } else {
          return Collections.emptyList();
       }

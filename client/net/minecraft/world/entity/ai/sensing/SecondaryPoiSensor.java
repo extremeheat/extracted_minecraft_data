@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.sensing;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -24,7 +24,7 @@ public class SecondaryPoiSensor extends Sensor<Villager> {
    protected void doTick(final ServerLevel level, final Villager body) {
       ResourceKey<Level> dimensionType = level.dimension();
       BlockPos center = body.blockPosition();
-      List<GlobalPos> jobSites = Lists.newArrayList();
+      List<GlobalPos> jobSites = new ArrayList();
       int horizontalSearch = 4;
 
       for(int x = -4; x <= 4; ++x) {

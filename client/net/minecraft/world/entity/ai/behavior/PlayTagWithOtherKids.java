@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.Maps;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,7 +71,7 @@ public class PlayTagWithOtherKids {
    }
 
    private static Map<LivingEntity, Integer> checkHowManyChasersEachFriendHas(final List<LivingEntity> friendsNearby) {
-      Map<LivingEntity, Integer> chasedKids = Maps.newHashMap();
+      Map<LivingEntity, Integer> chasedKids = new HashMap();
       friendsNearby.stream().filter(PlayTagWithOtherKids::isChasingSomeone).forEach((chaser) -> chasedKids.compute(whoAreYouChasing(chaser), (k, count) -> count == null ? 1 : count + 1));
       return chasedKids;
    }

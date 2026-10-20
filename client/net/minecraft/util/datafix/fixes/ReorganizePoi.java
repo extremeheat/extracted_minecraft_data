@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
@@ -9,6 +8,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,7 +28,7 @@ public class ReorganizePoi extends DataFix {
    }
 
    private static <T> Dynamic<T> cap(Dynamic<T> input) {
-      Map<Dynamic<T>, Dynamic<T>> sections = Maps.newHashMap();
+      Map<Dynamic<T>, Dynamic<T>> sections = new HashMap();
 
       for(int i = 0; i < 16; ++i) {
          String key = String.valueOf(i);

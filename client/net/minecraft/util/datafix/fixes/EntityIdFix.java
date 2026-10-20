@@ -1,16 +1,16 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TaggedChoice;
+import java.util.HashMap;
 import java.util.Map;
 
 public class EntityIdFix extends DataFix {
-   private static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (map) -> {
+   private static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(new HashMap(), (map) -> {
       map.put("AreaEffectCloud", "minecraft:area_effect_cloud");
       map.put("ArmorStand", "minecraft:armor_stand");
       map.put("Arrow", "minecraft:arrow");

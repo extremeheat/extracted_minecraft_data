@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -40,7 +40,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       int clustersPerY = Math.min(1, Mth.floor(1.382 + Math.pow(1.0 * (double)height / 13.0, 2.0)));
       int trunkTop = origin.getY() + trunkHeight;
       int relativeY = height - 5;
-      List<FoliageCoords> foliageCoords = Lists.newArrayList();
+      List<FoliageCoords> foliageCoords = new ArrayList();
       foliageCoords.add(new FoliageCoords(origin.above(relativeY), trunkTop));
 
       for(; relativeY >= 0; --relativeY) {
@@ -70,7 +70,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
 
       this.makeLimb(level, trunkSetter, random, origin, origin.above(trunkHeight), true, tree);
       this.makeBranches(level, trunkSetter, random, height, origin, foliageCoords, tree);
-      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
+      List<FoliagePlacer.FoliageAttachment> attachments = new ArrayList();
 
       for(FoliageCoords foliageCoord : foliageCoords) {
          if (this.trimBranches(height, foliageCoord.getBranchBase() - origin.getY())) {

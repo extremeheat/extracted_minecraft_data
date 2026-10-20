@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,7 +35,7 @@ public class EndCityStructure extends Structure {
    }
 
    private void generatePieces(final StructurePiecesBuilder builder, final BlockPos startPos, final Rotation rotation, final Structure.GenerationContext context) {
-      List<StructurePiece> pieces = Lists.newArrayList();
+      List<StructurePiece> pieces = new ArrayList();
       EndCityPieces.startHouseTower(context.structureTemplateManager(), startPos, rotation, pieces, context.random());
       Objects.requireNonNull(builder);
       pieces.forEach(builder::addPiece);

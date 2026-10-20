@@ -18,7 +18,7 @@ public class SpriteIconCycleButton<Value> extends AbstractCycleButton<Value> {
       this.updateValue(value);
    }
 
-   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics) {
       this.extractDefaultSprite(graphics);
       ((ScaledWidgetSprites)this.valueSprite.apply(this.value)).extractCenteredSprite(this, graphics);
    }

@@ -73,7 +73,7 @@ public record GradientFunction(Direction.Axis axis, TilingMode tiling, int fromC
                   float value = sampler.compute(volume.blockX(x));
 
                   for(int z = 0; z < volume.sizeZ(); ++z) {
-                     output.setRange(volume.indexUnchecked(x, 0, z), volume.sizeY(), value);
+                     output.setRange(volume.indexUnchecked(x, 0, z), volume.strideX(), value);
                   }
                }
                break;
@@ -91,7 +91,7 @@ public record GradientFunction(Direction.Axis axis, TilingMode tiling, int fromC
             case Z:
                for(int z = 0; z < volume.sizeZ(); ++z) {
                   float value = sampler.compute(volume.blockZ(z));
-                  output.setRange(volume.indexUnchecked(0, 0, z), volume.sizeX() * volume.sizeY(), value);
+                  output.setRange(volume.indexUnchecked(0, 0, z), volume.strideZ(), value);
                }
          }
 

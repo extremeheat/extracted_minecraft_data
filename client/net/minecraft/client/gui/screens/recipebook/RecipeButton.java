@@ -13,7 +13,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -82,7 +82,7 @@ public class RecipeButton extends AbstractWidget {
       return this.collection;
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       Identifier sprite;
       if (this.collection.hasCraftable()) {
          if (this.hasMultipleRecipes()) {
@@ -103,7 +103,7 @@ public class RecipeButton extends AbstractWidget {
          graphics.pose().translate((float)(this.getX() + 8), (float)(this.getY() + 12));
          graphics.pose().scale(squeeze, squeeze);
          graphics.pose().translate((float)(-(this.getX() + 8)), (float)(-(this.getY() + 12)));
-         this.animationTime -= a;
+         this.animationTime -= graphics.partialTicks();
       }
 
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);

@@ -1,8 +1,6 @@
 package net.minecraft.client.sounds;
 
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.DeviceList;
@@ -13,6 +11,8 @@ import com.mojang.blaze3d.audio.ListenerTransform;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.debug.DebugFact;
@@ -32,6 +31,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -78,15 +78,15 @@ public class SoundEngine {
       this.executor = new SoundEngineExecutor();
       this.channelAccess = new ChannelAccess(this.library, this.executor);
       this.deviceTracker = Library.createDeviceTracker();
-      this.instanceToChannel = Maps.newHashMap();
+      this.instanceToChannel = new HashMap();
       this.instanceBySource = HashMultimap.create();
       this.gainBySource = (Object2FloatMap)Util.make(new Object2FloatOpenHashMap(), (map) -> map.defaultReturnValue(1.0F));
-      this.tickingSounds = Lists.newArrayList();
-      this.queuedSounds = Maps.newHashMap();
-      this.soundDeleteTime = Maps.newHashMap();
-      this.listeners = Lists.newArrayList();
-      this.queuedTickableSounds = Lists.newArrayList();
-      this.preloadQueue = Lists.newArrayList();
+      this.tickingSounds = new ArrayList();
+      this.queuedSounds = new HashMap();
+      this.soundDeleteTime = new HashMap();
+      this.listeners = new ArrayList();
+      this.queuedTickableSounds = new ArrayList();
+      this.preloadQueue = new ArrayList();
       this.soundManager = soundManager;
       this.options = options;
       this.soundBuffers = new SoundBufferLibrary(resourceProvider);
@@ -413,7 +413,7 @@ public class SoundEngine {
             CompletableFuture<ChannelAccess.ChannelHandle> handleFuture = this.channelAccess.createHandle(sound.shouldStream() ? Library.Pool.STREAMING : Library.Pool.STATIC);
             ChannelAccess.ChannelHandle handle = (ChannelAccess.ChannelHandle)handleFuture.join();
             if (handle == null) {
-               if (SharedConstants.IS_RUNNING_IN_IDE) {
+               if (DevUtil.IS_RUNNING_IN_IDE) {
                   LOGGER.warn("Failed to create new sound handle");
                }
 

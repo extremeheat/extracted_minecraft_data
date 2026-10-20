@@ -4,7 +4,6 @@ import com.google.common.base.Ticker;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
@@ -37,11 +36,11 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.spi.FileSystemProvider;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -114,7 +113,6 @@ public class Util {
    public static final UUID NIL_UUID;
    public static final FileSystemProvider ZIP_FILE_SYSTEM_PROVIDER;
    public static final Escaper CONTROL_CHARACTER_ESCAPER;
-   private static Consumer<String> thePauser;
 
    public Util() {
       super();
@@ -125,7 +123,7 @@ public class Util {
    }
 
    public static <T> Collector<T, ?, List<T>> toMutableList() {
-      return Collectors.toCollection(Lists::newArrayList);
+      return Collectors.toCollection(ArrayList::new);
    }
 
    public static <T extends Comparable<T>> String getPropertyName(final Property<T> key, final Object value) {
@@ -265,7 +263,7 @@ public class Util {
    }
 
    private static void onThreadException(final Thread thread, Throwable throwable) {
-      pauseInIde(throwable);
+      DevUtil.pauseInIde(throwable);
       if (throwable instanceof CompletionException) {
          throwable = throwable.getCause();
       }
@@ -294,7 +292,7 @@ public class Util {
          dataType = DataFixers.getDataFixer().getSchema(DataFixUtils.makeKey(SharedConstants.getCurrentVersion().dataVersion().version())).getChoiceType(reference, name);
       } catch (IllegalArgumentException e) {
          LOGGER.error("No data fixer registered for {}", name);
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
+         if (DevUtil.IS_RUNNING_IN_IDE) {
             throw e;
          }
       }
@@ -303,13 +301,13 @@ public class Util {
    }
 
    public static void runNamed(final Runnable runnable, final String name) {
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (DevUtil.IS_RUNNING_IN_IDE) {
          Thread thread = Thread.currentThread();
          String oldName = thread.getName();
          thread.setName(name);
 
          try {
-            Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
+            Zone ignored = TracyClient.beginZone(name, DevUtil.IS_RUNNING_IN_IDE);
 
             try {
                runnable.run();
@@ -332,7 +330,7 @@ public class Util {
             thread.setName(oldName);
          }
       } else {
-         Zone ignored = TracyClient.beginZone(name, SharedConstants.IS_RUNNING_IN_IDE);
+         Zone ignored = TracyClient.beginZone(name, DevUtil.IS_RUNNING_IN_IDE);
 
          try {
             runnable.run();
@@ -720,45 +718,6 @@ public class Util {
       } else {
          return task;
       }
-   }
-
-   public static void logAndPauseIfInIde(final String message) {
-      LOGGER.error("{}", message);
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         doPause(message);
-      }
-
-   }
-
-   public static void logAndPauseIfInIde(final String message, final Throwable throwable) {
-      LOGGER.error("{}", message, throwable);
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         doPause(message);
-      }
-
-   }
-
-   public static <T extends Throwable> T pauseInIde(final T t) {
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
-         LOGGER.error("Trying to throw a fatal exception, pausing in IDE", t);
-         doPause(t.getMessage());
-      }
-
-      return t;
-   }
-
-   public static void setPause(final Consumer<String> pauseFunction) {
-      thePauser = pauseFunction;
-   }
-
-   private static void doPause(final String message) {
-      Instant preLog = Instant.now();
-      LOGGER.warn("Did you remember to set a breakpoint here?");
-      boolean dontBotherWithPause = Duration.between(preLog, Instant.now()).toMillis() > 500L;
-      if (!dontBotherWithPause) {
-         thePauser.accept(message);
-      }
-
    }
 
    public static String describeError(final Throwable err) {
@@ -1185,8 +1144,6 @@ public class Util {
 
          escaper.addEscape('\\', "\\\\");
       })).build();
-      thePauser = (msg) -> {
-      };
    }
 
    public static enum OS {

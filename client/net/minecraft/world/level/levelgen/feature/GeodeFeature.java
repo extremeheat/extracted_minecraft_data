@@ -1,10 +1,10 @@
 package net.minecraft.world.level.levelgen.feature;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -49,10 +49,10 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
    }
 
    public boolean place(final WorldGenLevel level, final ChunkGenerator chunkGenerator, final RandomSource random, final BlockPos origin) {
-      List<Pair<BlockPos, Integer>> points = Lists.newLinkedList();
+      List<Pair<BlockPos, Integer>> points = new ArrayList();
       int numPoints = this.distributionPoints.sample(random);
       Noise noise = NOISE_PARAMETERS.create(new WorldgenRandom(new LegacyRandomSource(level.getSeed())));
-      List<BlockPos> crackPoints = Lists.newLinkedList();
+      List<BlockPos> crackPoints = new ArrayList();
       double crackSizeAdjustment = (double)numPoints / (double)this.outerWallDistance.maxInclusive();
       double innerAir = 1.0 / Math.sqrt(this.layerSettings.filling);
       double innermostBlockLayer = 1.0 / Math.sqrt(this.layerSettings.innerLayer + crackSizeAdjustment);
@@ -100,7 +100,7 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
          }
       }
 
-      List<BlockPos> potentialCrystalPlacements = Lists.newArrayList();
+      List<BlockPos> potentialCrystalPlacements = new ArrayList();
       HolderSet<Block> cantReplace = this.blockSettings.cannotReplace();
       Predicate<BlockState> canReplace = (s) -> !s.is(cantReplace);
 
@@ -158,16 +158,10 @@ public record GeodeFeature(GeodeBlockSettings blockSettings, GeodeLayerSettings 
          BlockState blockState = (BlockState)Util.getRandom(innerPlacements, random);
 
          for(Direction direction : DIRECTIONS) {
-            if (blockState.hasProperty(BlockStateProperties.FACING)) {
-               blockState = (BlockState)blockState.setValue(BlockStateProperties.FACING, direction);
-            }
-
+            blockState = (BlockState)blockState.trySetValue(BlockStateProperties.FACING, direction);
             BlockPos placePos = crystalPos.relative(direction);
             BlockState placeState = level.getBlockState(placePos);
-            if (blockState.hasProperty(BlockStateProperties.WATERLOGGED)) {
-               blockState = (BlockState)blockState.setValue(BlockStateProperties.WATERLOGGED, placeState.getFluidState().isSource());
-            }
-
+            blockState = (BlockState)blockState.trySetValue(BlockStateProperties.WATERLOGGED, placeState.getFluidState().isSource());
             if (BuddingAmethystBlock.canClusterGrowAtState(placeState)) {
                this.safeSetBlock(level, placePos, blockState, canReplace);
                break;

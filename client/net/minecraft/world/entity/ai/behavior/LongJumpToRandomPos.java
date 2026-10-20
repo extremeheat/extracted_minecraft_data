@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +34,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    private static final int PREPARE_JUMP_DURATION = 40;
    protected static final int MIN_PATHFIND_DISTANCE_TO_VALID_JUMP = 8;
    private static final int TIME_OUT_DURATION = 200;
-   private static final List<Integer> ALLOWED_ANGLES = Lists.newArrayList(new Integer[]{65, 70, 75, 80});
+   private static final List<Integer> ALLOWED_ANGLES = List.of(65, 70, 75, 80);
    private final UniformInt timeBetweenLongJumps;
    protected final int maxLongJumpHeight;
    protected final int maxLongJumpWidth;
@@ -59,7 +59,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
 
    public LongJumpToRandomPos(final UniformInt timeBetweenLongJumps, final int maxLongJumpHeight, final int maxLongJumpWidth, final float maxJumpVelocityMultiplier, final Function<E, SoundEvent> getJumpSound, final BiPredicate<E, BlockPos> acceptableLandingSpot) {
       super(ImmutableMap.of(MemoryModuleType.LOOK_TARGET, MemoryStatus.REGISTERED, MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryStatus.VALUE_ABSENT, MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryStatus.VALUE_ABSENT), 200);
-      this.jumpCandidates = Lists.newArrayList();
+      this.jumpCandidates = new ArrayList();
       this.initialPosition = Optional.empty();
       this.timeBetweenLongJumps = timeBetweenLongJumps;
       this.maxLongJumpHeight = maxLongJumpHeight;
@@ -96,7 +96,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       int mobX = mobPos.getX();
       int mobY = mobPos.getY();
       int mobZ = mobPos.getZ();
-      this.jumpCandidates = (List)BlockPos.betweenClosedStream(mobX - this.maxLongJumpWidth, mobY - this.maxLongJumpHeight, mobZ - this.maxLongJumpWidth, mobX + this.maxLongJumpWidth, mobY + this.maxLongJumpHeight, mobZ + this.maxLongJumpWidth).filter((pos) -> !pos.equals(mobPos)).map((pos) -> new PossibleJump(pos.immutable(), Mth.ceil(mobPos.distSqr(pos)))).collect(Collectors.toCollection(Lists::newArrayList));
+      this.jumpCandidates = (List)BlockPos.betweenClosedStream(mobX - this.maxLongJumpWidth, mobY - this.maxLongJumpHeight, mobZ - this.maxLongJumpWidth, mobX + this.maxLongJumpWidth, mobY + this.maxLongJumpHeight, mobZ + this.maxLongJumpWidth).filter((pos) -> !pos.equals(mobPos)).map((pos) -> new PossibleJump(pos.immutable(), Mth.ceil(mobPos.distSqr(pos)))).collect(Collectors.toCollection(ArrayList::new));
    }
 
    protected void tick(final ServerLevel level, final E body, final long timestamp) {
@@ -169,7 +169,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    }
 
    protected @Nullable Vec3 calculateOptimalJumpVector(final Mob body, final Vec3 targetPos) {
-      List<Integer> allowedAngles = Lists.newArrayList(ALLOWED_ANGLES);
+      List<Integer> allowedAngles = new ArrayList(ALLOWED_ANGLES);
       Collections.shuffle(allowedAngles);
       float maxJumpVelocity = (float)(body.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.maxJumpVelocityMultiplier);
 

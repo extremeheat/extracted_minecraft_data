@@ -18,7 +18,6 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
@@ -53,16 +52,16 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return this.height;
    }
 
-   public final void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public final void extractRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible()) {
-         this.isHovered = graphics.containsPointInScissor(mouseX, mouseY) && this.areCoordinatesInRectangle((double)mouseX, (double)mouseY);
-         this.extractWidgetRenderState(graphics, mouseX, mouseY, a);
-         this.extractTooltipForNextRenderPass(graphics, mouseX, mouseY);
+         this.isHovered = graphics.containsPointInScissor(graphics.mouseX(), graphics.mouseY()) && this.areCoordinatesInRectangle((double)graphics.mouseX(), (double)graphics.mouseY());
+         this.extractWidgetRenderState(graphics);
+         this.extractTooltipForNextRenderPass(graphics);
       }
    }
 
-   protected void extractTooltipForNextRenderPass(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY) {
-      this.tooltip.refreshTooltipForNextRenderPass(graphics, mouseX, mouseY, this.isHovered(), this.isFocused(), this.getRectangle());
+   protected void extractTooltipForNextRenderPass(final GuiGraphicsExtractor graphics) {
+      this.tooltip.refreshTooltipForNextRenderPass(graphics, graphics.mouseX(), graphics.mouseY(), this.isHovered(), this.isFocused(), this.getRectangle());
    }
 
    protected void handleCursor(final GuiGraphicsExtractor graphics) {
@@ -88,7 +87,7 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return Component.translatable("gui.narrate.button", message);
    }
 
-   protected abstract void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a);
+   protected abstract void extractWidgetRenderState(GuiGraphicsExtractor graphics);
 
    protected void extractScrollingStringOverContents(final ActiveTextCollector output, final Component message, final int margin) {
       int left = this.getX() + margin;
@@ -163,7 +162,7 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
    }
 
    public static void playButtonClickSound(final SoundManager soundManager) {
-      soundManager.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
    public int getWidth() {

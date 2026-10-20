@@ -1,6 +1,6 @@
 package net.minecraft.gametest.framework;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -12,8 +12,8 @@ public class MultipleTestTracker {
    private static final char SUCCESSFUL_TEST_CHAR = '+';
    private static final char FAILED_OPTIONAL_TEST_CHAR = 'x';
    private static final char FAILED_REQUIRED_TEST_CHAR = 'X';
-   private final Collection<GameTestInfo> tests = Lists.newArrayList();
-   private final Collection<GameTestListener> listeners = Lists.newArrayList();
+   private final Collection<GameTestInfo> tests = new ArrayList();
+   private final Collection<GameTestListener> listeners = new ArrayList();
 
    public MultipleTestTracker() {
       super();

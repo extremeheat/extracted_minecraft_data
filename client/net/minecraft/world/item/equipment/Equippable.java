@@ -32,8 +32,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
-public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Optional<ResourceKey<EquipmentAsset>> assetId, Optional<Identifier> cameraOverlay, Optional<HolderSet<EntityType<?>>> allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt, boolean equipOnInteract, boolean canBeSheared, Holder<SoundEvent> shearingSound) {
-   public static final Codec<Equippable> CODEC = RecordCodecBuilder.create((i) -> i.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(Equippable::equipSound), ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(Equippable::assetId), Identifier.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.holderSet(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt), Codec.BOOL.optionalFieldOf("equip_on_interact", false).forGetter(Equippable::equipOnInteract), Codec.BOOL.optionalFieldOf("can_be_sheared", false).forGetter(Equippable::canBeSheared), SoundEvent.CODEC.optionalFieldOf("shearing_sound", BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHEARS_SNIP)).forGetter(Equippable::shearingSound)).apply(i, Equippable::new));
+public record Equippable(EquipmentSlot slot, Optional<Holder<SoundEvent>> equipSound, Optional<ResourceKey<EquipmentAsset>> assetId, Optional<Identifier> cameraOverlay, Optional<HolderSet<EntityType<?>>> allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt, boolean equipOnInteract, boolean canBeSheared, Optional<Holder<SoundEvent>> shearingSound) {
+   public static final Codec<Equippable> CODEC = RecordCodecBuilder.create((i) -> i.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound").forGetter(Equippable::equipSound), ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(Equippable::assetId), Identifier.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.holderSet(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt), Codec.BOOL.optionalFieldOf("equip_on_interact", false).forGetter(Equippable::equipOnInteract), Codec.BOOL.optionalFieldOf("can_be_sheared", false).forGetter(Equippable::canBeSheared), SoundEvent.CODEC.optionalFieldOf("shearing_sound").forGetter(Equippable::shearingSound)).apply(i, Equippable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Equippable> STREAM_CODEC;
 
    public Equippable {
@@ -110,12 +110,12 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(EquipmentSlot.STREAM_CODEC, Equippable::slot, SoundEvent.STREAM_CODEC, Equippable::equipSound, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID).apply(ByteBufCodecs::optional), Equippable::assetId, Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::cameraOverlay, ByteBufCodecs.holderSet(Registries.ENTITY_TYPE).apply(ByteBufCodecs::optional), Equippable::allowedEntities, ByteBufCodecs.BOOL, Equippable::dispensable, ByteBufCodecs.BOOL, Equippable::swappable, ByteBufCodecs.BOOL, Equippable::damageOnHurt, ByteBufCodecs.BOOL, Equippable::equipOnInteract, ByteBufCodecs.BOOL, Equippable::canBeSheared, SoundEvent.STREAM_CODEC, Equippable::shearingSound, Equippable::new);
+      STREAM_CODEC = StreamCodec.composite(EquipmentSlot.STREAM_CODEC, Equippable::slot, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::equipSound, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID).apply(ByteBufCodecs::optional), Equippable::assetId, Identifier.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::cameraOverlay, ByteBufCodecs.holderSet(Registries.ENTITY_TYPE).apply(ByteBufCodecs::optional), Equippable::allowedEntities, ByteBufCodecs.BOOL, Equippable::dispensable, ByteBufCodecs.BOOL, Equippable::swappable, ByteBufCodecs.BOOL, Equippable::damageOnHurt, ByteBufCodecs.BOOL, Equippable::equipOnInteract, ByteBufCodecs.BOOL, Equippable::canBeSheared, SoundEvent.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::shearingSound, Equippable::new);
    }
 
    public static class Builder {
       private final EquipmentSlot slot;
-      private Holder<SoundEvent> equipSound;
+      private Optional<Holder<SoundEvent>> equipSound;
       private Optional<ResourceKey<EquipmentAsset>> assetId;
       private Optional<Identifier> cameraOverlay;
       private Optional<HolderSet<EntityType<?>>> allowedEntities;
@@ -124,23 +124,28 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       private boolean damageOnHurt;
       private boolean equipOnInteract;
       private boolean canBeSheared;
-      private Holder<SoundEvent> shearingSound;
+      private Optional<Holder<SoundEvent>> shearingSound;
 
       private Builder(final EquipmentSlot slot) {
          super();
-         this.equipSound = SoundEvents.ARMOR_EQUIP_GENERIC;
+         this.equipSound = Optional.of(SoundEvents.ARMOR_EQUIP_GENERIC);
          this.assetId = Optional.empty();
          this.cameraOverlay = Optional.empty();
          this.allowedEntities = Optional.empty();
          this.dispensable = true;
          this.swappable = true;
          this.damageOnHurt = true;
-         this.shearingSound = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.SHEARS_SNIP);
+         this.shearingSound = Optional.of(SoundEvents.SHEARS_SNIP);
          this.slot = slot;
       }
 
       public Builder setEquipSound(final Holder<SoundEvent> equipSound) {
-         this.equipSound = equipSound;
+         this.equipSound = Optional.of(equipSound);
+         return this;
+      }
+
+      public Builder noEquidSound() {
+         this.equipSound = Optional.empty();
          return this;
       }
 
@@ -189,7 +194,12 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       }
 
       public Builder setShearingSound(final Holder<SoundEvent> shearingSound) {
-         this.shearingSound = shearingSound;
+         this.shearingSound = Optional.of(shearingSound);
+         return this;
+      }
+
+      public Builder noShearingSound() {
+         this.shearingSound = Optional.empty();
          return this;
       }
 

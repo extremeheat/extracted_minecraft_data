@@ -292,7 +292,7 @@ public class RealmsInviteCodesScreen extends AbstractRealmsCodeScreen {
             }
          }
 
-         public void extractContent(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final boolean hovered, final float a) {
+         public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(RealmsInviteCodesScreen.this.font);
             int textY = var10000 - 9 / 2;

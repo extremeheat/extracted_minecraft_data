@@ -1,8 +1,8 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -247,6 +247,6 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Simp
          map.put(Tilt.PARTIAL, 10);
          map.put(Tilt.FULL, 100);
       });
-      SHAPE_LEAF = Maps.newEnumMap(Map.of(Tilt.NONE, Block.column(16.0, 11.0, 15.0), Tilt.UNSTABLE, Block.column(16.0, 11.0, 15.0), Tilt.PARTIAL, Block.column(16.0, 11.0, 13.0), Tilt.FULL, Shapes.empty()));
+      SHAPE_LEAF = new EnumMap(Map.of(Tilt.NONE, Block.column(16.0, 11.0, 15.0), Tilt.UNSTABLE, Block.column(16.0, 11.0, 15.0), Tilt.PARTIAL, Block.column(16.0, 11.0, 13.0), Tilt.FULL, Shapes.empty()));
    }
 }

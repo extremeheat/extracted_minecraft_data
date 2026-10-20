@@ -1,8 +1,8 @@
 package net.minecraft.util.thread;
 
-import com.google.common.collect.Queues;
 import java.util.Locale;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jspecify.annotations.Nullable;
 
@@ -59,7 +59,7 @@ public interface StrictQueue<T extends Runnable> {
          this.queues = new Queue[size];
 
          for(int i = 0; i < size; ++i) {
-            this.queues[i] = Queues.newConcurrentLinkedQueue();
+            this.queues[i] = new ConcurrentLinkedQueue();
          }
 
       }

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -62,7 +62,7 @@ public class StrongholdPieces {
    }
 
    public static void resetPieces() {
-      currentPieces = Lists.newArrayList();
+      currentPieces = new ArrayList();
 
       for(PieceWeight piece : STRONGHOLD_PIECE_WEIGHTS) {
          piece.placeCount = 0;
@@ -508,7 +508,7 @@ public class StrongholdPieces {
    public static class StartPiece extends StairsDown {
       public @Nullable PieceWeight previousPiece;
       public @Nullable PortalRoom portalRoomPiece;
-      public final List<StructurePiece> pendingChildren = Lists.newArrayList();
+      public final List<StructurePiece> pendingChildren = new ArrayList();
 
       public StartPiece(final RandomSource random, final int west, final int north) {
          super(StructurePieceType.STRONGHOLD_START, 0, west, north, getRandomHorizontalDirection(random));

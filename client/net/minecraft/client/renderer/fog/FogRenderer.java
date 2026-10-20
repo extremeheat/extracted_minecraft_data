@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.fog;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -33,7 +32,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class FogRenderer implements AutoCloseable {
    public static final int FOG_UBO_SIZE = (new Std140SizeCalculator()).putVec4().putFloat().putFloat().putFloat().putFloat().putFloat().putFloat().get();
-   private static final List<FogEnvironment> FOG_ENVIRONMENTS = Lists.newArrayList(new FogEnvironment[]{new LavaFogEnvironment(), new PowderedSnowFogEnvironment(), new BlindnessFogEnvironment(), new DarknessFogEnvironment(), new WaterFogEnvironment(), new AtmosphericFogEnvironment()});
+   private static final List<FogEnvironment> FOG_ENVIRONMENTS = List.of(new LavaFogEnvironment(), new PowderedSnowFogEnvironment(), new BlindnessFogEnvironment(), new DarknessFogEnvironment(), new WaterFogEnvironment(), new AtmosphericFogEnvironment());
    private static boolean fogEnabled = true;
    private final GpuBuffer emptyBuffer;
    private final MappableRingBuffer regularBuffer;

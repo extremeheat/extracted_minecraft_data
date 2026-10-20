@@ -3,6 +3,7 @@ package net.minecraft.network.chat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -29,7 +30,7 @@ public class SubStringSource {
       if (length == 0) {
          return ImmutableList.of();
       } else {
-         List<FormattedCharSequence> parts = Lists.newArrayList();
+         List<FormattedCharSequence> parts = new ArrayList();
          Style currentRunStyle = (Style)this.charStyles.get(start);
          int currentRunStart = start;
 
@@ -59,7 +60,7 @@ public class SubStringSource {
 
    public static SubStringSource create(final FormattedText text, final Int2IntFunction reverseCharModifier, final UnaryOperator<String> shaper) {
       StringBuilder plainText = new StringBuilder();
-      List<Style> charStyles = Lists.newArrayList();
+      List<Style> charStyles = new ArrayList();
       text.visit((style, contents) -> {
          StringDecomposer.iterateFormatted((String)contents, style, (position, charStyle, codepoint) -> {
             plainText.appendCodePoint(codepoint);

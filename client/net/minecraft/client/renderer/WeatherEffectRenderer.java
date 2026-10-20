@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -19,6 +18,8 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.oit.OitStage;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.variant.ParticleRenderPipelineVariant;
 import net.minecraft.client.renderer.state.level.WeatherRenderState;
 import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -142,17 +143,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
       }
    }
 
-   public void render(final WeatherRenderState renderState, final RenderPass renderPass) {
-      RenderPipeline renderPipeline = RenderPipelines.WEATHER;
-      this.render(renderState, renderPass, renderPipeline);
-   }
-
-   public void renderOit(final OitStage stage, final WeatherRenderState renderState, final RenderPass renderPass) {
-      RenderPipeline renderPipeline = RenderPipelines.OIT_WEATHER.getPipeline(stage);
-      this.render(renderState, renderPass, renderPipeline);
-   }
-
-   private void render(final WeatherRenderState renderState, final RenderPass renderPass, final RenderPipeline renderPipeline) {
+   public void render(final WeatherRenderState renderState, final RenderPass renderPass, final @Nullable OitStage oitStage) {
       int columnCount = renderState.rainColumns.size() + renderState.snowColumns.size();
       if (this.vertexBuffer != null && columnCount != 0) {
          renderPass.pushDebugGroup(() -> "Weather");
@@ -160,7 +151,7 @@ public class WeatherEffectRenderer implements AutoCloseable {
          RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(this.primitiveTopology);
          GpuBuffer indexBuffer = autoIndices.getBuffer();
          IndexType indexType = autoIndices.type();
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.particle(new RenderPipelines.ParticleParameters(ParticleRenderPipelineVariant.WEATHER, oitStage))));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
          renderPass.setUniform("Sampler2", this.gameRenderer.lightmap(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));

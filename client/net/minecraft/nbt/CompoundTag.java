@@ -1,6 +1,5 @@
 package net.minecraft.nbt;
 
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -511,7 +510,7 @@ public final class CompoundTag implements Tag {
 
          private static CompoundTag loadCompound(final DataInput input, final NbtAccounter accounter) throws IOException {
             accounter.accountBytes(48L);
-            Map<String, Tag> values = Maps.newHashMap();
+            Map<String, Tag> values = new HashMap();
 
             byte tagType;
             while((tagType = input.readByte()) != 0) {

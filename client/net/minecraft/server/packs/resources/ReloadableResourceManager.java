@@ -1,7 +1,7 @@
 package net.minecraft.server.packs.resources;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 public class ReloadableResourceManager implements AutoCloseable, ResourceManager {
    private static final Logger LOGGER = LogUtils.getLogger();
    private CloseableResourceManager resources;
-   private final List<PreparableReloadListener> listeners = Lists.newArrayList();
+   private final List<PreparableReloadListener> listeners = new ArrayList();
    private final PackType type;
 
    public ReloadableResourceManager(final PackType type) {

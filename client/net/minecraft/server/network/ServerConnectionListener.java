@@ -1,6 +1,5 @@
 package net.minecraft.server.network;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.ServerBootstrap;
@@ -21,6 +20,7 @@ import io.netty.util.Timer;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -48,8 +48,8 @@ public class ServerConnectionListener {
    private final MinecraftServer server;
    public volatile boolean running;
    private volatile @Nullable UUID sessionId;
-   private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
-   private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
+   private final List<ChannelFuture> channels = Collections.synchronizedList(new ArrayList());
+   private final List<Connection> connections = Collections.synchronizedList(new ArrayList());
    private final Queue<Connection> pendingConnections = new ConcurrentLinkedQueue();
 
    public ServerConnectionListener(final MinecraftServer server) {
@@ -222,7 +222,7 @@ public class ServerConnectionListener {
       private static final Timer TIMER = new HashedWheelTimer((new ThreadFactoryBuilder()).setNameFormat("Latency Simulator #%d").setDaemon(true).build());
       private final int delay;
       private final int jitter;
-      private final List<DelayedMessage> queuedMessages = Lists.newArrayList();
+      private final List<DelayedMessage> queuedMessages = new ArrayList();
 
       public LatencySimulator(final int delay, final int jitter) {
          super();

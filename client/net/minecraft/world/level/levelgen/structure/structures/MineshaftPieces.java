@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -186,7 +186,7 @@ public class MineshaftPieces {
    }
 
    public static class MineShaftRoom extends MineShaftPiece {
-      private final List<BoundingBox> childEntranceBoxes = Lists.newLinkedList();
+      private final List<BoundingBox> childEntranceBoxes = new ArrayList();
 
       public MineShaftRoom(final int genDepth, final RandomSource random, final int west, final int north, final MineshaftStructure.Type type) {
          super(StructurePieceType.MINE_SHAFT_ROOM, genDepth, type, new BoundingBox(west, 50, north, west + 7 + random.nextInt(6), 54 + random.nextInt(6), north + 7 + random.nextInt(6)));

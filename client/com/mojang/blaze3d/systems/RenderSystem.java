@@ -12,6 +12,7 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.GpuFence;
 import com.mojang.renderpearl.api.commands.RenderPass;
+import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.device.GpuBackend;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
@@ -400,6 +401,11 @@ public class RenderSystem {
       sharedSequential.resizeToRequestedIndexCount();
       sharedSequentialQuad.resizeToRequestedIndexCount();
       sharedSequentialLines.resizeToRequestedIndexCount();
+   }
+
+   public static boolean isMultidrawIndirectAvailable() {
+      DeviceInfo deviceInfo = getDevice().getDeviceInfo();
+      return deviceInfo.limits().maxDrawIndirectDrawCount() > 0 && deviceInfo.features().nonZeroFirstInstance() && !deviceInfo.hintsAndWorkarounds().multiDrawIndirectHasKnownIssues();
    }
 
    static {

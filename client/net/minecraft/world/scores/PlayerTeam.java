@@ -1,6 +1,5 @@
 package net.minecraft.world.scores;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.lang.annotation.ElementType;
@@ -8,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,7 +25,7 @@ public class PlayerTeam extends Team {
    private static final byte BIT_SEE_INVISIBLES = 2;
    private final Scoreboard scoreboard;
    private final String name;
-   private final Set<String> players = Sets.newHashSet();
+   private final Set<String> players = new HashSet();
    private Component displayName;
    private Component playerPrefix;
    private Component playerSuffix;

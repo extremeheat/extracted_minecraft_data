@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.debug;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -12,7 +12,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
@@ -39,7 +39,7 @@ public class GameModeSwitcherScreen extends Screen {
    private int firstMouseX;
    private int firstMouseY;
    private boolean setFirstMousePos;
-   private final List<GameModeSlot> slots = Lists.newArrayList();
+   private final List<GameModeSlot> slots = new ArrayList();
 
    public GameModeSwitcherScreen() {
       super(GameNarrator.NO_TITLE);
@@ -68,20 +68,20 @@ public class GameModeSwitcherScreen extends Screen {
 
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       graphics.centeredText(this.font, (Component)this.currentlyHovered.name, this.width / 2, this.height / 2 - 31 - 20, -1);
       MutableComponent selectKey = Component.translatable("debug.gamemodes.select_next", this.minecraft.options.keyDebugSwitchGameMode.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.AQUA));
       graphics.centeredText(this.font, (Component)selectKey, this.width / 2, this.height / 2 + 5, -1);
       if (!this.setFirstMousePos) {
-         this.firstMouseX = mouseX;
-         this.firstMouseY = mouseY;
+         this.firstMouseX = graphics.mouseX();
+         this.firstMouseY = graphics.mouseY();
          this.setFirstMousePos = true;
       }
 
-      boolean sameAsFirstMousePos = this.firstMouseX == mouseX && this.firstMouseY == mouseY;
+      boolean sameAsFirstMousePos = this.firstMouseX == graphics.mouseX() && this.firstMouseY == graphics.mouseY();
 
       for(GameModeSlot slot : this.slots) {
-         slot.extractRenderState(graphics, mouseX, mouseY, a);
+         slot.extractRenderState(graphics);
          slot.setSelected(this.currentlyHovered == slot.icon);
          if (!sameAsFirstMousePos && slot.isHoveredOrFocused()) {
             this.currentlyHovered = slot.icon;
@@ -90,7 +90,7 @@ public class GameModeSwitcherScreen extends Screen {
 
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       int xo = this.width / 2 - 62;
       int yo = this.height / 2 - 31 - 27;
       graphics.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, xo, yo, 0.0F, 0.0F, 125, 75, 128, 128);
@@ -208,7 +208,7 @@ public class GameModeSwitcherScreen extends Screen {
          this.icon = icon;
       }
 
-      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
          this.extractSlot(graphics);
          if (this.isSelected) {
             this.extractSelection(graphics);

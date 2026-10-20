@@ -16,8 +16,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.EnchantmentTags;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.Util;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
@@ -193,7 +193,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          }
       } else {
          String var10000 = player.getPlainTextName();
-         Util.logAndPauseIfInIde(var10000 + " pressed invalid button id: " + buttonId);
+         DevUtil.logAndPauseIfInIde(var10000 + " pressed invalid button id: " + buttonId);
          return false;
       }
    }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -92,7 +91,7 @@ public class BiomeGenerationSettings {
 
       private void addFeatureStepsUpTo(final int index) {
          while(this.features.size() <= index) {
-            this.features.add(Lists.newArrayList());
+            this.features.add(new ArrayList());
          }
 
       }

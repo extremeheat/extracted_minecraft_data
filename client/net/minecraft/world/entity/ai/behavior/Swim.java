@@ -22,7 +22,7 @@ public class Swim<T extends Mob> extends Behavior<T> {
    }
 
    protected boolean checkExtraStartConditions(final ServerLevel level, final Mob body) {
-      return body.isInFluidDeeperThan(body.getFluidJumpThreshold(), this.fluid) || body.isInLava();
+      return body.isFluidDeepEnoughToSwim(this.fluid) || body.isInLava();
    }
 
    protected boolean canStillUse(final ServerLevel level, final Mob body, final long timestamp) {

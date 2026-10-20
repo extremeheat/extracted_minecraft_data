@@ -27,10 +27,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.Nullable;
@@ -114,28 +110,6 @@ public class GsonHelper {
    @Contract("_,_,!null->!null;_,_,null->_")
    public static @Nullable String getAsString(final JsonObject object, final String name, final @Nullable String def) {
       return object.has(name) ? convertToString(object.get(name), name) : def;
-   }
-
-   public static Holder<Item> convertToItem(final JsonElement element, final String name) {
-      if (element.isJsonPrimitive()) {
-         String itemName = element.getAsString();
-         return (Holder)BuiltInRegistries.ITEM.get(Identifier.parse(itemName)).orElseThrow(() -> new JsonSyntaxException("Expected " + name + " to be an item, was unknown string '" + itemName + "'"));
-      } else {
-         throw new JsonSyntaxException("Expected " + name + " to be an item, was " + getType(element));
-      }
-   }
-
-   public static Holder<Item> getAsItem(final JsonObject object, final String name) {
-      if (object.has(name)) {
-         return convertToItem(object.get(name), name);
-      } else {
-         throw new JsonSyntaxException("Missing " + name + ", expected to find an item");
-      }
-   }
-
-   @Contract("_,_,!null->!null;_,_,null->_")
-   public static @Nullable Holder<Item> getAsItem(final JsonObject object, final String name, final @Nullable Holder<Item> def) {
-      return object.has(name) ? convertToItem(object.get(name), name) : def;
    }
 
    public static boolean convertToBoolean(final JsonElement element, final String name) {

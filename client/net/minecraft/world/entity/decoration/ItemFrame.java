@@ -116,7 +116,7 @@ public class ItemFrame extends HangingEntity {
    public boolean survives() {
       if (this.fixed) {
          return true;
-      } else if (this.hasLevelCollision(this.getPopBox())) {
+      } else if (this.collidesWithBlocks(this.getPopBox())) {
          return false;
       } else {
          BlockState state = this.level().getBlockState(this.pos.relative(this.getDirection().getOpposite()));

@@ -24,6 +24,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagLoader;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -95,9 +96,9 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       Objects.requireNonNull(key);
       Objects.requireNonNull(value);
       if (this.byLocation.containsKey(key.identifier())) {
-         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + String.valueOf(key) + "' to registry"));
+         throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException("Adding duplicate key '" + String.valueOf(key) + "' to registry"));
       } else if (this.byValue.containsKey(value)) {
-         throw (IllegalStateException)Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + String.valueOf(value) + "' to registry"));
+         throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException("Adding duplicate value '" + String.valueOf(value) + "' to registry"));
       } else {
          Holder.Reference<T> holder;
          if (this.unregisteredIntrusiveHolders != null) {

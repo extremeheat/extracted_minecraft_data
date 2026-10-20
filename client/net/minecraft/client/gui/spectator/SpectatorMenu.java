@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.spectator;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -62,7 +62,7 @@ public class SpectatorMenu {
    }
 
    public List<SpectatorMenuItem> getItems() {
-      List<SpectatorMenuItem> items = Lists.newArrayList();
+      List<SpectatorMenuItem> items = new ArrayList();
 
       for(int i = 0; i <= 8; ++i) {
          items.add(this.getItem(i));

@@ -1,7 +1,5 @@
 package net.minecraft.server.players;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.services.ProfileNotFoundException;
@@ -13,6 +11,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class OldUsersConverter {
          }
 
          try {
-            final Map<String, String[]> userMap = Maps.newHashMap();
+            final Map<String, String[]> userMap = new HashMap();
             readOldListFormat(OLD_USERBANLIST, userMap);
             ProfileLookupCallback callback = new ProfileLookupCallback() {
                public void onProfileLookupSucceeded(final String profileName, final UUID profileId) {
@@ -130,7 +129,7 @@ public class OldUsersConverter {
          }
 
          try {
-            Map<String, String[]> userMap = Maps.newHashMap();
+            Map<String, String[]> userMap = new HashMap();
             readOldListFormat(OLD_IPBANLIST, userMap);
 
             for(String key : userMap.keySet()) {
@@ -258,7 +257,7 @@ public class OldUsersConverter {
                   OldUsersConverter.LOGGER.warn("Could not lookup user whitelist entry for {}", profileName, exception);
                }
             };
-            lookupPlayers(server, Lists.newArrayList(new String[]{owner}), callback);
+            lookupPlayers(server, List.of(owner), callback);
             return !profiles.isEmpty() ? ((NameAndId)profiles.getFirst()).id() : null;
          } else {
             return UUIDUtil.createOfflinePlayerUUID(owner);
@@ -278,7 +277,7 @@ public class OldUsersConverter {
       final File unknownPlayerDirectory = new File(worldPlayerDirectory.getParentFile(), "unknownplayers");
       if (worldPlayerDirectory.exists() && worldPlayerDirectory.isDirectory()) {
          File[] playerFiles = worldPlayerDirectory.listFiles();
-         List<String> playerNames = Lists.newArrayList();
+         List<String> playerNames = new ArrayList();
 
          for(File file : playerFiles) {
             String fileName = file.getName();
@@ -335,7 +334,7 @@ public class OldUsersConverter {
                   }
                }
             };
-            lookupPlayers(server, Lists.newArrayList(names), callback);
+            lookupPlayers(server, List.of(names), callback);
             return true;
          } catch (ConversionError e) {
             LOGGER.error("Conversion failed, please try again later", e);

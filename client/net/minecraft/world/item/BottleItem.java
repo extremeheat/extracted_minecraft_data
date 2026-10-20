@@ -21,6 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.jspecify.annotations.Nullable;
 
 public class BottleItem extends Item {
    public BottleItem(final Item.Properties properties) {
@@ -53,7 +54,7 @@ public class BottleItem extends Item {
                }
 
                if (level.getFluidState(pos).is(FluidTags.WATER)) {
-                  level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
+                  playGlassBottleFillSound(level, player);
                   level.gameEvent(player, GameEvent.FLUID_PICKUP, pos);
                   return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(itemStack, player, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
                }
@@ -62,6 +63,14 @@ public class BottleItem extends Item {
             return InteractionResult.PASS;
          }
       }
+   }
+
+   public static void playGlassBottleFillSound(final Level level, final Player player) {
+      playGlassBottleFillSound(level, player, player.getX(), player.getY(), player.getZ());
+   }
+
+   public static void playGlassBottleFillSound(final Level level, final @Nullable Player player, final double x, final double y, final double z) {
+      level.playSound(player, x, y, z, SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
    }
 
    protected ItemStack turnBottleIntoItem(final ItemStack itemStack, final Player player, final ItemStack itemStackToTurnInto) {

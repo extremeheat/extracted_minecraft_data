@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
@@ -86,7 +86,7 @@ public class LoadingOverlay extends Overlay {
       return color & 16777215 | alpha << 24;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       int width = graphics.guiWidth();
       int height = graphics.guiHeight();
       long now = Util.getMillis();
@@ -98,8 +98,9 @@ public class LoadingOverlay extends Overlay {
       float fadeInAnim = this.fadeInStart > -1L ? (float)(now - this.fadeInStart) / 500.0F : -1.0F;
       float logoAlpha;
       if (fadeOutAnim >= 1.0F) {
-         if (this.minecraft.gui.screen() != null) {
-            this.minecraft.gui.screen().extractRenderStateWithTooltipAndSubtitles(graphics, 0, 0, a);
+         Screen screen = this.minecraft.gui.screen();
+         if (screen != null) {
+            graphics.extractWithoutMouse(() -> screen.extractRenderStateWithTooltipAndSubtitles(graphics));
          } else {
             this.minecraft.gui.hud.extractDeferredSubtitles();
          }
@@ -110,7 +111,7 @@ public class LoadingOverlay extends Overlay {
          logoAlpha = 1.0F - Math.clamp(fadeOutAnim - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
          if (this.minecraft.gui.screen() != null && fadeInAnim < 1.0F) {
-            this.minecraft.gui.screen().extractRenderStateWithTooltipAndSubtitles(graphics, mouseX, mouseY, a);
+            this.minecraft.gui.screen().extractRenderStateWithTooltipAndSubtitles(graphics);
          } else {
             this.minecraft.gui.hud.extractDeferredSubtitles();
          }

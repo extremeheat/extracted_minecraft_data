@@ -1,7 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
@@ -13,6 +11,9 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -42,7 +43,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
          Dynamic<?> levelTag = (Dynamic)level.get(DSL.remainderFinder());
          int chunkX = levelTag.get("xPos").asInt(0);
          int chunkZ = levelTag.get("zPos").asInt(0);
-         java.util.List<TE> tileEntities = Lists.newArrayList((Iterable)level.getOrCreate(tileEntitiesF));
+         java.util.List<TE> tileEntities = new ArrayList((Collection)level.getOrCreate(tileEntitiesF));
 
          for(Dynamic<?> sectionTag : levelTag.get("Sections").asList(Function.identity())) {
             int pos = sectionTag.get("Y").asInt(0);
@@ -52,7 +53,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                   int xx = p & 15;
                   int yy = p >> 8 & 15;
                   int zz = p >> 4 & 15;
-                  Map<Dynamic<?>, Dynamic<?>> bedTag = Maps.newHashMap();
+                  Map<Dynamic<?>, Dynamic<?>> bedTag = new HashMap();
                   bedTag.put(sectionTag.createString("id"), sectionTag.createString("minecraft:bed"));
                   bedTag.put(sectionTag.createString("x"), sectionTag.createInt(xx + (chunkX << 4)));
                   bedTag.put(sectionTag.createString("y"), sectionTag.createInt(yy + (pos << 4)));

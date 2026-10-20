@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
@@ -12,6 +11,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +41,7 @@ public class FurnaceRecipeFix extends DataFix {
       Dynamic<?> tag = (Dynamic)input.getOrCreate(DSL.remainderFinder());
       int recipesUsedSize = tag.get("RecipesUsedSize").asInt(0);
       tag = tag.remove("RecipesUsedSize");
-      List<Pair<R, Integer>> results = Lists.newArrayList();
+      List<Pair<R, Integer>> results = new ArrayList();
 
       for(int i = 0; i < recipesUsedSize; ++i) {
          String locationKey = "RecipeLocation" + i;

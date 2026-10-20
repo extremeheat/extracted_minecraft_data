@@ -1,8 +1,8 @@
 package net.minecraft.client.multiplayer.chat;
 
-import com.google.common.collect.Queues;
 import com.mojang.authlib.GameProfile;
 import java.time.Instant;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 public class ChatListener {
    private static final Component CHAT_VALIDATION_ERROR;
    private final Minecraft minecraft;
-   private final Deque<Message> delayedMessageQueue = Queues.newArrayDeque();
+   private final Deque<Message> delayedMessageQueue = new ArrayDeque();
    private long messageDelay;
    private long previousMessageTime;
 

@@ -1,6 +1,5 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
@@ -10,6 +9,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Dynamic;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -42,11 +42,11 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                   Either<List<ItemStackNew>, Unit> handItems = Either.right(DSL.unit());
                   Either<List<ItemStackNew>, Unit> armorItems = Either.right(DSL.unit());
                   if (!items.isEmpty()) {
-                     handItems = Either.left(Lists.newArrayList(new Object[]{items.getFirst(), emptyStack}));
+                     handItems = Either.left(List.of(items.getFirst(), emptyStack));
                   }
 
                   if (items.size() > 1) {
-                     List<ItemStackNew> armor = Lists.newArrayList(new Object[]{emptyStack, emptyStack, emptyStack, emptyStack});
+                     List<ItemStackNew> armor = new ArrayList(List.of(emptyStack, emptyStack, emptyStack, emptyStack));
 
                      for(int i = 1; i < Math.min(items.size(), 5); ++i) {
                         armor.set(i - 1, items.get(i));

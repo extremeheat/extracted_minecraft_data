@@ -14,7 +14,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundLightUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
-import net.minecraft.util.Util;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -301,7 +301,7 @@ public class ChunkHolder extends GenerationChunkHolder {
       boolean isEntityTicking = newFullStatus.isOrAfter(FullChunkStatus.ENTITY_TICKING);
       if (!wasEntityTicking && isEntityTicking) {
          if (this.entityTickingChunkFuture != UNLOADED_LEVEL_CHUNK_FUTURE) {
-            throw (IllegalStateException)Util.pauseInIde(new IllegalStateException());
+            throw (IllegalStateException)DevUtil.pauseInIde(new IllegalStateException());
          }
 
          this.entityTickingChunkFuture = scheduler.prepareEntityTickingChunk(this);

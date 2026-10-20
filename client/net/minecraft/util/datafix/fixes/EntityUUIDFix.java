@@ -1,24 +1,24 @@
 package net.minecraft.util.datafix.fixes;
 
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 
 public class EntityUUIDFix extends AbstractUUIDFix {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Set<String> ABSTRACT_HORSES = Sets.newHashSet();
-   private static final Set<String> TAMEABLE_ANIMALS = Sets.newHashSet();
-   private static final Set<String> ANIMALS = Sets.newHashSet();
-   private static final Set<String> MOBS = Sets.newHashSet();
-   private static final Set<String> LIVING_ENTITIES = Sets.newHashSet();
-   private static final Set<String> PROJECTILES = Sets.newHashSet();
+   private static final Set<String> ABSTRACT_HORSES = new HashSet();
+   private static final Set<String> TAMEABLE_ANIMALS = new HashSet();
+   private static final Set<String> ANIMALS = new HashSet();
+   private static final Set<String> MOBS = new HashSet();
+   private static final Set<String> LIVING_ENTITIES = new HashSet();
+   private static final Set<String> PROJECTILES = new HashSet();
 
    public EntityUUIDFix(final Schema outputSchema) {
       super(outputSchema, References.ENTITY);

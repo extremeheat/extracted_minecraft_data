@@ -1,36 +1,16 @@
 package net.minecraft.network.protocol.login;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.Arrays;
-import javax.crypto.SecretKey;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 
-public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundKeyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundKeyPacket>codec(ServerboundKeyPacket::write, ServerboundKeyPacket::new);
-   private final byte[] keybytes;
-   private final byte[] encryptedChallenge;
+public record ServerboundKeyPacket(byte[] encryptedSecretKey, byte[] encryptedChallenge) implements Packet<ServerLoginPacketListener> {
+   public static final StreamCodec<ByteBuf, ServerboundKeyPacket> STREAM_CODEC;
 
-   public ServerboundKeyPacket(final SecretKey secretKey, final PublicKey publicKey, final byte[] challenge) throws CryptException {
+   public ServerboundKeyPacket {
       super();
-      this.keybytes = Crypt.encryptUsingKey(publicKey, secretKey.getEncoded());
-      this.encryptedChallenge = Crypt.encryptUsingKey(publicKey, challenge);
-   }
-
-   private ServerboundKeyPacket(final FriendlyByteBuf input) {
-      super();
-      this.keybytes = input.readByteArray();
-      this.encryptedChallenge = input.readByteArray();
-   }
-
-   private void write(final FriendlyByteBuf output) {
-      output.writeByteArray(this.keybytes);
-      output.writeByteArray(this.encryptedChallenge);
    }
 
    public PacketType<ServerboundKeyPacket> type() {
@@ -41,15 +21,7 @@ public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
       listener.handleKey(this);
    }
 
-   public SecretKey getSecretKey(final PrivateKey privateKey) throws CryptException {
-      return Crypt.decryptByteToSecretKey(privateKey, this.keybytes);
-   }
-
-   public boolean isChallengeValid(final byte[] challenge, final PrivateKey privateKey) {
-      try {
-         return Arrays.equals(challenge, Crypt.decryptUsingKey(privateKey, this.encryptedChallenge));
-      } catch (CryptException var4) {
-         return false;
-      }
+   static {
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BYTE_ARRAY, ServerboundKeyPacket::encryptedSecretKey, ByteBufCodecs.BYTE_ARRAY, ServerboundKeyPacket::encryptedChallenge, ServerboundKeyPacket::new);
    }
 }

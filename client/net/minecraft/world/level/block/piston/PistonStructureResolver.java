@@ -1,6 +1,6 @@
 package net.minecraft.world.level.block.piston;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,8 +16,8 @@ public class PistonStructureResolver {
    private final boolean extending;
    private final BlockPos startPos;
    private final Direction pushDirection;
-   private final List<BlockPos> toPush = Lists.newArrayList();
-   private final List<BlockPos> toDestroy = Lists.newArrayList();
+   private final List<BlockPos> toPush = new ArrayList();
+   private final List<BlockPos> toDestroy = new ArrayList();
    private final Direction pistonDirection;
 
    public PistonStructureResolver(final Level level, final BlockPos pistonPos, final Direction direction, final boolean extending) {
@@ -156,9 +156,9 @@ public class PistonStructureResolver {
    }
 
    private void reorderListAtCollision(final int blocksAdded, final int collisionPos) {
-      List<BlockPos> head = Lists.newArrayList();
-      List<BlockPos> lastLineAdded = Lists.newArrayList();
-      List<BlockPos> collisionToLine = Lists.newArrayList();
+      List<BlockPos> head = new ArrayList();
+      List<BlockPos> lastLineAdded = new ArrayList();
+      List<BlockPos> collisionToLine = new ArrayList();
       head.addAll(this.toPush.subList(0, collisionPos));
       lastLineAdded.addAll(this.toPush.subList(this.toPush.size() - blocksAdded, this.toPush.size()));
       collisionToLine.addAll(this.toPush.subList(collisionPos, this.toPush.size() - blocksAdded));

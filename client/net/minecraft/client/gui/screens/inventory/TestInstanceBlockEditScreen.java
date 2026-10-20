@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -19,6 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.DevUtil;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.jspecify.annotations.Nullable;
@@ -48,7 +48,7 @@ public class TestInstanceBlockEditScreen extends Screen {
 
    protected void init() {
       int leftEdge = this.width / 2 - 158;
-      boolean includeExport = SharedConstants.IS_RUNNING_IN_IDE;
+      boolean includeExport = DevUtil.IS_RUNNING_IN_IDE;
       int actionButtonCount = includeExport ? 3 : 2;
       int buttonSize = widgetSize(actionButtonCount);
       this.idEdit = new EditBox(this.font, leftEdge, 40, 316, 20, Component.translatable("test_instance_block.test_id"));
@@ -144,8 +144,8 @@ public class TestInstanceBlockEditScreen extends Screen {
       return (float)(316 - (count - 1) * 8) / (float)count;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractRenderState(graphics, mouseX, mouseY, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       int leftEdge = this.width / 2 - 158;
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 10, -1);
       graphics.text(this.font, (Component)ID_LABEL, leftEdge, 30, -6250336);

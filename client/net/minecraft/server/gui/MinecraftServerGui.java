@@ -1,6 +1,5 @@
 package net.minecraft.server.gui;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogQueues;
 import com.mojang.logging.LogUtils;
 import java.awt.BorderLayout;
@@ -11,6 +10,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,7 +40,7 @@ public class MinecraftServerGui extends JComponent {
    private static final String SHUTDOWN_TITLE = "Minecraft server - shutting down!";
    private final DedicatedServer server;
    private Thread logAppenderThread;
-   private final Collection<Runnable> finalizers = Lists.newArrayList();
+   private final Collection<Runnable> finalizers = new ArrayList();
    private final AtomicBoolean isClosing = new AtomicBoolean();
 
    public static MinecraftServerGui showFrameFor(final DedicatedServer server) {

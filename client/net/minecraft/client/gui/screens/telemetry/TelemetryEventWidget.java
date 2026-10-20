@@ -86,12 +86,12 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       return this.content.container().getHeight();
    }
 
-   protected void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractContents(final GuiGraphicsExtractor graphics) {
       int top = this.getInnerTop();
       int left = this.getInnerLeft();
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)left, (float)top);
-      this.content.container().visitWidgets((widget) -> widget.extractRenderState(graphics, mouseX, mouseY, a));
+      this.content.container().visitWidgets((widget) -> widget.extractRenderState(graphics));
       graphics.pose().popMatrix();
    }
 

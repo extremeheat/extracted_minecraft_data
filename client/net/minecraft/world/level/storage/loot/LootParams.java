@@ -1,6 +1,6 @@
 package net.minecraft.world.level.storage.loot;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -49,7 +49,7 @@ public class LootParams {
    public static class Builder {
       private final ServerLevel level;
       private final ContextMap.Builder params = ContextMap.builder();
-      private final Map<Identifier, DynamicDrop> dynamicDrops = Maps.newHashMap();
+      private final Map<Identifier, DynamicDrop> dynamicDrops = new HashMap();
       private float luck;
 
       public Builder(final ServerLevel level) {

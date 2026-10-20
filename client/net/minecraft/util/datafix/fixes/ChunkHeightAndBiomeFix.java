@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import net.minecraft.SharedConstants;
 import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -60,6 +59,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    private static final int BIOME_CONTAINER_TOP_LAYER_OFFSET = 1008;
    public static final String DEFAULT_BIOME = "minecraft:plains";
    private static final Int2ObjectMap<String> BIOMES_BY_ID = new Int2ObjectOpenHashMap();
+   private static final boolean DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION = false;
 
    public ChunkHeightAndBiomeFix(final Schema outputSchema) {
       super(outputSchema, true);
@@ -83,7 +83,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
             int minSection = isOverworld ? -4 : 0;
             Dynamic<?>[] biomeContainers = getBiomeContainers(tag, isOverworld, minSection, wasIncreasedHeight);
             Dynamic<?> airContainer = makePalettedContainer(tag.createList(Stream.of(tag.createMap(ImmutableMap.of(tag.createString("Name"), tag.createString("minecraft:air"))))));
-            Set<String> blocksInChunk = Sets.newHashSet();
+            Set<String> blocksInChunk = new HashSet();
             MutableObject<Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>> bedrockSectionBlocks = new MutableObject((Supplier)() -> null);
             level = level.updateTyped(sectionsFinder, sectionsType, (sections) -> {
                IntSet doneSections = new IntOpenHashSet();
@@ -217,33 +217,31 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                String lastStatus = status.asString("");
                if (!"empty".equals(lastStatus)) {
                   chunkTag = chunkTag.set("blending_data", chunkTag.createMap(ImmutableMap.of(chunkTag.createString("old_noise"), chunkTag.createBoolean(STATUS_IS_OR_AFTER_NOISE.contains(lastStatus)))));
-                  if (!SharedConstants.DEBUG_DISABLE_BELOW_ZERO_RETROGENERATION) {
-                     ChunkProtoTickListFix.PoorMansPalettedContainer poorMansPalettedContainer = (ChunkProtoTickListFix.PoorMansPalettedContainer)bedrockSectionBlocks.get();
-                     if (poorMansPalettedContainer != null) {
-                        BitSet missingBedrock = new BitSet(256);
-                        boolean hasAnyBedrock = lastStatus.equals("noise");
+                  ChunkProtoTickListFix.PoorMansPalettedContainer poorMansPalettedContainer = (ChunkProtoTickListFix.PoorMansPalettedContainer)bedrockSectionBlocks.get();
+                  if (poorMansPalettedContainer != null) {
+                     BitSet missingBedrock = new BitSet(256);
+                     boolean hasAnyBedrock = lastStatus.equals("noise");
 
-                        for(int z = 0; z < 16; ++z) {
-                           for(int x = 0; x < 16; ++x) {
-                              Dynamic<?> blockState = poorMansPalettedContainer.get(x, 0, z);
-                              boolean isBedrock = blockState != null && "minecraft:bedrock".equals(blockState.get("Name").asString(""));
-                              boolean isAir = blockState != null && "minecraft:air".equals(blockState.get("Name").asString(""));
-                              if (isAir) {
-                                 missingBedrock.set(z * 16 + x);
-                              }
-
-                              hasAnyBedrock |= isBedrock;
+                     for(int z = 0; z < 16; ++z) {
+                        for(int x = 0; x < 16; ++x) {
+                           Dynamic<?> blockState = poorMansPalettedContainer.get(x, 0, z);
+                           boolean isBedrock = blockState != null && "minecraft:bedrock".equals(blockState.get("Name").asString(""));
+                           boolean isAir = blockState != null && "minecraft:air".equals(blockState.get("Name").asString(""));
+                           if (isAir) {
+                              missingBedrock.set(z * 16 + x);
                            }
-                        }
 
-                        if (hasAnyBedrock && missingBedrock.cardinality() != missingBedrock.size()) {
-                           Dynamic<?> targetStatus = "full".equals(lastStatus) ? chunkTag.createString("heightmaps") : status;
-                           chunkTag = chunkTag.set("below_zero_retrogen", chunkTag.createMap(ImmutableMap.of(chunkTag.createString("target_status"), targetStatus, chunkTag.createString("missing_bedrock"), chunkTag.createLongList(LongStream.of(missingBedrock.toLongArray())))));
-                           chunkTag = chunkTag.set("Status", chunkTag.createString("empty"));
+                           hasAnyBedrock |= isBedrock;
                         }
-
-                        chunkTag = chunkTag.set("isLightOn", chunkTag.createBoolean(false));
                      }
+
+                     if (hasAnyBedrock && missingBedrock.cardinality() != missingBedrock.size()) {
+                        Dynamic<?> targetStatus = "full".equals(lastStatus) ? chunkTag.createString("heightmaps") : status;
+                        chunkTag = chunkTag.set("below_zero_retrogen", chunkTag.createMap(ImmutableMap.of(chunkTag.createString("target_status"), targetStatus, chunkTag.createString("missing_bedrock"), chunkTag.createLongList(LongStream.of(missingBedrock.toLongArray())))));
+                        chunkTag = chunkTag.set("Status", chunkTag.createString("empty"));
+                     }
+
+                     chunkTag = chunkTag.set("isLightOn", chunkTag.createBoolean(false));
                   }
                }
             }

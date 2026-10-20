@@ -1,9 +1,8 @@
 package net.minecraft.client.gui.contextualbar;
 
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.WaypointStyle;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -32,17 +31,17 @@ public class LocatorBar implements ContextualBar {
       this.minecraft = minecraft;
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)LOCATOR_BAR_BACKGROUND, this.left(this.minecraft.getWindow()), this.top(this.minecraft.getWindow()), 182, 5);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       int top = this.top(this.minecraft.getWindow());
       Entity cameraEntity = this.minecraft.getCameraEntity();
       if (cameraEntity != null) {
          Level level = cameraEntity.level();
          TickRateManager tickRateManager = level.tickRateManager();
-         PartialTickSupplier partialTickSupplier = (entity) -> deltaTracker.getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
+         PartialTickSupplier partialTickSupplier = (entity) -> graphics.deltaTracker().getGameTimeDeltaPartialTick(!tickRateManager.isEntityFrozen(entity));
          this.minecraft.player.connection.getWaypointManager().forEachWaypoint(cameraEntity, (waypoint) -> {
             if (!(Boolean)waypoint.id().left().map((uuid) -> uuid.equals(cameraEntity.getUUID())).orElse(false)) {
                double angle = waypoint.yawAngleToCamera(level, this.minecraft.gameRenderer.mainCamera(), partialTickSupplier);

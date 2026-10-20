@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -30,7 +30,7 @@ public class StructurePlaceSettings {
       this.rotation = Rotation.NONE;
       this.rotationPivot = BlockPos.ZERO;
       this.liquidSettings = LiquidSettings.APPLY_WATERLOGGING;
-      this.processors = Lists.newArrayList();
+      this.processors = new ArrayList();
    }
 
    public StructurePlaceSettings copy() {

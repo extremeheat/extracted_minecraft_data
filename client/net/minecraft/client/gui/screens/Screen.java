@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.logging.LogUtils;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +35,7 @@ import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -90,9 +90,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected Screen(final Minecraft minecraft, final Font font, final Component title) {
       super();
-      this.children = Lists.newArrayList();
-      this.narratables = Lists.newArrayList();
-      this.renderables = Lists.newArrayList();
+      this.children = new ArrayList();
+      this.narratables = new ArrayList();
+      this.renderables = new ArrayList();
       this.narrationState = new ScreenNarrationCollector();
       this.narrationSuppressTime = -9223372036854775808L;
       this.nextNarrationTime = 9223372036854775807L;
@@ -116,17 +116,17 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return this.getTitle();
    }
 
-   public final void extractRenderStateWithTooltipAndSubtitles(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public final void extractRenderStateWithTooltipAndSubtitles(final GuiGraphicsExtractor graphics) {
       graphics.nextStratum();
-      this.extractBackground(graphics, mouseX, mouseY, a);
+      this.extractBackground(graphics);
       graphics.nextStratum();
-      this.extractRenderState(graphics, mouseX, mouseY, a);
-      graphics.extractDeferredElements(mouseX, mouseY, a);
+      this.extractRenderState(graphics);
+      graphics.extractDeferredElements();
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
       for(Renderable renderable : this.renderables) {
-         renderable.extractRenderState(graphics, mouseX, mouseY, a);
+         renderable.extractRenderState(graphics);
       }
 
    }
@@ -455,12 +455,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void added() {
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.isInGameUi()) {
          this.extractTransparentBackground(graphics);
       } else {
          if (this.minecraft.level == null) {
-            this.extractPanorama(graphics, a);
+            this.extractPanorama(graphics);
          }
 
          this.extractBlurredBackground(graphics);
@@ -478,7 +478,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    }
 
-   protected void extractPanorama(final GuiGraphicsExtractor graphics, final float a) {
+   protected void extractPanorama(final GuiGraphicsExtractor graphics) {
       this.minecraft.gameRenderer.panorama().extractRenderState(graphics, this.width, this.height);
    }
 

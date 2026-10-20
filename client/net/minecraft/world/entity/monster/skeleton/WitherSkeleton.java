@@ -95,8 +95,4 @@ public class WitherSkeleton extends AbstractSkeleton {
       arrow.igniteForSeconds(100.0F);
       return arrow;
    }
-
-   public boolean canBeAffected(final MobEffectInstance newEffect) {
-      return newEffect.is(MobEffects.WITHER) ? false : super.canBeAffected(newEffect);
-   }
 }

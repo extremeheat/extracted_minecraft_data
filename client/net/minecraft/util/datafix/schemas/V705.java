@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.schemas;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.templates.Hook;
@@ -9,6 +8,7 @@ import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.util.datafix.fixes.References;
@@ -34,7 +34,7 @@ public class V705 extends NamespacedSchema {
    }
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(final Schema schema) {
-      Map<String, Supplier<TypeTemplate>> map = Maps.newHashMap();
+      Map<String, Supplier<TypeTemplate>> map = new HashMap();
       schema.register(map, "minecraft:area_effect_cloud", (name) -> DSL.optionalFields("Particle", References.PARTICLE.in(schema)));
       registerMob(schema, map, "minecraft:armor_stand");
       schema.register(map, "minecraft:arrow", (name) -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(schema)));

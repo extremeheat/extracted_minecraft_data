@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
@@ -25,8 +25,7 @@ public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
    }
 
    public List<FoliagePlacer.FoliageAttachment> placeTrunk(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> trunkSetter, final RandomSource random, final int treeHeight, final BlockPos origin, final TreeFeature tree) {
-      List<FoliagePlacer.FoliageAttachment> attachments = Lists.newArrayList();
-      attachments.addAll(super.placeTrunk(level, trunkSetter, random, treeHeight, origin, tree));
+      List<FoliagePlacer.FoliageAttachment> attachments = new ArrayList(super.placeTrunk(level, trunkSetter, random, treeHeight, origin, tree));
 
       for(int branchHeight = treeHeight - 2 - random.nextInt(4); branchHeight > treeHeight / 2; branchHeight -= 2 + random.nextInt(4)) {
          float angle = random.nextFloat() * 6.2831855F;

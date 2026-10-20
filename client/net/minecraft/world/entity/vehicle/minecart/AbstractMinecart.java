@@ -2,9 +2,9 @@ package net.minecraft.world.entity.vehicle.minecart;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -263,20 +263,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
    public void activateMinecart(final ServerLevel level, final int xt, final int yt, final int zt, final boolean state) {
    }
 
-   public void lerpPositionAndRotationStep(final int stepsToTarget, final double targetX, final double targetY, final double targetZ, final double targetYRot, final double targetXRot) {
-      super.lerpPositionAndRotationStep(stepsToTarget, targetX, targetY, targetZ, targetYRot, targetXRot);
-   }
-
    public void applyGravity() {
       super.applyGravity();
    }
 
    public void reapplyPosition() {
       super.reapplyPosition();
-   }
-
-   public boolean updateFluidInteraction() {
-      return super.updateFluidInteraction();
    }
 
    public Vec3 getKnownMovement() {
@@ -551,7 +543,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       DATA_ID_CUSTOM_DISPLAY_BLOCK = SynchedEntityData.<Optional<BlockState>>defineId(AbstractMinecart.class, EntityDataSerializers.OPTIONAL_BLOCK_STATE);
       DATA_ID_DISPLAY_OFFSET = SynchedEntityData.<Integer>defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       POSE_DISMOUNT_HEIGHTS = ImmutableMap.of(Pose.STANDING, ImmutableList.of(0, 1, -1), Pose.CROUCHING, ImmutableList.of(0, 1, -1), Pose.SWIMMING, ImmutableList.of(0, 1));
-      EXITS = Maps.newEnumMap((Map)Util.make(() -> {
+      EXITS = new EnumMap((Map)Util.make(() -> {
          Vec3i xNeg = Direction.WEST.getUnitVec3i();
          Vec3i xPos = Direction.EAST.getUnitVec3i();
          Vec3i zNeg = Direction.NORTH.getUnitVec3i();

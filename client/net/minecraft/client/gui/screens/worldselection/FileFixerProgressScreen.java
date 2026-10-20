@@ -37,8 +37,8 @@ public class FileFixerProgressScreen extends Screen {
       return false;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
-      super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       int xCenter = this.width / 2;
       int yCenter = this.height / 2;
       int textTop = yCenter - 50;

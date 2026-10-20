@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import net.minecraft.client.CloudStatus;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -207,7 +208,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
 
    public void render(final CloudStatus cloudStatus, final RenderPass renderPass) {
       if (this.texture != null && this.quadCount != 0) {
-         RenderPipeline renderPipeline = cloudStatus == CloudStatus.FANCY ? RenderPipelines.CLOUDS : RenderPipelines.FLAT_CLOUDS;
+         RenderPipeline renderPipeline = RenderPipelines.clouds(new RenderPipelines.CloudParameters(cloudStatus == CloudStatus.FANCY));
          renderPass.pushDebugGroup(() -> "Clouds");
          RenderSystem.bindDefaultUniforms(renderPass);
          this.render(renderPass, renderPipeline);

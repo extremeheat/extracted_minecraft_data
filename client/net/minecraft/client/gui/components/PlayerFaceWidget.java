@@ -17,7 +17,7 @@ public class PlayerFaceWidget extends AbstractWidget {
       this.active = false;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       graphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), -16777216);
       PlayerFaceExtractor.extractRenderState(graphics, this.skinProfile, this.getX() + this.border, this.getY() + this.border, this.getWidth() - this.border * 2);
    }

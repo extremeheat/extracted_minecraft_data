@@ -132,6 +132,6 @@ public abstract class AbstractFriendsTab implements Tab {
       return frame;
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
    }
 }

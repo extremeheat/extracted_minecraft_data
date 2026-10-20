@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -31,8 +31,8 @@ public class FriendsButton extends SpriteIconButton {
       }
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractContents(graphics, mouseX, mouseY, a);
+   public void extractContents(final GuiGraphicsExtractor graphics) {
+      super.extractContents(graphics);
       if (this.isActive() && this.incomingRequestCount > 0) {
          int iconIndex = Math.min(this.incomingRequestCount, 6) - 1;
          graphics.blitSprite(RenderPipelines.GUI_TEXTURED, NOTIFICATION_ICONS[iconIndex], this.getX() + this.getWidth() - 5, this.getY() - 3, 8, 8, this.alpha);

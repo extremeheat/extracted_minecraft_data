@@ -9,9 +9,9 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -82,8 +82,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       return Mth.positiveCeilDiv(((LoomMenu)this.menu).getSelectablePatterns().size(), 4);
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
@@ -108,7 +108,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       int scrollerX = xo + 119;
       int scrollerY = yo + 13;
       graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerX, scrollerY + sy, 12, 15);
-      if (mouseX >= scrollerX && mouseX < scrollerX + 12 && mouseY >= scrollerY && mouseY < scrollerY + 56) {
+      if (graphics.mouseX() >= scrollerX && graphics.mouseX() < scrollerX + 12 && graphics.mouseY() >= scrollerY && graphics.mouseY() < scrollerY + 56) {
          if (this.isScrollBarActive()) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          } else {
@@ -142,7 +142,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                int posX = x + column * 14;
                int posY = y + row * 14;
                Holder<BannerPattern> pattern = (Holder)selectablePatterns.get(index);
-               boolean isHighlighted = mouseX >= posX && mouseY >= posY && mouseX < posX + 14 && mouseY < posY + 14;
+               boolean isHighlighted = graphics.mouseX() >= posX && graphics.mouseY() >= posY && graphics.mouseX() < posX + 14 && graphics.mouseY() < posY + 14;
                Identifier buttonSprite;
                if (index == ((LoomMenu)this.menu).getSelectedBannerPatternIndex()) {
                   buttonSprite = PATTERN_SELECTED_SPRITE;
@@ -150,7 +150,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   buttonSprite = PATTERN_HIGHLIGHTED_SPRITE;
                   DyeColor patternColor = (DyeColor)this.dyeStack.getOrDefault(DataComponents.DYE, DyeColor.WHITE);
                   String var10001 = ((BannerPattern)pattern.value()).translationKey();
-                  graphics.setTooltipForNextFrame(Component.translatable(var10001 + "." + patternColor.getName()), mouseX, mouseY);
+                  graphics.setTooltipForNextFrame(Component.translatable(var10001 + "." + patternColor.getName()), graphics.mouseX(), graphics.mouseY());
                   graphics.requestCursor(CursorTypes.POINTING_HAND);
                } else {
                   buttonSprite = PATTERN_SPRITE;

@@ -1,7 +1,5 @@
 package net.minecraft.util.profiling;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -11,6 +9,8 @@ import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 public class ActiveProfiler implements ProfileCollector {
    private static final long WARNING_TIME_NANOS = Duration.ofMillis(100L).toNanos();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final List<String> paths = Lists.newArrayList();
+   private final List<String> paths = new ArrayList();
    private final LongList startTimes = new LongArrayList();
-   private final Map<String, PathEntry> entries = Maps.newHashMap();
+   private final Map<String, PathEntry> entries = new HashMap();
    private final IntSupplier getTickTime;
    private final LongSupplier getRealTime;
    private final long startTimeNano;

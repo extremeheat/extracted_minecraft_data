@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.boss.enderdragon;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -708,7 +708,7 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    private Path reconstructPath(final Node from, final Node to) {
-      List<Node> nodes = Lists.newArrayList();
+      List<Node> nodes = new ArrayList();
       Node node = to;
       nodes.add(0, to);
 

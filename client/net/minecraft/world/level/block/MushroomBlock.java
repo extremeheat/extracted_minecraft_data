@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,48 +37,53 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    protected void randomTick(final BlockState state, final ServerLevel level, BlockPos pos, final RandomSource random) {
       if (random.nextInt(25) == 0) {
-         if (!this.canSpread(level, pos)) {
+         if (!canSpread(level, pos)) {
             return;
          }
 
          BlockPos offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
 
          for(int i = 0; i < 4; ++i) {
-            if (this.canSpreadTo(level, offset)) {
+            if (canSpreadTo(level, offset)) {
                pos = offset;
             }
 
             offset = pos.offset(random.nextInt(3) - 1, random.nextInt(2) - random.nextInt(2), random.nextInt(3) - 1);
          }
 
-         if (this.canSpreadTo(level, offset)) {
+         if (canSpreadTo(level, offset)) {
             level.setBlock(offset, state, 2);
          }
       }
 
    }
 
-   private boolean canSpread(final ServerLevel level, final BlockPos pos) {
+   @VisibleForTesting
+   public static boolean canSpread(final ServerLevel level, final BlockPos pos) {
       BlockPos minPos = pos.offset(-4, -1, -4);
       BlockPos maxPos = pos.offset(4, 1, 4);
-      return level.findBlocksIn(minPos, maxPos).filterState((state) -> state.is(this)).atMostMatched(4);
+      Block block = level.getBlockState(pos).getBlock();
+      return level.findBlocksIn(minPos, maxPos).filterState((state) -> state.is(block)).atMostMatched(4);
    }
 
    protected boolean canSurvive(final BlockState state, final LevelReader level, final BlockPos pos) {
-      return canSupportCenter(level, pos.below(), Direction.UP);
+      return canSupportCenter(level, pos);
    }
 
-   protected boolean canSpreadTo(final LevelReader level, final BlockPos pos) {
-      BlockPos belowPos = pos.below();
-      BlockState below = level.getBlockState(belowPos);
-      if (below.is(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)) {
-         return true;
-      } else if (level.getRawBrightness(pos, 0) < 13) {
-         return false;
-      } else if (this.mayPlaceOn(below, level, belowPos)) {
+   @VisibleForTesting
+   public static boolean canSpreadTo(final LevelReader level, final BlockPos pos) {
+      if (!level.isEmptyBlock(pos)) {
          return false;
       } else {
-         return !level.isEmptyBlock(pos);
+         BlockPos belowPos = pos.below();
+         BlockState below = level.getBlockState(belowPos);
+         if (below.is(BlockTags.OVERRIDES_MUSHROOM_LIGHT_REQUIREMENT)) {
+            return true;
+         } else if (level.getRawBrightness(pos, 0) >= 13) {
+            return false;
+         } else {
+            return canSupportCenter(level, pos);
+         }
       }
    }
 
@@ -122,5 +128,9 @@ public class MushroomBlock extends VegetationBlock implements BonemealableBlock 
 
    public void performBonemeal(final ServerLevel level, final RandomSource random, final BlockPos pos, final BlockState state, final BonemealSource source) {
       this.growMushroom(level, pos, state, random);
+   }
+
+   protected static boolean canSupportCenter(final LevelReader level, final BlockPos pos) {
+      return canSupportCenter(level, pos.below(), Direction.UP);
    }
 }

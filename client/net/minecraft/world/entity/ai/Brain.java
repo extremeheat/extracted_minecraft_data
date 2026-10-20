@@ -3,19 +3,22 @@ package net.minecraft.world.entity.ai;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
@@ -37,14 +40,14 @@ import org.jspecify.annotations.Nullable;
 
 public class Brain<E extends LivingEntity> {
    private static final int SCHEDULE_UPDATE_DELAY = 20;
-   private final Map<MemoryModuleType<?>, MemorySlot<?>> memories = Maps.newHashMap();
-   private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = Maps.newLinkedHashMap();
-   private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = Maps.newTreeMap();
+   private final Map<MemoryModuleType<?>, MemorySlot<?>> memories = new HashMap();
+   private final Map<SensorType<? extends Sensor<? super E>>, Sensor<? super E>> sensors = new LinkedHashMap();
+   private final Map<Integer, Map<Activity, Set<BehaviorControl<? super E>>>> availableBehaviorsByPriority = new TreeMap();
    private @Nullable EnvironmentAttribute<Activity> schedule;
-   private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements = Maps.newHashMap();
-   private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped = Maps.newHashMap();
-   private Set<Activity> coreActivities = Sets.newHashSet();
-   private final Set<Activity> activeActivities = Sets.newHashSet();
+   private final Map<Activity, Set<Pair<MemoryModuleType<?>, MemoryStatus>>> activityRequirements = new HashMap();
+   private final Map<Activity, Set<MemoryModuleType<?>>> activityMemoriesToEraseWhenStopped = new HashMap();
+   private Set<Activity> coreActivities = new HashSet();
+   private final Set<Activity> activeActivities = new HashSet();
    private Activity defaultActivity;
    private long lastScheduleUpdate;
 
@@ -372,7 +375,7 @@ public class Brain<E extends LivingEntity> {
             this.registerMemory(requiredMemory);
          }
 
-         ((Set)((Map)this.availableBehaviorsByPriority.computeIfAbsent((Integer)pair.getFirst(), (key) -> Maps.newHashMap())).computeIfAbsent(activity, (key) -> Sets.newLinkedHashSet())).add(behavior);
+         ((Set)((Map)this.availableBehaviorsByPriority.computeIfAbsent((Integer)pair.getFirst(), (key) -> new HashMap())).computeIfAbsent(activity, (key) -> new LinkedHashSet())).add(behavior);
       }
 
    }

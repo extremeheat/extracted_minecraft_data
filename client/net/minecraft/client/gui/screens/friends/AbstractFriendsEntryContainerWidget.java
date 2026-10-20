@@ -92,15 +92,15 @@ public abstract class AbstractFriendsEntryContainerWidget extends AbstractContai
       return 9;
    }
 
-   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.extractPlayerFace(graphics, mouseX, mouseY, a);
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      this.extractPlayerFace(graphics);
       int nameX = this.playerFaceWidget.getRight() + 5;
       this.nameWidget.setPosition(nameX, this.getY() + (this.getHeight() - this.getProfileInfoHeight()) / 2 + 1);
-      this.nameWidget.extractRenderState(graphics, mouseX, mouseY, a);
+      this.nameWidget.extractRenderState(graphics);
    }
 
-   protected void extractPlayerFace(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   protected void extractPlayerFace(final GuiGraphicsExtractor graphics) {
       this.playerFaceWidget.setPosition(this.getX(), this.getY() + (this.getHeight() - this.playerFaceWidget.getHeight()) / 2);
-      this.playerFaceWidget.extractRenderState(graphics, mouseX, mouseY, a);
+      this.playerFaceWidget.extractRenderState(graphics);
    }
 }

@@ -1,8 +1,8 @@
 package net.minecraft.world.level.levelgen.feature.rootplacers;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -29,7 +29,7 @@ public class MangroveRootPlacer extends RootPlacer {
    }
 
    public boolean placeRoots(final WorldGenLevel level, final BiConsumer<BlockPos, BlockState> rootSetter, final RandomSource random, final BlockPos origin, final BlockPos trunkOrigin, final TreeFeature tree) {
-      List<BlockPos> rootPositions = Lists.newArrayList();
+      List<BlockPos> rootPositions = new ArrayList();
       BlockPos.MutableBlockPos columnPos = origin.mutable();
 
       while(columnPos.getY() < trunkOrigin.getY()) {
@@ -44,7 +44,7 @@ public class MangroveRootPlacer extends RootPlacer {
 
       for(Direction dir : Direction.Plane.HORIZONTAL) {
          BlockPos pos = trunkOrigin.relative(dir);
-         List<BlockPos> positionsInDirection = Lists.newArrayList();
+         List<BlockPos> positionsInDirection = new ArrayList();
          if (!this.simulateRoots(level, random, pos, dir, trunkOrigin, positionsInDirection, 0)) {
             return false;
          }

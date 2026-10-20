@@ -1,9 +1,9 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +107,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
 
       public Builder(final boolean replace) {
          super();
-         this.modifiers = Lists.newArrayList();
+         this.modifiers = new ArrayList();
          this.replace = replace;
       }
 

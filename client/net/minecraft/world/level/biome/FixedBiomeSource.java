@@ -1,6 +1,5 @@
 package net.minecraft.world.level.biome;
 
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.MapCodec;
 import java.util.Set;
@@ -51,7 +50,7 @@ public class FixedBiomeSource extends BiomeSource implements NoiseBiomeResolver 
    }
 
    public Set<Holder<Biome>> getBiomesWithin(final int x, final int y, final int z, final int radius) {
-      return Sets.newHashSet(Set.of(this.biome));
+      return Set.of(this.biome);
    }
 
    static {

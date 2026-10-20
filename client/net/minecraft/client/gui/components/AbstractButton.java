@@ -7,7 +7,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -24,12 +24,12 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
 
    public abstract void onPress(InputWithModifiers input);
 
-   protected final void extractWidgetRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.extractContents(graphics, mouseX, mouseY, a);
+   protected final void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      this.extractContents(graphics);
       this.handleCursor(graphics);
    }
 
-   protected abstract void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a);
+   protected abstract void extractContents(GuiGraphicsExtractor graphics);
 
    protected void extractDefaultLabel(final ActiveTextCollector output) {
       this.extractScrollingStringOverContents(output, this.getMessage(), 2);

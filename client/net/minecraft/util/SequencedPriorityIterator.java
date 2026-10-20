@@ -1,11 +1,11 @@
 package net.minecraft.util;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import org.jspecify.annotations.Nullable;
 
@@ -23,7 +23,7 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       if (priority == this.highestPrio && this.highestPrioQueue != null) {
          this.highestPrioQueue.addLast(data);
       } else {
-         Deque<T> queue = (Deque)this.queuesByPriority.computeIfAbsent(priority, (order) -> Queues.newArrayDeque());
+         Deque<T> queue = (Deque)this.queuesByPriority.computeIfAbsent(priority, (order) -> new ArrayDeque());
          queue.addLast(data);
          if (priority >= this.highestPrio) {
             this.highestPrioQueue = queue;

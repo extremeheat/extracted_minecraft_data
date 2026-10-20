@@ -1,7 +1,7 @@
 package net.minecraft.server.level;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.minecraft.world.level.ChunkPos;
@@ -31,7 +31,7 @@ public class ChunkTaskPriorityQueue {
          }
 
          if (oldTasks != null && !oldTasks.isEmpty()) {
-            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(newPriority)).computeIfAbsent(pos.pack(), (k) -> Lists.newArrayList())).addAll(oldTasks);
+            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(newPriority)).computeIfAbsent(pos.pack(), (k) -> new ArrayList())).addAll(oldTasks);
             this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, newPriority);
          }
 
@@ -39,7 +39,7 @@ public class ChunkTaskPriorityQueue {
    }
 
    protected void submit(final Runnable task, final long chunkPos, final int level) {
-      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(level)).computeIfAbsent(chunkPos, (p) -> Lists.newArrayList())).add(task);
+      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(level)).computeIfAbsent(chunkPos, (p) -> new ArrayList())).add(task);
       this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, level);
    }
 

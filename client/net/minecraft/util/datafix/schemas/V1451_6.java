@@ -1,7 +1,6 @@
 package net.minecraft.util.datafix.schemas;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.schemas.Schema;
@@ -10,10 +9,10 @@ import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1451_6 extends NamespacedSchema {
@@ -23,18 +22,18 @@ public class V1451_6 extends NamespacedSchema {
          Dynamic<T> input = new Dynamic(ops, value);
          return (T)((Dynamic)DataFixUtils.orElse(input.get("CriteriaName").asString().result().map((name) -> {
             int colonPos = name.indexOf(58);
+            String statType;
+            String statId;
             if (colonPos < 0) {
-               return Pair.of("_special", name);
+               statType = "_special";
+               statId = name;
             } else {
-               try {
-                  Identifier statType = Identifier.bySeparator(name.substring(0, colonPos), '.');
-                  Identifier statId = Identifier.bySeparator(name.substring(colonPos + 1), '.');
-                  return Pair.of(statType.toString(), statId.toString());
-               } catch (Exception var4) {
-                  return Pair.of("_special", name);
-               }
+               statType = NamespacedSchema.namespacedStringBySeparator(name.substring(0, colonPos), '.');
+               statId = NamespacedSchema.namespacedStringBySeparator(name.substring(colonPos + 1), '.');
             }
-         }).map((explodedId) -> input.set("CriteriaType", input.createMap(ImmutableMap.of(input.createString("type"), input.createString((String)explodedId.getFirst()), input.createString("id"), input.createString((String)explodedId.getSecond()))))), input)).getValue();
+
+            return input.set("CriteriaType", input.createMap(ImmutableMap.of(input.createString("type"), input.createString(statType), input.createString("id"), input.createString(statId))));
+         }), input)).getValue();
       }
    };
    protected static final Hook.HookFunction REPACK_OBJECTIVE_ID = new Hook.HookFunction() {
@@ -48,8 +47,8 @@ public class V1451_6 extends NamespacedSchema {
                if (unpackedType.equals("_special")) {
                   return Optional.of(input.createString((String)statId.get()));
                } else {
-                  String var10001 = V1451_6.packNamespacedWithDot(unpackedType);
-                  return Optional.of(type.createString(var10001 + ":" + V1451_6.packNamespacedWithDot((String)statId.get())));
+                  String var10001 = NamespacedSchema.packNamespacedWithDot(unpackedType);
+                  return Optional.of(type.createString(var10001 + ":" + NamespacedSchema.packNamespacedWithDot((String)statId.get())));
                }
             } else {
                return Optional.empty();
@@ -75,7 +74,7 @@ public class V1451_6 extends NamespacedSchema {
       Supplier<TypeTemplate> itemCriterion = () -> DSL.optionalFields("id", References.ITEM_NAME.in(schema));
       Supplier<TypeTemplate> blockCriterion = () -> DSL.optionalFields("id", References.BLOCK_NAME.in(schema));
       Supplier<TypeTemplate> entityCriterion = () -> DSL.optionalFields("id", References.ENTITY_NAME.in(schema));
-      Map<String, Supplier<TypeTemplate>> criterionTypes = Maps.newHashMap();
+      Map<String, Supplier<TypeTemplate>> criterionTypes = new HashMap();
       criterionTypes.put("minecraft:mined", blockCriterion);
       criterionTypes.put("minecraft:crafted", itemCriterion);
       criterionTypes.put("minecraft:used", itemCriterion);
@@ -87,10 +86,5 @@ public class V1451_6 extends NamespacedSchema {
       criterionTypes.put("minecraft:custom", (Supplier)() -> DSL.optionalFields("id", DSL.constType(namespacedString())));
       criterionTypes.put("_special", (Supplier)() -> DSL.optionalFields("id", DSL.constType(DSL.string())));
       return criterionTypes;
-   }
-
-   public static String packNamespacedWithDot(final String location) {
-      Identifier parsedLoc = Identifier.tryParse(location);
-      return parsedLoc != null ? parsedLoc.getNamespace() + "." + parsedLoc.getPath() : location;
    }
 }

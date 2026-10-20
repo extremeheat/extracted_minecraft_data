@@ -2,7 +2,6 @@ package net.minecraft.world.entity.player;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
@@ -120,6 +119,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
@@ -445,7 +445,7 @@ public abstract class Player extends Avatar implements ContainerUser {
          }
 
          List<Entity> entities = this.level().getEntities(this, pickupArea);
-         List<Entity> orbs = Lists.newArrayList();
+         List<Entity> orbs = new ArrayList();
 
          for(Entity entity : entities) {
             if (entity.is(EntityTypes.EXPERIENCE_ORB)) {
@@ -1369,9 +1369,9 @@ public abstract class Player extends Avatar implements ContainerUser {
       this.setSharedFlag(7, true);
    }
 
-   protected void doWaterSplashEffect() {
+   protected void onEnterFluid(final Holder<Fluid> fluid) {
       if (!this.isSpectator()) {
-         super.doWaterSplashEffect();
+         super.onEnterFluid(fluid);
       }
 
    }

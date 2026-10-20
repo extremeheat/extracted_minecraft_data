@@ -3,7 +3,9 @@ package net.minecraft.nbt;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HexFormat;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 
 public record StringTag(String value) implements PrimitiveTag {
    private static final int SELF_SIZE_IN_BYTES = 36;
@@ -35,6 +37,7 @@ public record StringTag(String value) implements PrimitiveTag {
          return "TAG_String";
       }
    };
+   private static final HexFormat HEX_ESCAPE = HexFormat.of().withUpperCase();
    private static final StringTag EMPTY = new StringTag("");
    private static final char DOUBLE_QUOTE = '"';
    private static final char SINGLE_QUOTE = '\'';
@@ -56,6 +59,32 @@ public record StringTag(String value) implements PrimitiveTag {
 
    public static StringTag valueOf(final String data) {
       return data.isEmpty() ? EMPTY : new StringTag(data);
+   }
+
+   public static @Nullable String escapeControlCharacters(final char c) {
+      String var10000;
+      switch (c) {
+         case '\b':
+            var10000 = "b";
+            break;
+         case '\t':
+            var10000 = "t";
+            break;
+         case '\n':
+            var10000 = "n";
+            break;
+         case '\u000b':
+         default:
+            var10000 = c < ' ' ? "x" + HEX_ESCAPE.toHexDigits((byte)c) : null;
+            break;
+         case '\f':
+            var10000 = "f";
+            break;
+         case '\r':
+            var10000 = "r";
+      }
+
+      return var10000;
    }
 
    public void write(final DataOutput output) throws IOException {
@@ -108,7 +137,7 @@ public record StringTag(String value) implements PrimitiveTag {
          if (c == '\\') {
             result.append("\\\\");
          } else if (c != '"' && c != '\'') {
-            String escaped = SnbtGrammar.escapeControlCharacters(c);
+            String escaped = escapeControlCharacters(c);
             if (escaped != null) {
                result.append('\\');
                result.append(escaped);
@@ -153,7 +182,7 @@ public record StringTag(String value) implements PrimitiveTag {
                result.append(c);
                break;
             default:
-               String escaped = SnbtGrammar.escapeControlCharacters(c);
+               String escaped = escapeControlCharacters(c);
                if (escaped != null) {
                   result.append('\\');
                   result.append(escaped);

@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.entity;
 
-import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
@@ -44,7 +44,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
    private static final float EYE_BED_OFFSET = 0.1F;
    protected M model;
    protected final ItemModelResolver itemModelResolver;
-   protected final List<RenderLayer<S, M>> layers = Lists.newArrayList();
+   protected final List<RenderLayer<S, M>> layers = new ArrayList();
 
    public LivingEntityRenderer(final EntityRendererProvider.Context context, final M model, final float shadow) {
       super(context);

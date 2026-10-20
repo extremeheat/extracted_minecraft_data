@@ -372,7 +372,7 @@ public sealed interface CubicSpline<I> {
       private Builder(final I coordinate, final Float2FloatFunction valueTransformer) {
          super();
          this.locations = new FloatArrayList();
-         this.values = Lists.newArrayList();
+         this.values = new ArrayList();
          this.derivatives = new FloatArrayList();
          this.coordinate = coordinate;
          this.valueTransformer = valueTransformer;

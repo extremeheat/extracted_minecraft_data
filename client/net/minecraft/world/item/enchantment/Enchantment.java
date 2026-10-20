@@ -1,11 +1,11 @@
 package net.minecraft.world.item.enchantment;
 
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +83,7 @@ public record Enchantment(Component description, EnchantmentDefinition definitio
    }
 
    public Map<EquipmentSlot, ItemStack> getSlotItems(final LivingEntity entity) {
-      Map<EquipmentSlot, ItemStack> itemStacks = Maps.newEnumMap(EquipmentSlot.class);
+      Map<EquipmentSlot, ItemStack> itemStacks = new EnumMap(EquipmentSlot.class);
 
       for(EquipmentSlot slot : EquipmentSlot.VALUES) {
          if (this.matchingSlot(slot)) {

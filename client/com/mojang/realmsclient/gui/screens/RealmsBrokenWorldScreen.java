@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -14,6 +13,7 @@ import com.mojang.realmsclient.util.RealmsUtil;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -42,7 +42,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    private final long serverId;
    private final Component[] message = new Component[]{Component.translatable("mco.brokenworld.message.line1"), Component.translatable("mco.brokenworld.message.line2")};
    private int leftX;
-   private final List<Integer> slotsThatHasBeenDownloaded = Lists.newArrayList();
+   private final List<Integer> slotsThatHasBeenDownloaded = new ArrayList();
    private int animTick;
 
    public RealmsBrokenWorldScreen(final Screen lastScreen, final long serverId, final boolean isMinigame) {
@@ -92,8 +92,8 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       ++this.animTick;
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int xm, final int ym, final float a) {
-      super.extractRenderState(graphics, xm, ym, a);
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title, this.width / 2, 17, -1);
 
       for(int i = 0; i < this.message.length; ++i) {
@@ -103,9 +103,9 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       if (this.serverData != null) {
          for(Map.Entry<Integer, RealmsSlot> entry : this.serverData.slots.entrySet()) {
             if (((RealmsSlot)entry.getValue()).options.templateImage != null && ((RealmsSlot)entry.getValue()).options.templateId != -1L) {
-               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.templateId, ((RealmsSlot)entry.getValue()).options.templateImage, ((RealmsSlot)entry.getValue()).options.empty);
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), ((RealmsSlot)entry.getValue()).options.templateId, ((RealmsSlot)entry.getValue()).options.templateImage, ((RealmsSlot)entry.getValue()).options.empty);
             } else {
-               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, xm, ym, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), -1L, (String)null, ((RealmsSlot)entry.getValue()).options.empty);
+               this.extractSlotFrame(graphics, this.getFramePositionX((Integer)entry.getKey()), row(1) + 5, this.serverData.activeSlot == (Integer)entry.getKey() && !this.isMinigame(), ((RealmsSlot)entry.getValue()).options.getSlotName((Integer)entry.getKey()), (Integer)entry.getKey(), -1L, (String)null, ((RealmsSlot)entry.getValue()).options.empty);
             }
          }
 
@@ -176,7 +176,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       return this.serverData != null && this.serverData.isMinigameActive();
    }
 
-   private void extractSlotFrame(final GuiGraphicsExtractor graphics, final int x, final int y, final int xm, final int ym, final boolean active, final String text, final int i, final long imageId, final @Nullable String image, final boolean empty) {
+   private void extractSlotFrame(final GuiGraphicsExtractor graphics, final int x, final int y, final boolean active, final String text, final int i, final long imageId, final @Nullable String image, final boolean empty) {
       Identifier texture;
       if (empty) {
          texture = RealmsWorldSlotButton.EMPTY_SLOT_LOCATION;

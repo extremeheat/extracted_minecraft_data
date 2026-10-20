@@ -341,6 +341,10 @@ public class ParticleResources implements PreparableReloadListener {
          return (TextureAtlasSprite)this.sprites.getFirst();
       }
 
+      public int size() {
+         return this.sprites.size();
+      }
+
       public void rebind(final List<TextureAtlasSprite> ids) {
          this.sprites = ImmutableList.copyOf(ids);
       }

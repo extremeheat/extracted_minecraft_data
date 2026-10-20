@@ -182,8 +182,12 @@ class GlDevice implements GpuDeviceBackend {
       return this.stateManager;
    }
 
-   public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified) {
-      return new GlSurface(this, windowHandle, isIconified);
+   public GpuSurfaceBackend createSurface(final long windowHandle, final BooleanSupplier isIconified, final boolean dxgi) {
+      if (dxgi) {
+         throw new IllegalArgumentException("OpenGL does not support a DXGI surface");
+      } else {
+         return new GlSurface(this, windowHandle, isIconified);
+      }
    }
 
    public CommandEncoderBackend createCommandEncoder() {

@@ -2,13 +2,13 @@ package net.minecraft.world.level.levelgen.structure.pools;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +83,7 @@ public class SinglePoolElement extends StructurePoolElement {
    public List<StructureTemplate.StructureBlockInfo> getDataMarkers(final StructureTemplateManager structureTemplateManager, final BlockPos position, final Rotation rotation, final boolean absolute) {
       StructureTemplate template = this.getTemplate(structureTemplateManager);
       List<StructureTemplate.StructureBlockInfo> structureBlocks = template.filterBlocks(position, (new StructurePlaceSettings()).setRotation(rotation), Blocks.STRUCTURE_BLOCK, absolute);
-      List<StructureTemplate.StructureBlockInfo> dataMarkers = Lists.newArrayList();
+      List<StructureTemplate.StructureBlockInfo> dataMarkers = new ArrayList();
 
       for(StructureTemplate.StructureBlockInfo info : structureBlocks) {
          CompoundTag nbt = info.nbt();

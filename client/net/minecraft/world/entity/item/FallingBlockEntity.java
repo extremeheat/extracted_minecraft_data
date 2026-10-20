@@ -98,7 +98,7 @@ public class FallingBlockEntity extends Entity {
    }
 
    public static FallingBlockEntity fall(final Level level, final BlockPos pos, final BlockState state) {
-      FallingBlockEntity entity = new FallingBlockEntity(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, state.hasProperty(BlockStateProperties.WATERLOGGED) ? (BlockState)state.setValue(BlockStateProperties.WATERLOGGED, false) : state);
+      FallingBlockEntity entity = new FallingBlockEntity(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, (BlockState)state.trySetValue(BlockStateProperties.WATERLOGGED, false));
       level.setBlockAndUpdate(pos, state.getFluidState().createLegacyBlock());
       level.addFreshEntity(entity);
       return entity;

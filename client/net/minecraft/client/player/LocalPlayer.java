@@ -1,7 +1,7 @@
 package net.minecraft.client.player;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -121,7 +121,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
    private final TickThrottler dropSpamThrottler = new TickThrottler(20, 1280);
-   private final List<AmbientSoundHandler> ambientSoundHandlers = Lists.newArrayList();
+   private final List<AmbientSoundHandler> ambientSoundHandlers = new ArrayList();
    private PermissionSet permissions;
    private ChatAbilities chatAbilities;
    private double xLast;

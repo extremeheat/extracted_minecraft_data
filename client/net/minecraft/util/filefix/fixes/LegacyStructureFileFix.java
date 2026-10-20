@@ -1,6 +1,5 @@
 package net.minecraft.util.filefix.fixes;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.OptionalDynamic;
@@ -46,7 +45,7 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 public class LegacyStructureFileFix extends FileFix {
    public static final int STRUCTURE_RANGE = 8;
    public static final List<String> OVERWORLD_LEGACY_STRUCTURES = List.of("Monument", "Stronghold", "Mineshaft", "Temple", "Mansion");
-   public static final Map<String, String> LEGACY_TO_CURRENT_MAP = (Map)Util.make(Maps.newHashMap(), (map) -> {
+   public static final Map<String, String> LEGACY_TO_CURRENT_MAP = (Map)Util.make(new HashMap(), (map) -> {
       map.put("Iglu", "Igloo");
       map.put("TeDP", "Desert_Pyramid");
       map.put("TeJP", "Jungle_Pyramid");

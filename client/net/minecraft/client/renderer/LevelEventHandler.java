@@ -447,7 +447,7 @@ public class LevelEventHandler {
             }
 
             BlockState state = this.level.getBlockState(pos);
-            boolean isWaterlogged = state.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)state.getValue(BlockStateProperties.WATERLOGGED);
+            boolean isWaterlogged = (Boolean)state.getValueOrElse(BlockStateProperties.WATERLOGGED, false);
             if (!isWaterlogged) {
                this.level.playLocalSound((double)pos.getX() + 0.5, (double)pos.getY() + SculkShriekerBlock.TOP_Y, (double)pos.getZ() + 0.5, SoundEvents.SCULK_SHRIEKER_SHRIEK, SoundSource.BLOCKS, 2.0F, 0.6F + random.nextFloat() * 0.4F, false);
             }

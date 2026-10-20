@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -105,7 +105,7 @@ public class JigsawPlacement {
          } else {
             int centerY = bottomY + localAnchorPosition.getY();
             return Optional.of(new Structure.GenerationStub(new BlockPos(centerX, centerY, centerZ), (builder) -> {
-               List<PoolElementStructurePiece> pieces = Lists.newArrayList();
+               List<PoolElementStructurePiece> pieces = new ArrayList();
                pieces.add(centerPiece);
                if (maxDepth > 0) {
                   AABB aabb = new AABB((double)(centerX - maxDistanceFromCenter.horizontal()), (double)Math.max(centerY - maxDistanceFromCenter.vertical(), heightAccessor.getMinY() + dimensionPadding.bottom()), (double)(centerZ - maxDistanceFromCenter.horizontal()), (double)(centerX + maxDistanceFromCenter.horizontal() + 1), (double)Math.min(centerY + maxDistanceFromCenter.vertical() + 1, heightAccessor.getMaxY() + 1 - dimensionPadding.top()), (double)(centerZ + maxDistanceFromCenter.horizontal() + 1));
@@ -243,7 +243,7 @@ public class JigsawPlacement {
                         childrenFree = contextFree;
                      }
 
-                     List<StructurePoolElement> targetPieces = Lists.newArrayList();
+                     List<StructurePoolElement> targetPieces = new ArrayList();
                      if (depth != this.maxDepth) {
                         targetPieces.addAll((targetPool.value()).getShuffledTemplates(this.random));
                      }

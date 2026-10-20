@@ -1,6 +1,6 @@
 package net.minecraft.advancements;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.List;
 import org.jspecify.annotations.Nullable;
 
@@ -9,7 +9,7 @@ public class TreeNodePosition {
    private final @Nullable TreeNodePosition parent;
    private final @Nullable TreeNodePosition previousSibling;
    private final int childIndex;
-   private final List<TreeNodePosition> children = Lists.newArrayList();
+   private final List<TreeNodePosition> children = new ArrayList();
    private TreeNodePosition ancestor;
    private @Nullable TreeNodePosition thread;
    private int x;

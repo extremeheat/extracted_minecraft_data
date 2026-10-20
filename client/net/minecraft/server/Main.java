@@ -130,7 +130,7 @@ public class Main {
          }
 
          File universePath = new File((String)options.valueOf(universe));
-         Services services = Services.create(MinecraftServicesDiscoveryService.create(Proxy.NO_PROXY), universePath);
+         Services services = Services.create(MinecraftServicesDiscoveryService.create(Proxy.NO_PROXY, SharedConstants.getCurrentVersion().id()), universePath);
          NotificationManager notificationManager = new NotificationManager();
          ManagementServer jsonRpcServer = JsonRpc.create(settings, notificationManager);
          String levelName = (String)Optional.ofNullable((String)options.valueOf(worldName)).orElse(settings.getProperties().levelName);

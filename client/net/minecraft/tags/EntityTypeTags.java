@@ -16,7 +16,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> POWDER_SNOW_WALKABLE_MOBS = create("powder_snow_walkable_mobs");
    TagKey<EntityType<?>> AXOLOTL_ALWAYS_HOSTILES = create("axolotl_always_hostiles");
    TagKey<EntityType<?>> AXOLOTL_HUNT_TARGETS = create("axolotl_hunt_targets");
-   TagKey<EntityType<?>> FREEZE_IMMUNE_ENTITY_TYPES = create("freeze_immune_entity_types");
    TagKey<EntityType<?>> FREEZE_HURTS_EXTRA_TYPES = create("freeze_hurts_extra_types");
    TagKey<EntityType<?>> CAN_BREATHE_UNDER_WATER = create("can_breathe_under_water");
    TagKey<EntityType<?>> FROG_FOOD = create("frog_food");
@@ -28,7 +27,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> ILLAGER = create("illager");
    TagKey<EntityType<?>> AQUATIC = create("aquatic");
    TagKey<EntityType<?>> ARTHROPOD = create("arthropod");
-   TagKey<EntityType<?>> IGNORES_POISON_AND_REGEN = create("ignores_poison_and_regen");
    TagKey<EntityType<?>> INVERTED_HEALING_AND_HARM = create("inverted_healing_and_harm");
    TagKey<EntityType<?>> WITHER_FRIENDS = create("wither_friends");
    TagKey<EntityType<?>> ILLAGER_FRIENDS = create("illager_friends");
@@ -37,8 +35,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> SENSITIVE_TO_BANE_OF_ARTHROPODS = create("sensitive_to_bane_of_arthropods");
    TagKey<EntityType<?>> SENSITIVE_TO_SMITE = create("sensitive_to_smite");
    TagKey<EntityType<?>> NO_ANGER_FROM_WIND_CHARGE = create("no_anger_from_wind_charge");
-   TagKey<EntityType<?>> IMMUNE_TO_OOZING = create("immune_to_oozing");
-   TagKey<EntityType<?>> IMMUNE_TO_INFESTED = create("immune_to_infested");
    TagKey<EntityType<?>> REDIRECTABLE_PROJECTILE = create("redirectable_projectile");
    TagKey<EntityType<?>> BOAT = create("boat");
    TagKey<EntityType<?>> CAN_EQUIP_SADDLE = create("can_equip_saddle");
@@ -55,6 +51,13 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> NOT_AFFECTED_BY_GEYSERS = create("not_affected_by_geysers");
    TagKey<EntityType<?>> CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE = create("cannot_be_dismounted_by_item_usage");
    TagKey<EntityType<?>> DOES_NOT_BREAK_BRITTLE_ICE = create("does_not_break_brittle_ice");
+   TagKey<EntityType<?>> IMMUNE_TO_FREEZING = create("immune_to_freezing");
+   TagKey<EntityType<?>> IMMUNE_TO_POISON = create("immune_to_poison");
+   TagKey<EntityType<?>> IMMUNE_TO_REGENERATION = create("immune_to_regeneration");
+   TagKey<EntityType<?>> IMMUNE_TO_OOZING = create("immune_to_oozing");
+   TagKey<EntityType<?>> IMMUNE_TO_INFESTED = create("immune_to_infested");
+   TagKey<EntityType<?>> IMMUNE_TO_WEAKNESS = create("immune_to_weakness");
+   TagKey<EntityType<?>> IMMUNE_TO_WITHER = create("immune_to_wither");
 
    private static TagKey<EntityType<?>> create(final String name) {
       return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, Identifier.withDefaultNamespace(name));

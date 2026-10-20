@@ -1,10 +1,10 @@
 package net.minecraft.world.level.block.state.pattern;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.chars.CharOpenHashSet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -13,8 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
 
 public class BlockPatternBuilder {
-   private final List<String[]> pattern = Lists.newArrayList();
-   private final Map<Character, Predicate<@Nullable BlockInWorld>> lookup = Maps.newHashMap();
+   private final List<String[]> pattern = new ArrayList();
+   private final Map<Character, Predicate<@Nullable BlockInWorld>> lookup = new HashMap();
    private int height;
    private int width;
    private final CharSet unknownCharacters = new CharOpenHashSet();

@@ -153,7 +153,7 @@ public class HappyGhast extends Animal {
 
    public void travel(final Vec3 input) {
       float speed = (float)this.getAttributeValue(Attributes.FLYING_SPEED) * 5.0F / 3.0F;
-      this.travelFlying(input, speed, speed, speed);
+      this.travelFlying(input, speed, speed);
    }
 
    public float getWalkTargetValue(final BlockPos pos, final LevelReader level) {

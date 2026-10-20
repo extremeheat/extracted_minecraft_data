@@ -5,14 +5,12 @@ import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 
 public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
-   private float xMouse;
-   private float yMouse;
    private boolean buttonClicked;
    private final EffectsInInventory effects;
 
@@ -46,15 +44,13 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       this.buttonClicked = true;
    }
 
-   protected void extractLabels(final GuiGraphicsExtractor graphics, final int xm, final int ym) {
+   protected void extractLabels(final GuiGraphicsExtractor graphics) {
       graphics.text(this.font, this.title, this.titleLabelX, this.titleLabelY, -12566464, false);
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      this.effects.extractRenderState(graphics, mouseX, mouseY);
-      super.extractRenderState(graphics, mouseX, mouseY, a);
-      this.xMouse = (float)mouseX;
-      this.yMouse = (float)mouseY;
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      this.effects.extractRenderState(graphics);
+      super.extractRenderState(graphics);
    }
 
    public boolean showsActiveEffects() {
@@ -65,12 +61,12 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       return false;
    }
 
-   public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
-      super.extractBackground(graphics, mouseX, mouseY, a);
+   public void extractBackground(final GuiGraphicsExtractor graphics) {
+      super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
       graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 8, xo + 75, yo + 78, 30.0F, 0.0625F, this.xMouse, this.yMouse, this.minecraft.player);
+      EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 8, xo + 75, yo + 78, 30.0F, 0.0625F, this.minecraft.player);
    }
 
    public boolean mouseReleased(final MouseButtonEvent event) {

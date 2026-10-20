@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public class WoodlandMansionStructure extends Structure {
    }
 
    private void generatePieces(final StructurePiecesBuilder builder, final Structure.GenerationContext context, final BlockPos startPos, final Rotation rotation) {
-      List<WoodlandMansionPieces.WoodlandMansionPiece> wmPieces = Lists.newLinkedList();
+      List<WoodlandMansionPieces.WoodlandMansionPiece> wmPieces = new ArrayList();
       WoodlandMansionPieces.generateMansion(context.structureTemplateManager(), startPos, rotation, wmPieces, context.random());
       Objects.requireNonNull(builder);
       wmPieces.forEach(builder::addPiece);

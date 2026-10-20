@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.vehicle.boat;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -639,7 +639,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       BlockPos targetBlockPos = BlockPos.containing(targetX, this.getBoundingBox().maxY, targetZ);
       BlockPos belowBlockPos = targetBlockPos.below();
       if (!this.level().isWaterAt(belowBlockPos)) {
-         List<Vec3> targets = Lists.newArrayList();
+         List<Vec3> targets = new ArrayList();
          double targetFloor = this.level().getBlockFloorHeight(targetBlockPos);
          if (DismountHelper.isBlockFloorValid(targetFloor)) {
             targets.add(new Vec3(targetX, (double)targetBlockPos.getY() + targetFloor, targetZ));

@@ -1,7 +1,6 @@
 package net.minecraft.server.commands;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.RedirectModifier;
@@ -141,7 +140,7 @@ public class ExecuteCommand {
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
       LiteralCommandNode<CommandSourceStack> execute = dispatcher.register((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)));
       dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("execute").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").redirect(dispatcher.getRoot()))).then(addConditionals(execute, Commands.literal("if"), true, context))).then(addConditionals(execute, Commands.literal("unless"), false, context))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
-         List<CommandSourceStack> result = Lists.newArrayList();
+         List<CommandSourceStack> result = new ArrayList();
 
          for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
             result.add(((CommandSourceStack)c.getSource()).withEntity(entity));
@@ -149,7 +148,7 @@ public class ExecuteCommand {
 
          return result;
       })))).then(Commands.literal("at").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
-         List<CommandSourceStack> result = Lists.newArrayList();
+         List<CommandSourceStack> result = new ArrayList();
 
          for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
             result.add(((CommandSourceStack)c.getSource()).withLevel((ServerLevel)entity.level()).withPosition(entity.position()).withRotation(entity.getRotationVector()));
@@ -157,7 +156,7 @@ public class ExecuteCommand {
 
          return result;
       })))).then(((LiteralArgumentBuilder)Commands.literal("store").then(wrapStores(execute, Commands.literal("result"), true))).then(wrapStores(execute, Commands.literal("success"), false)))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("positioned").then(Commands.argument("pos", Vec3Argument.vec3()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withPosition(Vec3Argument.getVec3(c, "pos")).withAnchor(EntityAnchorArgument.Anchor.FEET)))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
-         List<CommandSourceStack> result = Lists.newArrayList();
+         List<CommandSourceStack> result = new ArrayList();
 
          for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
             result.add(((CommandSourceStack)c.getSource()).withPosition(entity.position()));
@@ -176,7 +175,7 @@ public class ExecuteCommand {
             return ((CommandSourceStack)c.getSource()).withPosition(new Vec3(x, (double)height, z));
          }
       }))))).then(((LiteralArgumentBuilder)Commands.literal("rotated").then(Commands.argument("rot", RotationArgument.rotation()).redirect(execute, (c) -> ((CommandSourceStack)c.getSource()).withRotation(RotationArgument.getRotation(c, "rot").getRotation((CommandSourceStack)c.getSource()))))).then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(execute, (c) -> {
-         List<CommandSourceStack> result = Lists.newArrayList();
+         List<CommandSourceStack> result = new ArrayList();
 
          for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {
             result.add(((CommandSourceStack)c.getSource()).withRotation(entity.getRotationVector()));
@@ -184,7 +183,7 @@ public class ExecuteCommand {
 
          return result;
       }))))).then(((LiteralArgumentBuilder)Commands.literal("facing").then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(execute, (c) -> {
-         List<CommandSourceStack> result = Lists.newArrayList();
+         List<CommandSourceStack> result = new ArrayList();
          EntityAnchorArgument.Anchor anchor = EntityAnchorArgument.getAnchor(c, "anchor");
 
          for(Entity entity : EntityArgument.getOptionalEntities(c, "targets")) {

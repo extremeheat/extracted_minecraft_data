@@ -1,9 +1,9 @@
 package net.minecraft.core;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Reference2IntMap;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +20,7 @@ public class IdMapper<T> implements IdMap<T> {
 
    public IdMapper(final int expectedSize) {
       super();
-      this.idToT = Lists.newArrayListWithExpectedSize(expectedSize);
+      this.idToT = new ArrayList(expectedSize);
       this.tToId = new Reference2IntOpenHashMap(expectedSize);
       this.tToId.defaultReturnValue(-1);
    }

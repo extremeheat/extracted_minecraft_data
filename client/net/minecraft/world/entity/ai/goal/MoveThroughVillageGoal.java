@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +27,7 @@ public class MoveThroughVillageGoal extends Goal {
    private @Nullable Path path;
    private BlockPos poiPos;
    private final boolean onlyAtNight;
-   private final List<BlockPos> visited = Lists.newArrayList();
+   private final List<BlockPos> visited = new ArrayList();
    private final int distanceToPoi;
    private final BooleanSupplier canDealWithDoors;
 

@@ -18,10 +18,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public class NbtOps implements DynamicOps<Tag> {
@@ -544,7 +544,7 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    public Tag createList(final Stream<Tag> input) {
-      return new ListTag((List)input.collect(Util.toMutableList()));
+      return new ListTag((List)input.collect(Collectors.toCollection(ArrayList::new)));
    }
 
    public Tag remove(final Tag input, final String key) {

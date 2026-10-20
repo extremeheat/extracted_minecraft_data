@@ -1,7 +1,5 @@
 package net.minecraft.server.players;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
@@ -13,7 +11,10 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -74,7 +75,6 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.notifications.NotificationService;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
-import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.ServerStatsCounter;
@@ -116,15 +116,14 @@ public abstract class PlayerList {
    private static final int SEND_PLAYER_INFO_INTERVAL = 600;
    private static final SimpleDateFormat BAN_DATE_FORMAT;
    private final MinecraftServer server;
-   private final List<ServerPlayer> players = Lists.newArrayList();
-   private final Map<UUID, ServerPlayer> playersByUUID = Maps.newHashMap();
-   private final Map<NameAndId, PermissionLevel> playerPermissions = Maps.newHashMap();
+   private final List<ServerPlayer> players = new ArrayList();
+   private final Map<UUID, ServerPlayer> playersByUUID = new HashMap();
    private final UserBanList bans;
    private final IpBanList ipBans;
    private final ServerOpList ops;
    private final UserWhiteList whitelist;
-   private final Map<UUID, ServerStatsCounter> stats = Maps.newHashMap();
-   private final Map<UUID, PlayerAdvancements> advancements = Maps.newHashMap();
+   private final Map<UUID, ServerStatsCounter> stats = new HashMap();
+   private final Map<UUID, PlayerAdvancements> advancements = new HashMap();
    private final PlayerDataStorage playerIo;
    private final LayeredRegistryAccess<RegistryLayer> registries;
    private int viewDistance;
@@ -199,7 +198,7 @@ public abstract class PlayerList {
    }
 
    protected void updateEntireScoreboard(final ServerScoreboard scoreboard, final ServerPlayer player) {
-      Set<Objective> objectives = Sets.newHashSet();
+      Set<Objective> objectives = new HashSet();
 
       for(PlayerTeam team : scoreboard.getPlayerTeams()) {
          player.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(team, true));
@@ -645,7 +644,7 @@ public abstract class PlayerList {
    }
 
    public List<ServerPlayer> getPlayersWithAddress(final String ip) {
-      List<ServerPlayer> result = Lists.newArrayList();
+      List<ServerPlayer> result = new ArrayList();
 
       for(ServerPlayer player : this.players) {
          if (player.getIpAddress().equals(ip)) {

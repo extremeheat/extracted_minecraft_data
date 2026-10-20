@@ -1,6 +1,5 @@
 package net.minecraft.client.resources.sounds;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -8,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
@@ -32,7 +32,7 @@ public class SoundEventRegistrationSerializer implements JsonDeserializer<SoundE
    }
 
    private List<Sound> getSounds(final JsonObject object) {
-      List<Sound> result = Lists.newArrayList();
+      List<Sound> result = new ArrayList();
       if (object.has("sounds")) {
          JsonArray array = GsonHelper.getAsJsonArray(object, "sounds");
 

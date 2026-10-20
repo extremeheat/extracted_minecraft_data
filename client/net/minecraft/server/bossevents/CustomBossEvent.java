@@ -1,9 +1,9 @@
 package net.minecraft.server.bossevents;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
@@ -20,7 +20,7 @@ import net.minecraft.world.BossEvent;
 public class CustomBossEvent extends ServerBossEvent {
    private static final int DEFAULT_MAX = 100;
    private final Identifier customId;
-   private final Set<UUID> players = Sets.newHashSet();
+   private final Set<UUID> players = new HashSet();
    private int value;
    private int max = 100;
    private final Runnable dirtyCallback;
@@ -86,8 +86,8 @@ public class CustomBossEvent extends ServerBossEvent {
    }
 
    public boolean setPlayers(final Collection<ServerPlayer> players) {
-      Set<UUID> toRemove = Sets.newHashSet();
-      Set<ServerPlayer> toAdd = Sets.newHashSet();
+      Set<UUID> toRemove = new HashSet();
+      Set<ServerPlayer> toAdd = new HashSet();
 
       for(UUID uuid : this.players) {
          boolean found = false;

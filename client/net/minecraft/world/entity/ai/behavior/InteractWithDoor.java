@@ -1,7 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.kinds.OptionalBox;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -142,7 +142,8 @@ public class InteractWithDoor {
          set.add(globalDoorPos);
          return set;
       }).orElseGet(() -> {
-         Set<GlobalPos> set = Sets.newHashSet(new GlobalPos[]{globalDoorPos});
+         Set<GlobalPos> set = new HashSet();
+         set.add(globalDoorPos);
          doorsMemory.set(set);
          return set;
       }));

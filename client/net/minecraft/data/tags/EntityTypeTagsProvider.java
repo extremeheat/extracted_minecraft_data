@@ -25,7 +25,7 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS).add(EntityTypeIds.RABBIT, EntityTypeIds.ENDERMITE, EntityTypeIds.SILVERFISH, EntityTypeIds.FOX, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.AXOLOTL_HUNT_TARGETS).add(EntityTypeIds.TROPICAL_FISH, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.COD, EntityTypeIds.SQUID, EntityTypeIds.GLOW_SQUID, EntityTypeIds.TADPOLE);
       this.tag(EntityTypeTags.AXOLOTL_ALWAYS_HOSTILES).add(EntityTypeIds.DROWNED, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN);
-      this.tag(EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES).add(EntityTypeIds.STRAY, EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM, EntityTypeIds.WITHER, EntityTypeIds.FROSTBITE, EntityTypeIds.ZOMBIE, EntityTypeIds.DROWNED, EntityTypeIds.HUSK);
+      this.tag(EntityTypeTags.IMMUNE_TO_FREEZING).add(EntityTypeIds.STRAY, EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM, EntityTypeIds.WITHER, EntityTypeIds.FROSTBITE, EntityTypeIds.ZOMBIE, EntityTypeIds.DROWNED, EntityTypeIds.HUSK);
       this.tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(EntityTypeIds.STRIDER, EntityTypeIds.BLAZE, EntityTypeIds.MAGMA_CUBE);
       this.tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).addTag(EntityTypeTags.UNDEAD).add(EntityTypeIds.AXOLOTL, EntityTypeIds.FROG, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN, EntityTypeIds.TURTLE, EntityTypeIds.GLOW_SQUID, EntityTypeIds.COD, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.SQUID, EntityTypeIds.TROPICAL_FISH, EntityTypeIds.TADPOLE, EntityTypeIds.ARMOR_STAND, EntityTypeIds.COPPER_GOLEM, EntityTypeIds.NAUTILUS);
       this.tag(EntityTypeTags.FROG_FOOD).add(EntityTypeIds.SLIME, EntityTypeIds.MAGMA_CUBE);
@@ -35,7 +35,10 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.ILLAGER).add(EntityTypeIds.EVOKER).add(EntityTypeIds.ILLUSIONER).add(EntityTypeIds.PILLAGER).add(EntityTypeIds.VINDICATOR);
       this.tag(EntityTypeTags.AQUATIC).add(EntityTypeIds.TURTLE).add(EntityTypeIds.AXOLOTL).add(EntityTypeIds.GUARDIAN).add(EntityTypeIds.ELDER_GUARDIAN).add(EntityTypeIds.COD).add(EntityTypeIds.PUFFERFISH).add(EntityTypeIds.SALMON).add(EntityTypeIds.TROPICAL_FISH).add(EntityTypeIds.DOLPHIN).add(EntityTypeIds.SQUID).add(EntityTypeIds.GLOW_SQUID).add(EntityTypeIds.TADPOLE).add(EntityTypeIds.NAUTILUS).add(EntityTypeIds.ZOMBIE_NAUTILUS);
       this.tag(EntityTypeTags.ARTHROPOD).add(EntityTypeIds.BEE).add(EntityTypeIds.ENDERMITE).add(EntityTypeIds.SILVERFISH).add(EntityTypeIds.SPIDER).add(EntityTypeIds.CAVE_SPIDER);
-      this.tag(EntityTypeTags.IGNORES_POISON_AND_REGEN).addTag(EntityTypeTags.UNDEAD);
+      this.tag(EntityTypeTags.IMMUNE_TO_REGENERATION).addTag(EntityTypeTags.UNDEAD);
+      this.tag(EntityTypeTags.IMMUNE_TO_POISON).addTag(EntityTypeTags.UNDEAD).add(EntityTypeIds.NAUTILUS).add(EntityTypeIds.ZOMBIE_NAUTILUS).add(EntityTypeIds.SPIDER).add(EntityTypeIds.CAVE_SPIDER);
+      this.tag(EntityTypeTags.IMMUNE_TO_WITHER).add(EntityTypeIds.WITHER).add(EntityTypeIds.WITHER_SKELETON);
+      this.tag(EntityTypeTags.IMMUNE_TO_WEAKNESS).add(EntityTypeIds.PARCHED);
       this.tag(EntityTypeTags.INVERTED_HEALING_AND_HARM).addTag(EntityTypeTags.UNDEAD);
       this.tag(EntityTypeTags.WITHER_FRIENDS).addTag(EntityTypeTags.UNDEAD);
       this.tag(EntityTypeTags.ILLAGER_FRIENDS).addTag(EntityTypeTags.ILLAGER);

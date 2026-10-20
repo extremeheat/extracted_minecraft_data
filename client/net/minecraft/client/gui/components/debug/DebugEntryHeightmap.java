@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components.debug;
 
-import com.google.common.collect.Maps;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -43,6 +43,6 @@ public class DebugEntryHeightmap implements DebugScreenEntry {
    }
 
    static {
-      HEIGHTMAP_NAMES = Maps.newEnumMap(Map.of(Heightmap.Types.WORLD_SURFACE_WG, "(WG) Surface", Heightmap.Types.WORLD_SURFACE, "Surface", Heightmap.Types.OCEAN_FLOOR_WG, "(WG) Ocean Floor", Heightmap.Types.OCEAN_FLOOR, "Ocean Floor", Heightmap.Types.MOTION_BLOCKING, "Motion", Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "Motion (w/o Leaves)"));
+      HEIGHTMAP_NAMES = new EnumMap(Map.of(Heightmap.Types.WORLD_SURFACE_WG, "(WG) Surface", Heightmap.Types.WORLD_SURFACE, "Surface", Heightmap.Types.OCEAN_FLOOR_WG, "(WG) Ocean Floor", Heightmap.Types.OCEAN_FLOOR, "Ocean Floor", Heightmap.Types.MOTION_BLOCKING, "Motion", Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "Motion (w/o Leaves)"));
    }
 }

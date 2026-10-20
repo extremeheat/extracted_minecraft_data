@@ -1,13 +1,12 @@
 package net.minecraft.advancements;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    public AdvancementProgress() {
       super();
       this.requirements = AdvancementRequirements.EMPTY;
-      this.criteria = Maps.newHashMap();
+      this.criteria = new HashMap();
    }
 
    public void update(final AdvancementRequirements requirements) {
@@ -132,7 +131,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    public Iterable<String> getRemainingCriteria() {
-      List<String> remaining = Lists.newArrayList();
+      List<String> remaining = new ArrayList();
 
       for(Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
          if (!((CriterionProgress)entry.getValue()).isDone()) {
@@ -144,7 +143,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    public Iterable<String> getCompletedCriteria() {
-      List<String> completed = Lists.newArrayList();
+      List<String> completed = new ArrayList();
 
       for(Map.Entry<String, CriterionProgress> entry : this.criteria.entrySet()) {
          if (((CriterionProgress)entry.getValue()).isDone()) {

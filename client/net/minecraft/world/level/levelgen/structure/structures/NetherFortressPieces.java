@@ -1,6 +1,5 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -254,7 +253,7 @@ public class NetherFortressPieces {
       private @Nullable PieceWeight previousPiece;
       private final List<PieceWeight> availableBridgePieces = new ArrayList();
       private final List<PieceWeight> availableCastlePieces = new ArrayList();
-      public final List<StructurePiece> pendingChildren = Lists.newArrayList();
+      public final List<StructurePiece> pendingChildren = new ArrayList();
 
       public StartPiece(final RandomSource random, final int west, final int north) {
          super(west, north, getRandomHorizontalDirection(random));

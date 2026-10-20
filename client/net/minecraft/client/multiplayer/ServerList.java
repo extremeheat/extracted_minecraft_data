@@ -1,9 +1,9 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
@@ -20,8 +20,8 @@ public class ServerList {
    private static final ConsecutiveExecutor IO_EXECUTOR = new ConsecutiveExecutor(Util.backgroundExecutor(), "server-list-io");
    private static final int MAX_HIDDEN_SERVERS = 16;
    private final Minecraft minecraft;
-   private final List<ServerData> serverList = Lists.newArrayList();
-   private final List<ServerData> hiddenServerList = Lists.newArrayList();
+   private final List<ServerData> serverList = new ArrayList();
+   private final List<ServerData> hiddenServerList = new ArrayList();
 
    public ServerList(final Minecraft minecraft) {
       super();
