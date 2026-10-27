@@ -4,10 +4,10 @@ import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -36,7 +36,7 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
    }
 
    protected final void extractDefaultSprite(final GuiGraphicsExtractor graphics) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      graphics.blitSprite(GuiPipeline.TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
    }
 
    public void onClick(final MouseButtonEvent event, final boolean doubleClick) {

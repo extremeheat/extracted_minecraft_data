@@ -46,7 +46,11 @@ public class Gizmos {
    }
 
    public static GizmoProperties circle(final Vec3 pos, final float radius, final GizmoStyle style) {
-      return addGizmo(new CircleGizmo(pos, radius, style));
+      return circle(pos, radius, CircleGizmo.Plane.XZ, style);
+   }
+
+   public static GizmoProperties circle(final Vec3 pos, final float radius, final CircleGizmo.Plane plane, final GizmoStyle style) {
+      return addGizmo(new CircleGizmo(pos, radius, plane, style));
    }
 
    public static GizmoProperties line(final Vec3 start, final Vec3 end, final int argb) {

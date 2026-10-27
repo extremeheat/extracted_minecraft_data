@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Style;
 
 public class StringDecomposer {
    private static final char REPLACEMENT_CHAR = '\ufffd';
-   private static final Optional<Object> STOP_ITERATION;
 
    public StringDecomposer() {
       super();
@@ -131,7 +130,7 @@ public class StringDecomposer {
    }
 
    public static boolean iterateFormatted(final FormattedText component, final Style rootStyle, final FormattedCharSink output) {
-      return component.visit((style, contents) -> iterateFormatted(contents, 0, style, output) ? Optional.empty() : STOP_ITERATION, rootStyle).isEmpty();
+      return component.visit((style, contents) -> iterateFormatted(contents, 0, style, output) ? Optional.empty() : FormattedText.STOP_ITERATION, Unit.INSTANCE, rootStyle).isEmpty();
    }
 
    public static String filterBrokenSurrogates(final String input) {
@@ -150,9 +149,5 @@ public class StringDecomposer {
          return true;
       });
       return builder.toString();
-   }
-
-   static {
-      STOP_ITERATION = Optional.of(Unit.INSTANCE);
    }
 }

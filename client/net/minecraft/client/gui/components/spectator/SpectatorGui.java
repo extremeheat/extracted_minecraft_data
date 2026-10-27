@@ -2,12 +2,12 @@ package net.minecraft.client.gui.components.spectator;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -66,9 +66,9 @@ public class SpectatorGui implements SpectatorMenuListener, Renderable {
 
    protected void extractPage(final GuiGraphicsExtractor graphics, final float alpha, final int screenCenter, final int y, final SpectatorPage page) {
       int color = ARGB.white(alpha);
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, y, 182, 22, color);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, y, 182, 22, color);
       if (page.getSelectedSlot() >= 0) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + page.getSelectedSlot() * 20, y - 1, 24, 23, color);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + page.getSelectedSlot() * 20, y - 1, 24, 23, color);
       }
 
       for(int slot = 0; slot < 9; ++slot) {

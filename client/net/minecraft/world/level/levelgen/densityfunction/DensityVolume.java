@@ -6,19 +6,13 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 public record DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int minBlockY, int minBlockZ, int stepBlockX, int stepBlockY, int stepBlockZ) {
    public static final int NO_BLOCK = -1;
 
-   public DensityVolume(int sizeX, int sizeY, int sizeZ, int minBlockX, int minBlockY, int minBlockZ, int stepBlockX, int stepBlockY, int stepBlockZ) {
+   public DensityVolume {
       super();
       if (sizeX > 0 && sizeY > 0 && sizeZ > 0) {
          if (stepBlockX > 0 && stepBlockY > 0 && stepBlockZ > 0) {
-            this.sizeX = sizeX;
-            this.sizeY = sizeY;
-            this.sizeZ = sizeZ;
-            this.minBlockX = minBlockX;
-            this.minBlockY = minBlockY;
-            this.minBlockZ = minBlockZ;
-            this.stepBlockX = stepBlockX;
-            this.stepBlockY = stepBlockY;
-            this.stepBlockZ = stepBlockZ;
+            if ((long)sizeX * (long)sizeY * (long)sizeZ > 2147483647L) {
+               throw new IllegalArgumentException("Volume too large, was: " + sizeX + "x" + sizeY + "x" + sizeZ);
+            }
          } else {
             throw new IllegalArgumentException("Step must be positive, was: " + stepBlockX + "; " + stepBlockY + "; " + stepBlockZ);
          }

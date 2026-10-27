@@ -4,8 +4,8 @@ import com.google.common.base.Stopwatch;
 import com.google.common.primitives.Ints;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.renderpearl.util.PlatformUtil;
-import com.sun.jna.platform.win32.Kernel32;
+import com.mojang.renderpearl.backend.vulkan.VulkanFeatureSets;
+import com.sun.jna.Native;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -66,14 +66,11 @@ public class NativeLibrariesBootstrap {
 
    public static void loadLibraries() throws IOException {
       Stopwatch stopwatch = Stopwatch.createStarted();
+      createAndCheckDirectory(System.getProperty("jna.tmpdir", ""));
+      loadJNA();
       configureLWJGLLibraryPath();
       createAndCheckDirectory((String)Configuration.SHARED_LIBRARY_EXTRACT_PATH.get(""));
-      createAndCheckDirectory(System.getProperty("jna.tmpdir", ""));
       createAndCheckDirectory(System.getProperty("io.netty.native.workdir", ""));
-      if (PlatformUtil.IS_WINDOWS) {
-         setupWindowsEnvVariables();
-      }
-
       Boolean originalDebugLoader = (Boolean)Configuration.DEBUG_LOADER.get();
       Configuration.DEBUG_LOADER.set(true);
       Supplier<String> stopCapturing = setupLWJGLCapture();
@@ -85,7 +82,7 @@ public class NativeLibrariesBootstrap {
             throw new UnsatisfiedLinkError("Simulated debug crash");
          }
 
-         loadLibrary(stopCapturing, "LWJGL system", NativeLibrariesBootstrap::loadLWJGLSystem);
+         loadLWJGLLibrary(stopCapturing, "LWJGL system", NativeLibrariesBootstrap::loadLWJGLSystem);
          boolean vulkanLoaderAvailable = tryLoadingVulkan();
          entries.add(new LibraryLoadEntry("SDL", NativeLibrariesBootstrap::loadSdl));
          entries.add(new LibraryLoadEntry("OpenGL", NativeLibrariesBootstrap::loadOpenGL));
@@ -95,6 +92,7 @@ public class NativeLibrariesBootstrap {
          entries.add(new LibraryLoadEntry("shaderc", NativeLibrariesBootstrap::loadShaderc));
          entries.add(new LibraryLoadEntry("spvc", NativeLibrariesBootstrap::loadSpvc));
          if (vulkanLoaderAvailable) {
+            VulkanFeatureSets.bootstrap();
             entries.add(new LibraryLoadEntry("vma", NativeLibrariesBootstrap::loadVma));
          }
 
@@ -102,7 +100,7 @@ public class NativeLibrariesBootstrap {
 
          for(int var13 = 0; var13 < entries.size(); ++var13) {
             LibraryLoadEntry e = (LibraryLoadEntry)entries.get(var13);
-            loadLibrary(stopCapturing, e.name(), e.loader());
+            loadLWJGLLibrary(stopCapturing, e.name(), e.loader());
          }
       } catch (Throwable t) {
          CrashReport crashReport = CrashReport.forThrowable(t, "Loading libraries");
@@ -119,14 +117,18 @@ public class NativeLibrariesBootstrap {
       LOGGER.debug("Library load time: {} ms", t);
    }
 
-   private static void setupWindowsEnvVariables() {
+   private static void loadJNA() {
       try {
-         if (!System.getProperties().containsKey("allow_vulkan_ow")) {
-            Kernel32.INSTANCE.SetEnvironmentVariable("DISABLE_VULKAN_OW_OVERLAY_LAYER", "1");
+         Native.getLastError();
+      } catch (Throwable t) {
+         CrashReport crashReport = CrashReport.forThrowable(t, "Loading JNA");
+         String jnaDir = System.getProperty("jna.tmpdir", "");
+         if (!jnaDir.isEmpty()) {
+            CrashReportCategory libraryInfoCategory = crashReport.addCategory("Library directory contents");
+            libraryInfoCategory.setDetail("Contents of JNA library directory", (CrashReportDetail)(() -> listLibrariesDirectory(jnaDir)));
          }
 
-      } catch (Throwable t) {
-         throw new ReportedException(CrashReport.forThrowable(t, "Setting up environment variables"));
+         throw new ReportedException(crashReport);
       }
    }
 
@@ -236,7 +238,7 @@ public class NativeLibrariesBootstrap {
       }
    }
 
-   private static void loadLibrary(final Supplier<String> debugCapture, final String name, final Runnable loader) {
+   private static void loadLWJGLLibrary(final Supplier<String> debugCapture, final String name, final Runnable loader) {
       try {
          LOGGER.debug("Loading {}", name);
          loader.run();

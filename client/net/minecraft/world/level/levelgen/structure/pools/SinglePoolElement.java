@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.CornerConstraint;
 import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -62,8 +63,8 @@ public class SinglePoolElement extends StructurePoolElement {
       return TEMPLATE_CODEC.fieldOf("location").forGetter((t) -> t.template);
    }
 
-   protected SinglePoolElement(final Either<Identifier, StructureTemplate> template, final Holder<StructureProcessorList> processors, final StructureTemplatePool.Projection projection, final Optional<LiquidSettings> overrideLiquidSettings) {
-      super(projection);
+   protected SinglePoolElement(final Either<Identifier, StructureTemplate> template, final Holder<StructureProcessorList> processors, final StructureTemplatePool.Projection projection, final Optional<LiquidSettings> overrideLiquidSettings, final Optional<CornerConstraint> cornerConstraint) {
+      super(projection, cornerConstraint);
       this.template = template;
       this.processors = processors;
       this.overrideLiquidSettings = overrideLiquidSettings;
@@ -166,6 +167,6 @@ public class SinglePoolElement extends StructurePoolElement {
 
    static {
       TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, Identifier.CODEC.map(Either::left));
-      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(i, SinglePoolElement::new));
+      CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec(), cornerConstraintCodec()).apply(i, SinglePoolElement::new));
    }
 }

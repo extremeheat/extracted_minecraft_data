@@ -35,6 +35,10 @@ public final class VulkanConst {
          vkUsage |= 4;
       }
 
+      if (VulkanUtils.hasAllBits(usage, 12)) {
+         vkUsage |= 128;
+      }
+
       if ((usage & 1) != 0) {
          vkUsage |= 2;
       }

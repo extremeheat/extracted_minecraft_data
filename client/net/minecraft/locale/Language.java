@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringDecomposer;
+import net.minecraft.util.Unit;
 import org.slf4j.Logger;
 
 public abstract class Language {
@@ -58,7 +59,7 @@ public abstract class Language {
          }
 
          public FormattedCharSequence getVisualOrder(final FormattedText logicalOrderText) {
-            return (output) -> logicalOrderText.visit((style, contents) -> StringDecomposer.iterateFormatted(contents, style, output) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY).isPresent();
+            return (output) -> logicalOrderText.visit((style, contents) -> StringDecomposer.iterateFormatted(contents, style, output) ? Optional.empty() : FormattedText.STOP_ITERATION, Unit.INSTANCE, Style.EMPTY).isPresent();
          }
       };
    }

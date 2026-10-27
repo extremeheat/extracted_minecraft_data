@@ -119,7 +119,7 @@ public class ServerPlayerGameMode {
          if (blockState.isAir()) {
             this.hasDelayedDestroy = false;
          } else {
-            float destroyProgress = this.incrementDestroyProgress(blockState, this.delayedDestroyPos, this.delayedTickStart);
+            float destroyProgress = this.incrementDestroyProgress(blockState, this.delayedDestroyPos, this.gameTicks - this.delayedTickStart);
             if (destroyProgress >= 1.0F) {
                this.hasDelayedDestroy = false;
                this.destroyBlock(this.delayedDestroyPos);

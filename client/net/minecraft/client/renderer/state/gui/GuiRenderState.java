@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import org.joml.Matrix3x2f;
 import org.joml.Vector4f;
@@ -95,7 +95,7 @@ public class GuiRenderState {
 
          ScreenRectangle clippedBounds = this.windowRectangleForDebug.intersection(bounds);
          if (clippedBounds != null) {
-            this.current.addGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, clippedBounds));
+            this.current.addGuiElement(new ColoredRectangleRenderState(GuiPipeline.DEFAULT, TextureSetup.noTexture(), new Matrix3x2f(), 0, 0, 10000, 10000, 2000962815, 2000962815, clippedBounds));
          }
 
       }

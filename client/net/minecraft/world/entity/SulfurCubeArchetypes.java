@@ -3,13 +3,19 @@ package net.minecraft.world.entity;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.advancements.predicates.entity.EntityFlagsPredicate;
+import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Directional;
 import net.minecraft.core.Holder;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.valueproviders.ConstantFloat;
@@ -19,6 +25,19 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.ConditionalEffect;
+import net.minecraft.world.item.enchantment.LevelBasedValue;
+import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
+import net.minecraft.world.item.enchantment.effects.ReplaceDisk;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
+import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
+import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 
 public class SulfurCubeArchetypes {
    public static final ResourceKey<SulfurCubeArchetype> REGULAR = createKey(Identifier.withDefaultNamespace("regular"));
@@ -33,6 +52,7 @@ public class SulfurCubeArchetypes {
    public static final ResourceKey<SulfurCubeArchetype> STICKY = createKey(Identifier.withDefaultNamespace("sticky"));
    public static final ResourceKey<SulfurCubeArchetype> EXPLOSIVE = createKey(Identifier.withDefaultNamespace("explosive"));
    public static final ResourceKey<SulfurCubeArchetype> HOT = createKey(Identifier.withDefaultNamespace("hot"));
+   public static final ResourceKey<SulfurCubeArchetype> COLD = createKey(Identifier.withDefaultNamespace("cold"));
 
    public SulfurCubeArchetypes() {
       super();
@@ -51,6 +71,7 @@ public class SulfurCubeArchetypes {
       register(context, HIGH_RESISTANCE, ItemTags.SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE, archetype(-0.7F, 0.2F, 1.0F, 0.01F), false, Optional.empty(), Optional.empty(), knockBackHitScale(0.4125F, 0.09F), soundSettings(SoundEvents.SULFUR_CUBE_HIGH_RESISTANCE_HIT, SoundEvents.SULFUR_CUBE_HIGH_RESISTANCE_PUSH, 0.03F, 0.7F));
       register(context, EXPLOSIVE, ItemTags.SULFUR_CUBE_ARCHETYPE_EXPLOSIVE, archetype(1.0F, 0.5F, 0.3F, 0.3F), true, Optional.of(new SulfurCubeArchetype.ExplosionData(3, false, 120)), Optional.empty(), knockBackHitScale(0.4125F, 0.09F), soundSettings(SoundEvents.SULFUR_CUBE_EXPLOSIVE_HIT, SoundEvents.SULFUR_CUBE_EXPLOSIVE_PUSH, 0.1F, 0.7F));
       register(context, HOT, ItemTags.SULFUR_CUBE_ARCHETYPE_HOT, archetype(1.0F, 0.5F, 0.3F, 0.1F), true, Optional.empty(), Optional.of(contactDamage(context, DamageTypes.SULFUR_CUBE_HOT, ConstantFloat.of(1.0F), false)), knockBackHitScale(0.4125F, 0.09F), soundSettings(SoundEvents.SULFUR_CUBE_HOT_HIT, SoundEvents.SULFUR_CUBE_HOT_PUSH, 0.2F, 0.7F));
+      register(context, COLD, ItemTags.SULFUR_CUBE_ARCHETYPE_COLD, archetype(-0.5F, 0.1F, 0.05F, 0.01F), true, Optional.empty(), Optional.empty(), knockBackHitScale(0.6625F, 0.09F), soundSettings(SoundEvents.SULFUR_CUBE_FAST_SLIDING_HIT, SoundEvents.SULFUR_CUBE_FAST_SLIDING_HIT, 0.05F, 1.0F), List.of(new ConditionalEffect(new ReplaceDisk(LevelBasedValue.constant(3.0F), LevelBasedValue.constant(1.0F), new Vec3i(0, -1, 0), Optional.of(BlockPredicate.allOf(BlockPredicate.matchesTag((Directional)Direction.UP, BlockTags.AIR), BlockPredicate.matchesBlocks(Blocks.WATER), BlockPredicate.matchesFluids(Fluids.WATER), BlockPredicate.unobstructed())), BlockStateProvider.holderOf(Blocks.FROSTED_ICE), Optional.of(GameEvent.BLOCK_PLACE)), Optional.of(Holder.direct(AllOfCondition.allOf(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().flags(EntityFlagsPredicate.Builder.flags().setOnGround(true))), InvertedLootItemCondition.invert(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().vehicle(EntityPredicate.Builder.entity())))).build())))));
    }
 
    private static ResourceKey<SulfurCubeArchetype> createKey(final Identifier id) {
@@ -81,7 +102,11 @@ public class SulfurCubeArchetypes {
       return new SulfurCubeArchetype.SoundSettings(Optional.of(hitSound), Optional.of(pushSound), threshold, cooldown);
    }
 
+   private static void register(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<SulfurCubeArchetype> name, final TagKey<Item> blocks, final List<Function<ResourceKey<SulfurCubeArchetype>, SulfurCubeArchetype.AttributeEntry>> modifiers, final boolean floats, final Optional<SulfurCubeArchetype.ExplosionData> maxFuse, final Optional<SulfurCubeArchetype.ContactDamage> contactDamage, final SulfurCubeArchetype.KnockbackModifiers knockbackModifiers, final SulfurCubeArchetype.SoundSettings soundSettings, final List<ConditionalEffect<EnchantmentLocationBasedEffect>> locationBasedEffects) {
+      context.register(name, new SulfurCubeArchetype(context.lookup(Registries.ITEM).getOrThrow(blocks), modifiers.stream().map((f) -> (SulfurCubeArchetype.AttributeEntry)f.apply(name)).toList(), floats, maxFuse, contactDamage, knockbackModifiers, soundSettings, locationBasedEffects));
+   }
+
    private static void register(final BootstrapContext<SulfurCubeArchetype> context, final ResourceKey<SulfurCubeArchetype> name, final TagKey<Item> blocks, final List<Function<ResourceKey<SulfurCubeArchetype>, SulfurCubeArchetype.AttributeEntry>> modifiers, final boolean floats, final Optional<SulfurCubeArchetype.ExplosionData> maxFuse, final Optional<SulfurCubeArchetype.ContactDamage> contactDamage, final SulfurCubeArchetype.KnockbackModifiers knockbackModifiers, final SulfurCubeArchetype.SoundSettings soundSettings) {
-      context.register(name, new SulfurCubeArchetype(context.lookup(Registries.ITEM).getOrThrow(blocks), modifiers.stream().map((f) -> (SulfurCubeArchetype.AttributeEntry)f.apply(name)).toList(), floats, maxFuse, contactDamage, knockbackModifiers, soundSettings));
+      register(context, name, blocks, modifiers, floats, maxFuse, contactDamage, knockbackModifiers, soundSettings, List.of());
    }
 }

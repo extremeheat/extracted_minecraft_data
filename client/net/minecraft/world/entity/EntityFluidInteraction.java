@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -177,10 +178,48 @@ public class EntityFluidInteraction {
    }
 
    public boolean isInFluid(final TagKey<Fluid> fluid) {
-      return this.getFluidHeight(fluid) > 0.0;
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.fluidType.is(fluid) && tracker.height > 0.0) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public boolean isInFluid(final ResourceKey<Fluid> fluid) {
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.fluidType.is(fluid) && tracker.height > 0.0) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   public boolean isInFluid() {
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.height > 0.0) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public boolean isEyeInFluid(final TagKey<Fluid> fluid) {
+      for(Tracker tracker : this.fluidTrackers) {
+         if (tracker.eyesInside && tracker.fluidType.is(fluid)) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   public boolean isEyeInFluid(final ResourceKey<Fluid> fluid) {
       for(Tracker tracker : this.fluidTrackers) {
          if (tracker.eyesInside && tracker.fluidType.is(fluid)) {
             return true;
@@ -226,11 +265,34 @@ public class EntityFluidInteraction {
       return maxDrag == 1.0 / 0.0 ? OptionalDouble.empty() : OptionalDouble.of(maxDrag);
    }
 
+   public float getFallDistanceMultiplier() {
+      float fallDistanceMultiplier = 1.0F;
+
+      for(Tracker fluidTracker : this.fluidTrackers) {
+         float fluidFallDistanceMultiplier = ((Fluid)fluidTracker.fluidType.value()).getFallDistanceMultiplier();
+         if (fluidTracker.touchedWhileMoving && fluidFallDistanceMultiplier == 0.0F) {
+            return 0.0F;
+         }
+
+         if (fluidTracker.height > 0.0) {
+            fallDistanceMultiplier = Math.min(fallDistanceMultiplier, fluidFallDistanceMultiplier);
+         }
+      }
+
+      return fallDistanceMultiplier;
+   }
+
+   public void visitedFluidDuringMovement(final Fluid type) {
+      Tracker fluidTracker = this.getOrCreateTrackerFor(type.builtInRegistryHolder());
+      fluidTracker.touchedWhileMoving = true;
+   }
+
    private static class Tracker {
       private final Holder<Fluid> fluidType;
       private boolean wasInFluid;
       private double height;
       private boolean eyesInside;
+      private boolean touchedWhileMoving;
       private @Nullable CurrentAccumulator currentAccumulator;
 
       public Tracker(final Holder<Fluid> fluidType) {
@@ -245,6 +307,7 @@ public class EntityFluidInteraction {
             this.wasInFluid = true;
             this.height = 0.0;
             this.eyesInside = false;
+            this.touchedWhileMoving = false;
             if (this.currentAccumulator != null) {
                this.currentAccumulator.reset();
             }

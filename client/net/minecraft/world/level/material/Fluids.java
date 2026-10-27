@@ -23,8 +23,8 @@ public class Fluids {
 
    static {
       EMPTY = register(FluidIds.EMPTY, new EmptyFluid(Fluid.Properties.of()));
-      WATER = (FlowingFluid)register(FluidIds.WATER, new WaterFluid(Fluid.Properties.of().bucketItem(ItemIds.WATER_BUCKET).soundEvent(SoundEvents.BUCKET_FILL).dripParticle(ParticleTypes.DRIPPING_WATER).explosionResistance(100.0F).drag(0.8F)));
-      LAVA = (FlowingFluid)register(FluidIds.LAVA, new LavaFluid(Fluid.Properties.of().bucketItem(ItemIds.LAVA_BUCKET).soundEvent(SoundEvents.BUCKET_FILL_LAVA).dripParticle(ParticleTypes.DRIPPING_LAVA).explosionResistance(100.0F).randomTicking().drag(0.5F)));
+      WATER = (FlowingFluid)register(FluidIds.WATER, new WaterFluid(Fluid.Properties.of().bucketItem(ItemIds.WATER_BUCKET).soundEvent(SoundEvents.BUCKET_FILL).dripParticle(ParticleTypes.DRIPPING_WATER).explosionResistance(100.0F).drag(0.8F).fogType(FogType.WATER).fallDistanceMultiplier(0.0F)));
+      LAVA = (FlowingFluid)register(FluidIds.LAVA, new LavaFluid(Fluid.Properties.of().bucketItem(ItemIds.LAVA_BUCKET).soundEvent(SoundEvents.BUCKET_FILL_LAVA).dripParticle(ParticleTypes.DRIPPING_LAVA).explosionResistance(100.0F).randomTicking().drag(0.5F).fogType(FogType.LAVA).fallDistanceMultiplier(0.5F)));
 
       for(Fluid fluid : BuiltInRegistries.FLUID) {
          UnmodifiableIterator var2 = fluid.getStateDefinition().getPossibleStates().iterator();

@@ -2,34 +2,33 @@ package net.minecraft.client.renderer.special;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
+import net.minecraft.core.Registry;
 
 public class SpecialModelRenderers {
-   private static final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends SpecialModelRenderer.Unbaked<?>>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends SpecialModelRenderer.Unbaked<?>>>();
    public static final Codec<SpecialModelRenderer.Unbaked<?>> CODEC;
 
    public SpecialModelRenderers() {
       super();
    }
 
-   public static void bootstrap() {
-      ID_MAPPER.put(Identifier.withDefaultNamespace("bell"), BellSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("banner"), BannerSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("book"), BookSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("conduit"), ConduitSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("chest"), ChestSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("copper_golem_statue"), CopperGolemStatueSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("head"), SkullSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("player_head"), PlayerHeadSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("shulker_box"), ShulkerBoxSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("shield"), ShieldSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("trident"), TridentSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("decorated_pot"), DecoratedPotSpecialRenderer.Unbaked.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("end_cube"), EndCubeSpecialRenderer.Unbaked.MAP_CODEC);
+   public static Object bootstrap(final Registry<MapCodec<? extends SpecialModelRenderer.Unbaked<?>>> registry) {
+      Registry.register(registry, (String)"bell", BellSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"banner", BannerSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"book", BookSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"conduit", ConduitSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"chest", ChestSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"copper_golem_statue", CopperGolemStatueSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"head", SkullSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"player_head", PlayerHeadSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"shulker_box", ShulkerBoxSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"shield", ShieldSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"trident", TridentSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"decorated_pot", DecoratedPotSpecialRenderer.Unbaked.MAP_CODEC);
+      return Registry.register(registry, (String)"end_cube", EndCubeSpecialRenderer.Unbaked.MAP_CODEC);
    }
 
    static {
-      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(SpecialModelRenderer.Unbaked::type, (c) -> c);
+      CODEC = BuiltInClientRegistries.SPECIAL_MODEL_RENDERER_TYPE.byNameCodec().dispatch(SpecialModelRenderer.Unbaked::type, (c) -> c);
    }
 }

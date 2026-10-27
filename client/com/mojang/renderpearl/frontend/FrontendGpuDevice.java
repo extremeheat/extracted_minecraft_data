@@ -227,7 +227,7 @@ public class FrontendGpuDevice implements GpuDevice {
             tracyZone.close();
          }
 
-         return backendPipeline == null ? null : new FrontendRenderPipeline(createInfo.name(), backendPipeline, usedVertexBufferSlots, Object2IntMaps.unmodifiable(uniformBindings), createInfo.uniforms(), ReferenceLists.unmodifiable(new ReferenceArrayList(createInfo.colorTargetStates())), createInfo.depthStencilState() != null, createInfo.depthStencilFormat(), createInfo.pushConstantsSize());
+         return backendPipeline == null ? null : new FrontendRenderPipeline(createInfo.name(), backendPipeline, usedVertexBufferSlots, Object2IntMaps.unmodifiable(uniformBindings), createInfo.uniforms(), ReferenceLists.unmodifiable(new ReferenceArrayList(createInfo.colorTargetStates())), createInfo.depthStencilState() != null, createInfo.pushConstantsSize(), createInfo.subpass());
       };
    }
 

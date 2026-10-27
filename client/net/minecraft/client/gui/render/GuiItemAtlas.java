@@ -15,6 +15,7 @@ import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.SubmitNodeStorage;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
@@ -115,7 +116,7 @@ public class GuiItemAtlas implements AutoCloseable {
 
       try (
          FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.submitNodeStorage);
-         RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item to GUI item atlas", this.textureView, clearColor, this.depthTextureView, clearDepth, renderArea);
+         RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item to GUI item atlas", RenderPassLayouts.COLOR_DEPTH, this.textureView, clearColor, this.depthTextureView, clearDepth, renderArea);
       ) {
          RenderSystem.bindDefaultUniforms(renderPass);
          FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);

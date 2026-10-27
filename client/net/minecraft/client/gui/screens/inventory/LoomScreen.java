@@ -5,13 +5,13 @@ import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.object.banner.BannerFlagModel;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
@@ -86,28 +86,28 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       Slot bannerSlot = ((LoomMenu)this.menu).getBannerSlot();
       Slot dyeSlot = ((LoomMenu)this.menu).getDyeSlot();
       Slot patternSlot = ((LoomMenu)this.menu).getPatternSlot();
       Slot resultSlot = ((LoomMenu)this.menu).getResultSlot();
       if (!bannerSlot.hasItem()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BANNER_SLOT_SPRITE, xo + bannerSlot.x, yo + bannerSlot.y, 16, 16);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)BANNER_SLOT_SPRITE, xo + bannerSlot.x, yo + bannerSlot.y, 16, 16);
       }
 
       if (!dyeSlot.hasItem()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DYE_SLOT_SPRITE, xo + dyeSlot.x, yo + dyeSlot.y, 16, 16);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)DYE_SLOT_SPRITE, xo + dyeSlot.x, yo + dyeSlot.y, 16, 16);
       }
 
       if (!patternSlot.hasItem()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)PATTERN_SLOT_SPRITE, xo + patternSlot.x, yo + patternSlot.y, 16, 16);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)PATTERN_SLOT_SPRITE, xo + patternSlot.x, yo + patternSlot.y, 16, 16);
       }
 
       int sy = (int)(41.0F * this.scrollOffs);
       Identifier sprite = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
       int scrollerX = xo + 119;
       int scrollerY = yo + 13;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerX, scrollerY + sy, 12, 15);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, scrollerX, scrollerY + sy, 12, 15);
       if (graphics.mouseX() >= scrollerX && graphics.mouseX() < scrollerX + 12 && graphics.mouseY() >= scrollerY && graphics.mouseY() < scrollerY + 56) {
          if (this.isScrollBarActive()) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
@@ -122,7 +122,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          int y0 = yo + 8;
          graphics.bannerPattern(this.flag, baseColor, this.resultBannerPatterns, x0, y0, x0 + 20, y0 + 40);
       } else if (this.hasMaxPatterns) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + resultSlot.x - 5, yo + resultSlot.y - 5, 26, 26);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ERROR_SPRITE, xo + resultSlot.x - 5, yo + resultSlot.y - 5, 26, 26);
       }
 
       if (this.displayPatterns) {
@@ -156,7 +156,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   buttonSprite = PATTERN_SPRITE;
                }
 
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)buttonSprite, posX, posY, 14, 14);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)buttonSprite, posX, posY, 14, 14);
                TextureAtlasSprite bannerPatternSprite = graphics.getSprite(Sheets.getBannerSprite(pattern));
                this.extractBannerOnButton(graphics, posX, posY, bannerPatternSprite);
             }

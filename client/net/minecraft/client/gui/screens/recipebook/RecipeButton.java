@@ -8,12 +8,12 @@ import java.util.stream.Stream;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -106,7 +106,7 @@ public class RecipeButton extends AbstractWidget {
          this.animationTime -= graphics.partialTicks();
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
       ItemStack currentItemStack = this.getDisplayStack();
       int offset = 4;
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {

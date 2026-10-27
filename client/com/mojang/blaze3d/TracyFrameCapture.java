@@ -12,7 +12,7 @@ import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import java.util.Optional;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 
 public class TracyFrameCapture implements AutoCloseable {
@@ -81,9 +81,9 @@ public class TracyFrameCapture implements AutoCloseable {
          this.status = TracyFrameCapture.Status.WAITING_FOR_COPY;
          CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", this.frameBufferView, Optional.empty())) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Tracy blit", RenderPassLayouts.COLOR_ONLY, this.frameBufferView)) {
             RenderSystem.bindDefaultUniforms(renderPass);
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT, renderPass.activeSubpass()));
             renderPass.setUniform("InSampler", captureTarget.getColorTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
             renderPass.draw(3, 1, 0, 0);
          }

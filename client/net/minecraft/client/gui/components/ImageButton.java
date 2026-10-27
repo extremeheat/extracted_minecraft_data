@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -24,6 +24,6 @@ public class ImageButton extends Button {
 
    public void extractContents(final GuiGraphicsExtractor graphics) {
       Identifier sprite = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
    }
 }

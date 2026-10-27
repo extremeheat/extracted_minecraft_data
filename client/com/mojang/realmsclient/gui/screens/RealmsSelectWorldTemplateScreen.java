@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -30,7 +31,6 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -316,8 +316,8 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
-         graphics.blit(RenderPipelines.GUI_TEXTURED, RealmsTextureManager.worldTemplate(this.template.id(), this.template.image()), this.getContentX() + 1, this.getContentY() + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, this.getContentX(), this.getContentY() + 1, 40, 40);
+         graphics.blit(GuiPipeline.TEXTURED, RealmsTextureManager.worldTemplate(this.template.id(), this.template.image()), this.getContentX() + 1, this.getContentY() + 1 + 1, 0.0F, 0.0F, 38, 38, 38, 38);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)RealmsSelectWorldTemplateScreen.SLOT_FRAME_SPRITE, this.getContentX(), this.getContentY() + 1, 40, 40);
          int padding = 5;
          int versionTextWidth = RealmsSelectWorldTemplateScreen.this.font.width(this.template.version());
          if (this.websiteButton != null) {

@@ -3,6 +3,7 @@ package com.mojang.renderpearl.api.commands;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.buffers.TransientMemory;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.nio.ByteBuffer;
@@ -17,22 +18,42 @@ public interface CommandEncoder {
 
    TransientMemory transientMemory();
 
-   default RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor) {
-      return this.createRenderPass(label, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
+   default RenderPass createRenderPass(final Supplier<String> label, final RenderPassLayout layout, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor) {
+      return this.createRenderPass(label, layout, colorTexture, clearColor, (GpuTextureView)null, OptionalDouble.empty());
    }
 
-   default RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
-      return this.createRenderPass(label, colorTexture, clearColor, depthTexture, clearDepth, new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0)));
+   default RenderPass createRenderPass(final Supplier<String> label, final RenderPassLayout layout, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth) {
+      return this.createRenderPass(label, layout, colorTexture, clearColor, depthTexture, clearDepth, new RenderPass.RenderArea(0, 0, colorTexture.getWidth(0), colorTexture.getHeight(0)));
    }
 
-   default RenderPass createRenderPass(final Supplier<String> label, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
-      RenderPassDescriptor.Builder descriptor = RenderPassDescriptor.builder(label).withColorAttachment(colorTexture, clearColor);
-      if (depthTexture != null) {
-         descriptor.withDepthAttachment(depthTexture, clearDepth);
+   default RenderPass createRenderPass(final Supplier<String> label, final RenderPassLayout layout, final GpuTextureView colorTexture, final Optional<Vector4fc> clearColor, final @Nullable GpuTextureView depthTexture, final OptionalDouble clearDepth, final RenderPass.RenderArea renderArea) {
+      RenderPassDescriptor.Builder builder = RenderPassDescriptor.builder(label, layout);
+      if (clearColor.isPresent()) {
+         builder.withAttachment(colorTexture, (Vector4fc)clearColor.get());
+      } else {
+         builder.withAttachment(colorTexture);
       }
 
-      descriptor.withRenderArea(renderArea);
-      return this.createRenderPass(descriptor.build());
+      if (depthTexture != null) {
+         if (clearDepth.isPresent()) {
+            builder.withAttachment(depthTexture, (float)clearDepth.getAsDouble());
+         } else {
+            builder.withAttachment(depthTexture);
+         }
+      }
+
+      return this.createRenderPass(builder.build(renderArea));
+   }
+
+   default RenderPass createRenderPass(final Supplier<String> label, final RenderPassLayout layout, final GpuTextureView firstAttachmentView, final GpuTextureView... additionalAttachmentViews) {
+      RenderPassDescriptor.Builder builder = RenderPassDescriptor.builder(label, layout);
+      builder.withAttachment(firstAttachmentView);
+
+      for(GpuTextureView attachmentTextureView : additionalAttachmentViews) {
+         builder.withAttachment(attachmentTextureView);
+      }
+
+      return this.createRenderPass(builder.build());
    }
 
    RenderPass createRenderPass(RenderPassDescriptor descriptor);

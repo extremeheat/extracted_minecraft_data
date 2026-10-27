@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import net.minecraft.world.level.levelgen.structure.templatesystem.CornerConstraint;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -104,7 +105,7 @@ public class JigsawPlacement {
             return Optional.empty();
          } else {
             int centerY = bottomY + localAnchorPosition.getY();
-            return Optional.of(new Structure.GenerationStub(new BlockPos(centerX, centerY, centerZ), (builder) -> {
+            return centerElement.getCornerConstraint().isPresent() && !((CornerConstraint)centerElement.getCornerConstraint().get()).test(centerPiece.getBoundingBox(), context.randomState()) ? Optional.empty() : Optional.of(new Structure.GenerationStub(new BlockPos(centerX, centerY, centerZ), (builder) -> {
                List<PoolElementStructurePiece> pieces = new ArrayList();
                pieces.add(centerPiece);
                if (maxDepth > 0) {
@@ -212,7 +213,7 @@ public class JigsawPlacement {
          BoundingBox sourceBB = sourcePiece.getBoundingBox();
          int sourceBoxY = sourceBB.minY();
 
-         label129:
+         label136:
          for(StructureTemplate.JigsawBlockInfo sourceJigsaw : sourceElement.getShuffledJigsawBlocks(this.structureTemplateManager, sourceBoxPosition, sourceRotation, this.random)) {
             Direction sourceDirection = JigsawBlock.getFrontFacing(sourceJigsaw.state());
             BlockPos sourceJigsawPos = sourceJigsaw.pos();
@@ -316,28 +317,30 @@ public class JigsawPlacement {
                                        targetGroundLevelDelta = targetElement.getGroundLevelDelta();
                                     }
 
-                                    PoolElementStructurePiece targetPiece = new PoolElementStructurePiece(this.structureTemplateManager, targetElement, targetBoxPosition, targetGroundLevelDelta, targetRotation, targetBB, liquidSettings);
-                                    int junctionY;
-                                    if (sourceRigid) {
-                                       junctionY = sourceBoxY + sourceJigsawLocalY;
-                                    } else if (targetRigid) {
-                                       junctionY = targetBoxY + targetJigsawLocalY;
-                                    } else {
-                                       if (sourceJigsawBaseHeight == -2147483648) {
-                                          sourceJigsawBaseHeight = this.chunkGenerator.getFirstFreeHeight(sourceJigsawPos.getX(), sourceJigsawPos.getZ(), Heightmap.Types.WORLD_SURFACE_WG, heightAccessor, randomState);
+                                    if (!targetElement.getCornerConstraint().isPresent() || ((CornerConstraint)targetElement.getCornerConstraint().get()).test(targetBB, randomState)) {
+                                       PoolElementStructurePiece targetPiece = new PoolElementStructurePiece(this.structureTemplateManager, targetElement, targetBoxPosition, targetGroundLevelDelta, targetRotation, targetBB, liquidSettings);
+                                       int junctionY;
+                                       if (sourceRigid) {
+                                          junctionY = sourceBoxY + sourceJigsawLocalY;
+                                       } else if (targetRigid) {
+                                          junctionY = targetBoxY + targetJigsawLocalY;
+                                       } else {
+                                          if (sourceJigsawBaseHeight == -2147483648) {
+                                             sourceJigsawBaseHeight = this.chunkGenerator.getFirstFreeHeight(sourceJigsawPos.getX(), sourceJigsawPos.getZ(), Heightmap.Types.WORLD_SURFACE_WG, heightAccessor, randomState);
+                                          }
+
+                                          junctionY = sourceJigsawBaseHeight + deltaY / 2;
                                        }
 
-                                       junctionY = sourceJigsawBaseHeight + deltaY / 2;
+                                       sourcePiece.addJunction(new JigsawJunction(targetJigsawPos.getX(), junctionY - sourceJigsawLocalY + sourceGroundLevelDelta, targetJigsawPos.getZ(), deltaY, targetProjection));
+                                       targetPiece.addJunction(new JigsawJunction(sourceJigsawPos.getX(), junctionY - targetJigsawLocalY + targetGroundLevelDelta, sourceJigsawPos.getZ(), -deltaY, sourceProjection));
+                                       this.pieces.add(targetPiece);
+                                       if (depth + 1 <= this.maxDepth) {
+                                          PieceState state = new PieceState(targetPiece, childrenFree, depth + 1);
+                                          this.placing.add(state, placementPriority);
+                                       }
+                                       continue label136;
                                     }
-
-                                    sourcePiece.addJunction(new JigsawJunction(targetJigsawPos.getX(), junctionY - sourceJigsawLocalY + sourceGroundLevelDelta, targetJigsawPos.getZ(), deltaY, targetProjection));
-                                    targetPiece.addJunction(new JigsawJunction(sourceJigsawPos.getX(), junctionY - targetJigsawLocalY + targetGroundLevelDelta, sourceJigsawPos.getZ(), -deltaY, sourceProjection));
-                                    this.pieces.add(targetPiece);
-                                    if (depth + 1 <= this.maxDepth) {
-                                       PieceState state = new PieceState(targetPiece, childrenFree, depth + 1);
-                                       this.placing.add(state, placementPriority);
-                                    }
-                                    continue label129;
                                  }
                               }
                            }

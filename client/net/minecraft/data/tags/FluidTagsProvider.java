@@ -24,5 +24,6 @@ public class FluidTagsProvider extends TagsProvider<Fluid> {
       this.tag(FluidTags.FROG_TRIES_TO_FIND_LAND_NEAR).add(FluidIds.WATER);
       this.tag(FluidTags.DOLPHIN_TRIES_TO_FIND).add(FluidIds.WATER);
       this.tag(FluidTags.ENTITY_FLOATABLE).addTag(FluidTags.WATER);
+      this.tag(FluidTags.SWIMMABLE).add(FluidIds.WATER);
    }
 }

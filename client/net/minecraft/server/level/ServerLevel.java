@@ -418,6 +418,8 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
       profiler.push("entityManagement");
       this.entityManager.tick();
+      profiler.popPush("entityTracking");
+      this.getChunkSource().chunkMap.sendEntityChanges();
       profiler.pop();
       profiler.push("debugSynchronizers");
       if (this.debugSynchronizers.hasAnySubscriberFor(DebugSubscriptions.NEIGHBOR_UPDATES)) {

@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -95,7 +95,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
 
    protected void extractBorder(final GuiGraphicsExtractor graphics, final int x, final int y, final int width, final int height) {
       Identifier sprite = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, width, height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, x, y, width, height);
    }
 
    protected boolean withinContentAreaTopBottom(final int top, final int bottom) {

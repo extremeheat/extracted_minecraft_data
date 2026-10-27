@@ -27,6 +27,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractCycleButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -47,7 +48,6 @@ import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -289,11 +289,11 @@ public class CreateWorldScreen extends Screen {
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       super.extractRenderState(graphics);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+      graphics.blit(GuiPipeline.TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
-      graphics.blit(RenderPipelines.GUI_TEXTURED, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+      graphics.blit(GuiPipeline.TEXTURED, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
       this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 

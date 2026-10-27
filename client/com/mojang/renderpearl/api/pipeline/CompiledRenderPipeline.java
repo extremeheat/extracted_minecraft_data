@@ -15,7 +15,7 @@ public interface CompiledRenderPipeline extends UncheckedAutoCloseable {
       @Nullable CompiledRenderPipeline finishCompile();
    }
 
-   public static record CreateInfo(String name, List<SpvModule> shaders, List<VertexBuffer> vertexBuffers, List<AttribBinding> attribBindings, List<Uniform> uniforms, int pushConstantsSize, @Nullable DepthStencilState depthStencilState, GpuFormat depthStencilFormat, PolygonMode polygonMode, boolean cull, List<@Nullable ColorTargetState> colorTargetStates, PrimitiveTopology primitiveTopology) {
+   public static record CreateInfo(String name, List<SpvModule> shaders, List<VertexBuffer> vertexBuffers, List<AttribBinding> attribBindings, List<Uniform> uniforms, int pushConstantsSize, @Nullable DepthStencilState depthStencilState, PolygonMode polygonMode, boolean cull, List<@Nullable ColorTargetState> colorTargetStates, PrimitiveTopology primitiveTopology, RenderPassLayout.Subpass subpass) {
       public static int MIN_VERTEX_STRIDE_ALIGNMENT = 4;
       public static int MAX_VERTEX_BUFFERS = 8;
       public static int MAX_VERTEX_ATTRIBS = 16;
@@ -36,7 +36,7 @@ public interface CompiledRenderPipeline extends UncheckedAutoCloseable {
          }
       }
 
-      public static record Uniform(String name, int binding, UniformType type, @Nullable GpuFormat gpuFormat) {
+      public static record Uniform(String name, int inputAttachmentIndex, int binding, UniformType type, @Nullable GpuFormat gpuFormat) {
          public Uniform {
             super();
          }

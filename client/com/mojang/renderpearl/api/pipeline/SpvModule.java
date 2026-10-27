@@ -60,6 +60,8 @@ public interface SpvModule extends UncheckedAutoCloseable {
          int binding();
 
          void binding(int location);
+
+         int inputAttachmentIndex();
       }
 
       public interface PushConstant {

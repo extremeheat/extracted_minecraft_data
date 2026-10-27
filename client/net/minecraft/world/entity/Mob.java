@@ -610,8 +610,9 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       this.gameEvent(GameEvent.SHEAR, player);
       Level var8 = this.level();
       if (var8 instanceof ServerLevel serverLevel) {
-         this.spawnAtLocation(serverLevel, itemStackToShear, equipmentSpawnOffset);
-         CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
+         if (this.spawnAtLocation(serverLevel, itemStackToShear, equipmentSpawnOffset) != null) {
+            CriteriaTriggers.PLAYER_SHEARED_EQUIPMENT.trigger((ServerPlayer)player, itemStackToShear, this);
+         }
       }
 
    }

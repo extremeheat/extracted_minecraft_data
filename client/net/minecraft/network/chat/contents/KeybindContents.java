@@ -29,12 +29,12 @@ public class KeybindContents implements ComponentContents {
       return (Component)this.nameResolver.get();
    }
 
-   public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
-      return this.getNestedComponent().<T>visit(output);
+   public <T> Optional<T> visitUnbounded(final FormattedText.ContentConsumer<T> output) {
+      return this.getNestedComponent().<T>visitUnbounded(output);
    }
 
-   public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
-      return this.getNestedComponent().<T>visit(output, currentStyle);
+   public <T> Optional<T> visitUnbounded(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+      return this.getNestedComponent().<T>visitUnbounded(output, currentStyle);
    }
 
    public boolean equals(final Object o) {

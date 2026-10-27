@@ -3,9 +3,9 @@ package net.minecraft.client.gui.screens.inventory;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -105,7 +105,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, VILLAGER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
+      graphics.blit(GuiPipeline.TEXTURED, VILLAGER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
       MerchantOffers offers = ((MerchantMenu)this.menu).getOffers();
       if (!offers.isEmpty()) {
          int itemIndex = this.shopItem;
@@ -115,7 +115,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
          MerchantOffer offer = (MerchantOffer)offers.get(itemIndex);
          if (offer.isOutOfStock()) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 28, 21);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 28, 21);
          }
       }
 
@@ -125,17 +125,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       int traderLevel = ((MerchantMenu)this.menu).getTraderLevel();
       int traderXp = ((MerchantMenu)this.menu).getTraderXp();
       if (traderLevel < 5) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, xo + 136, yo + 16, 102, 5);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, xo + 136, yo + 16, 102, 5);
          int minXp = VillagerData.getMinXpPerLevel(traderLevel);
          if (traderXp >= minXp && VillagerData.canLevelUp(traderLevel)) {
             int progressLength = 102;
             float multiplier = 102.0F / (float)(VillagerData.getMaxXpPerLevel(traderLevel) - minXp);
             int w = Math.min(Mth.floor(multiplier * (float)(traderXp - minXp)), 102);
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, xo + 136, yo + 16, w, 5);
+            graphics.blitSprite(GuiPipeline.TEXTURED, EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, xo + 136, yo + 16, w, 5);
             int futureXp = ((MerchantMenu)this.menu).getFutureTraderXp();
             if (futureXp > 0) {
                int futureXpWidth = Math.min(Mth.floor((float)futureXp * multiplier), 102 - w);
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, w, 0, xo + 136 + w, yo + 16, futureXpWidth, 5);
+               graphics.blitSprite(GuiPipeline.TEXTURED, EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, w, 0, xo + 136 + w, yo + 16, futureXpWidth, 5);
             }
 
          }
@@ -155,12 +155,12 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
          int scrollerX = xo + 94;
          int scrollerY = yo + 18 + scrollerYOff;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_SPRITE, scrollerX, scrollerY, 6, 27);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SCROLLER_SPRITE, scrollerX, scrollerY, 6, 27);
          if (graphics.mouseX() >= scrollerX && graphics.mouseX() < xo + 94 + 6 && graphics.mouseY() >= scrollerY && graphics.mouseY() <= scrollerY + 27) {
             graphics.requestCursor(this.isDragging ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          }
       } else {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SCROLLER_DISABLED_SPRITE, xo + 94, yo + 18, 6, 27);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SCROLLER_DISABLED_SPRITE, xo + 94, yo + 18, 6, 27);
       }
 
    }
@@ -222,9 +222,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
    private void extractButtonArrows(final GuiGraphicsExtractor graphics, final MerchantOffer offer, final int xo, final int decorHeight) {
       if (offer.isOutOfStock()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRADE_ARROW_OUT_OF_STOCK_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)TRADE_ARROW_OUT_OF_STOCK_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
       } else {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TRADE_ARROW_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)TRADE_ARROW_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
       }
 
    }
@@ -236,7 +236,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       } else {
          graphics.itemDecorations(this.font, baseCostA, sellItem1X, decorHeight, baseCostA.getCount() == 1 ? "1" : null);
          graphics.itemDecorations(this.font, costA, sellItem1X + 14, decorHeight, costA.getCount() == 1 ? "1" : null);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)DISCOUNT_STRIKETHRUOGH_SPRITE, sellItem1X + 7, decorHeight + 12, 9, 2);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)DISCOUNT_STRIKETHRUOGH_SPRITE, sellItem1X + 7, decorHeight + 12, 9, 2);
       }
 
    }

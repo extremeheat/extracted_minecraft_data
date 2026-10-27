@@ -14,6 +14,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.DistanceToPointFunction;
 import net.minecraft.world.level.levelgen.densityfunction.generator.EndIslandFunction;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.levelgen.densityfunction.op.BinaryFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.BlendDensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.CacheFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.ClampFunction;
+import net.minecraft.world.level.levelgen.densityfunction.op.DomainWarpFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.FindTopSurfaceFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.IntervalSelectFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.LerpFunction;
@@ -83,6 +85,7 @@ public final class DensityFunctions {
       register(registry, "upscale", UpscaleFunction.CODEC);
       register(registry, "slice", SliceFunction.CODEC);
       register(registry, "find_top_surface", FindTopSurfaceFunction.CODEC);
+      register(registry, "domain_warp", DomainWarpFunction.CODEC);
       register(registry, "old_blended_noise", BlendedNoise.CODEC);
       return constant;
    }
@@ -283,11 +286,19 @@ public final class DensityFunctions {
    }
 
    public static DensityFunction yClampedGradient(final int fromY, final int toY, final float fromValue, final float toValue) {
-      return gradient(Direction.Axis.Y, TilingMode.CLAMP_TO_EDGE, fromY, toY, fromValue, toValue);
+      return new GradientFunction(Direction.Axis.Y, TilingMode.CLAMP_TO_EDGE, new GradientFunction.Coordinate.Absolute(fromY), new GradientFunction.Coordinate.Absolute(toY), fromValue, toValue);
+   }
+
+   public static DensityFunction yClampedGradient(final VerticalAnchor fromY, final VerticalAnchor toY, final float fromValue, final float toValue) {
+      return new GradientFunction(Direction.Axis.Y, TilingMode.CLAMP_TO_EDGE, new GradientFunction.Coordinate.YAnchor(fromY), new GradientFunction.Coordinate.YAnchor(toY), fromValue, toValue);
    }
 
    public static DensityFunction gradient(final Direction.Axis axis, final TilingMode tiling, final int fromCoordinate, final int toCoordinate, final float fromValue, final float toValue) {
-      return new GradientFunction(axis, tiling, fromCoordinate, toCoordinate, fromValue, toValue);
+      return new GradientFunction(axis, tiling, new GradientFunction.Coordinate.Absolute(fromCoordinate), new GradientFunction.Coordinate.Absolute(toCoordinate), fromValue, toValue);
+   }
+
+   public static DensityFunction domainWarp(final DensityFunction input, final DensityFunction offsetX, final DensityFunction offsetY, final DensityFunction offsetZ) {
+      return new DomainWarpFunction(input, offsetX, offsetY, offsetZ);
    }
 
    public static DensityFunction blendAlpha() {

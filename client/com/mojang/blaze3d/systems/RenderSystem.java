@@ -18,6 +18,7 @@ import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.Objects;
@@ -105,9 +106,9 @@ public class RenderSystem {
       return oldCache;
    }
 
-   public static @Nullable CompiledRenderPipeline getCompiledPipelineNullable(final RenderPipeline pipeline) {
+   public static @Nullable CompiledRenderPipeline getCompiledPipelineNullable(final RenderPipeline pipeline, final RenderPassLayout.Subpass subpass) {
       if (currentPipelineCache != null) {
-         CompiledRenderPipeline cachedPipeline = currentPipelineCache.get(pipeline);
+         CompiledRenderPipeline cachedPipeline = currentPipelineCache.get(pipeline, subpass);
          if (cachedPipeline != null) {
             return cachedPipeline;
          }
@@ -116,12 +117,12 @@ public class RenderSystem {
       if (fallbackPipelineCache == null) {
          throw new IllegalStateException("Fallback pipeline cache not yet set");
       } else {
-         return fallbackPipelineCache.get(pipeline);
+         return fallbackPipelineCache.get(pipeline, subpass);
       }
    }
 
-   public static CompiledRenderPipeline getCompiledPipeline(final RenderPipeline pipeline) {
-      CompiledRenderPipeline compiledPipeline = getCompiledPipelineNullable(pipeline);
+   public static CompiledRenderPipeline getCompiledPipeline(final RenderPipeline pipeline, final RenderPassLayout.Subpass subpass) {
+      CompiledRenderPipeline compiledPipeline = getCompiledPipelineNullable(pipeline, subpass);
       if (compiledPipeline != null) {
          return compiledPipeline;
       } else {

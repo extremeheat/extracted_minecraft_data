@@ -19,7 +19,6 @@ import com.mojang.math.Axis;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
-import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
@@ -34,14 +33,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.Set;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.TextureFilteringMethod;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.render.GuiRenderer;
 import net.minecraft.client.gui.render.pip.GuiBannerResultRenderer;
 import net.minecraft.client.gui.render.pip.GuiBookModelRenderer;
@@ -269,10 +267,11 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
          }
       };
       RenderSystem.setFallbackPipelineCache(new PipelineCache(RenderSystem.getPipelineBuilder(), shaderSource));
-      RenderSystem.getCompiledPipeline(RenderPipelines.GUI);
-      RenderSystem.getCompiledPipeline(RenderPipelines.GUI_TEXTURED);
+      RenderSystem.getCompiledPipeline(GuiPipeline.DEFAULT.pipeline(), RenderPassLayouts.COLOR_ONLY.subpass(0));
+      RenderSystem.getCompiledPipeline(GuiPipeline.TEXTURED.pipeline(), RenderPassLayouts.COLOR_ONLY.subpass(0));
+      RenderSystem.getCompiledPipeline(GuiPipeline.MOJANG_LOGO.pipeline(), RenderPassLayouts.COLOR_ONLY.subpass(0));
       if (TracyClient.isAvailable()) {
-         RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT);
+         RenderSystem.getCompiledPipeline(RenderPipelines.TRACY_BLIT, RenderPassLayouts.COLOR_ONLY.subpass(0));
       }
 
    }
@@ -379,7 +378,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
 
             try (
                FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.handAndScreenSubmitNodeStorage);
-               RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item in hand", this.mainRenderTarget.getColorTextureView(), Optional.empty(), depthTextureView, OptionalDouble.empty());
+               RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Item in hand", RenderPassLayouts.COLOR_DEPTH, this.mainRenderTarget.getColorTextureView(), depthTextureView);
             ) {
                RenderSystem.bindDefaultUniforms(renderPass);
                FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
@@ -663,7 +662,7 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
 
       try (FeatureRenderDispatcher.PreparedFrame frame = this.featureRenderDispatcher.prepareFrame(this.handAndScreenSubmitNodeStorage)) {
          if (!frame.isEmpty()) {
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Screen effects", this.mainRenderTarget.getColorTextureView(), Optional.empty(), depthTextureView, OptionalDouble.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Screen effects", RenderPassLayouts.COLOR_DEPTH, this.mainRenderTarget.getColorTextureView(), depthTextureView)) {
                RenderSystem.bindDefaultUniforms(renderPass);
                FeatureRenderDispatcher.renderAllFeatures(renderPass, frame);
             }
@@ -683,12 +682,11 @@ public class GameRenderer implements AutoCloseable, TrackedWaypoint.Projector, R
    }
 
    private void integrate3DHudDepth() {
-      RenderPassDescriptor integrateDepthDescriptor = RenderPassDescriptor.builder(() -> "Integrate 3d hud depth").withDepthAttachment(this.mainRenderTarget.getDepthTextureView()).build();
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(integrateDepthDescriptor)) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Integrate 3d hud depth", RenderPassLayouts.DEPTH_ONLY, this.mainRenderTarget.getDepthTextureView())) {
          renderPass.setUniform("InSampler", this.hud3DTarget.getDepthTextureView(), nearestSampler);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.INTEGRATE_DEPTH));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.INTEGRATE_DEPTH, renderPass.activeSubpass()));
          renderPass.draw(3, 1, 0, 0);
       }
 

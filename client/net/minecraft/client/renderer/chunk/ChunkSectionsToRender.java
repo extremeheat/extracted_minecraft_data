@@ -70,7 +70,7 @@ public abstract class ChunkSectionsToRender {
       }
 
       protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, wireframe, oitStage)));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, wireframe, oitStage), renderPass.activeSubpass()));
          List<RenderPass.Draw<GpuBufferSlice[]>> draws = (List)this.drawsPerLayer.get(layer);
          if (!draws.isEmpty()) {
             renderPass.drawMultipleIndexed(draws, defaultIndexBuffer, defaultIndexType, List.of("ChunkSection"), this.chunkSectionInfos);
@@ -96,7 +96,7 @@ public abstract class ChunkSectionsToRender {
       }
 
       protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(true, improvedFog, wireframe, oitStage)));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(true, improvedFog, wireframe, oitStage), renderPass.activeSubpass()));
          DeviceLimits deviceLimits = RenderSystem.getDevice().getDeviceInfo().limits();
          int maxDrawIndirectDrawCount = deviceLimits.maxDrawIndirectDrawCount();
          List<GpuMultiDrawIndexedIndirect> drawGroups = (List)this.drawGroupsPerLayer.get(layer);

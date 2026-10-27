@@ -7,8 +7,8 @@ import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import java.util.Optional;
 import java.util.function.Supplier;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import org.jspecify.annotations.Nullable;
 
@@ -108,8 +108,8 @@ public abstract class RenderTarget {
    public void blitAndBlendToTexture(final GpuTextureView output) {
       RenderSystem.assertOnRenderThread();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", output, Optional.empty())) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT));
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Blit render target", RenderPassLayouts.COLOR_ONLY, output)) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ENTITY_OUTLINE_BLIT, renderPass.activeSubpass()));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("InSampler", this.colorTextureView, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
          renderPass.draw(3, 1, 0, 0);

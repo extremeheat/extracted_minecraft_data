@@ -156,7 +156,7 @@ public class ZombieNautilus extends AbstractNautilus {
       return !this.isAggravated() && !this.isMobControlled();
    }
 
-   protected boolean canBeABaby() {
+   public boolean canBeABaby() {
       return false;
    }
 

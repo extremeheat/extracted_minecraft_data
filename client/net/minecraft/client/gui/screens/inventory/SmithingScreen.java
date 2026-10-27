@@ -3,10 +3,10 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.client.renderer.item.ItemModelResolver;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -160,7 +160,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    protected void extractErrorIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       if (this.hasRecipeError()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ERROR_SPRITE, xo + 65, yo + 46, 28, 21);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ERROR_SPRITE, xo + 65, yo + 46, 28, 21);
       }
 
    }

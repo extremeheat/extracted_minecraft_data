@@ -3,10 +3,10 @@ package net.minecraft.client.gui.screens.recipebook;
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
@@ -55,7 +55,7 @@ public class RecipeBookTabButton extends ImageButton {
          xPos -= 2;
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, xPos, this.getY(), this.width, this.height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, xPos, this.getY(), this.width, this.height);
       this.extractIcon(graphics);
       if (this.animationTime > 0.0F) {
          graphics.pose().popMatrix();

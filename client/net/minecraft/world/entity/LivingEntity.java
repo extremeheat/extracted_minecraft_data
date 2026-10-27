@@ -319,13 +319,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return AttributeSupplier.builder().add(Attributes.MAX_HEALTH).add(Attributes.KNOCKBACK_RESISTANCE).add(Attributes.MOVEMENT_SPEED).add(Attributes.ARMOR).add(Attributes.ARMOR_TOUGHNESS).add(Attributes.MAX_ABSORPTION).add(Attributes.STEP_HEIGHT).add(Attributes.SCALE).add(Attributes.GRAVITY).add(Attributes.SAFE_FALL_DISTANCE).add(Attributes.FALL_DAMAGE_MULTIPLIER).add(Attributes.JUMP_STRENGTH).add(Attributes.ENTITY_INTERACTION_RANGE).add(Attributes.OXYGEN_BONUS).add(Attributes.BURNING_TIME).add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).add(Attributes.WATER_MOVEMENT_EFFICIENCY).add(Attributes.MOVEMENT_EFFICIENCY).add(Attributes.ATTACK_KNOCKBACK).add(Attributes.CAMERA_DISTANCE).add(Attributes.WAYPOINT_TRANSMIT_RANGE).add(Attributes.BOUNCINESS).add(Attributes.AIR_DRAG_MODIFIER).add(Attributes.FRICTION_MODIFIER).add(Attributes.NAME_TAG_DISTANCE).add(Attributes.BELOW_NAME_DISTANCE);
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
-      if (!this.isInWater()) {
-         this.updateFluidInteraction();
-      }
-
-      Level var7 = this.level();
-      if (var7 instanceof ServerLevel level) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
+      Level var5 = this.level();
+      if (var5 instanceof ServerLevel level) {
          if (onGround && this.fallDistance > 0.0) {
             this.onChangedBlock(level, pos);
             double power = (double)Math.max(0, Mth.floor(this.calculateFallPower(this.fallDistance)));
@@ -349,7 +345,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          }
       }
 
-      super.checkFallDamage(ya, onGround, onState, pos);
+      super.checkFallDamage(onGround, onState, pos);
       if (onGround) {
          this.lastClimbablePos = Optional.empty();
       }

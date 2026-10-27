@@ -144,8 +144,8 @@ public class Item implements ItemLike, FeatureElement {
    public Item(final Properties properties) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
-      this.descriptionId = properties.effectiveDescriptionId();
-      DataComponentInitializers.Initializer<Item> componentInitializer = properties.finalizeInitializer(Component.translatable(this.descriptionId), properties.effectiveModel());
+      this.descriptionId = properties.descriptionId.get(properties.itemIdOrThrow());
+      DataComponentInitializers.Initializer<Item> componentInitializer = properties.finalizeInitializer();
       BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.add(properties.itemIdOrThrow(), componentInitializer);
       this.craftingRemainingItem = properties.craftingRemainingItem;
       this.requiredFeatures = properties.requiredFeatures;
@@ -596,16 +596,10 @@ public class Item implements ItemLike, FeatureElement {
          return this;
       }
 
+      /** @deprecated */
+      @Deprecated
       private ResourceKey<Item> itemIdOrThrow() {
          return (ResourceKey)Objects.requireNonNull(this.id, "Item id not set");
-      }
-
-      protected String effectiveDescriptionId() {
-         return this.descriptionId.get(this.itemIdOrThrow());
-      }
-
-      public Identifier effectiveModel() {
-         return this.model.get(this.itemIdOrThrow());
       }
 
       public <T> Properties component(final DataComponentType<T> type, final T value) {
@@ -642,8 +636,8 @@ public class Item implements ItemLike, FeatureElement {
          });
       }
 
-      private DataComponentInitializers.Initializer<Item> finalizeInitializer(final Component name, final Identifier model) {
-         return this.componentInitializer.andThen((components, var3, var4) -> components.set(DataComponents.ITEM_NAME, name).set(DataComponents.ITEM_MODEL, model).addValidator((c) -> {
+      private DataComponentInitializers.Initializer<Item> finalizeInitializer() {
+         return this.componentInitializer.andThen((components, var2, key) -> components.set(DataComponents.ITEM_NAME, Component.translatable(this.descriptionId.get(key))).set(DataComponents.ITEM_MODEL, this.model.get(key)).addValidator((c) -> {
                if (c.has(DataComponents.DAMAGE) && (Integer)c.getOrDefault(DataComponents.MAX_STACK_SIZE, 1) > 1) {
                   throw new IllegalStateException("Item cannot have both durability and be stackable");
                }

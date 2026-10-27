@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile.throwableitemprojectile;
 
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -221,13 +222,13 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       return super.canTeleport(from, to);
    }
 
-   protected void onInsideBlock(final BlockState state) {
-      super.onInsideBlock(state);
+   protected void onInsideBlock(final BlockState state, final BooleanSupplier centerInsideBlock) {
+      super.onInsideBlock(state, centerInsideBlock);
       if (state.is(Blocks.END_GATEWAY)) {
-         Entity var3 = this.getOwner();
-         if (var3 instanceof ServerPlayer) {
-            ServerPlayer player = (ServerPlayer)var3;
-            player.onInsideBlock(state);
+         Entity var4 = this.getOwner();
+         if (var4 instanceof ServerPlayer) {
+            ServerPlayer player = (ServerPlayer)var4;
+            player.onInsideBlock(state, centerInsideBlock);
          }
       }
 

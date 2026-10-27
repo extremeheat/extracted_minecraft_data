@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -34,7 +34,7 @@ public abstract class ItemCombinerScreen<T extends ItemCombinerMenu> extends Abs
 
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       super.extractBackground(graphics);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, this.menuResource, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.extractErrorIcon(graphics, this.leftPos, this.topPos);
    }
 

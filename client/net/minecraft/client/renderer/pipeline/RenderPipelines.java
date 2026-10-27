@@ -1,8 +1,8 @@
 package net.minecraft.client.renderer.pipeline;
 
+import com.mojang.blaze3d.pipeline.PipelineCache;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.pipeline.BlendFactor;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
@@ -10,6 +10,7 @@ import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.PolygonMode;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,12 +24,14 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.renderer.BindGroupLayouts;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.ShaderManager;
 import net.minecraft.client.renderer.SkyRenderer;
 import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.pipeline.variant.BlockRenderPipelineVariant;
 import net.minecraft.client.renderer.pipeline.variant.DebugPrimitiveRenderPipelineVariant;
 import net.minecraft.client.renderer.pipeline.variant.EntityRenderPipelineVariant;
+import net.minecraft.client.renderer.pipeline.variant.GuiRenderPipelineVariant;
 import net.minecraft.client.renderer.pipeline.variant.ItemRenderPipelineVariant;
 import net.minecraft.client.renderer.pipeline.variant.LineRenderPipelineVariant;
 import net.minecraft.client.renderer.pipeline.variant.ParticleRenderPipelineVariant;
@@ -38,8 +41,8 @@ import net.minecraft.client.renderer.pipeline.variant.TextRenderPipelineVariant;
 import org.jspecify.annotations.Nullable;
 
 public class RenderPipelines {
-   private static final Set<RenderPipeline> STATIC_PIPELINES_TO_PRECOMPILE;
-   private static @Nullable Set<RenderPipeline> STATIC_PIPELINES_TO_PRECOMPILE_INIT = new HashSet();
+   private static final Set<PipelineCache.Key> STATIC_PIPELINES_TO_PRECOMPILE;
+   private static @Nullable Set<PipelineCache.Key> STATIC_PIPELINES_TO_PRECOMPILE_INIT = new HashSet();
    private static final Map<DynamicPipelineKey<?>, RenderPipeline> DYNAMIC_PIPELINES_CACHE = new ConcurrentHashMap();
    public static final float ALPHA_CUTOUT_THRESHOLD_DEFAULT = 0.1F;
    public static final float ALPHA_CUTOUT_THRESHOLD_CUTOUT_TERRAIN = 0.5F;
@@ -51,23 +54,10 @@ public class RenderPipelines {
    public static final RenderPipeline.Snippet OIT_ACCUMULATE_SNIPPET;
    public static final RenderPipeline.Snippet GLINT_SNIPPET;
    private static final RenderPipeline.Snippet IMPROVED_FOG_SNIPPET;
-   private static final RenderPipeline.Snippet GUI_SNIPPET;
-   private static final RenderPipeline.Snippet GUI_TEXTURED_SNIPPET;
    private static final RenderPipeline.Snippet OUTLINE_SNIPPET;
    public static final RenderPipeline LEASH;
    public static final RenderPipeline GLINT;
-   public static final RenderPipeline GUI;
-   public static final RenderPipeline GUI_INVERT;
-   public static final RenderPipeline GUI_TEXT_HIGHLIGHT;
-   public static final RenderPipeline GUI_TEXTURED;
-   public static final RenderPipeline GUI_TEXTURED_PREMULTIPLIED_ALPHA;
-   public static final RenderPipeline BLOCK_SCREEN_EFFECT;
-   public static final RenderPipeline FIRE_SCREEN_EFFECT;
-   public static final RenderPipeline GUI_OPAQUE_TEXTURED_BACKGROUND;
-   public static final RenderPipeline GUI_NAUSEA_OVERLAY;
-   public static final RenderPipeline VIGNETTE;
-   public static final RenderPipeline CROSSHAIR;
-   public static final RenderPipeline MOJANG_LOGO;
+   public static final RenderPipeline SCREEN_EFFECT;
    public static final RenderPipeline ENTITY_OUTLINE_BLIT;
    public static final RenderPipeline TRACY_BLIT;
    public static final RenderPipeline PANORAMA;
@@ -88,30 +78,40 @@ public class RenderPipelines {
       super();
    }
 
-   private static RenderPipeline precompiled(final RenderPipeline pipeline) {
+   private static RenderPipeline precompiled(final RenderPipeline pipeline, final RenderPassLayout firstLayout, final RenderPassLayout... renderPassLayouts) {
       if (STATIC_PIPELINES_TO_PRECOMPILE_INIT == null) {
          throw new IllegalStateException("Too late to register a static pipeline `" + String.valueOf(pipeline.getLocation()) + "` for precompilation.");
       } else {
-         STATIC_PIPELINES_TO_PRECOMPILE_INIT.add(pipeline);
+         STATIC_PIPELINES_TO_PRECOMPILE_INIT.add(new PipelineCache.Key(pipeline, firstLayout.subpass(0)));
+
+         for(RenderPassLayout renderPassLayout : renderPassLayouts) {
+            STATIC_PIPELINES_TO_PRECOMPILE_INIT.add(new PipelineCache.Key(pipeline, renderPassLayout.subpass(0)));
+         }
+
          return pipeline;
       }
    }
 
-   private static void precompiledDynamic(final List<RenderPipeline> dynamicPipelines, final RenderPipeline pipeline) {
-      dynamicPipelines.add(pipeline);
-   }
+   private static void precompiledDynamic(final List<PipelineCache.Key> dynamicPipelines, final RenderPipeline pipeline, final RenderPassLayout firstLayout, final RenderPassLayout... renderPassLayouts) {
+      dynamicPipelines.add(new PipelineCache.Key(pipeline, firstLayout.subpass(0)));
 
-   private static void precompiledVariant(final List<RenderPipeline> dynamicPipelines, final RenderPipelineVariant variant, final Function<@Nullable OitStage, RenderPipeline> func, final boolean improvedTransparency) {
-      if (variant.supportsOit()) {
-         precompiledOitPipelines(dynamicPipelines, func, improvedTransparency);
-      } else {
-         precompiledDynamic(dynamicPipelines, (RenderPipeline)func.apply((Object)null));
+      for(RenderPassLayout renderPassLayout : renderPassLayouts) {
+         dynamicPipelines.add(new PipelineCache.Key(pipeline, renderPassLayout.subpass(0)));
       }
 
    }
 
-   public static List<RenderPipeline> dynamicPipelinesToPrecompile(final ShaderManager.PipelineCompilationContext context) {
-      List<RenderPipeline> dynamicPipelines = new ArrayList();
+   private static void precompiledVariant(final List<PipelineCache.Key> dynamicPipelines, final RenderPipelineVariant variant, final Function<@Nullable OitStage, RenderPipeline> func, final boolean improvedTransparency) {
+      if (variant.supportsOit()) {
+         precompiledOitPipelines(dynamicPipelines, func, improvedTransparency);
+      } else {
+         precompiledDynamic(dynamicPipelines, (RenderPipeline)func.apply((Object)null), RenderPassLayouts.COLOR_DEPTH);
+      }
+
+   }
+
+   public static List<PipelineCache.Key> dynamicPipelinesToPrecompile(final ShaderManager.PipelineCompilationContext context) {
+      List<PipelineCache.Key> dynamicPipelines = new ArrayList();
       boolean improvedTransparency = context.options().improvedTransparency;
 
       for(TerrainRenderPipelineVariant variant : TerrainRenderPipelineVariant.values()) {
@@ -119,7 +119,7 @@ public class RenderPipelines {
       }
 
       for(SkyRenderer.SkyElement skyElement : SkyRenderer.SkyElement.values()) {
-         precompiledDynamic(dynamicPipelines, sky(new SkyParameters(skyElement, !improvedTransparency)));
+         precompiledDynamic(dynamicPipelines, sky(new SkyParameters(skyElement)), improvedTransparency ? RenderPassLayouts.COLOR_ONLY : RenderPassLayouts.COLOR_DEPTH);
       }
 
       for(EntityRenderPipelineVariant variant : EntityRenderPipelineVariant.values()) {
@@ -144,46 +144,52 @@ public class RenderPipelines {
 
       for(TextRenderPipelineVariant variant : TextRenderPipelineVariant.values()) {
          precompiledVariant(dynamicPipelines, variant, (stage) -> text(new TextParameters(variant, stage)), improvedTransparency);
+         precompiledDynamic(dynamicPipelines, text(new TextParameters(variant, (OitStage)null)), RenderPassLayouts.COLOR_ONLY);
+      }
+
+      for(GuiRenderPipelineVariant variant : GuiRenderPipelineVariant.values()) {
+         precompiledVariant(dynamicPipelines, variant, (var1) -> gui(new GuiParameters(variant)), improvedTransparency);
+         precompiledDynamic(dynamicPipelines, gui(new GuiParameters(variant)), RenderPassLayouts.COLOR_ONLY);
       }
 
       precompiledOitPipelines(dynamicPipelines, RenderPipelines::entityShadow, improvedTransparency);
       precompiledOitPipelines(dynamicPipelines, (stage) -> beaconBeam(new BeaconBeamParameters(true, stage)), improvedTransparency);
-      precompiledDynamic(dynamicPipelines, beaconBeam(new BeaconBeamParameters(false, (OitStage)null)));
+      precompiledDynamic(dynamicPipelines, beaconBeam(new BeaconBeamParameters(false, (OitStage)null)), RenderPassLayouts.COLOR_DEPTH);
       precompiledOitPipelines(dynamicPipelines, RenderPipelines::crumbling, improvedTransparency);
       precompiledOitPipelines(dynamicPipelines, RenderPipelines::worldBorder, improvedTransparency);
       if (improvedTransparency) {
          precompiledOitPipelines(dynamicPipelines, RenderPipelines::blitClouds, improvedTransparency);
-         precompiledDynamic(dynamicPipelines, waterMask(new WaterMaskParameters(true)));
+         precompiledDynamic(dynamicPipelines, waterMask(new WaterMaskParameters(true)), RenderPassLayouts.DEPTH_ONLY);
       } else {
-         precompiledDynamic(dynamicPipelines, waterMask(new WaterMaskParameters(false)));
+         precompiledDynamic(dynamicPipelines, waterMask(new WaterMaskParameters(false)), RenderPassLayouts.COLOR_DEPTH);
       }
 
       precompiledOitPipelines(dynamicPipelines, (stage) -> additiveVisualEffect(new AdditiveVisualEffectParameters(PrimitiveTopology.QUADS, stage)), improvedTransparency);
       precompiledOitPipelines(dynamicPipelines, (stage) -> additiveVisualEffect(new AdditiveVisualEffectParameters(PrimitiveTopology.TRIANGLES, stage)), improvedTransparency);
       CloudStatus cloudStatus = context.options().cloudStatus;
       if (cloudStatus == CloudStatus.FANCY) {
-         precompiledDynamic(dynamicPipelines, clouds(new CloudParameters(true)));
+         precompiledDynamic(dynamicPipelines, clouds(new CloudParameters(true)), RenderPassLayouts.COLOR_DEPTH);
       } else if (cloudStatus == CloudStatus.FAST) {
-         precompiledDynamic(dynamicPipelines, clouds(new CloudParameters(false)));
+         precompiledDynamic(dynamicPipelines, clouds(new CloudParameters(false)), RenderPassLayouts.COLOR_DEPTH);
       }
 
-      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(true, false)));
-      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(false, false)));
-      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(false, true)));
+      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(true, false)), RenderPassLayouts.COLOR_DEPTH);
+      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(false, false)), RenderPassLayouts.COLOR_DEPTH);
+      precompiledDynamic(dynamicPipelines, endPortal(new EndPortalParameters(false, true)), RenderPassLayouts.COLOR_ONLY);
       return Collections.unmodifiableList(dynamicPipelines);
    }
 
-   private static void precompiledOitPipelines(final List<RenderPipeline> dynamicPipelines, final Function<@Nullable OitStage, RenderPipeline> pipelineSupplier, final boolean improvedTransparency) {
+   private static void precompiledOitPipelines(final List<PipelineCache.Key> dynamicPipelines, final Function<@Nullable OitStage, RenderPipeline> pipelineSupplier, final boolean improvedTransparency) {
       if (improvedTransparency) {
          for(OitStage oitStage : OitStage.values()) {
-            precompiledDynamic(dynamicPipelines, (RenderPipeline)pipelineSupplier.apply(oitStage));
+            dynamicPipelines.add(new PipelineCache.Key((RenderPipeline)pipelineSupplier.apply(oitStage), oitStage.subpass()));
          }
       }
 
-      precompiledDynamic(dynamicPipelines, (RenderPipeline)pipelineSupplier.apply((Object)null));
+      precompiledDynamic(dynamicPipelines, (RenderPipeline)pipelineSupplier.apply((Object)null), RenderPassLayouts.COLOR_DEPTH);
    }
 
-   public static List<RenderPipeline> staticPipelinesToPrecompile() {
+   public static List<PipelineCache.Key> staticPipelinesToPrecompile() {
       return STATIC_PIPELINES_TO_PRECOMPILE.stream().toList();
    }
 
@@ -374,7 +380,7 @@ public class RenderPipelines {
       return dynamicPipeline(params, "water_mask", (parameters) -> {
          RenderPipeline.Builder builder = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/rendertype_water_mask").withFragmentShader("core/rendertype_water_mask").withVertexBinding(0, DefaultVertexFormat.POSITION).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(DepthStencilState.DEFAULT);
          if (!parameters.improvedTransparency) {
-            builder.withLocation("pipeline/water_mask").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT), GpuFormat.RGBA8_UNORM, 0));
+            builder.withLocation("pipeline/water_mask").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT), 0));
          } else {
             builder.withLocation("pipeline/oit_water_mask");
          }
@@ -493,12 +499,8 @@ public class RenderPipelines {
             default -> throw new IllegalArgumentException("Unknown sky element: " + String.valueOf(parameters.element));
          }
 
-         if (parameters.hasDepthAttachment) {
-            builder.withDepthStencilState(DepthStencilState.OFF);
-         }
-
-         String var10001 = parameters.element.toString().toLowerCase(Locale.ROOT);
-         builder.withLocation("pipeline/" + var10001 + (parameters.hasDepthAttachment ? "_with_depth_attachment" : ""));
+         String var10001 = parameters.element.toString();
+         builder.withLocation("pipeline/" + var10001.toLowerCase(Locale.ROOT));
          return builder.build();
       });
    }
@@ -510,47 +512,47 @@ public class RenderPipelines {
       });
    }
 
+   public static RenderPipeline gui(final GuiParameters params) {
+      return dynamicPipeline(params, "gui", (parameters) -> {
+         RenderPipeline.Builder builder = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withColorTargetState(parameters.variant.colorTargetState()).withPrimitiveTopology(PrimitiveTopology.QUADS);
+         if (parameters.variant.isTextured()) {
+            builder.withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR);
+         } else {
+            builder.withVertexShader("core/gui").withFragmentShader("core/gui").withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR);
+         }
+
+         return finishDynamicPipeline(builder, "gui_" + parameters.variant.name().toLowerCase(Locale.ROOT), false, (OitStage)null, (Consumer)null);
+      });
+   }
+
    static {
       GLOBALS_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.GLOBALS).buildSnippet();
       MATRICES_FOG_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).buildSnippet();
       OIT_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withShaderDefine("OIT").withShaderDefine("OIT_NUMBER_OF_DEPTH_BINS", 8).withShaderDefine("OIT_TRANSMITTANCE_TARGET_COUNT", 2).buildSnippet();
-      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
-      OIT_TRANSMITTANCE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_TRANSMITTANCE").withColorTargetStates(0, 1, () -> new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
-      OIT_ACCUMULATE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ACCUMULATE").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), GpuFormat.RGBA16_FLOAT, 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
+      OIT_DEPTH_BOUNDS_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.MAX), 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_DEPTH_BOUNDS").buildSnippet();
+      OIT_TRANSMITTANCE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_TRANSMITTANCE").withColorTargetStates(0, 1, () -> new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
+      OIT_ACCUMULATE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ACCUMULATE").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       GLINT_SNIPPET = RenderPipeline.builder().withShaderDefine("GLINT").withBindGroupLayout(BindGroupLayouts.GLINT_SAMPLER).buildSnippet();
       IMPROVED_FOG_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.SKY_CLOUDS_SAMPLER).withShaderDefine("IMPROVED_FOG").buildSnippet();
-      GUI_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/gui").withFragmentShader("core/gui").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
-      GUI_TEXTURED_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).buildSnippet();
       OUTLINE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/rendertype_outline").withFragmentShader("core/rendertype_outline").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
-      LEASH = precompiled(RenderPipeline.builder(MATRICES_FOG_SNIPPET).withLocation("pipeline/leash").withVertexShader("core/rendertype_leash").withFragmentShader("core/rendertype_leash").withBindGroupLayout(BindGroupLayouts.SAMPLER2).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP).withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP).withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(DepthStencilState.DEFAULT).build());
-      GLINT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).withLocation("pipeline/glint").withVertexShader("core/glint").withFragmentShader("core/glint").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withCull(false).withColorTargetState(new ColorTargetState(BlendFunction.GLINT)).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false)).build());
-      GUI = precompiled(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui").build());
-      GUI_INVERT = precompiled(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui_invert").withColorTargetState(new ColorTargetState(BlendFunction.INVERT)).build());
-      GUI_TEXT_HIGHLIGHT = precompiled(RenderPipeline.builder(GUI_SNIPPET).withLocation("pipeline/gui_text_highlight").withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE)).build());
-      GUI_TEXTURED = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured").build());
-      GUI_TEXTURED_PREMULTIPLIED_ALPHA = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_textured_premultiplied_alpha").withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA)).build());
-      BLOCK_SCREEN_EFFECT = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/block_screen_effect").withDepthStencilState(DepthStencilState.OFF).build());
-      FIRE_SCREEN_EFFECT = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/fire_screen_effect").withDepthStencilState(DepthStencilState.OFF).build());
-      GUI_OPAQUE_TEXTURED_BACKGROUND = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_opaque_textured_background").withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA8_UNORM, 15)).build());
-      GUI_NAUSEA_OVERLAY = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/gui_nausea_overlay").withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE)).build());
-      VIGNETTE = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/vignette").withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.ZERO, BlendFactor.ONE_MINUS_SRC_COLOR, BlendFactor.ZERO, BlendFactor.ONE))).build());
-      CROSSHAIR = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/crosshair").withColorTargetState(new ColorTargetState(BlendFunction.INVERT)).build());
-      MOJANG_LOGO = precompiled(RenderPipeline.builder(GUI_TEXTURED_SNIPPET).withLocation("pipeline/mojang_logo").withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE))).build());
-      ENTITY_OUTLINE_BLIT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/entity_outline_blit").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ENTITY_OUTLINE_BLIT), GpuFormat.RGBA8_UNORM, 7)).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).build());
-      TRACY_BLIT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/tracy_blit").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).build());
-      PANORAMA = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withLocation("pipeline/panorama").withVertexShader("core/panorama").withFragmentShader("core/panorama").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.POSITION).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(ColorTargetState.DEFAULT).build());
-      OUTLINE_CULL = precompiled(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_cull").build());
-      OUTLINE_NO_CULL = precompiled(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_no_cull").withCull(false).build());
-      LIGHTMAP = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/lightmap").withVertexShader("core/screentriangle").withFragmentShader("core/lightmap").withBindGroupLayout(BindGroupLayouts.LIGHTMAP_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).build());
+      LEASH = precompiled(RenderPipeline.builder(MATRICES_FOG_SNIPPET).withLocation("pipeline/leash").withVertexShader("core/rendertype_leash").withFragmentShader("core/rendertype_leash").withBindGroupLayout(BindGroupLayouts.SAMPLER2).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP).withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP).withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(DepthStencilState.DEFAULT).build(), RenderPassLayouts.COLOR_DEPTH);
+      GLINT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).withLocation("pipeline/glint").withVertexShader("core/glint").withFragmentShader("core/glint").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withCull(false).withColorTargetState(new ColorTargetState(BlendFunction.GLINT)).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false)).build(), RenderPassLayouts.COLOR_DEPTH);
+      SCREEN_EFFECT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/screen_effect").withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/position_tex_color").withFragmentShader("core/position_tex_color").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).build(), RenderPassLayouts.COLOR_DEPTH);
+      ENTITY_OUTLINE_BLIT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/entity_outline_blit").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ENTITY_OUTLINE_BLIT), 7)).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).build(), RenderPassLayouts.COLOR_ONLY);
+      TRACY_BLIT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/tracy_blit").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).build(), RenderPassLayouts.COLOR_ONLY);
+      PANORAMA = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withLocation("pipeline/panorama").withVertexShader("core/panorama").withFragmentShader("core/panorama").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.POSITION).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(ColorTargetState.DEFAULT).build(), RenderPassLayouts.COLOR_ONLY);
+      OUTLINE_CULL = precompiled(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_cull").build(), RenderPassLayouts.COLOR_ONLY);
+      OUTLINE_NO_CULL = precompiled(RenderPipeline.builder(OUTLINE_SNIPPET).withLocation("pipeline/outline_no_cull").withCull(false).build(), RenderPassLayouts.COLOR_ONLY);
+      LIGHTMAP = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/lightmap").withVertexShader("core/screentriangle").withFragmentShader("core/lightmap").withBindGroupLayout(BindGroupLayouts.LIGHTMAP_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).build(), RenderPassLayouts.COLOR_ONLY);
       ANIMATE_SPRITE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withVertexShader("core/animate_sprite").withBindGroupLayout(BindGroupLayouts.SPRITE_ANIMATION_INFO).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
-      ANIMATE_SPRITE_BLIT = precompiled(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withBindGroupLayout(BindGroupLayouts.SPRITE).build());
-      ANIMATE_SPRITE_INTERPOLATE = precompiled(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withBindGroupLayout(BindGroupLayouts.CURRENT_SPRITE_NEXT_SPRITE).build());
-      BLIT_DEPTH_BOUNDS = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth_bounds").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(DepthStencilState.OFF).build());
-      OIT_DEPTH_BOUNDS_CULL = precompiled(RenderPipeline.builder(OIT_SNIPPET).withVertexShader("core/screentriangle").withFragmentShader("core/oit_depth_bounds_cull").withLocation("pipeline/oit_depth_bounds_cull").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.empty(), GpuFormat.RGBA32_FLOAT, 15)).withDepthStencilState(DepthStencilState.DEFAULT).build());
-      BLIT_SKY = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_sky").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(DepthStencilState.DEFAULT).withColorTargetState(ColorTargetState.DEFAULT).build());
-      BLIT_DEPTH = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth").withVertexShader("core/screentriangle").withFragmentShader("core/blit_depth").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
-      OIT_COMPOSITE = precompiled(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screentriangle").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), GpuFormat.RGBA8_UNORM, 15)).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
-      INTEGRATE_DEPTH = precompiled(RenderPipeline.builder().withVertexShader("core/screentriangle").withFragmentShader("core/integrate_depth").withLocation("pipeline/integrate_depth").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build());
+      ANIMATE_SPRITE_BLIT = precompiled(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_blit").withLocation("pipeline/animate_sprite_blit").withBindGroupLayout(BindGroupLayouts.SPRITE).build(), RenderPassLayouts.COLOR_ONLY);
+      ANIMATE_SPRITE_INTERPOLATE = precompiled(RenderPipeline.builder(ANIMATE_SPRITE_SNIPPET).withFragmentShader("core/animate_sprite_interpolate").withLocation("pipeline/animate_sprite_interpolate").withBindGroupLayout(BindGroupLayouts.CURRENT_SPRITE_NEXT_SPRITE).build(), RenderPassLayouts.COLOR_ONLY);
+      BLIT_DEPTH_BOUNDS = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth_bounds").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withColorTargetState(new ColorTargetState(Optional.empty(), 15)).build(), RenderPassLayouts.OIT_DEPTH_BOUNDS);
+      OIT_DEPTH_BOUNDS_CULL = precompiled(RenderPipeline.builder(OIT_SNIPPET).withVertexShader("core/screentriangle").withFragmentShader("core/oit_depth_bounds_cull").withLocation("pipeline/oit_depth_bounds_cull").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withBindGroupLayout(BindGroupLayouts.PROJECTION).withColorTargetState(new ColorTargetState(Optional.empty(), 15)).withDepthStencilState(DepthStencilState.DEFAULT).build(), RenderPassLayouts.OIT_DEPTH_BOUNDS);
+      BLIT_SKY = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_sky").withVertexShader("core/screentriangle").withFragmentShader("core/blit_screen").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(DepthStencilState.DEFAULT).withColorTargetState(ColorTargetState.DEFAULT).build(), RenderPassLayouts.COLOR_DEPTH);
+      BLIT_DEPTH = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withLocation("pipeline/blit_depth").withVertexShader("core/screentriangle").withFragmentShader("core/blit_depth").withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build(), RenderPassLayouts.DEPTH_ONLY);
+      OIT_COMPOSITE = precompiled(RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withVertexShader("core/screentriangle").withFragmentShader("core/oit_composite").withLocation("pipeline/oit_composite").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA), 15)).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build(), RenderPassLayouts.COLOR_DEPTH);
+      INTEGRATE_DEPTH = precompiled(RenderPipeline.builder().withVertexShader("core/screentriangle").withFragmentShader("core/integrate_depth").withLocation("pipeline/integrate_depth").withPrimitiveTopology(PrimitiveTopology.TRIANGLES).withBindGroupLayout(BindGroupLayouts.IN_SAMPLER).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, true)).build(), RenderPassLayouts.DEPTH_ONLY);
       STATIC_PIPELINES_TO_PRECOMPILE = Set.copyOf(STATIC_PIPELINES_TO_PRECOMPILE_INIT);
       STATIC_PIPELINES_TO_PRECOMPILE_INIT = null;
    }
@@ -639,8 +641,14 @@ public class RenderPipelines {
       }
    }
 
-   public static record SkyParameters(SkyRenderer.SkyElement element, boolean hasDepthAttachment) {
+   public static record SkyParameters(SkyRenderer.SkyElement element) {
       public SkyParameters {
+         super();
+      }
+   }
+
+   public static record GuiParameters(GuiRenderPipelineVariant variant) {
+      public GuiParameters {
          super();
       }
    }

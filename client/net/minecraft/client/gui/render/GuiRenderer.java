@@ -16,12 +16,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.pip.OversizedItemRenderer;
@@ -29,10 +29,10 @@ import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
 import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.Projection;
 import net.minecraft.client.renderer.ProjectionMatrixBuffer;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.StagedVertexBuffer;
 import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.client.renderer.state.gui.BlitRenderState;
 import net.minecraft.client.renderer.state.gui.GlyphRenderState;
@@ -123,7 +123,7 @@ public class GuiRenderer implements AutoCloseable {
       this.firstDrawIndexAfterBlur = 2147483647;
       this.clearUnusedOversizedItemRenderers();
       if (SharedConstants.DEBUG_SHUFFLE_UI_RENDERING_ORDER) {
-         RenderPipeline.updateSortKeySeed();
+         GuiPipeline.updateSortKeySeed();
          TextureSetup.updateSortKeySeed();
       }
 
@@ -190,7 +190,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void executeDrawRange(final Supplier<String> label, final RenderTarget mainRenderTarget, final GpuBufferSlice dynamicTransforms, final int startIndex, final int endIndex) {
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, mainRenderTarget.getColorTextureView(), Optional.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(label, RenderPassLayouts.COLOR_ONLY, mainRenderTarget.getColorTextureView())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
@@ -203,7 +203,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void addElementToMesh(final GuiElementRenderState elementState) {
-      RenderPipeline pipeline = elementState.pipeline();
+      RenderPipeline pipeline = elementState.pipeline().pipeline();
       TextureSetup textureSetup = elementState.textureSetup();
       ScreenRectangle scissorArea = elementState.scissorArea();
       if (this.previousDraw == null || pipeline != this.previousPipeline || this.scissorChanged(scissorArea, this.previousScissorArea) || !textureSetup.equals(this.previousTextureSetup)) {
@@ -280,7 +280,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    private void submitBlitFromItemAtlas(final GuiItemRenderState itemState, final GuiItemAtlas.SlotView slotView) {
-      this.renderState.addBlitToCurrentLayer(new BlitRenderState(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(slotView.textureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), itemState.pose(), itemState.x(), itemState.y(), itemState.x() + 16, itemState.y() + 16, slotView.u0(), slotView.u1(), slotView.v0(), slotView.v1(), -1, itemState.scissorArea(), (ScreenRectangle)null));
+      this.renderState.addBlitToCurrentLayer(new BlitRenderState(GuiPipeline.TEXTURED_PREMULTIPLIED_ALPHA, TextureSetup.singleTexture(slotView.textureView(), RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST)), itemState.pose(), itemState.x(), itemState.y(), itemState.x() + 16, itemState.y() + 16, slotView.u0(), slotView.u1(), slotView.v0(), slotView.v1(), -1, itemState.scissorArea(), (ScreenRectangle)null));
    }
 
    private GuiItemAtlas prepareItemAtlas(final Set<Object> itemsInFrame, final int slotTextureSize) {
@@ -329,7 +329,7 @@ public class GuiRenderer implements AutoCloseable {
       StagedVertexBuffer.ExecuteInfo executeInfo = this.vertexBuffer.getExecuteInfo(draw.draw);
       if (executeInfo != null) {
          RenderPipeline pipeline = draw.pipeline();
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
          renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          ScreenRectangle scissorArea = draw.scissorArea();
          if (scissorArea != null) {
@@ -393,7 +393,7 @@ public class GuiRenderer implements AutoCloseable {
    }
 
    static {
-      ELEMENT_SORT_COMPARATOR = Comparator.comparing(GuiElementRenderState::scissorArea, SCISSOR_COMPARATOR).thenComparing(GuiElementRenderState::pipeline, Comparator.comparing(RenderPipeline::getSortKey)).thenComparing(GuiElementRenderState::textureSetup, TEXTURE_COMPARATOR);
+      ELEMENT_SORT_COMPARATOR = Comparator.comparing(GuiElementRenderState::scissorArea, SCISSOR_COMPARATOR).thenComparing(GuiElementRenderState::pipeline, Comparator.comparing(GuiPipeline::getSortKey)).thenComparing(GuiElementRenderState::textureSetup, TEXTURE_COMPARATOR);
    }
 
    private static record Draw(StagedVertexBuffer.Draw draw, RenderPipeline pipeline, TextureSetup textureSetup, @Nullable ScreenRectangle scissorArea) {

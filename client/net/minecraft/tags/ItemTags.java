@@ -83,6 +83,7 @@ public final class ItemTags {
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_EXPLOSIVE;
    public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_HOT;
+   public static final TagKey<Item> SULFUR_CUBE_ARCHETYPE_COLD;
    public static final TagKey<Item> SULFUR_CUBE_SWALLOWABLE;
    public static final TagKey<Item> BANNERS;
    public static final TagKey<Item> PIGLIN_REPELLENTS;
@@ -315,6 +316,7 @@ public final class ItemTags {
       SULFUR_CUBE_ARCHETYPE_HIGH_RESISTANCE = bind("sulfur_cube_archetype/high_resistance");
       SULFUR_CUBE_ARCHETYPE_EXPLOSIVE = bind("sulfur_cube_archetype/explosive");
       SULFUR_CUBE_ARCHETYPE_HOT = bind("sulfur_cube_archetype/hot");
+      SULFUR_CUBE_ARCHETYPE_COLD = bind("sulfur_cube_archetype/cold");
       SULFUR_CUBE_SWALLOWABLE = bind("sulfur_cube_swallowable");
       BANNERS = bind("banners");
       PIGLIN_REPELLENTS = bind("piglin_repellents");

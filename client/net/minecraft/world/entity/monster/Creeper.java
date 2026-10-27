@@ -162,8 +162,10 @@ public class Creeper extends Monster {
    public boolean killedEntity(final ServerLevel level, final LivingEntity entity, final DamageSource source) {
       if (this.shouldDropLoot(level) && this.isPowered() && !this.droppedSkulls) {
          entity.dropFromLootTable(level, source, false, BuiltInLootTables.CHARGED_CREEPER, (itemStack) -> {
-            entity.spawnAtLocation(level, itemStack);
-            this.droppedSkulls = true;
+            if (entity.spawnAtLocation(level, itemStack) != null) {
+               this.droppedSkulls = true;
+            }
+
          });
       }
 

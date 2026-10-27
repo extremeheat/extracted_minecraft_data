@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.options.controls;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -44,6 +43,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
       LinearLayout bottomButtons = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       bottomButtons.addChild(this.resetButton);
       bottomButtons.addChild(Button.builder(CommonComponents.GUI_DONE, (button) -> this.onClose()).build());
+      this.updateResetAllButton();
    }
 
    protected void repositionElements() {
@@ -53,6 +53,19 @@ public class KeyBindsScreen extends OptionsSubScreen {
 
    public void refreshKeybindLabels() {
       this.keyBindsList.refreshEntries();
+   }
+
+   public void updateResetAllButton() {
+      boolean canReset = false;
+
+      for(KeyMapping key : this.options.keyMappings) {
+         if (!key.isDefault()) {
+            canReset = true;
+            break;
+         }
+      }
+
+      this.resetButton.active = canReset;
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -86,19 +99,5 @@ public class KeyBindsScreen extends OptionsSubScreen {
       } else {
          return super.keyPressed(event);
       }
-   }
-
-   public void extractRenderState(final GuiGraphicsExtractor graphics) {
-      super.extractRenderState(graphics);
-      boolean canReset = false;
-
-      for(KeyMapping key : this.options.keyMappings) {
-         if (!key.isDefault()) {
-            canReset = true;
-            break;
-         }
-      }
-
-      this.resetButton.active = canReset;
    }
 }

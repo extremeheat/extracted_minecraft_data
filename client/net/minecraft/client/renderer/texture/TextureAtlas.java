@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
+import net.minecraft.client.renderer.RenderPassLayouts;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -183,9 +183,9 @@ public class TextureAtlas implements AutoCloseable {
 
       try (GpuBuffer ubo = device.createBuffer(() -> "SpriteAnimationInfo", 128, buffer)) {
          for(int level = 0; level < this.mipLevelCount; ++level) {
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), RenderPassLayouts.COLOR_ONLY, this.mipViews[level])) {
                RenderSystem.bindDefaultUniforms(renderPass);
-               renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT));
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT, renderPass.activeSubpass()));
 
                for(int i = 0; i < staticSprites.size(); ++i) {
                   renderPass.setUniform("Sprite", ((GpuTextureView[])scratchTextures.get(i))[level], sampler);
@@ -253,7 +253,7 @@ public class TextureAtlas implements AutoCloseable {
    private void uploadAnimationFrames() {
       if (this.animatedTexturesStates.stream().anyMatch(SpriteContents.AnimationState::needsToDraw)) {
          for(int level = 0; level <= this.maxMipLevel; ++level) {
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), this.mipViews[level], Optional.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Animate " + String.valueOf(this.location), RenderPassLayouts.COLOR_ONLY, this.mipViews[level])) {
                RenderSystem.bindDefaultUniforms(renderPass);
 
                for(SpriteContents.AnimationState animationState : this.animatedTexturesStates) {

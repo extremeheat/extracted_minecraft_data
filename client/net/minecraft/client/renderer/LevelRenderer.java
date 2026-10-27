@@ -15,7 +15,6 @@ import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
-import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.AddressMode;
@@ -336,9 +335,9 @@ public class LevelRenderer implements AutoCloseable {
             RenderSystem.setShaderFog(fogBuffer);
             this.skyRenderer.prepare(this.levelRenderState.skyRenderState);
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky", ((RenderTarget)this.targets.sky.get()).getColorTextureView(), Optional.of(fogColor), (GpuTextureView)null, OptionalDouble.empty())) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Sky", RenderPassLayouts.COLOR_ONLY, ((RenderTarget)this.targets.sky.get()).getColorTextureView(), Optional.of(fogColor))) {
                RenderSystem.bindDefaultUniforms(renderPass);
-               this.skyRenderer.render(this.levelRenderState.skyRenderState, renderPass, fogColor, false);
+               this.skyRenderer.render(this.levelRenderState.skyRenderState, renderPass, fogColor);
             }
 
          }
@@ -376,7 +375,7 @@ public class LevelRenderer implements AutoCloseable {
             RenderSystem.resizeAllAutoStorageIndexBuffers();
             RenderTarget cloudsTarget = this.targets.clouds.get();
 
-            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", cloudsTarget.getColorTextureView(), Optional.of(ZERO_CLEAR_COLOR), cloudsTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
+            try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Clouds", RenderPassLayouts.COLOR_DEPTH, cloudsTarget.getColorTextureView(), Optional.of(ZERO_CLEAR_COLOR), cloudsTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
                RenderSystem.bindDefaultUniforms(renderPass);
                this.cloudRenderer.render(cloudStatus, renderPass);
             }
@@ -437,10 +436,10 @@ public class LevelRenderer implements AutoCloseable {
          RenderTarget mainTarget = this.targets.main.get();
          Vector4f fogColor = this.levelRenderState.cameraRenderState.fogData.color;
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> useImprovedTransparency ? "Solid" : "Main", mainTarget.getColorTextureView(), Optional.of(fogColor), mainTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> useImprovedTransparency ? "Solid" : "Main", RenderPassLayouts.COLOR_DEPTH, mainTarget.getColorTextureView(), Optional.of(fogColor), mainTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             RenderSystem.bindDefaultUniforms(renderPass);
             if (shouldRenderSkyInMainPass) {
-               this.skyRenderer.render(this.levelRenderState.skyRenderState, renderPass, fogColor, true);
+               this.skyRenderer.render(this.levelRenderState.skyRenderState, renderPass, fogColor);
             }
 
             this.executeSolid(chunkSectionsToRender, featureFrame, renderPass);
@@ -472,7 +471,7 @@ public class LevelRenderer implements AutoCloseable {
    private void blitSky(final RenderPass renderPass, final GpuSampler nearestSampler) {
       renderPass.pushDebugGroup(() -> "Blit sky");
       renderPass.setUniform("InSampler", ((RenderTarget)this.targets.sky.get()).getColorTextureView(), nearestSampler);
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_SKY));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_SKY, renderPass.activeSubpass()));
       renderPass.draw(3, 1, 0, 0);
       renderPass.popDebugGroup();
    }
@@ -483,15 +482,13 @@ public class LevelRenderer implements AutoCloseable {
       renderPass.pushDebugGroup(() -> "Blit clouds");
       renderPass.setUniform("InSampler", cloudTarget.getColorTextureView(), nearestSampler);
       renderPass.setUniform("InDepthSampler", cloudTarget.getDepthTextureView(), nearestSampler);
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.blitClouds(stage)));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.blitClouds(stage), renderPass.activeSubpass()));
       renderPass.draw(3, 1, 0, 0);
       renderPass.popDebugGroup();
    }
 
    private void executeSeeThrough(final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderTarget mainTarget) {
-      RenderPassDescriptor descriptor = RenderPassDescriptor.builder(() -> "See through features").withColorAttachment(mainTarget.getColorTextureView()).build();
-
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(descriptor)) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "See through features", RenderPassLayouts.COLOR_ONLY, mainTarget.getColorTextureView())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          featureFrame.executeSeeThrough(renderPass);
       }
@@ -501,18 +498,17 @@ public class LevelRenderer implements AutoCloseable {
    private void executeAlwaysOnTop(final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderTarget mainTarget, final boolean consistentDepthRequired) {
       GpuTextureView depthTextureView = consistentDepthRequired ? ((RenderTarget)this.targets.alwaysOnTopDepth.get()).getDepthTextureView() : mainTarget.getDepthTextureView();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Always on top features", mainTarget.getColorTextureView(), Optional.empty(), depthTextureView, OptionalDouble.of(0.0))) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Always on top features", RenderPassLayouts.COLOR_DEPTH, mainTarget.getColorTextureView(), Optional.empty(), depthTextureView, OptionalDouble.of(0.0))) {
          RenderSystem.bindDefaultUniforms(renderPass);
          featureFrame.executeAlwaysOnTop(renderPass);
       }
 
       if (consistentDepthRequired) {
-         RenderPassDescriptor integrateDepthDescriptor = RenderPassDescriptor.builder(() -> "Integrate always on top depth").withDepthAttachment(mainTarget.getDepthTextureView()).build();
          GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
 
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(integrateDepthDescriptor)) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Integrate always on top depth", RenderPassLayouts.DEPTH_ONLY, mainTarget.getDepthTextureView())) {
             renderPass.setUniform("InSampler", depthTextureView, nearestSampler);
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.INTEGRATE_DEPTH));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.INTEGRATE_DEPTH, renderPass.activeSubpass()));
             renderPass.draw(3, 1, 0, 0);
          }
       }
@@ -615,7 +611,7 @@ public class LevelRenderer implements AutoCloseable {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       RenderTarget renderTarget = this.gameRenderer.mainRenderTarget();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT Composite", renderTarget.getColorTextureView(), Optional.empty(), renderTarget.getDepthTextureView(), OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT Composite", RenderPassLayouts.COLOR_DEPTH, renderTarget.getColorTextureView(), renderTarget.getDepthTextureView())) {
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setUniform("Sampler0", accumulateTargetView, nearestSampler);
 
@@ -624,7 +620,7 @@ public class LevelRenderer implements AutoCloseable {
          }
 
          renderPass.setUniform("DepthBoundsSampler", depthBoundsTargetView, nearestSampler);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.OIT_COMPOSITE));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.OIT_COMPOSITE, renderPass.activeSubpass()));
          renderPass.draw(3, 1, 0, 0);
       }
 
@@ -635,13 +631,13 @@ public class LevelRenderer implements AutoCloseable {
       RenderTarget depthBoundsTarget = this.targets.depthBounds.get();
       RenderTarget depthBoundsCulledTarget = this.targets.depthBoundsCulled.get();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT cull Depth Bounds", depthBoundsCulledTarget.getColorTextureView(), Optional.empty(), this.gameRenderer.mainRenderTarget().getDepthTextureView(), OptionalDouble.empty())) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "OIT cull Depth Bounds", RenderPassLayouts.OIT_DEPTH_BOUNDS, depthBoundsCulledTarget.getColorTextureView(), this.gameRenderer.mainRenderTarget().getDepthTextureView())) {
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH_BOUNDS));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH_BOUNDS, renderPass.activeSubpass()));
          renderPass.setUniform("InSampler", depthBoundsTarget.getColorTextureView(), nearestSampler);
          renderPass.draw(3, 1, 0, 0);
          renderPass.setUniform("DepthBoundsSampler", depthBoundsTarget.getColorTextureView(), nearestSampler);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.OIT_DEPTH_BOUNDS_CULL));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.OIT_DEPTH_BOUNDS_CULL, renderPass.activeSubpass()));
          renderPass.draw(3, 1, 0, 0);
       }
 
@@ -650,11 +646,10 @@ public class LevelRenderer implements AutoCloseable {
    private void executeOitWaterMask(final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderTarget mainTarget) {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       RenderTarget terrainTarget = this.targets.oitTerrainWithWaterPatchDepth.get();
-      RenderPassDescriptor descriptor = RenderPassDescriptor.builder(() -> "Water mask").withDepthAttachment(terrainTarget.getDepthTextureView()).build();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(descriptor)) {
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Water mask", RenderPassLayouts.DEPTH_ONLY, terrainTarget.getDepthTextureView())) {
          RenderSystem.bindDefaultUniforms(renderPass);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.BLIT_DEPTH, renderPass.activeSubpass()));
          renderPass.setUniform("InSampler", mainTarget.getDepthTextureView(), nearestSampler);
          renderPass.draw(3, 1, 0, 0);
          featureFrame.executeWaterMask(renderPass);
@@ -685,7 +680,7 @@ public class LevelRenderer implements AutoCloseable {
 
    private void executeOutline(final FeatureRenderDispatcher.PreparedFrame featureFrame) {
       if (this.currentFrameRendersEntityOutline) {
-         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Outline", this.entityOutlineTarget.getColorTextureView(), Optional.of(ZERO_CLEAR_COLOR))) {
+         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Outline", RenderPassLayouts.COLOR_ONLY, this.entityOutlineTarget.getColorTextureView(), Optional.of(ZERO_CLEAR_COLOR))) {
             RenderSystem.bindDefaultUniforms(renderPass);
             featureFrame.executeOutline(renderPass);
          }

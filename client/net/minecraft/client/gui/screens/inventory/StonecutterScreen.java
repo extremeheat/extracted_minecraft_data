@@ -3,8 +3,8 @@ package net.minecraft.client.gui.screens.inventory;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -48,12 +48,12 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
       super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int sy = (int)(41.0F * this.scrollOffs);
       Identifier sprite = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
       int scrollerXStart = xo + 119;
       int scrollerYStart = yo + 15;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, scrollerXStart, scrollerYStart + sy, 12, 15);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, scrollerXStart, scrollerYStart + sy, 12, 15);
       if (graphics.mouseX() >= scrollerXStart && graphics.mouseY() >= scrollerYStart && graphics.mouseX() < scrollerXStart + 12 && graphics.mouseY() < scrollerYStart + 54) {
          if (this.isScrollBarActive()) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
@@ -107,7 +107,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          }
 
          int textureY = posY - 1;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, posX, textureY, 16, 18);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, posX, textureY, 16, 18);
          if (graphics.mouseX() >= posX && graphics.mouseY() >= textureY && graphics.mouseX() < posX + 16 && graphics.mouseY() < textureY + 18) {
             graphics.requestCursor(CursorTypes.POINTING_HAND);
          }

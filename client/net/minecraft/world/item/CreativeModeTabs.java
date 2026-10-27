@@ -393,6 +393,10 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_WALL);
          buildingBlocks.accept((ItemLike)Items.CHISELED_PACKED_ICE);
+         buildingBlocks.accept((ItemLike)Items.SNOW_BRICKS);
+         buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_SLAB);
+         buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_WALL);
          buildingBlocks.accept((ItemLike)Items.SEA_LANTERN);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE_STAIRS);

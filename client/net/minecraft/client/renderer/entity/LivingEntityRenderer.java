@@ -233,7 +233,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
 
    public boolean isEntityUpsideDown(final T mob) {
       Component customName = mob.getCustomName();
-      return customName != null && isUpsideDownName(customName.getString());
+      return customName != null && isUpsideDownName(customName.getString(11));
    }
 
    protected static boolean isUpsideDownName(final String name) {

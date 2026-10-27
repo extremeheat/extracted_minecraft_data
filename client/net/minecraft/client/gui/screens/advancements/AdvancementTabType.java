@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -48,7 +48,7 @@ public enum AdvancementTabType {
          sprite = sprites.middle();
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, tabX, tabY, this.width, this.height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, tabX, tabY, this.width, this.height);
    }
 
    public void extractIcon(final GuiGraphicsExtractor graphics, final int xo, final int yo, final int index, final ItemStack icon) {

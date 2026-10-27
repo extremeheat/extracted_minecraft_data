@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -22,7 +22,7 @@ public class HangingSignEditScreen extends AbstractSignEditScreen {
 
    protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
       graphics.pose().scale(4.5F, 4.5F);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -8, -16, 0.0F, 0.0F, 16, 16, 16, 16);
+      graphics.blit(GuiPipeline.TEXTURED, this.texture, -8, -16, 0.0F, 0.0F, 16, 16, 16, 16);
    }
 
    protected int getSignTextYOffset() {

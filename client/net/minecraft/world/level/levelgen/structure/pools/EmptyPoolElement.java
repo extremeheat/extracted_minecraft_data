@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.structure.pools;
 import com.mojang.serialization.MapCodec;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.RandomSource;
@@ -20,7 +21,7 @@ public class EmptyPoolElement extends StructurePoolElement {
    public static final EmptyPoolElement INSTANCE = new EmptyPoolElement();
 
    private EmptyPoolElement() {
-      super(StructureTemplatePool.Projection.TERRAIN_MATCHING);
+      super(StructureTemplatePool.Projection.TERRAIN_MATCHING, Optional.empty());
    }
 
    public Vec3i getSize(final StructureTemplateManager structureTemplateManager, final Rotation rotation) {

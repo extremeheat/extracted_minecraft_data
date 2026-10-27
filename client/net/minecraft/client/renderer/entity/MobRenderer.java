@@ -21,6 +21,6 @@ public abstract class MobRenderer<T extends Mob, S extends LivingEntityRenderSta
 
    protected static boolean checkMagicName(final Entity entity, final String magicName) {
       Component customName = entity.getCustomName();
-      return customName != null && magicName.equals(customName.getString());
+      return customName != null && magicName.equals(customName.getString(magicName.length() + 1));
    }
 }

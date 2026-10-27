@@ -4,6 +4,7 @@ import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
@@ -19,6 +20,12 @@ public interface RenderPass extends UncheckedAutoCloseable {
    int INDIRECT_DRAW_SIZE = 16;
    int INDIRECT_INDEXED_DRAW_SIZE = 20;
 
+   RenderPassLayout layout();
+
+   RenderPassLayout.Subpass activeSubpass();
+
+   void nextSubpass();
+
    void pushDebugGroup(Supplier<String> label);
 
    void popDebugGroup();
@@ -26,6 +33,8 @@ public interface RenderPass extends UncheckedAutoCloseable {
    void writeTimestamp(GpuQueryPool pool, int index);
 
    void setPipeline(CompiledRenderPipeline pipeline);
+
+   void setUniform(String name, @Nullable GpuTextureView textureView);
 
    void setUniform(String name, @Nullable GpuTextureView textureView, @Nullable GpuSampler sampler);
 
@@ -72,6 +81,10 @@ public interface RenderPass extends UncheckedAutoCloseable {
    }
 
    public static record RenderArea(int x, int y, int width, int height) {
+      public RenderArea(final GpuTextureView texture) {
+         this(0, 0, texture.getWidth(0), texture.getHeight(0));
+      }
+
       public RenderArea {
          super();
       }

@@ -145,7 +145,7 @@ public class WorldBorderRenderer implements AutoCloseable {
          RenderPipeline renderPipeline = RenderPipelines.worldBorder(oitStage);
          GpuBuffer indexBuffer = this.indices.getBuffer();
          GpuBufferSlice dynamicTransforms = this.prepareDynamicTransforms(state, cameraPos);
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline, renderPass.activeSubpass()));
          this.prepareRenderPass(renderPass, dynamicTransforms, indexBuffer, this.texture);
          this.draw(distancesPerDirection, renderDistance, cameraPos.x, cameraPos.z, indexBuffer, renderPass);
       }

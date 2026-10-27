@@ -22,6 +22,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.GameLoadCookie;
+import net.minecraft.client.InputType;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -48,7 +49,6 @@ import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.quickplay.QuickPlay;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.gui.ColoredRectangleRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.resources.SplashManager;
@@ -136,8 +136,34 @@ public class Gui {
 
    }
 
-   public void update() {
+   public void update(final DeltaTracker deltaTracker) {
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("gui");
       this.toastManager.update();
+      this.hud.update(deltaTracker);
+      if (this.overlay != null) {
+         try {
+            this.overlay.update(deltaTracker);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Updating overlay");
+            CrashReportCategory category = report.addCategory("Overlay details");
+            category.setDetail("Overlay name", (CrashReportDetail)(() -> this.overlay.getClass().getCanonicalName()));
+            throw new ReportedException(report);
+         }
+      }
+
+      if (this.screen != null) {
+         try {
+            this.screen.update(deltaTracker);
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Updating screen");
+            CrashReportCategory category = report.addCategory("Screen details");
+            category.setDetail("Screen name", (CrashReportDetail)(() -> this.screen.getClass().getCanonicalName()));
+            throw new ReportedException(report);
+         }
+      }
+
+      profiler.pop();
 
       try {
          if (this.screen != null) {
@@ -247,6 +273,8 @@ public class Gui {
 
          this.minecraft.textInputManager().stopTextInput();
          oldScreen.removed();
+      } else {
+         this.minecraft.setLastInputType(InputType.NONE);
       }
 
       if (newScreen == null) {
@@ -476,7 +504,7 @@ public class Gui {
                int green = style.getHoverEvent() != null ? intensity : 0;
                int blue = red != 0 && green != 0 ? 0 : intensity;
                int color = ARGB.color(128, red, green, blue);
-               Gui.this.guiRenderState.addGuiElement(new ColoredRectangleRenderState(RenderPipelines.GUI, TextureSetup.noTexture(), text.pose, (int)glyph.activeLeft(), (int)glyph.activeTop(), (int)glyph.activeRight(), (int)glyph.activeBottom(), color, color, text.scissor));
+               Gui.this.guiRenderState.addGuiElement(new ColoredRectangleRenderState(GuiPipeline.DEFAULT, TextureSetup.noTexture(), text.pose, (int)glyph.activeLeft(), (int)glyph.activeTop(), (int)glyph.activeRight(), (int)glyph.activeBottom(), color, color, text.scissor));
             }
          }));
    }

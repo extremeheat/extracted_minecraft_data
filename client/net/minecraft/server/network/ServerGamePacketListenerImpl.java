@@ -517,7 +517,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             Vec3 clientDeltaMovement = new Vec3(vehicle.getX() - oldX, vehicle.getY() - oldY, vehicle.getZ() - oldZ);
             this.handlePlayerKnownMovement(clientDeltaMovement);
             vehicle.setOnGroundWithMovement(packet.onGround(), clientDeltaMovement);
-            vehicle.doCheckFallDamage(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z, packet.onGround());
+            vehicle.updateFallDistanceAndCheckFallDamageForClientControlledEntity(clientDeltaMovement, packet.onGround());
             this.player.checkMovementStatistics(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z);
             this.clientVehicleIsFloating = oyDist >= -0.03125 && !vehicleRestsOnSomething && !this.server.allowFlight() && !vehicle.isFlyingVehicle() && !vehicle.isNoGravity() && this.noBlocksAround(vehicle);
             this.vehicleLastGoodX = vehicle.getX();
@@ -1116,9 +1116,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), targetYRot, targetXRot);
          this.player.level().getChunkSource().move(this.player);
       } else {
-         double startX = this.player.getX();
-         double startY = this.player.getY();
-         double startZ = this.player.getZ();
+         Vec3 start = this.player.position();
          double xDist = targetX - this.firstGoodX;
          double yDist = targetY - this.firstGoodY;
          double zDist = targetZ - this.firstGoodZ;
@@ -1185,9 +1183,9 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                boolean isAutoSpinAttack = this.player.isAutoSpinAttack();
                this.clientIsFloating = oyDist >= -0.03125 && !playerStandsOnSomething && !this.player.isSpectator() && !this.server.allowFlight() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !isFallFlying && !isAutoSpinAttack && this.noBlocksAround(this.player);
                this.player.level().getChunkSource().move(this.player);
-               Vec3 clientDeltaMovement = new Vec3(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
+               Vec3 clientDeltaMovement = this.player.position().subtract(start);
                this.player.setOnGroundWithMovement(isOnGround, horizontalCollision, clientDeltaMovement);
-               this.player.doCheckFallDamage(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z, isOnGround);
+               this.player.updateFallDistanceAndCheckFallDamageForClientControlledEntity(clientDeltaMovement, isOnGround);
                this.handlePlayerKnownMovement(clientDeltaMovement);
                if (movedUpwards) {
                   this.player.resetFallDistance();
@@ -1197,13 +1195,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   this.player.tryResetCurrentImpulseContext();
                }
 
-               this.player.checkMovementStatistics(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ);
+               this.player.checkMovementStatistics(clientDeltaMovement.x, clientDeltaMovement.y, clientDeltaMovement.z);
                this.lastGoodX = this.player.getX();
                this.lastGoodY = this.player.getY();
                this.lastGoodZ = this.player.getZ();
             } else {
-               this.teleport(startX, startY, startZ, targetYRot, targetXRot);
-               this.player.doCheckFallDamage(this.player.getX() - startX, this.player.getY() - startY, this.player.getZ() - startZ, isOnGround);
+               this.teleport(start.x, start.y, start.z, targetYRot, targetXRot);
+               this.player.updateFallDistanceAndCheckFallDamageForClientControlledEntity(this.player.position().subtract(start), isOnGround);
                this.player.removeLatestMovementRecording();
             }
          }

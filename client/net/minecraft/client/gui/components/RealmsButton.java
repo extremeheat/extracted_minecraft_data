@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -15,7 +15,7 @@ public class RealmsButton extends Button {
 
    protected void extractContents(final GuiGraphicsExtractor graphics) {
       Identifier sprite = SPRITES.get(this.active, this.isHoveredOrFocused());
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
       this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
    }
 }

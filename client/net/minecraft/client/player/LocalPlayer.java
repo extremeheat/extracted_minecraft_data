@@ -908,7 +908,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean shouldStopSwimSprinting() {
-      return !this.isSprintingPossible(true) || !this.isInWater() || !this.input.hasForwardImpulse() && !this.onGround() && !this.input.keyPresses.shift();
+      return !this.isSprintingPossible(true) || !this.isInSwimmableLiquid() || !this.input.hasForwardImpulse() && !this.onGround() && !this.input.keyPresses.shift();
    }
 
    public Portal.Transition getActivePortalLocalTransition() {
@@ -1143,7 +1143,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isSlowDueToUsingItem() && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
+      return !this.isSprinting() && this.input.hasForwardImpulse() && this.isSprintingPossible(this.getAbilities().flying) && !this.isSlowDueToUsingItem() && (!this.isFallFlying() || this.isEyeInFluid(FluidTags.SWIMMABLE)) && (!this.isMovingSlowly() || this.isEyeInFluid(FluidTags.SWIMMABLE));
    }
 
    private boolean vehicleCanSprint(final Entity vehicle) {

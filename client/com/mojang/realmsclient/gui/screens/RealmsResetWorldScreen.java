@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -26,7 +27,6 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -203,8 +203,8 @@ public class RealmsResetWorldScreen extends RealmsScreen {
 
          int x = this.getX();
          int y = this.getY();
-         graphics.blit(RenderPipelines.GUI_TEXTURED, this.image, x + 2, y + 2, 0.0F, 0.0F, 56, 56, 56, 56, 56, 56, color);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 60, 60, color);
+         graphics.blit(GuiPipeline.TEXTURED, this.image, x + 2, y + 2, 0.0F, 0.0F, 56, 56, 56, 56, 56, 56, color);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 60, 60, color);
          int textColor = hoveredOrFocused ? -6250336 : -1;
          graphics.centeredText(RealmsResetWorldScreen.this.font, this.getMessage(), x + 28, y - 14, textColor);
       }

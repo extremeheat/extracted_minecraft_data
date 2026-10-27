@@ -194,12 +194,13 @@ public class GlPipelineRecompiler {
 
                   Spvc.spvc_compiler_set_name(compiler, resource.id(), blockName);
                   Spvc.spvc_compiler_set_name(compiler, resource.base_type_id(), String.format(Locale.ROOT, "_uniform_%02d_%02d", descriptorSet, binding));
+                  break;
                case 3:
                case 4:
-               case 5:
                case 8:
                default:
-                  break;
+                  throw new IllegalArgumentException("Attempt to rename unhandled descriptor type");
+               case 5:
                case 6:
                case 7:
                case 10:

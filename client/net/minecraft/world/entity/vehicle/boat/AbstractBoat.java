@@ -717,13 +717,11 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       super.remove(reason);
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
       this.lastYd = this.getDeltaMovement().y;
       if (!this.isPassenger()) {
          if (onGround) {
             this.resetFallDistance();
-         } else if (!this.level().getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && ya < 0.0) {
-            this.fallDistance -= (double)((float)ya);
          }
 
       }

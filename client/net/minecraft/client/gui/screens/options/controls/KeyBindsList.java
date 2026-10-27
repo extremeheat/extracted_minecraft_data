@@ -53,6 +53,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
    public void resetMappingAndUpdateButtons() {
       KeyMapping.resetMapping();
       this.refreshEntries();
+      this.keyBindsScreen.updateResetAllButton();
    }
 
    public void refreshEntries() {

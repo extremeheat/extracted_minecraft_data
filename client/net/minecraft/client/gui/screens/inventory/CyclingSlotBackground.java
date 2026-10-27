@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -49,7 +49,7 @@ public class CyclingSlotBackground {
    }
 
    private void extractIcon(final Slot slot, final Identifier iconIdentifier, final float alphaProgress, final GuiGraphicsExtractor graphics, final int left, final int top) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)iconIdentifier, left + slot.x, top + slot.y, 16, 16, ARGB.white(alphaProgress));
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)iconIdentifier, left + slot.x, top + slot.y, 16, 16, ARGB.white(alphaProgress));
    }
 
    private float getIconTransitionTransparency(final float a) {

@@ -2,7 +2,7 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import java.util.function.UnaryOperator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -26,8 +26,8 @@ public class TooltipRenderUtil {
       int y0 = y - 3 - 9;
       int paddedWidth = w + 3 + 3 + 18;
       int paddedHeight = h + 3 + 3 + 18;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(style), x0, y0, paddedWidth, paddedHeight);
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, getFrameSprite(style), x0, y0, paddedWidth, paddedHeight);
+      graphics.blitSprite(GuiPipeline.TEXTURED, getBackgroundSprite(style), x0, y0, paddedWidth, paddedHeight);
+      graphics.blitSprite(GuiPipeline.TEXTURED, getFrameSprite(style), x0, y0, paddedWidth, paddedHeight);
    }
 
    private static Identifier getBackgroundSprite(final @Nullable Identifier style) {

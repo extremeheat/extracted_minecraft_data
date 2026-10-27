@@ -35,11 +35,11 @@ public interface PlainTextContents extends ComponentContents {
          super();
       }
 
-      public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+      public <T> Optional<T> visitUnbounded(final FormattedText.ContentConsumer<T> output) {
          return output.accept(this.text);
       }
 
-      public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+      public <T> Optional<T> visitUnbounded(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
          return output.accept(currentStyle, this.text);
       }
 

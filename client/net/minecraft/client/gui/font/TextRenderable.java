@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.font;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import org.joml.Matrix4fc;
 
@@ -14,7 +14,7 @@ public interface TextRenderable {
 
    GpuTextureView textureView();
 
-   RenderPipeline guiPipeline();
+   GuiPipeline guiPipeline();
 
    float left();
 

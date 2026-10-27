@@ -8,7 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -75,7 +75,7 @@ public class SystemToast implements Toast {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
          this.extractTextLines(graphics, font, this.titleLines, 12, -256);
       } else {

@@ -1,11 +1,14 @@
 package net.minecraft.world.level.levelgen.densityfunction.generator;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Objects;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctions;
@@ -15,32 +18,42 @@ import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.densityfunction.TilingMode;
 
-public record GradientFunction(Direction.Axis axis, TilingMode tiling, int fromCoordinate, int toCoordinate, float fromValue, float toValue) implements DensityFunction {
-   public static final MapCodec<GradientFunction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Direction.Axis.CODEC.fieldOf("axis").forGetter(GradientFunction::axis), TilingMode.CODEC.optionalFieldOf("tiling", TilingMode.CLAMP_TO_EDGE).forGetter(GradientFunction::tiling), Codec.INT.fieldOf("from_coordinate").forGetter(GradientFunction::fromCoordinate), Codec.INT.fieldOf("to_coordinate").forGetter(GradientFunction::toCoordinate), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("from_value").forGetter(GradientFunction::fromValue), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("to_value").forGetter(GradientFunction::toValue)).apply(i, GradientFunction::new)).validate(GradientFunction::validate);
+public record GradientFunction(Direction.Axis axis, TilingMode tiling, Coordinate fromCoordinate, Coordinate toCoordinate, float fromValue, float toValue) implements DensityFunction {
+   public static final MapCodec<GradientFunction> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Direction.Axis.CODEC.fieldOf("axis").forGetter(GradientFunction::axis), TilingMode.CODEC.optionalFieldOf("tiling", TilingMode.CLAMP_TO_EDGE).forGetter(GradientFunction::tiling), GradientFunction.Coordinate.CODEC.fieldOf("from_coordinate").forGetter(GradientFunction::fromCoordinate), GradientFunction.Coordinate.CODEC.fieldOf("to_coordinate").forGetter(GradientFunction::toCoordinate), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("from_value").forGetter(GradientFunction::fromValue), DensityFunctions.NOISE_VALUE_CODEC.fieldOf("to_value").forGetter(GradientFunction::toValue)).apply(i, GradientFunction::new)).validate(GradientFunction::validate);
 
    public GradientFunction {
       super();
    }
 
    private static DataResult<GradientFunction> validate(final GradientFunction gradient) {
-      return gradient.fromCoordinate == gradient.toCoordinate ? DataResult.error(() -> "from_coordinate cannot be equal to to_coordinate") : DataResult.success(gradient);
+      if (gradient.fromCoordinate.equals(gradient.toCoordinate)) {
+         return DataResult.error(() -> "from_coordinate cannot be equal to to_coordinate");
+      } else {
+         return gradient.axis == Direction.Axis.Y || gradient.fromCoordinate instanceof Coordinate.Absolute && gradient.toCoordinate instanceof Coordinate.Absolute ? DataResult.success(gradient) : DataResult.error(() -> "Cannot use vertical anchor for " + String.valueOf(gradient.axis) + " axis");
+      }
    }
 
    public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
-      int coordinateRange = this.toCoordinate - this.fromCoordinate;
+      int fromCoordinate = this.fromCoordinate.resolve(context);
+      int toCoordinate = this.toCoordinate.resolve(context);
+      if (fromCoordinate == toCoordinate) {
+         toCoordinate = fromCoordinate + 1;
+      }
+
+      int coordinateRange = toCoordinate - fromCoordinate;
       float coordinateFactor = (this.toValue - this.fromValue) / (float)coordinateRange;
       Object var10000;
       switch (this.tiling) {
          case CLAMP_TO_EDGE:
-            int minCoordinate = Math.min(this.fromCoordinate, this.toCoordinate);
-            int maxCoordinate = Math.max(this.fromCoordinate, this.toCoordinate);
-            var10000 = new ClampedSampler(this.axis, this.fromCoordinate, minCoordinate, maxCoordinate, this.fromValue, coordinateFactor);
+            int minCoordinate = Math.min(fromCoordinate, toCoordinate);
+            int maxCoordinate = Math.max(fromCoordinate, toCoordinate);
+            var10000 = new ClampedSampler(this.axis, fromCoordinate, minCoordinate, maxCoordinate, this.fromValue, coordinateFactor);
             break;
          case REPEAT:
-            var10000 = new RepeatSampler(this.axis, this.fromCoordinate, coordinateRange, this.fromValue, coordinateFactor);
+            var10000 = new RepeatSampler(this.axis, fromCoordinate, coordinateRange, this.fromValue, coordinateFactor);
             break;
          case MIRRORED_REPEAT:
-            var10000 = new MirroredRepeatSampler(this.axis, this.fromCoordinate, coordinateRange, this.fromValue, coordinateFactor);
+            var10000 = new MirroredRepeatSampler(this.axis, fromCoordinate, coordinateRange, this.fromValue, coordinateFactor);
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);
@@ -63,6 +76,65 @@ public record GradientFunction(Direction.Axis axis, TilingMode tiling, int fromC
 
    public DensityFunction rewriteChildren(final DfRewriteRule rule) {
       return this;
+   }
+
+   public sealed interface Coordinate {
+      Codec<Coordinate> CODEC = Codec.either(GradientFunction.Coordinate.Absolute.CODEC, GradientFunction.Coordinate.YAnchor.CODEC).xmap(Either::unwrap, (coordinate) -> {
+         Objects.requireNonNull(coordinate);
+         int index$1 = 0;
+         Either var10000;
+         //$FF: index$1->value
+         //0->net/minecraft/world/level/levelgen/densityfunction/generator/GradientFunction$Coordinate$Absolute
+         //1->net/minecraft/world/level/levelgen/densityfunction/generator/GradientFunction$Coordinate$YAnchor
+         switch (coordinate.typeSwitch<invokedynamic>(coordinate, index$1)) {
+            case 0:
+               Absolute absolute = (Absolute)coordinate;
+               var10000 = Either.left(absolute);
+               break;
+            case 1:
+               YAnchor yAnchor = (YAnchor)coordinate;
+               var10000 = Either.right(yAnchor);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      });
+
+      int resolve(DensityFunction.CompileContext context);
+
+      public static record Absolute(int coordinate) implements Coordinate {
+         public static final Codec<Absolute> CODEC;
+
+         public Absolute {
+            super();
+         }
+
+         public int resolve(final DensityFunction.CompileContext context) {
+            return this.coordinate;
+         }
+
+         static {
+            CODEC = Codec.INT.xmap(Absolute::new, Absolute::coordinate);
+         }
+      }
+
+      public static record YAnchor(VerticalAnchor anchor) implements Coordinate {
+         public static final Codec<YAnchor> CODEC;
+
+         public YAnchor {
+            super();
+         }
+
+         public int resolve(final DensityFunction.CompileContext context) {
+            return this.anchor.resolveY(context.verticalAnchors());
+         }
+
+         static {
+            CODEC = VerticalAnchor.CODEC.xmap(YAnchor::new, YAnchor::anchor);
+         }
+      }
    }
 
    private interface GradientSampler extends DensitySampler {

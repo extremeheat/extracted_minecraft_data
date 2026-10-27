@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.font.glyphs;
 
 import com.mojang.blaze3d.font.GlyphInfo;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -180,7 +180,7 @@ public class BakedSheetGlyph implements EffectGlyph, BakedGlyph {
          return this.glyph.textureView;
       }
 
-      public RenderPipeline guiPipeline() {
+      public GuiPipeline guiPipeline() {
          return this.glyph.renderTypes.guiPipeline();
       }
    }
@@ -222,7 +222,7 @@ public class BakedSheetGlyph implements EffectGlyph, BakedGlyph {
          return this.glyph.textureView;
       }
 
-      public RenderPipeline guiPipeline() {
+      public GuiPipeline guiPipeline() {
          return this.glyph.renderTypes.guiPipeline();
       }
    }

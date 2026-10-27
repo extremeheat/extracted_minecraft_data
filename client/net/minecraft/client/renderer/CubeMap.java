@@ -13,7 +13,6 @@ import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.WindowRenderState;
@@ -60,8 +59,8 @@ public class CubeMap implements AutoCloseable {
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(modelViewStack));
       modelViewStack.popMatrix();
 
-      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", colorTexture, Optional.empty())) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+      try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Cubemap", RenderPassLayouts.COLOR_ONLY, colorTexture)) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline, renderPass.activeSubpass()));
          RenderSystem.bindDefaultUniforms(renderPass);
          renderPass.setVertexBuffer(0, this.vertexBuffer.slice());
          renderPass.setIndexBuffer(indexBuffer, indices.type());

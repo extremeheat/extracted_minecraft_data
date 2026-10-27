@@ -5,6 +5,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.SpvModule;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -92,13 +93,18 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
                case UNIFORM_BUFFER -> var10001 = 6;
                case COMBINED_IMAGE_SAMPLER -> var10001 = 1;
                case TEXEL_BUFFER -> var10001 = 4;
+               case INPUT_ATTACHMENT -> var10001 = 10;
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
             binding.descriptorType(var10001);
             binding.descriptorCount(1);
             binding.binding(uniform.binding());
-            binding.stageFlags(17);
+            binding.stageFlags(16);
+            if (uniform.type() != UniformType.INPUT_ATTACHMENT) {
+               binding.stageFlags(binding.stageFlags() | 1);
+            }
+
             bindings.put(binding);
          }
 
@@ -171,14 +177,14 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
             try {
                VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(shader.spv());
                LongBuffer pointer = stack.callocLong(1);
-               int var66 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
+               int var68 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
                String var10002 = shader.name();
-               VulkanUtils.crashIfFailure(device, var66, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
+               VulkanUtils.crashIfFailure(device, var68, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
                VulkanDebug var10000 = device.instance().debug();
-               VkDevice var67 = device.vkDevice();
+               VkDevice var69 = device.vkDevice();
                long var10003 = pointer.get(0);
                Objects.requireNonNull(pipelineCreateInfo);
-               var10000.setObjectName(var67, 15, var10003, (Supplier)(pipelineCreateInfo::name));
+               var10000.setObjectName(var69, 15, var10003, (Supplier)(pipelineCreateInfo::name));
                module = pointer.get(0);
                compiledShaderModules.add(module);
             } catch (Throwable var34) {
@@ -245,24 +251,34 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
             vkDepthStencilState.depthCompareOp(VulkanConst.toVk(depthStencilState.depthTest()));
          }
 
+         VkPipelineColorBlendAttachmentState.Buffer blendAttachments = VkPipelineColorBlendAttachmentState.calloc(pipelineCreateInfo.subpass().colorAttachments().size(), stack);
          List<ColorTargetState> colorTargetStates = pipelineCreateInfo.colorTargetStates();
-         VkPipelineColorBlendAttachmentState.Buffer blendAttachments = VkPipelineColorBlendAttachmentState.calloc(colorTargetStates.size(), stack);
 
-         for(ColorTargetState colorTargetState : colorTargetStates) {
-            blendAttachments.colorWriteMask(colorTargetState != null ? VulkanConst.toVk(colorTargetState) : 0);
-            if (colorTargetState != null && colorTargetState.blendFunction().isPresent()) {
-               applyBlendInformation(blendAttachments, (BlendFunction)colorTargetState.blendFunction().get());
+         for(int i = 0; i < colorTargetStates.size(); ++i) {
+            ColorTargetState state = (ColorTargetState)colorTargetStates.get(i);
+            VkPipelineColorBlendAttachmentState attachment = (VkPipelineColorBlendAttachmentState)blendAttachments.get(i);
+            if (state == null) {
+               attachment.colorWriteMask(0);
+            } else {
+               attachment.colorWriteMask(VulkanConst.toVk(state));
+               if (state.blendFunction().isPresent()) {
+                  BlendFunction blendFunction = (BlendFunction)state.blendFunction().get();
+                  attachment.blendEnable(true);
+                  attachment.colorBlendOp(VulkanConst.toVk(blendFunction.color().op()));
+                  attachment.alphaBlendOp(VulkanConst.toVk(blendFunction.alpha().op()));
+                  attachment.dstAlphaBlendFactor(VulkanConst.toVk(blendFunction.alpha().destFactor()));
+                  attachment.dstColorBlendFactor(VulkanConst.toVk(blendFunction.color().destFactor()));
+                  attachment.srcAlphaBlendFactor(VulkanConst.toVk(blendFunction.alpha().sourceFactor()));
+                  attachment.srcColorBlendFactor(VulkanConst.toVk(blendFunction.color().sourceFactor()));
+               }
             }
-
-            blendAttachments.position(blendAttachments.position() + 1);
          }
 
-         blendAttachments.position(0);
          VkPipelineColorBlendStateCreateInfo colorBlendState = VkPipelineColorBlendStateCreateInfo.calloc(stack).sType$Default().pAttachments(blendAttachments);
          VkPipelineViewportStateCreateInfo viewportState = VkPipelineViewportStateCreateInfo.calloc(stack).sType$Default().scissorCount(1).viewportCount(1);
          VkPipelineMultisampleStateCreateInfo multisampleState = VkPipelineMultisampleStateCreateInfo.calloc(stack).sType$Default().rasterizationSamples(1).sampleShadingEnable(false);
          VkPipelineDynamicStateCreateInfo dynamicStateInfo = VkPipelineDynamicStateCreateInfo.calloc(stack).sType$Default().pDynamicStates(stack.ints(1, 0));
-         VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(vkDepthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).renderPass(device.renderpassCache().getRenderPass(pipelineCreateInfo.depthStencilState() != null ? VulkanConst.toVk(pipelineCreateInfo.depthStencilFormat()) : 0, colorTargetStates)).subpass(0);
+         VkGraphicsPipelineCreateInfo.Buffer createInfo = VkGraphicsPipelineCreateInfo.calloc(1, stack).sType$Default().flags(0).pStages(shaderStages).pVertexInputState(vertexInputState).pInputAssemblyState(inputAssemblyState).pRasterizationState(rasterizationState).pDepthStencilState(vkDepthStencilState).pColorBlendState(colorBlendState).pViewportState(viewportState).pMultisampleState(multisampleState).pDynamicState(dynamicStateInfo).layout(pipelineLayout).renderPass(device.renderpassCache().getRenderPass(pipelineCreateInfo.subpass().renderPassLayout())).subpass(pipelineCreateInfo.subpass().index());
          LongBuffer pointer = stack.callocLong(1);
          VulkanUtils.crashIfFailure(device, VK12.vkCreateGraphicsPipelines(device.vkDevice(), 0L, createInfo, (VkAllocationCallbacks)null, pointer), "Can't compile pipeline " + pipelineCreateInfo.name());
          long pipeline = pointer.get(0);

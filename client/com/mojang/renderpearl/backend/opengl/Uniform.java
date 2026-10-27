@@ -32,4 +32,10 @@ public sealed interface Uniform extends UncheckedAutoCloseable {
          super();
       }
    }
+
+   public static record InputAttachment(int samplerIndex) implements Uniform {
+      public InputAttachment {
+         super();
+      }
+   }
 }

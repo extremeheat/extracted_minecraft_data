@@ -3,10 +3,12 @@ package net.minecraft.world.entity.monster.cubemob;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
@@ -67,6 +69,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.SulfurCubeContent;
+import net.minecraft.world.item.enchantment.ConditionalEffect;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -76,6 +81,10 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -105,6 +114,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    private static final float VERTICAL_HIT_ANGLE_SCALE = 0.5F;
    private static final float VERTICAL_POSITION_ANGLE_SCALE = 0.8F;
    private static final float EXTRA_KNOCKBACK_DAMPENING = 0.25F;
+   private final Set<EnchantmentLocationBasedEffect> activeLocationDependentEffects;
    private static final Predicate<ItemEntity> ALLOWED_ITEMS;
 
    public SulfurCube(final EntityType<? extends SulfurCube> type, final Level level) {
@@ -113,6 +123,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       this.soundSettings = SulfurCubeArchetype.DEFAULT_SOUND_SETTINGS;
       this.fuse = -1;
       this.contactDamages = new ArrayList();
+      this.activeLocationDependentEffects = new HashSet();
       this.lookControl = new SulfurCubeLookControl();
       this.moveControl = new SulfurCubeMobMoveControl(this);
    }
@@ -338,6 +349,29 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       return false;
    }
 
+   protected void onChangedBlock(final ServerLevel level, final BlockPos pos) {
+      super.onChangedBlock(level, pos);
+      ItemStack item = this.getItemBySlot(EquipmentSlot.BODY);
+      List<SulfurCubeArchetype> currentArchetypes = this.matchingArchetypes(item);
+      EnchantedItemInUse itemInUse = new EnchantedItemInUse(item, EquipmentSlot.BODY, this);
+
+      for(SulfurCubeArchetype archetype : currentArchetypes) {
+         for(ConditionalEffect<EnchantmentLocationBasedEffect> effect : archetype.locationBasedEffects()) {
+            boolean active = this.activeLocationDependentEffects.contains(effect.effect());
+            LootContext context = this.getContext(level, active);
+            if (effect.matches(context)) {
+               ((EnchantmentLocationBasedEffect)effect.effect()).onChangedBlock(level, 1, itemInUse, this, this.position(), false);
+               if (!active) {
+                  this.activeLocationDependentEffects.add(effect.effect());
+               }
+            } else if (active) {
+               this.activeLocationDependentEffects.remove(effect.effect());
+            }
+         }
+      }
+
+   }
+
    protected void customServerAiStep(final ServerLevel level) {
       super.customServerAiStep(level);
       if (this.pickupTimer > 0) {
@@ -361,7 +395,10 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
             this.registerGoals();
          }
 
-         for(SulfurCubeArchetype archetype : this.matchingArchetypes(previous)) {
+         List<SulfurCubeArchetype> previousArchetypes = this.matchingArchetypes(previous);
+         List<SulfurCubeArchetype> currentArchetypes = this.matchingArchetypes(current);
+
+         for(SulfurCubeArchetype archetype : previousArchetypes) {
             for(SulfurCubeArchetype.AttributeEntry mod : archetype.attributeModifiers()) {
                AttributeInstance attr = this.getAttribute(mod.attribute());
                if (attr != null) {
@@ -376,7 +413,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          this.knockbackModifier = SulfurCubeArchetype.DEFAULT_KNOCKBACK_MODIFIERS;
          this.soundSettings = SulfurCubeArchetype.DEFAULT_SOUND_SETTINGS;
 
-         for(SulfurCubeArchetype archetype : this.matchingArchetypes(current)) {
+         for(SulfurCubeArchetype archetype : currentArchetypes) {
             if (archetype.buoyant()) {
                this.floatsInLiquids = true;
             }
@@ -399,9 +436,35 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
                }
             }
          }
+
+         EnchantedItemInUse previousItemInUse = new EnchantedItemInUse(previous, EquipmentSlot.BODY, this);
+
+         for(EnchantmentLocationBasedEffect effect : this.activeLocationDependentEffects) {
+            effect.onDeactivated(previousItemInUse, this, this.position(), 1);
+         }
+
+         this.activeLocationDependentEffects.clear();
+         EnchantedItemInUse currentItemInUse = new EnchantedItemInUse(current, EquipmentSlot.BODY, this);
+         ServerLevel serverLevel = (ServerLevel)this.level();
+         List<ConditionalEffect<EnchantmentLocationBasedEffect>> newEffects = currentArchetypes.stream().filter((a) -> !previousArchetypes.contains(a)).flatMap((a) -> a.locationBasedEffects().stream()).toList();
+         if (!newEffects.isEmpty()) {
+            LootContext context = this.getContext(serverLevel, false);
+
+            for(ConditionalEffect<EnchantmentLocationBasedEffect> effect : newEffects) {
+               if (effect.matches(context)) {
+                  ((EnchantmentLocationBasedEffect)effect.effect()).onChangedBlock(serverLevel, 1, currentItemInUse, this, this.position(), true);
+                  this.activeLocationDependentEffects.add(effect.effect());
+               }
+            }
+         }
       }
 
       return super.collectEquipmentChanges(lastEquipmentItems);
+   }
+
+   private LootContext getContext(final ServerLevel serverLevel, final boolean active) {
+      LootParams params = (new LootParams.Builder(serverLevel)).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.ENCHANTMENT_LEVEL, 1).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.ENCHANTMENT_ACTIVE, active).create(LootContextParamSets.ENCHANTED_LOCATION);
+      return (new LootContext.Builder(params)).create(Optional.empty());
    }
 
    public float maxUpStep() {
@@ -589,9 +652,11 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
       Vec3 equipmentSpawnOffset = this.getAttachments().getAverage(EntityAttachment.PASSENGER);
       ItemStack itemStackToShear = this.getItemBySlot(EquipmentSlot.BODY);
       this.setItemSlot(EquipmentSlot.BODY, ItemStack.EMPTY);
-      this.spawnAtLocation(level, itemStackToShear, equipmentSpawnOffset);
-      this.playSound(this.getEjectSound());
-      this.pickupTimer = 100;
+      if (this.spawnAtLocation(level, itemStackToShear, equipmentSpawnOffset) != null) {
+         this.playSound(this.getEjectSound());
+         this.pickupTimer = 100;
+      }
+
    }
 
    public boolean readyForShearing() {

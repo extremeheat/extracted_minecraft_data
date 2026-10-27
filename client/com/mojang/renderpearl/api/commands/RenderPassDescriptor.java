@@ -1,99 +1,175 @@
 package com.mojang.renderpearl.api.commands;
 
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
-import it.unimi.dsi.fastutil.objects.ReferenceLists;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.OptionalDouble;
+import java.util.Objects;
 import java.util.function.Supplier;
+import org.joml.Vector4f;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 
-public record RenderPassDescriptor(Supplier<String> label, List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, @Nullable Attachment<OptionalDouble> depthAttachment, RenderPass.RenderArea renderArea) {
-   public @Nullable RenderPassDescriptor(Supplier<String> label, List<Attachment<Optional<Vector4fc>>> colorAttachments, @Nullable Attachment<OptionalDouble> depthAttachment, RenderPass.RenderArea renderArea) {
+public record RenderPassDescriptor(Supplier<String> label, RenderPassLayout layout, List<Attachment> attachments, RenderPass.RenderArea renderArea) {
+   public RenderPassDescriptor(Supplier<String> label, RenderPassLayout layout, List<Attachment> attachments, RenderPass.RenderArea renderArea) {
       super();
-      List<Attachment<Optional<Vector4fc>>> var5 = ReferenceLists.unmodifiable(new ReferenceArrayList(colorAttachments));
+      attachments = List.copyOf(attachments);
       this.label = label;
-      this.colorAttachments = var5;
-      this.depthAttachment = depthAttachment;
+      this.layout = layout;
+      this.attachments = attachments;
       this.renderArea = renderArea;
    }
 
-   public static Builder builder(final Supplier<String> label) {
-      return new Builder(label);
+   public static Builder builder(final RenderPassLayout layout) {
+      Objects.requireNonNull(layout);
+      return new Builder(layout::name, layout);
    }
 
-   public static record Attachment<T>(GpuTextureView textureView, T clearValue) {
+   public static Builder builder(final Supplier<String> label, final RenderPassLayout layout) {
+      return new Builder(label, layout);
+   }
+
+   public static record Attachment(GpuTextureView textureView, boolean load, boolean store, @Nullable ClearValue clearValue) {
       public Attachment {
          super();
+      }
+
+      public static record ClearValue(Vector4fc color, float depth, byte stencil) {
+         public ClearValue(Vector4fc color, float depth, byte stencil) {
+            super();
+            Vector4fc var4 = new Vector4f(color);
+            this.color = var4;
+            this.depth = depth;
+            this.stencil = stencil;
+         }
       }
    }
 
    public static class Builder {
       private final Supplier<String> label;
-      private final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments = new ArrayList();
-      private @Nullable Attachment<OptionalDouble> depthAttachment;
-      private RenderPass.@Nullable RenderArea renderArea;
+      private final RenderPassLayout layout;
+      private final List<Attachment> attachments = new ReferenceArrayList();
 
-      private Builder(final Supplier<String> label) {
+      public Builder(final Supplier<String> label, final RenderPassLayout layout) {
          super();
          this.label = label;
+         this.layout = layout;
       }
 
-      public Builder withColorAttachment(final GpuTextureView textureView) {
-         this.colorAttachments.add(new Attachment(textureView, Optional.empty()));
-         return this;
-      }
-
-      public Builder withColorAttachment(final GpuTextureView textureView, final Optional<Vector4fc> clearValue) {
-         this.colorAttachments.add(new Attachment(textureView, clearValue));
-         return this;
-      }
-
-      public Builder withUnusedColorAttachment() {
-         this.colorAttachments.add((Object)null);
-         return this;
-      }
-
-      public Builder withDepthAttachment(final GpuTextureView textureView) {
-         this.depthAttachment = new Attachment<OptionalDouble>(textureView, OptionalDouble.empty());
-         return this;
-      }
-
-      public Builder withDepthAttachment(final GpuTextureView textureView, final OptionalDouble clearValue) {
-         this.depthAttachment = new Attachment<OptionalDouble>(textureView, clearValue);
-         return this;
-      }
-
-      public Builder withRenderArea(final RenderPass.RenderArea renderArea) {
-         this.renderArea = renderArea;
-         return this;
+      public RenderPassDescriptor build(final RenderPass.RenderArea renderArea) {
+         if (this.attachments.size() != this.layout.attachmentFormats().size()) {
+            int var10002 = this.attachments.size();
+            throw new IllegalStateException("Attachment count (" + var10002 + ") does not match expectation from layout (" + this.layout.attachmentFormats().size() + ")");
+         } else {
+            return new RenderPassDescriptor(this.label, this.layout, this.attachments, renderArea);
+         }
       }
 
       public RenderPassDescriptor build() {
-         RenderPass.RenderArea renderArea = this.renderArea != null ? this.renderArea : defaultRenderArea(this.colorAttachments, this.depthAttachment);
-         return new RenderPassDescriptor(this.label, this.colorAttachments, this.depthAttachment, renderArea);
+         return this.build(new RenderPass.RenderArea(((Attachment)this.attachments.getFirst()).textureView()));
       }
 
-      private static RenderPass.RenderArea defaultRenderArea(final List<@Nullable Attachment<Optional<Vector4fc>>> colorAttachments, final @Nullable Attachment<OptionalDouble> depthAttachment) {
-         int width = 0;
-         int height = 0;
-         if (!colorAttachments.isEmpty()) {
-            for(Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
-               if (colorAttachment != null) {
-                  GpuTextureView textureView = colorAttachment.textureView();
-                  width = textureView.getWidth(0);
-                  height = textureView.getHeight(0);
+      public void withAttachment(final Attachment attachment) {
+         int attachmentIndex = this.attachments.size();
+         if (attachmentIndex >= this.layout.attachmentFormats().size()) {
+            throw new IllegalStateException("Cannot add another attachment, already reached expected number from layout (" + this.layout.attachmentFormats().size() + ")");
+         } else {
+            GpuFormat expectedFormat = (GpuFormat)this.layout.attachmentFormats().get(attachmentIndex);
+            if (attachment.textureView.texture().getFormat() != expectedFormat) {
+               String var10002 = String.valueOf(attachment.textureView.texture().getFormat());
+               throw new IllegalArgumentException("Attachment format " + var10002 + " does not match expected format " + String.valueOf(expectedFormat));
+            } else {
+               if (attachmentIndex != 0) {
+                  GpuTextureView firstView = ((Attachment)this.attachments.getFirst()).textureView();
+                  GpuTextureView currentView = attachment.textureView();
+                  if (firstView.getWidth(0) != currentView.getWidth(0) || firstView.getHeight(0) != currentView.getHeight(0)) {
+                     throw new IllegalArgumentException("All texture views must be the same size to start a RenderPass");
+                  }
                }
-            }
-         } else if (depthAttachment != null) {
-            width = depthAttachment.textureView().getWidth(0);
-            height = depthAttachment.textureView().getHeight(0);
-         }
 
-         return new RenderPass.RenderArea(0, 0, width, height);
+               this.attachments.add(attachment);
+            }
+         }
+      }
+
+      public GpuTextureView withAttachment(final GpuTextureView textureView) {
+         this.withAttachment(new Attachment(textureView, true, true, (Attachment.ClearValue)null));
+         return textureView;
+      }
+
+      public GpuTextureView withAttachment(final GpuTextureView textureView, final Attachment.ClearValue clearValue) {
+         this.withAttachment(new Attachment(textureView, true, true, clearValue));
+         return textureView;
+      }
+
+      public GpuTextureView withAttachment(final GpuTextureView textureView, final Vector4fc clearValue) {
+         if (!textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot use color clear value on non-color texture");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, true, new Attachment.ClearValue(clearValue, 0.0F, (byte)0)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachment(final GpuTextureView textureView, final float clearValue) {
+         if (textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot clear a color texture with a depth value");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, true, new Attachment.ClearValue(new Vector4f(), clearValue, (byte)0)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachment(final GpuTextureView textureView, final float clearValueDepth, final byte clearValueStencil) {
+         if (textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot clear a color texture with a depth/stencil value");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, true, new Attachment.ClearValue(new Vector4f(), clearValueDepth, clearValueStencil)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachmentDontStore(final GpuTextureView textureView, final Attachment.ClearValue clearValue) {
+         this.withAttachment(new Attachment(textureView, true, false, clearValue));
+         return textureView;
+      }
+
+      public GpuTextureView withAttachmentDontStore(final GpuTextureView textureView, final Vector4fc clearValue) {
+         if (!textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot use color clear value on non-color texture");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, false, new Attachment.ClearValue(clearValue, 0.0F, (byte)0)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachmentDontStore(final GpuTextureView textureView, final float clearValue) {
+         if (textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot clear a color texture with a depth/stencil value");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, false, new Attachment.ClearValue(new Vector4f(), clearValue, (byte)0)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachmentDontStore(final GpuTextureView textureView, final float clearValueDepth, final byte clearValueStencil) {
+         if (textureView.texture().getFormat().hasColorAspect()) {
+            throw new IllegalArgumentException("Cannot clear a color texture with a depth/stencil value");
+         } else {
+            this.withAttachment(new Attachment(textureView, true, false, new Attachment.ClearValue(new Vector4f(), clearValueDepth, clearValueStencil)));
+            return textureView;
+         }
+      }
+
+      public GpuTextureView withAttachmentDontLoad(final GpuTextureView textureView) {
+         this.withAttachment(new Attachment(textureView, false, true, (Attachment.ClearValue)null));
+         return textureView;
+      }
+
+      public GpuTextureView withAttachmentDontLoadDontStore(final GpuTextureView textureView) {
+         this.withAttachment(new Attachment(textureView, false, false, (Attachment.ClearValue)null));
+         return textureView;
       }
    }
 }

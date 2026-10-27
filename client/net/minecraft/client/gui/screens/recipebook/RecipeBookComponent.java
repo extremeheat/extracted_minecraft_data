@@ -8,15 +8,18 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.ClientRecipeBook;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.Updatable;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -29,7 +32,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.language.LanguageInfo;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -54,7 +56,7 @@ import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
-public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements GuiEventListener, Renderable, NarratableEntry {
+public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements GuiEventListener, Renderable, Updatable, NarratableEntry {
    public static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/button"), Identifier.withDefaultNamespace("recipe_book/button_highlighted"));
    protected static final Identifier RECIPE_BOOK_LOCATION = Identifier.withDefaultNamespace("textures/gui/recipe_book.png");
    private static final int BACKGROUND_TEXTURE_WIDTH = 256;
@@ -297,15 +299,20 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       return this.book.isFiltering(this.menu.getRecipeBookType());
    }
 
-   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+   public void update(final DeltaTracker deltaTracker) {
       if (this.isVisible()) {
          if (!this.minecraft.hasControlDown()) {
-            this.time += graphics.partialTicks();
+            this.time += deltaTracker.getGameTimeDeltaTicks();
          }
 
+      }
+   }
+
+   public void extractRenderState(final GuiGraphicsExtractor graphics) {
+      if (this.isVisible()) {
          int xo = this.getXOrigin();
          int yo = this.getYOrigin();
-         graphics.blit(RenderPipelines.GUI_TEXTURED, RECIPE_BOOK_LOCATION, xo, yo, 1.0F, 1.0F, 147, 166, 256, 256);
+         graphics.blit(GuiPipeline.TEXTURED, RECIPE_BOOK_LOCATION, xo, yo, 1.0F, 1.0F, 147, 166, 256, 256);
          this.searchBox.extractRenderState(graphics);
 
          for(RecipeBookTabButton tabButton : this.tabButtons) {

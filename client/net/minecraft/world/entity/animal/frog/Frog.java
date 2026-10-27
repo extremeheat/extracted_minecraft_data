@@ -230,7 +230,7 @@ public class Frog extends Animal {
       return frog;
    }
 
-   protected boolean canBeABaby() {
+   public boolean canBeABaby() {
       return false;
    }
 

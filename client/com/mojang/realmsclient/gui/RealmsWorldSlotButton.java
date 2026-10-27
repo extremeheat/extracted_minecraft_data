@@ -7,10 +7,10 @@ import com.mojang.realmsclient.gui.screens.configuration.RealmsConfigureWorldScr
 import com.mojang.realmsclient.util.RealmsTextureManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -104,17 +104,17 @@ public class RealmsWorldSlotButton extends Button {
          color = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
       }
 
-      graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x + 1, y + 1, 0.0F, 0.0F, this.width - 2, this.height - 2, 74, 74, 74, 74, color);
+      graphics.blit(GuiPipeline.TEXTURED, texture, x + 1, y + 1, 0.0F, 0.0F, this.width - 2, this.height - 2, 74, 74, 74, 74, color);
       if (hoveredOrFocused && this.state.action != RealmsWorldSlotButton.Action.NOTHING) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height);
+         graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height);
       } else if (this.state.activeSlot) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.8F, 0.8F, 0.8F));
+         graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.8F, 0.8F, 0.8F));
       } else {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
+         graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F));
       }
 
       if (this.state.hardcore) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, x + 3, y + 4, 9, 8);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, x + 3, y + 4, 9, 8);
       }
 
       this.slotNameWidget.setMaxWidth(this.getWidth() - (this.state.activeSlot ? 2 : 0), StringWidget.TextOverflow.SCROLLING);

@@ -2,8 +2,8 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -104,16 +104,16 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       int scrollerHeight = this.scrollerHeight();
       int scrollerY = this.scrollBarY();
       if (!this.scrollable() && this.scrollbarSettings.disabledScrollerSprite() != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.scrollbarSettings.disabledScrollerSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), scrollerHeight);
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.disabledScrollerSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), scrollerHeight);
          if (this.isOverScrollbar((double)graphics.mouseX(), (double)graphics.mouseY())) {
             graphics.requestCursor(CursorTypes.NOT_ALLOWED);
          }
       }
 
       if (this.scrollable()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.scrollbarSettings.scrollerSprite(), scrollbarX, scrollerY, this.scrollbarWidth(), scrollerHeight);
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.scrollerSprite(), scrollbarX, scrollerY, this.scrollbarWidth(), scrollerHeight);
          if (this.isOverScrollbar((double)graphics.mouseX(), (double)graphics.mouseY())) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          }

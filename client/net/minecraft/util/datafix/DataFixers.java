@@ -86,6 +86,7 @@ import net.minecraft.util.datafix.fixes.DebugProfileLookingAtSplitFix;
 import net.minecraft.util.datafix.fixes.DebugProfileOverlayReferenceFix;
 import net.minecraft.util.datafix.fixes.DebugProfileRenameEntryFix;
 import net.minecraft.util.datafix.fixes.DecoratedPotFieldRenameFix;
+import net.minecraft.util.datafix.fixes.DefaultComponentSoundRemainderFix;
 import net.minecraft.util.datafix.fixes.DropChancesFormatFix;
 import net.minecraft.util.datafix.fixes.DropInvalidSignDataFix;
 import net.minecraft.util.datafix.fixes.DyeItemRenameFix;
@@ -902,9 +903,9 @@ public class DataFixers {
       Map<String, String> renamedCatCriteria = Map.of("minecraft:british", "minecraft:british_shorthair");
       fixerUpper.addFixer(new VariantRenameFix(v3097, "Rename british shorthair", References.ENTITY, "minecraft:cat", renamedCatCriteria));
       fixerUpper.addFixer(new CriteriaRenameFix(v3097, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (s) -> (String)renamedCatCriteria.getOrDefault(s, s)));
-      Set var326 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var326);
-      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var326::contains));
+      Set var327 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var327);
+      fixerUpper.addFixer(new PoiTypeRemoveFix(v3097, "Remove unpopulated villager PoI types", var327::contains));
       Schema v3108 = fixerUpper.addSchema(3108, SAME_NAMESPACED);
       fixerUpper.addFixer(new BlendingDataRemoveFromNetherEndFix(v3108));
       Schema v3201 = fixerUpper.addSchema(3201, SAME_NAMESPACED);
@@ -1242,6 +1243,8 @@ public class DataFixers {
       Schema v5123 = fixerUpper.addSchema(5123, V5123::new);
       fixerUpper.addFixer(new WriteAndReadFix(v5123, "Add fluid name type and move things to schema", References.CHUNK));
       fixerUpper.addFixer(FluidRenameFix.create(v5123, "Remove flowing fluid types fix", createRenamer(Map.of("minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava"))));
+      Schema v5125 = fixerUpper.addSchema(5125, SAME_NAMESPACED);
+      fixerUpper.addFixer(new DefaultComponentSoundRemainderFix(v5125));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(final Map<String, String> map) {

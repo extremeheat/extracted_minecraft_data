@@ -155,7 +155,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    protected SoundEvent getAmbientSound() {

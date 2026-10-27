@@ -144,7 +144,7 @@ public class HappyGhast extends Animal {
       return Math.min(scale, 1.0F);
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    public boolean onClimbable() {

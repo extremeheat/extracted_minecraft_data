@@ -26,6 +26,8 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> CAN_TURN_IN_BOATS = create("can_turn_in_boats");
    TagKey<EntityType<?>> ILLAGER = create("illager");
    TagKey<EntityType<?>> AQUATIC = create("aquatic");
+   TagKey<EntityType<?>> SWIMMING = create("swimming");
+   TagKey<EntityType<?>> FLYING = create("flying");
    TagKey<EntityType<?>> ARTHROPOD = create("arthropod");
    TagKey<EntityType<?>> INVERTED_HEALING_AND_HARM = create("inverted_healing_and_harm");
    TagKey<EntityType<?>> WITHER_FRIENDS = create("wither_friends");

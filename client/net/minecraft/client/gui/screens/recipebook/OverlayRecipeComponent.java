@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.Identifier;
@@ -127,7 +127,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          int width = Math.min(this.recipeButtons.size(), maxRow);
          int height = Mth.ceil((float)this.recipeButtons.size() / (float)maxRow);
          int border = 4;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, width * 25 + 8, height * 25 + 8);
+         graphics.blitSprite(GuiPipeline.TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, width * 25 + 8, height * 25 + 8);
 
          for(OverlayRecipeButton component : this.recipeButtons) {
             component.extractRenderState(graphics);
@@ -261,7 +261,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
       }
 
       public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
          float gridPosX = (float)(this.getX() + 2);
          float gridPosY = (float)(this.getY() + 2);
 

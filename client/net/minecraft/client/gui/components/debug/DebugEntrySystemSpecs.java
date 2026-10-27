@@ -11,8 +11,8 @@ import net.minecraft.util.Util;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
-import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
+import oshi.spi.SystemInfoFactory;
 
 public class DebugEntrySystemSpecs implements DebugScreenEntry {
    private static @Nullable String cpuInfo;
@@ -26,7 +26,7 @@ public class DebugEntrySystemSpecs implements DebugScreenEntry {
          cpuInfo = "<unknown>";
 
          try {
-            CentralProcessor processor = (new SystemInfo()).getHardware().getProcessor();
+            CentralProcessor processor = SystemInfoFactory.create().getHardware().getProcessor();
             cpuInfo = String.format(Locale.ROOT, "%dx %s", processor.getLogicalProcessorCount(), processor.getProcessorIdentifier().getName()).replaceAll("\\s+", " ");
          } catch (Throwable var1) {
          }

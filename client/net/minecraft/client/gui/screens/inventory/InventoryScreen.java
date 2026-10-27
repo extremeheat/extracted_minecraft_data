@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
 import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -65,7 +65,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, INVENTORY_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       EntityPortraitWidget.extractEntityInInventoryFollowsMouse(graphics, xo + 26, yo + 8, xo + 75, yo + 78, 30.0F, 0.0625F, this.minecraft.player);
    }
 

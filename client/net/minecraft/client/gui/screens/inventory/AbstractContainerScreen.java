@@ -9,12 +9,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.ItemSlotMouseAction;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -161,14 +161,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    private void extractSlotHighlightBack(final GuiGraphicsExtractor graphics) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_HIGHLIGHT_BACK_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
 
    private void extractSlotHighlightFront(final GuiGraphicsExtractor graphics) {
       if (this.hoveredSlot != null && this.hoveredSlot.isHighlightable()) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_HIGHLIGHT_FRONT_SPRITE, this.hoveredSlot.x - 4, this.hoveredSlot.y - 4, 24, 24);
       }
 
    }
@@ -235,7 +235,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (itemStack.isEmpty() && slot.isActive()) {
          Identifier icon = slot.getNoItemIcon();
          if (icon != null) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)icon, x, y, 16, 16);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)icon, x, y, 16, 16);
             done = true;
          }
       }

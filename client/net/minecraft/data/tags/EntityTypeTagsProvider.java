@@ -34,6 +34,8 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.NON_CONTROLLING_RIDER).add(EntityTypeIds.SLIME, EntityTypeIds.MAGMA_CUBE, EntityTypeIds.SULFUR_CUBE);
       this.tag(EntityTypeTags.ILLAGER).add(EntityTypeIds.EVOKER).add(EntityTypeIds.ILLUSIONER).add(EntityTypeIds.PILLAGER).add(EntityTypeIds.VINDICATOR);
       this.tag(EntityTypeTags.AQUATIC).add(EntityTypeIds.TURTLE).add(EntityTypeIds.AXOLOTL).add(EntityTypeIds.GUARDIAN).add(EntityTypeIds.ELDER_GUARDIAN).add(EntityTypeIds.COD).add(EntityTypeIds.PUFFERFISH).add(EntityTypeIds.SALMON).add(EntityTypeIds.TROPICAL_FISH).add(EntityTypeIds.DOLPHIN).add(EntityTypeIds.SQUID).add(EntityTypeIds.GLOW_SQUID).add(EntityTypeIds.TADPOLE).add(EntityTypeIds.NAUTILUS).add(EntityTypeIds.ZOMBIE_NAUTILUS);
+      this.tag(EntityTypeTags.SWIMMING).addTag(EntityTypeTags.AQUATIC).add(EntityTypeIds.FROG);
+      this.tag(EntityTypeTags.FLYING).add(EntityTypeIds.ALLAY).add(EntityTypeIds.BAT).add(EntityTypeIds.BEE).add(EntityTypeIds.BLAZE).add(EntityTypeIds.ENDER_DRAGON).add(EntityTypeIds.PARROT).add(EntityTypeIds.PHANTOM).add(EntityTypeIds.GHAST).add(EntityTypeIds.HAPPY_GHAST).add(EntityTypeIds.VEX).add(EntityTypeIds.WITHER);
       this.tag(EntityTypeTags.ARTHROPOD).add(EntityTypeIds.BEE).add(EntityTypeIds.ENDERMITE).add(EntityTypeIds.SILVERFISH).add(EntityTypeIds.SPIDER).add(EntityTypeIds.CAVE_SPIDER);
       this.tag(EntityTypeTags.IMMUNE_TO_REGENERATION).addTag(EntityTypeTags.UNDEAD);
       this.tag(EntityTypeTags.IMMUNE_TO_POISON).addTag(EntityTypeTags.UNDEAD).add(EntityTypeIds.NAUTILUS).add(EntityTypeIds.ZOMBIE_NAUTILUS).add(EntityTypeIds.SPIDER).add(EntityTypeIds.CAVE_SPIDER);
@@ -66,6 +68,6 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.CANNOT_BE_AGE_LOCKED).add(EntityTypeIds.ZOMBIE_HORSE, EntityTypeIds.SKELETON_HORSE, EntityTypeIds.VILLAGER);
       this.tag(EntityTypeTags.NOT_AFFECTED_BY_GEYSERS).add(EntityTypeIds.ENDER_DRAGON);
       this.tag(EntityTypeTags.CANNOT_BE_DISMOUNTED_BY_ITEM_USAGE).add(EntityTypeIds.INTERACTION);
-      this.tag(EntityTypeTags.DOES_NOT_BREAK_BRITTLE_ICE).add(EntityTypeIds.FROSTBITE);
+      this.tag(EntityTypeTags.DOES_NOT_BREAK_BRITTLE_ICE).add(EntityTypeIds.FROSTBITE, EntityTypeIds.STRAY);
    }
 }

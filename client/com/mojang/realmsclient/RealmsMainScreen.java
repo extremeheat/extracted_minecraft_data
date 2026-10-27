@@ -42,6 +42,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -72,7 +73,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientActivePlayersToo
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -771,7 +771,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void extractRealmStatus(final GuiGraphicsExtractor graphics, final int x, final int y, final Identifier sprite, final Supplier<Component> tooltip) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, x, y, 10, 28);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, x, y, 10, 28);
          if (RealmsMainScreen.this.realmSelectionList.isMouseOver((double)graphics.mouseX(), (double)graphics.mouseY()) && graphics.mouseX() >= x && graphics.mouseX() <= x + 10 && graphics.mouseY() >= y && graphics.mouseY() <= y + 28) {
             graphics.setTooltipForNextFrame((Component)tooltip.get(), graphics.mouseX(), graphics.mouseY());
          }
@@ -852,7 +852,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
          if (hardcore) {
             x -= 10;
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, x, this.secondLineY(firstLineY), 8, 8);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)RealmsMainScreen.HARDCORE_MODE_SPRITE, x, this.secondLineY(firstLineY), 8, 8);
          }
 
          return x;
@@ -985,7 +985,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
          int var10000 = this.getContentYMiddle();
          Objects.requireNonNull(RealmsMainScreen.this.font);
          int textYPos = var10000 - 9 / 2;
@@ -1075,7 +1075,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
       public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          if (this.serverData.state == RealmsServer.State.UNINITIALIZED) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)RealmsMainScreen.NEW_REALM_SPRITE, this.getContentX() - 5, this.getContentYMiddle() - 10, 40, 20);
             int var10000 = this.getContentYMiddle();
             Objects.requireNonNull(RealmsMainScreen.this.font);
             int textYPos = var10000 - 9 / 2;

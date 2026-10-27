@@ -10,6 +10,7 @@ import com.mojang.renderpearl.api.pipeline.ShaderType;
 import com.mojang.renderpearl.api.pipeline.SpvModule;
 import com.mojang.renderpearl.api.pipeline.UniformType;
 import com.mojang.renderpearl.util.ShaderCompileException;
+import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
@@ -54,8 +55,8 @@ public class PipelineValidator {
          for(CompiledRenderPipeline.CreateInfo.AttribBinding vertexAttrib : createInfo.attribBindings()) {
             if (vertexAttrib.bufferSlot() >= 0 && vertexAttrib.bufferSlot() <= CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS) {
                if (usedBufferSlots[vertexAttrib.bufferSlot()] == 0) {
-                  int var50 = vertexAttrib.location();
-                  throw new ShaderCompileException("Vertex attrib at location " + var50 + " attempting to use buffer slot " + vertexAttrib.bufferSlot() + " that does not have a buffer");
+                  int var52 = vertexAttrib.location();
+                  throw new ShaderCompileException("Vertex attrib at location " + var52 + " attempting to use buffer slot " + vertexAttrib.bufferSlot() + " that does not have a buffer");
                }
 
                if (vertexAttrib.location() >= 0 && vertexAttrib.location() <= CompiledRenderPipeline.CreateInfo.MAX_VERTEX_ATTRIBS) {
@@ -123,6 +124,10 @@ public class PipelineValidator {
             Int2ReferenceMap<CompiledRenderPipeline.CreateInfo.Uniform> pipelineUniformsByBinding = new Int2ReferenceOpenHashMap();
 
             for(CompiledRenderPipeline.CreateInfo.Uniform pipelineUniform : createInfo.uniforms()) {
+               if (pipelineUniform.inputAttachmentIndex() == -1) {
+                  throw new ShaderCompileException("Cannot define an input attachment uniform with an unused attachment");
+               }
+
                pipelineUniformsByBinding.put(pipelineUniform.binding(), pipelineUniform);
             }
 
@@ -136,8 +141,8 @@ public class PipelineValidator {
 
                   CompiledRenderPipeline.CreateInfo.Uniform pipelineUniform = (CompiledRenderPipeline.CreateInfo.Uniform)pipelineUniformsByBinding.get(descriptor.binding());
                   if (pipelineUniform == null) {
-                     int var51 = descriptor.binding();
-                     throw new ShaderCompileException("Unable to find shader defined uniform at binding " + var51 + " with shader name (" + descriptor.name() + ")");
+                     int var53 = descriptor.binding();
+                     throw new ShaderCompileException("Unable to find shader defined uniform at binding " + var53 + " with shader name (" + descriptor.name() + ")");
                   }
 
                   int definedResourceType = descriptor.resourceType();
@@ -156,12 +161,25 @@ public class PipelineValidator {
                         case 3 -> var10000 = UniformType.COMBINED_IMAGE_SAMPLER;
                         case 4 -> var10000 = UniformType.COMBINED_IMAGE_SAMPLER;
                         case 5 -> var10000 = UniformType.TEXEL_BUFFER;
+                        case 6 -> var10000 = UniformType.INPUT_ATTACHMENT;
                         default -> throw new ShaderCompileException("Unexpected SpvDim (" + definedDimensions + ") for uniform (" + pipelineUniform.name() + ")");
                      }
 
                      UniformType expectedUniformType = var10000;
                      if (pipelineUniform.type() != expectedUniformType) {
                         throw new ShaderCompileException("Unexpected dimensions for uniform (" + pipelineUniform.name() + "), does not match RenderPipeline definition");
+                     }
+                  }
+
+                  if (expectedResourceType == 5) {
+                     ByteList subpassInputs = createInfo.subpass().inputAttachments();
+                     int index = descriptor.inputAttachmentIndex();
+                     if (index >= subpassInputs.size()) {
+                        throw new ShaderCompileException("Input attachment index " + index + " out of range for subpass");
+                     }
+
+                     if (subpassInputs.getByte(index) == -1) {
+                        throw new ShaderCompileException("Input attachment " + index + " defined as unused for subpass");
                      }
                   }
                }
@@ -186,7 +204,7 @@ public class PipelineValidator {
                      throw new ShaderCompileException(String.format(Locale.ROOT, "vertex shader (%s) attrib (%s) does not have a matching vertex buffer element", vertexShader.name(), vertexShaderInput.name()));
                   }
 
-                  byte var49;
+                  byte var51;
                   switch (format.componentType()) {
                      case UNORM_8:
                      case SNORM_8:
@@ -194,23 +212,23 @@ public class PipelineValidator {
                      case SNORM_16:
                      case FLOAT_16:
                      case FLOAT_32:
-                        var49 = 13;
+                        var51 = 13;
                         break;
                      case UINT_8:
                      case UINT_16:
                      case UINT_32:
-                        var49 = 8;
+                        var51 = 8;
                         break;
                      case SINT_8:
                      case SINT_16:
                      case SINT_32:
-                        var49 = 7;
+                        var51 = 7;
                         break;
                      default:
                         throw new ShaderCompileException("Unexpected value: " + String.valueOf(format.componentType()));
                   }
 
-                  int expectedBaseType = var49;
+                  int expectedBaseType = var51;
                   if (expectedBaseType != vertexShaderInput.type().baseType()) {
                      throw new ShaderCompileException(String.format(Locale.ROOT, "Unexpected base type for input attribute %s in vertex shader %s, expected %s got %s", vertexShaderInput.name(), vertexShader.name(), SpvUtil.baseTypeString(expectedBaseType), SpvUtil.baseTypeString(vertexShaderInput.type().baseType())));
                   }
@@ -226,10 +244,10 @@ public class PipelineValidator {
                Int2ObjectMap<InterfaceVariableInfo> outputSlotMap = generateSlotMap(((SpvModule)shadersByType.get(ShaderType.VERTEX)).reflect().outputs(), vertexStageName, ShaderType.VERTEX);
                String fragmentStageName = ((SpvModule)shadersByType.get(ShaderType.FRAGMENT)).name();
                Int2ObjectMap<InterfaceVariableInfo> inputSlotMap = generateSlotMap(((SpvModule)shadersByType.get(ShaderType.FRAGMENT)).reflect().inputs(), vertexStageName, ShaderType.FRAGMENT);
-               ObjectIterator var42 = inputSlotMap.int2ObjectEntrySet().iterator();
+               ObjectIterator var43 = inputSlotMap.int2ObjectEntrySet().iterator();
 
-               while(var42.hasNext()) {
-                  Int2ObjectMap.Entry<InterfaceVariableInfo> entry = (Int2ObjectMap.Entry)var42.next();
+               while(var43.hasNext()) {
+                  Int2ObjectMap.Entry<InterfaceVariableInfo> entry = (Int2ObjectMap.Entry)var43.next();
                   int location = entry.getIntKey();
                   InterfaceVariableInfo input = (InterfaceVariableInfo)entry.getValue();
 

@@ -1,15 +1,15 @@
 package net.minecraft.client.renderer.state.gui;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2f;
 import org.jspecify.annotations.Nullable;
 
-public record TiledBlitRenderState(RenderPipeline pipeline, TextureSetup textureSetup, Matrix3x2f pose, int tileWidth, int tileHeight, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
-   public TiledBlitRenderState(final RenderPipeline pipeline, final TextureSetup textureSetup, final Matrix3x2f pose, final int tileWidth, final int tileHeight, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1, final int color, final @Nullable ScreenRectangle scissorArea) {
+public record TiledBlitRenderState(GuiPipeline pipeline, TextureSetup textureSetup, Matrix3x2f pose, int tileWidth, int tileHeight, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, @Nullable ScreenRectangle scissorArea, @Nullable ScreenRectangle bounds) implements GuiElementRenderState {
+   public TiledBlitRenderState(final GuiPipeline pipeline, final TextureSetup textureSetup, final Matrix3x2f pose, final int tileWidth, final int tileHeight, final int x0, final int y0, final int x1, final int y1, final float u0, final float u1, final float v0, final float v1, final int color, final @Nullable ScreenRectangle scissorArea) {
       this(pipeline, textureSetup, pose, tileWidth, tileHeight, x0, y0, x1, y1, u0, u1, v0, v1, color, scissorArea, getBounds(x0, y0, x1, y1, pose, scissorArea));
    }
 

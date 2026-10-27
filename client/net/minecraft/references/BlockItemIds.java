@@ -331,6 +331,10 @@ public class BlockItemIds {
    public static final BlockItemId SNOW = BlockItemId.create("snow");
    public static final BlockItemId ICE = BlockItemId.create("ice");
    public static final BlockItemId SNOW_BLOCK = BlockItemId.create("snow_block");
+   public static final BlockItemId SNOW_BRICKS = BlockItemId.create("snow_bricks");
+   public static final BlockItemId SNOW_BRICK_SLAB = BlockItemId.create("snow_brick_slab");
+   public static final BlockItemId SNOW_BRICK_STAIRS = BlockItemId.create("snow_brick_stairs");
+   public static final BlockItemId SNOW_BRICK_WALL = BlockItemId.create("snow_brick_wall");
    public static final BlockItemId CACTUS = BlockItemId.create("cactus");
    public static final BlockItemId CACTUS_FLOWER = BlockItemId.create("cactus_flower");
    public static final BlockItemId CLAY = BlockItemId.create("clay");

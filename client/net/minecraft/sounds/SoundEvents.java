@@ -1322,7 +1322,8 @@ public class SoundEvents {
    public static final SoundEvent FROSTBITE_DEATH = register("entity.frostbite.death");
    public static final SoundEvent FROSTBITE_HURT = register("entity.frostbite.hurt");
    public static final SoundEvent FROSTBITE_STEP = register("entity.frostbite.step");
-   public static final Holder<SoundEvent> ICICLE_LAND = registerForHolder("block.icicle.land");
+   public static final SoundEvent ICE_CRYSTAL_AMBIENT = register("block.ice_crystal.ambient");
+   public static final SoundEvent ICICLE_LAND = register("block.icicle.land");
    public static final SoundEvent ICE_BALL_BREAK = register("entity.ice_ball.break");
    public static final SoundEvent ICE_BALL_THROW = register("entity.ice_ball.throw");
    public static final SoundEvent BRITTLE_ICE_CRACK = register("block.brittle_ice.crack");

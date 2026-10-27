@@ -69,7 +69,7 @@ public class SpawnUtil {
       /** @deprecated */
       @Deprecated
       Strategy LEGACY_IRON_GOLEM = (level, pos, blockState, abovePos, aboveState) -> {
-         if (!blockState.is(Blocks.COBWEB) && !blockState.is(Blocks.CACTUS) && !blockState.is(Blocks.GLASS_PANE) && !(blockState.getBlock() instanceof StainedGlassPaneBlock) && !(blockState.getBlock() instanceof StainedGlassBlock) && !(blockState.getBlock() instanceof LeavesBlock) && !blockState.is(Blocks.CONDUIT) && !blockState.is(Blocks.ICE) && !blockState.is(Blocks.TNT) && !blockState.is(Blocks.GLOWSTONE) && !blockState.is(Blocks.BEACON) && !blockState.is(Blocks.SEA_LANTERN) && !blockState.is(Blocks.FROSTED_ICE) && !blockState.is(Blocks.TINTED_GLASS) && !blockState.is(Blocks.GLASS)) {
+         if (!blockState.is(Blocks.COBWEB) && !blockState.is(Blocks.CACTUS) && !blockState.is(Blocks.GLASS_PANE) && !(blockState.getBlock() instanceof StainedGlassPaneBlock) && !(blockState.getBlock() instanceof StainedGlassBlock) && !(blockState.getBlock() instanceof LeavesBlock) && !blockState.is(Blocks.CONDUIT) && !blockState.is(Blocks.ICE) && !blockState.is(Blocks.TNT) && !blockState.is(Blocks.GLOWSTONE) && !blockState.is(Blocks.BEACON) && !blockState.is(Blocks.SEA_LANTERN) && !blockState.is(Blocks.FROSTED_ICE) && !blockState.is(Blocks.TINTED_GLASS) && !blockState.is(Blocks.GLASS) && !blockState.is(Blocks.BRITTLE_ICE)) {
             return (aboveState.isAir() || aboveState.liquid()) && (blockState.isSolid() || blockState.is(Blocks.POWDER_SNOW));
          } else {
             return false;

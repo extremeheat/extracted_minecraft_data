@@ -79,7 +79,7 @@ public class QuadParticleFeatureRenderer implements FeatureRenderer<Submit> {
                throw new IllegalStateException("No pipeline for particle layer " + var10002 + " with OIT stage " + String.valueOf(stage));
             }
 
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
             renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
             renderPass.setIndexBuffer(executeInfo.indexBuffer(), executeInfo.indexType());
             TextureHandle texture = (TextureHandle)group.textures.get(entry.getKey());

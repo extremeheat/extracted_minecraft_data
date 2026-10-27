@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -67,8 +67,8 @@ public class LoadingButton extends Button {
       if (!this.loading) {
          return false;
       } else {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUTTON_DISABLED_SPRITE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)LOADING_SPRITE, this.getX() + (this.getWidth() - 5) / 2, this.getY() + (this.getHeight() - 2) / 2, 5, 2, ARGB.white(this.alpha));
+         graphics.blitSprite(GuiPipeline.TEXTURED, BUTTON_DISABLED_SPRITE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)LOADING_SPRITE, this.getX() + (this.getWidth() - 5) / 2, this.getY() + (this.getHeight() - 2) / 2, 5, 2, ARGB.white(this.alpha));
          return true;
       }
    }

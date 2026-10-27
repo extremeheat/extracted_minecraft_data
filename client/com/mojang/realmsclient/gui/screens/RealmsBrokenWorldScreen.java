@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -194,12 +194,12 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
       if (active) {
          float c = 0.9F + 0.1F * Mth.cos((double)((float)this.animTick * 0.2F));
-         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, c, c, c));
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80);
+         graphics.blit(GuiPipeline.TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, ARGB.colorFromFloat(1.0F, c, c, c));
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80);
       } else {
          int color = ARGB.colorFromFloat(1.0F, 0.56F, 0.56F, 0.56F);
-         graphics.blit(RenderPipelines.GUI_TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, color);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80, color);
+         graphics.blit(GuiPipeline.TEXTURED, texture, x + 3, y + 3, 0.0F, 0.0F, 74, 74, 74, 74, 74, 74, color);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_FRAME_SPRITE, x, y, 80, 80, color);
       }
 
       graphics.centeredText(this.font, (String)text, x + 40, y + 66, -1);

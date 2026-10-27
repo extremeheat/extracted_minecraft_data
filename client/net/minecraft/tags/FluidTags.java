@@ -19,6 +19,7 @@ public final class FluidTags {
    public static final TagKey<Fluid> DOLPHIN_TRIES_TO_FIND = create("dolphin_tries_to_find");
    public static final TagKey<Fluid> FROG_TRIES_TO_FIND_LAND_NEAR = create("frog_tries_to_find_land_near");
    public static final TagKey<Fluid> ENTITY_FLOATABLE = create("entity_floatable");
+   public static final TagKey<Fluid> SWIMMABLE = create("swimmable");
 
    private FluidTags() {
       super();

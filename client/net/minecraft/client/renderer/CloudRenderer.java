@@ -220,7 +220,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       GpuBufferSlice dynamicTransforms = RenderSystem.getDynamicUniforms().writeTransform(RenderSystem.getModelViewMatrixCopy());
       RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer indexBuffer = indices.getBuffer();
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline, renderPass.activeSubpass()));
       renderPass.setUniform("DynamicTransforms", dynamicTransforms);
       renderPass.setIndexBuffer(indexBuffer, indices.type());
       renderPass.setVertexBuffer(0, (GpuBufferSlice)null);

@@ -157,6 +157,12 @@ public enum ConversionType {
          }
       }
 
+      if (from instanceof Bucketable fromBucketable) {
+         if (to instanceof Bucketable toBucketable) {
+            toBucketable.setFromBucket(fromBucketable.fromBucket());
+         }
+      }
+
    }
 
    private static <T> void copyComponent(final Mob from, final Mob to, final DataComponentType<T> componentType) {

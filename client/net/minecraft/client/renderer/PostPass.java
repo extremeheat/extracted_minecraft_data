@@ -20,7 +20,6 @@ import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import net.minecraft.client.renderer.texture.TextureHandle;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryStack;
@@ -113,8 +112,8 @@ public class PostPass implements AutoCloseable {
                }
             }
 
-            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, outputTarget.getColorTextureView(), Optional.empty())) {
-               renderPass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline));
+            try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Post pass " + this.name, RenderPassLayouts.COLOR_ONLY, outputTarget.getColorTextureView())) {
+               renderPass.setPipeline(RenderSystem.getCompiledPipeline(this.pipeline, renderPass.activeSubpass()));
                RenderSystem.bindDefaultUniforms(renderPass);
                renderPass.setUniform("SamplerInfo", this.infoUbo.currentBuffer());
 

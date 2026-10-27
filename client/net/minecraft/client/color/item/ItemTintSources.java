@@ -2,28 +2,27 @@ package net.minecraft.client.color.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.client.core.registries.BuiltInClientRegistries;
+import net.minecraft.core.Registry;
 
 public class ItemTintSources {
-   private static final ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends ItemTintSource>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<Identifier, MapCodec<? extends ItemTintSource>>();
    public static final Codec<ItemTintSource> CODEC;
 
    public ItemTintSources() {
       super();
    }
 
-   public static void bootstrap() {
-      ID_MAPPER.put(Identifier.withDefaultNamespace("custom_model_data"), CustomModelDataSource.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("constant"), Constant.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("dye"), Dye.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("grass"), GrassColorSource.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("firework"), Firework.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("potion"), Potion.MAP_CODEC);
-      ID_MAPPER.put(Identifier.withDefaultNamespace("team"), TeamColor.MAP_CODEC);
+   public static Object bootstrap(final Registry<MapCodec<? extends ItemTintSource>> registry) {
+      Registry.register(registry, (String)"custom_model_data", CustomModelDataSource.MAP_CODEC);
+      Registry.register(registry, (String)"constant", Constant.MAP_CODEC);
+      Registry.register(registry, (String)"dye", Dye.MAP_CODEC);
+      Registry.register(registry, (String)"grass", GrassColorSource.MAP_CODEC);
+      Registry.register(registry, (String)"firework", Firework.MAP_CODEC);
+      Registry.register(registry, (String)"potion", Potion.MAP_CODEC);
+      return Registry.register(registry, (String)"team", TeamColor.MAP_CODEC);
    }
 
    static {
-      CODEC = ID_MAPPER.codec(Identifier.CODEC).dispatch(ItemTintSource::type, (c) -> c);
+      CODEC = BuiltInClientRegistries.ITEM_TINT_SOURCE_TYPE.byNameCodec().dispatch(ItemTintSource::type, (c) -> c);
    }
 }

@@ -6,7 +6,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.color.ColorLerper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -39,9 +39,9 @@ public class NowPlayingToast implements Toast {
    public static void extractToast(final GuiGraphicsExtractor graphics, final Font font) {
       String currentSong = getCurrentSongName();
       if (currentSong != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, font), 30);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)NOW_PLAYING_BACKGROUND_SPRITE, 0, 0, getWidth(currentSong, font), 30);
          int notesOffset = 7;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)MUSIC_NOTES_SPRITE, 7, 7, 16, 16, musicNoteColor);
          Component var10002 = getNowPlayingString(currentSong);
          Objects.requireNonNull(font);
          graphics.text(font, (Component)var10002, 30, 15 - 9 / 2, -2894893);

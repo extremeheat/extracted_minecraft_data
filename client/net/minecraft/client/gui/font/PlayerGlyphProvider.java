@@ -4,13 +4,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.blaze3d.font.GlyphInfo;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.util.Objects;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GlyphSource;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.PlayerSkinRenderCache;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -87,7 +87,7 @@ public class PlayerGlyphProvider {
          return ((PlayerSkinRenderCache.RenderInfo)this.skin.get()).glyphRenderTypes().select(displayMode);
       }
 
-      public RenderPipeline guiPipeline() {
+      public GuiPipeline guiPipeline() {
          return ((PlayerSkinRenderCache.RenderInfo)this.skin.get()).glyphRenderTypes().guiPipeline();
       }
 

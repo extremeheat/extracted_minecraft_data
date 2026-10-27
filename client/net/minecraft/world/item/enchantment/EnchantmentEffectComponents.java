@@ -55,7 +55,7 @@ public interface EnchantmentEffectComponents {
    DataComponentType<Unit> PREVENT_ARMOR_CHANGE = register("prevent_armor_change", (b) -> b.persistent(Unit.CODEC));
    DataComponentType<EnchantmentValueEffect> TRIDENT_SPIN_ATTACK_STRENGTH = register("trident_spin_attack_strength", (b) -> b.persistent(EnchantmentValueEffect.CODEC));
 
-   private static <T extends Validatable> Codec<List<T>> validatedListCodec(final Codec<T> elementCodec, final ContextKeySet paramSet) {
+   static <T extends Validatable> Codec<List<T>> validatedListCodec(final Codec<T> elementCodec, final ContextKeySet paramSet) {
       return elementCodec.listOf().validate(Validatable.listValidatorForContext(paramSet));
    }
 

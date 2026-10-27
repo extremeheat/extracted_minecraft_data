@@ -1249,7 +1249,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
             renderStartTimer = Util.getNanos();
             this.pauseIfInactive();
-            this.gui.update();
+            this.gui.update(this.deltaTracker);
             if (this.isGameLoadFinished() && advanceGameTime && this.level != null) {
                this.level.update();
             }

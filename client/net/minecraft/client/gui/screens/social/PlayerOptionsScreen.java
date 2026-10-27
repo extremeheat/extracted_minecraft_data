@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -23,7 +24,6 @@ import net.minecraft.client.gui.screens.reporting.ReportPlayerScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -290,7 +290,7 @@ public class PlayerOptionsScreen extends Screen {
       super.extractMenuBackground(graphics);
       boolean inWorld = this.minecraft.level != null;
       Identifier menuListBackground = inWorld ? Screen.INWORLD_MENU_LIST_BACKGROUND : Screen.MENU_LIST_BACKGROUND;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, menuListBackground, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight()), this.width, this.layout.getContentHeight(), 32, 32);
+      graphics.blit(GuiPipeline.TEXTURED, menuListBackground, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight()), this.width, this.layout.getContentHeight(), 32, 32);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
@@ -341,7 +341,7 @@ public class PlayerOptionsScreen extends Screen {
 
    private void report(final ReportingContext reportingContext, final boolean skinReportable, final boolean chatReportable, final boolean hasRecentMessages) {
       PlayerSocialManager socialManager = this.minecraft.getPlayerSocialManager();
-      boolean chatDisabledOrBlocked = this.minecraft.player == null || !this.minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(this.playerId);
+      boolean chatDisabledOrBlocked = this.minecraft.player != null && !this.minecraft.player.chatAbilities().canReceivePlayerMessages() || socialManager.isBlocked(this.playerId);
       reportingContext.draftReportHandled(this.minecraft, this, () -> this.minecraft.gui.setScreen(new ReportPlayerScreen(this, reportingContext, this.playerId, this.playerName, this.skinGetter, skinReportable, chatDisabledOrBlocked, chatReportable, hasRecentMessages)), false, (report) -> report.isReportedPlayer(this.playerId));
    }
 }

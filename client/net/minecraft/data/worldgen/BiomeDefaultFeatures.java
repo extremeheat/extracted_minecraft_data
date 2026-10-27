@@ -28,23 +28,17 @@ public class BiomeDefaultFeatures {
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_STRUCTURES, CavePlacements.MONSTER_ROOM_DEEP);
    }
 
-   public static void addDefaultUndergroundVariety(final BiomeGenerationSettings.Builder builder, final boolean hasGlowLichen, final boolean hasDirtAndGranite) {
-      if (hasDirtAndGranite) {
-         builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIRT);
-         builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_UPPER);
-         builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_LOWER);
-      }
-
+   public static void addDefaultUndergroundVariety(final BiomeGenerationSettings.Builder builder) {
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIRT);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRAVEL);
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_UPPER);
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_GRANITE_LOWER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIORITE_UPPER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_DIORITE_LOWER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_ANDESITE_UPPER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_ANDESITE_LOWER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_TUFF);
-      if (hasGlowLichen) {
-         builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, CavePlacements.GLOW_LICHEN);
-      }
-
+      builder.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, CavePlacements.GLOW_LICHEN);
    }
 
    public static void addDripstone(final BiomeGenerationSettings.Builder builder) {
@@ -83,6 +77,7 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addIceCaveOres(final BiomeGenerationSettings.Builder builder) {
+      builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ORE_TUFF);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ICE_CAVE_ORE_COAL_UPPER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ICE_CAVE_ORE_COAL_LOWER);
       builder.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, OrePlacements.ICE_CAVE_ORE_IRON_UPPER);

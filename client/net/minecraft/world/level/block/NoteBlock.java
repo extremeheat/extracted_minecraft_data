@@ -35,6 +35,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class NoteBlock extends Block {
+   public static final NoteBlockInstrument DEFAULT_INSTRUMENT;
    public static final EnumProperty<NoteBlockInstrument> INSTRUMENT;
    public static final BooleanProperty POWERED;
    public static final IntegerProperty NOTE;
@@ -42,7 +43,7 @@ public class NoteBlock extends Block {
 
    public NoteBlock(final BlockBehaviour.Properties properties) {
       super(properties);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(INSTRUMENT, NoteBlockInstrument.HARP)).setValue(NOTE, 0)).setValue(POWERED, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(INSTRUMENT, DEFAULT_INSTRUMENT)).setValue(NOTE, 0)).setValue(POWERED, false));
    }
 
    private BlockState setInstrument(final LevelReader level, final BlockPos position, final BlockState state) {
@@ -51,7 +52,7 @@ public class NoteBlock extends Block {
          return (BlockState)state.setValue(INSTRUMENT, instrumentAbove);
       } else {
          NoteBlockInstrument instrumentBelow = level.getBlockState(position.below()).instrument();
-         NoteBlockInstrument newBelow = instrumentBelow.worksAboveNoteBlock() ? NoteBlockInstrument.HARP : instrumentBelow;
+         NoteBlockInstrument newBelow = instrumentBelow.worksAboveNoteBlock() ? DEFAULT_INSTRUMENT : instrumentBelow;
          return (BlockState)state.setValue(INSTRUMENT, newBelow);
       }
    }
@@ -152,6 +153,7 @@ public class NoteBlock extends Block {
    }
 
    static {
+      DEFAULT_INSTRUMENT = NoteBlockInstrument.HARP;
       INSTRUMENT = BlockStateProperties.NOTEBLOCK_INSTRUMENT;
       POWERED = BlockStateProperties.POWERED;
       NOTE = BlockStateProperties.NOTE;

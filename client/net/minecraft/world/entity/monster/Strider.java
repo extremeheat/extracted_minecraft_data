@@ -268,11 +268,11 @@ public class Strider extends Animal implements ItemSteerable {
       return this.steering.boost(this.getRandom());
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
       if (this.isInLava()) {
          this.resetFallDistance();
       } else {
-         super.checkFallDamage(ya, onGround, onState, pos);
+         super.checkFallDamage(onGround, onState, pos);
       }
    }
 

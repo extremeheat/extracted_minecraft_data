@@ -9,6 +9,7 @@ import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,7 +17,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
@@ -209,7 +209,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    public void extractWindow(final GuiGraphicsExtractor graphics) {
-      graphics.blit(RenderPipelines.GUI_TEXTURED, WINDOW_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, 252, 140, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, WINDOW_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
          for(AdvancementTab tab : this.tabs.values()) {
             tab.extractTab(graphics, this.leftPos, this.topPos, tab == this.selectedTab);
@@ -267,6 +267,10 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          if (tab != null) {
             tab.addAdvancement(task);
          }
+      }
+
+      for(AdvancementTab tab : this.tabs.values()) {
+         tab.centerIfNeeded();
       }
 
       this.advancements.progress().forEach((holder, progress) -> {

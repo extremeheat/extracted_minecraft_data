@@ -1,25 +1,22 @@
 package net.minecraft.client.gui.font;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.oit.OitStage;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
-import net.minecraft.client.renderer.pipeline.variant.TextRenderPipelineVariant;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 
-public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset, RenderPipeline guiPipeline) {
+public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderType polygonOffset, GuiPipeline guiPipeline) {
    public GlyphRenderTypes {
       super();
    }
 
    public static GlyphRenderTypes createForGrayscaleTexture(final Identifier name) {
-      return new GlyphRenderTypes(RenderTypes.textGrayscale(name), RenderTypes.textGrayscaleSeeThrough(name), RenderTypes.textGrayscalePolygonOffset(name), RenderPipelines.text(new RenderPipelines.TextParameters(TextRenderPipelineVariant.GUI_GRAYSCALE, (OitStage)null)));
+      return new GlyphRenderTypes(RenderTypes.textGrayscale(name), RenderTypes.textGrayscaleSeeThrough(name), RenderTypes.textGrayscalePolygonOffset(name), GuiPipeline.TEXT_GRAYSCALE);
    }
 
    public static GlyphRenderTypes createForColorTexture(final Identifier name) {
-      return new GlyphRenderTypes(RenderTypes.text(name), RenderTypes.textSeeThrough(name), RenderTypes.textPolygonOffset(name), RenderPipelines.text(new RenderPipelines.TextParameters(TextRenderPipelineVariant.GUI, (OitStage)null)));
+      return new GlyphRenderTypes(RenderTypes.text(name), RenderTypes.textSeeThrough(name), RenderTypes.textPolygonOffset(name), GuiPipeline.TEXT);
    }
 
    public RenderType select(final Font.DisplayMode mode) {

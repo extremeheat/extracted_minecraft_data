@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.CornerConstraint;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -30,14 +31,20 @@ public abstract class StructurePoolElement {
    public static final Codec<StructurePoolElement> CODEC;
    private static final Holder<StructureProcessorList> EMPTY;
    private volatile StructureTemplatePool.@Nullable Projection projection;
+   private volatile Optional<CornerConstraint> cornerConstraint;
 
    protected static <E extends StructurePoolElement> RecordCodecBuilder<E, StructureTemplatePool.Projection> projectionCodec() {
       return StructureTemplatePool.Projection.CODEC.fieldOf("projection").forGetter(StructurePoolElement::getProjection);
    }
 
-   protected StructurePoolElement(final StructureTemplatePool.Projection projection) {
+   protected static <E extends StructurePoolElement> RecordCodecBuilder<E, Optional<CornerConstraint>> cornerConstraintCodec() {
+      return CornerConstraint.CODEC.optionalFieldOf("corner_constraint").forGetter(StructurePoolElement::getCornerConstraint);
+   }
+
+   protected StructurePoolElement(final StructureTemplatePool.Projection projection, final Optional<CornerConstraint> cornerConstraint) {
       super();
       this.projection = projection;
+      this.cornerConstraint = cornerConstraint;
    }
 
    public abstract Vec3i getSize(StructureTemplateManager structureTemplateManager, Rotation rotation);
@@ -67,6 +74,10 @@ public abstract class StructurePoolElement {
       }
    }
 
+   public Optional<CornerConstraint> getCornerConstraint() {
+      return this.cornerConstraint;
+   }
+
    public int getGroundLevelDelta() {
       return 1;
    }
@@ -76,35 +87,35 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(final String location) {
-      return (p) -> new LegacySinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.empty());
+      return (p) -> new LegacySinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.empty(), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(final String location, final Holder<StructureProcessorList> processors) {
-      return (p) -> new LegacySinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.empty());
+      return (p) -> new LegacySinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.empty(), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(final String location) {
-      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.empty());
+      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.empty(), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(final String location, final Holder<StructureProcessorList> processors) {
-      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.empty());
+      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.empty(), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(final String location, final LiquidSettings overrideLiquidSettings) {
-      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.of(overrideLiquidSettings));
+      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), EMPTY, p, Optional.of(overrideLiquidSettings), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(final String location, final Holder<StructureProcessorList> processors, final LiquidSettings overrideLiquidSettings) {
-      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.of(overrideLiquidSettings));
+      return (p) -> new SinglePoolElement(Either.left(Identifier.parse(location)), processors, p, Optional.of(overrideLiquidSettings), Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, FeaturePoolElement> feature(final Holder<PlacedFeature> feature) {
-      return (p) -> new FeaturePoolElement(feature, p);
+      return (p) -> new FeaturePoolElement(feature, p, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, ListPoolElement> list(final List<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>> elements) {
-      return (p) -> new ListPoolElement((List)elements.stream().map((e) -> (StructurePoolElement)e.apply(p)).collect(Collectors.toList()), p);
+      return (p) -> new ListPoolElement((List)elements.stream().map((e) -> (StructurePoolElement)e.apply(p)).collect(Collectors.toList()), p, Optional.empty());
    }
 
    static {

@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.DebugScreenOverlay;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.SubtitleOverlay;
+import net.minecraft.client.gui.components.Updatable;
 import net.minecraft.client.gui.components.debug.DebugScreenEntries;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.contextualbar.ContextualBar;
@@ -31,7 +32,6 @@ import net.minecraft.client.gui.contextualbar.LocatorBar;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Lightmap;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.WaypointStyleManager;
@@ -86,7 +86,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.TeamColor;
 import org.jspecify.annotations.Nullable;
 
-public class Hud implements Renderable {
+public class Hud implements Renderable, Updatable {
    private static final Identifier CROSSHAIR_SPRITE = Identifier.withDefaultNamespace("hud/crosshair");
    private static final Identifier CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_full");
    private static final Identifier CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE = Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_background");
@@ -143,7 +143,7 @@ public class Hud implements Renderable {
    private static final float AUTOSAVE_FADE_SPEED_FACTOR = 0.2F;
    private static final int SAVING_INDICATOR_WIDTH_PADDING_RIGHT = 5;
    private static final int SAVING_INDICATOR_HEIGHT_PADDING_BOTTOM = 5;
-   private final RandomSource random = RandomSource.create();
+   private final RandomSource healthExtractionRandom = RandomSource.create();
    private final Minecraft minecraft;
    private final ChatComponent chat;
    private final WaypointStyleManager waypointStyles = new WaypointStyleManager();
@@ -211,6 +211,16 @@ public class Hud implements Renderable {
       this.titleFadeOutTime = 20;
    }
 
+   public void update(final DeltaTracker deltaTracker) {
+      LocalPlayer player = this.minecraft.player;
+      if (player != null && this.minecraft.options.getCameraType().isFirstPerson() && player.isScoping()) {
+         this.scopeScale = Mth.lerp(0.5F * deltaTracker.getGameTimeDeltaTicks(), this.scopeScale, 1.125F);
+      } else {
+         this.scopeScale = 0.5F;
+      }
+
+   }
+
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       this.minecraft.gameRenderer.gameRenderState().guiRenderState.isHudHidden = this.isHidden;
       if (!(this.minecraft.gui.screen() instanceof LevelLoadingScreen)) {
@@ -271,13 +281,10 @@ public class Hud implements Renderable {
       }
 
       LocalPlayer player = this.minecraft.player;
-      this.scopeScale = Mth.lerp(0.5F * graphics.deltaTracker().getGameTimeDeltaTicks(), this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
          if (player.isScoping()) {
             this.extractSpyglassOverlay(graphics, this.scopeScale);
          } else {
-            this.scopeScale = 0.5F;
-
             for(EquipmentSlot slot : EquipmentSlot.values()) {
                ItemStack item = player.getItemBySlot(slot);
                Equippable equippable = (Equippable)item.get(DataComponents.EQUIPPABLE);
@@ -428,7 +435,7 @@ public class Hud implements Renderable {
             if (!this.minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.THREE_DIMENSIONAL_CROSSHAIR)) {
                graphics.nextStratum();
                int size = 15;
-               graphics.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_SPRITE, (graphics.guiWidth() - 15) / 2, (graphics.guiHeight() - 15) / 2, 15, 15);
+               graphics.blitSprite(GuiPipeline.CROSSHAIR, (Identifier)CROSSHAIR_SPRITE, (graphics.guiWidth() - 15) / 2, (graphics.guiHeight() - 15) / 2, 15, 15);
                if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.CROSSHAIR) {
                   float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
                   boolean renderMaxAttackIndicator = false;
@@ -442,11 +449,11 @@ public class Hud implements Renderable {
                   int y = graphics.guiHeight() / 2 - 7 + 16;
                   int x = graphics.guiWidth() / 2 - 8;
                   if (renderMaxAttackIndicator) {
-                     graphics.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, x, y, 16, 16);
+                     graphics.blitSprite(GuiPipeline.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_FULL_SPRITE, x, y, 16, 16);
                   } else if (attackStrengthScale < 1.0F) {
                      int progress = (int)(attackStrengthScale * 17.0F);
-                     graphics.blitSprite(RenderPipelines.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, x, y, 16, 4);
-                     graphics.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, x, y, progress, 4);
+                     graphics.blitSprite(GuiPipeline.CROSSHAIR, (Identifier)CROSSHAIR_ATTACK_INDICATOR_BACKGROUND_SPRITE, x, y, 16, 4);
+                     graphics.blitSprite(GuiPipeline.CROSSHAIR, CROSSHAIR_ATTACK_INDICATOR_PROGRESS_SPRITE, 16, 4, 0, 0, x, y, progress, 4);
                   }
                }
             }
@@ -497,9 +504,9 @@ public class Hud implements Renderable {
 
                float alpha = 1.0F;
                if (instance.isAmbient()) {
-                  graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EFFECT_BACKGROUND_AMBIENT_SPRITE, x, y, 24, 24);
+                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)EFFECT_BACKGROUND_AMBIENT_SPRITE, x, y, 24, 24);
                } else {
-                  graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EFFECT_BACKGROUND_SPRITE, x, y, 24, 24);
+                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)EFFECT_BACKGROUND_SPRITE, x, y, 24, 24);
                   if (instance.endsWithin(200)) {
                      int remainingDuration = instance.getDuration();
                      int usedSeconds = 10 - remainingDuration / 20;
@@ -508,7 +515,7 @@ public class Hud implements Renderable {
                   }
                }
 
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)getMobEffectSprite(effect), x + 3, y + 3, 18, 18, ARGB.white(alpha));
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)getMobEffectSprite(effect), x + 3, y + 3, 18, 18, ARGB.white(alpha));
             }
          }
 
@@ -553,13 +560,13 @@ public class Hud implements Renderable {
          int screenCenter = graphics.guiWidth() / 2;
          int hotbarWidth = 182;
          int halfHotbar = 91;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, graphics.guiHeight() - 22, 182, 22);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + player.getInventory().getSelectedSlot() * 20, graphics.guiHeight() - 22 - 1, 24, 23);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_SPRITE, screenCenter - 91, graphics.guiHeight() - 22, 182, 22);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_SELECTION_SPRITE, screenCenter - 91 - 1 + player.getInventory().getSelectedSlot() * 20, graphics.guiHeight() - 22 - 1, 24, 23);
          if (!offhand.isEmpty()) {
             if (offhandArm == HumanoidArm.LEFT) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_OFFHAND_LEFT_SPRITE, screenCenter - 91 - 29, graphics.guiHeight() - 23, 29, 24);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_OFFHAND_LEFT_SPRITE, screenCenter - 91 - 29, graphics.guiHeight() - 23, 29, 24);
             } else {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_OFFHAND_RIGHT_SPRITE, screenCenter + 91, graphics.guiHeight() - 23, 29, 24);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_OFFHAND_RIGHT_SPRITE, screenCenter + 91, graphics.guiHeight() - 23, 29, 24);
             }
          }
 
@@ -590,8 +597,8 @@ public class Hud implements Renderable {
                }
 
                int progress = (int)(attackStrengthScale * 19.0F);
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, x, y, 18, 18);
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - progress, x, y + 18 - progress, 18, progress);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, x, y, 18, 18);
+               graphics.blitSprite(GuiPipeline.TEXTURED, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - progress, x, y + 18 - progress, 18, progress);
             }
          }
 
@@ -753,23 +760,8 @@ public class Hud implements Renderable {
       if (player != null) {
          int currentHealth = Mth.ceil(player.getHealth());
          boolean blink = this.healthBlinkTime > (long)this.tickCount && (this.healthBlinkTime - (long)this.tickCount) / 3L % 2L == 1L;
-         long timeMillis = Util.getMillis();
-         if (currentHealth < this.lastHealth && player.damageCooldownTime > 0) {
-            this.lastHealthTime = timeMillis;
-            this.healthBlinkTime = (long)(this.tickCount + 20);
-         } else if (currentHealth > this.lastHealth && player.damageCooldownTime > 0) {
-            this.lastHealthTime = timeMillis;
-            this.healthBlinkTime = (long)(this.tickCount + 10);
-         }
-
-         if (timeMillis - this.lastHealthTime > 1000L) {
-            this.displayHealth = currentHealth;
-            this.lastHealthTime = timeMillis;
-         }
-
-         this.lastHealth = currentHealth;
          int oldHealth = this.displayHealth;
-         this.random.setSeed((long)(this.tickCount * 312871));
+         this.healthExtractionRandom.setSeed((long)(this.tickCount * 312871));
          int xLeft = graphics.guiWidth() / 2 - 91;
          int xRight = graphics.guiWidth() / 2 + 91;
          int yLineBase = graphics.guiHeight() - 39;
@@ -809,15 +801,15 @@ public class Hud implements Renderable {
          for(int i = 0; i < 10; ++i) {
             int xo = xLeft + i * 8;
             if (i * 2 + 1 < armor) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_FULL_SPRITE, xo, yLineArmor, 9, 9);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ARMOR_FULL_SPRITE, xo, yLineArmor, 9, 9);
             }
 
             if (i * 2 + 1 == armor) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_HALF_SPRITE, xo, yLineArmor, 9, 9);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ARMOR_HALF_SPRITE, xo, yLineArmor, 9, 9);
             }
 
             if (i * 2 + 1 > armor) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)ARMOR_EMPTY_SPRITE, xo, yLineArmor, 9, 9);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ARMOR_EMPTY_SPRITE, xo, yLineArmor, 9, 9);
             }
          }
 
@@ -837,7 +829,7 @@ public class Hud implements Renderable {
          int xo = xLeft + column * 8;
          int yo = yLineBase - row * healthRowHeight;
          if (currentHealth + absorption <= 4) {
-            yo += this.random.nextInt(2);
+            yo += this.healthExtractionRandom.nextInt(2);
          }
 
          if (containerIndex < healthContainerCount && containerIndex == heartOffsetIndex) {
@@ -869,7 +861,7 @@ public class Hud implements Renderable {
    }
 
    private void extractHeart(final GuiGraphicsExtractor graphics, final HeartType type, final int xo, final int yo, final boolean isHardcore, final boolean blinks, final boolean half) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)type.getSprite(isHardcore, half, blinks), xo, yo, 9, 9);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)type.getSprite(isHardcore, half, blinks), xo, yo, 9, 9);
    }
 
    private void extractAirBubbles(final GuiGraphicsExtractor graphics, final Player player, final int vehicleHearts, int yLineAir, final int xRight) {
@@ -889,13 +881,13 @@ public class Hud implements Renderable {
          for(int airBubble = 1; airBubble <= 10; ++airBubble) {
             int airBubbleXPos = xRight - (airBubble - 1) * 8 - 9;
             if (airBubble <= fullAirBubbles) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_SPRITE, airBubbleXPos, yLineAir, 9, 9);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)AIR_SPRITE, airBubbleXPos, yLineAir, 9, 9);
             } else if (isPoppingBubble && airBubble == poppingAirBubblePosition && isUnderWater) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_POPPING_SPRITE, airBubbleXPos, yLineAir, 9, 9);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)AIR_POPPING_SPRITE, airBubbleXPos, yLineAir, 9, 9);
                this.playAirBubblePoppedSound(airBubble, player, emptyAirBubbles);
             } else if (airBubble > 10 - emptyAirBubbles) {
-               int wobbleYOffset = emptyAirBubbles == 10 && this.tickCount % 2 == 0 ? this.random.nextInt(2) : 0;
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)AIR_EMPTY_SPRITE, airBubbleXPos, yLineAir + wobbleYOffset, 9, 9);
+               int wobbleYOffset = emptyAirBubbles == 10 && this.tickCount % 2 == 0 ? this.healthExtractionRandom.nextInt(2) : 0;
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)AIR_EMPTY_SPRITE, airBubbleXPos, yLineAir + wobbleYOffset, 9, 9);
             }
          }
       }
@@ -946,17 +938,17 @@ public class Hud implements Renderable {
          }
 
          if (player.getFoodData().getSaturationLevel() <= 0.0F && this.tickCount % (food * 3 + 1) == 0) {
-            yo = yLineBase + (this.random.nextInt(3) - 1);
+            yo = yLineBase + (this.healthExtractionRandom.nextInt(3) - 1);
          }
 
          int xo = xRight - i * 8 - 9;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)empty, xo, yo, 9, 9);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)empty, xo, yo, 9, 9);
          if (i * 2 + 1 < food) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)full, xo, yo, 9, 9);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)full, xo, yo, 9, 9);
          }
 
          if (i * 2 + 1 == food) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)half, xo, yo, 9, 9);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)half, xo, yo, 9, 9);
          }
       }
 
@@ -979,13 +971,13 @@ public class Hud implements Renderable {
 
                for(int i = 0; i < rowHearts; ++i) {
                   int xo = xRight - i * 8 - 9;
-                  graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_CONTAINER_SPRITE, xo, yo, 9, 9);
+                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HEART_VEHICLE_CONTAINER_SPRITE, xo, yo, 9, 9);
                   if (i * 2 + 1 + baseHealth < currentHealth) {
-                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_FULL_SPRITE, xo, yo, 9, 9);
+                     graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HEART_VEHICLE_FULL_SPRITE, xo, yo, 9, 9);
                   }
 
                   if (i * 2 + 1 + baseHealth == currentHealth) {
-                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)HEART_VEHICLE_HALF_SPRITE, xo, yo, 9, 9);
+                     graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)HEART_VEHICLE_HALF_SPRITE, xo, yo, 9, 9);
                   }
                }
 
@@ -998,7 +990,7 @@ public class Hud implements Renderable {
 
    private void extractTextureOverlay(final GuiGraphicsExtractor graphics, final Identifier texture, final float alpha) {
       int color = ARGB.white(alpha);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, texture, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
+      graphics.blit(GuiPipeline.TEXTURED, texture, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
    }
 
    private void extractSpyglassOverlay(final GuiGraphicsExtractor graphics, final float scale) {
@@ -1010,11 +1002,11 @@ public class Hud implements Renderable {
       int top = (graphics.guiHeight() - height) / 2;
       int right = left + width;
       int bottom = top + height;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, SPYGLASS_SCOPE_LOCATION, left, top, 0.0F, 0.0F, width, height, width, height);
-      graphics.fill(RenderPipelines.GUI, 0, bottom, graphics.guiWidth(), graphics.guiHeight(), -16777216);
-      graphics.fill(RenderPipelines.GUI, 0, 0, graphics.guiWidth(), top, -16777216);
-      graphics.fill(RenderPipelines.GUI, 0, top, left, bottom, -16777216);
-      graphics.fill(RenderPipelines.GUI, right, top, graphics.guiWidth(), bottom, -16777216);
+      graphics.blit(GuiPipeline.TEXTURED, SPYGLASS_SCOPE_LOCATION, left, top, 0.0F, 0.0F, width, height, width, height);
+      graphics.fill(GuiPipeline.DEFAULT, 0, bottom, graphics.guiWidth(), graphics.guiHeight(), -16777216);
+      graphics.fill(GuiPipeline.DEFAULT, 0, 0, graphics.guiWidth(), top, -16777216);
+      graphics.fill(GuiPipeline.DEFAULT, 0, top, left, bottom, -16777216);
+      graphics.fill(GuiPipeline.DEFAULT, right, top, graphics.guiWidth(), bottom, -16777216);
    }
 
    private void updateVignetteBrightness(final Entity camera) {
@@ -1047,7 +1039,7 @@ public class Hud implements Renderable {
          color = ARGB.colorFromFloat(1.0F, brightness, brightness, brightness);
       }
 
-      graphics.blit(RenderPipelines.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
+      graphics.blit(GuiPipeline.VIGNETTE, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, graphics.guiWidth(), graphics.guiHeight(), graphics.guiWidth(), graphics.guiHeight(), color);
    }
 
    private void extractPortalOverlay(final GuiGraphicsExtractor graphics, float alpha) {
@@ -1059,7 +1051,7 @@ public class Hud implements Renderable {
 
       int color = ARGB.white(alpha);
       TextureAtlasSprite slot = this.minecraft.getModelManager().getBlockStateModelSet().getParticleMaterial(Blocks.NETHER_PORTAL.defaultBlockState()).sprite();
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (TextureAtlasSprite)slot, 0, 0, graphics.guiWidth(), graphics.guiHeight(), color);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (TextureAtlasSprite)slot, 0, 0, graphics.guiWidth(), graphics.guiHeight(), color);
    }
 
    private void extractConfusionOverlay(final GuiGraphicsExtractor graphics, final float strength) {
@@ -1073,7 +1065,7 @@ public class Hud implements Renderable {
       float red = 0.2F * strength;
       float green = 0.4F * strength;
       float blue = 0.2F * strength;
-      graphics.blit(RenderPipelines.GUI_NAUSEA_OVERLAY, NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, screenWidth, screenHeight, screenWidth, screenHeight, ARGB.colorFromFloat(1.0F, red, green, blue));
+      graphics.blit(GuiPipeline.NAUSEA_OVERLAY, NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, screenWidth, screenHeight, screenWidth, screenHeight, ARGB.colorFromFloat(1.0F, red, green, blue));
       graphics.pose().popMatrix();
    }
 
@@ -1119,6 +1111,7 @@ public class Hud implements Renderable {
       }
 
       ++this.tickCount;
+      this.tickPlayerHealth();
       Entity camera = this.minecraft.getCameraEntity();
       if (camera != null) {
          this.updateVignetteBrightness(camera);
@@ -1140,6 +1133,28 @@ public class Hud implements Renderable {
       }
 
       this.chat.tick();
+   }
+
+   private void tickPlayerHealth() {
+      Player player = this.getCameraPlayer();
+      if (player != null) {
+         int currentHealth = Mth.ceil(player.getHealth());
+         long timeMillis = Util.getMillis();
+         if (currentHealth < this.lastHealth && player.damageCooldownTime > 0) {
+            this.lastHealthTime = timeMillis;
+            this.healthBlinkTime = (long)(this.tickCount + 20);
+         } else if (currentHealth > this.lastHealth && player.damageCooldownTime > 0) {
+            this.lastHealthTime = timeMillis;
+            this.healthBlinkTime = (long)(this.tickCount + 10);
+         }
+
+         if (timeMillis - this.lastHealthTime > 1000L) {
+            this.displayHealth = currentHealth;
+            this.lastHealthTime = timeMillis;
+         }
+
+         this.lastHealth = currentHealth;
+      }
    }
 
    private void tickAutosaveIndicator() {

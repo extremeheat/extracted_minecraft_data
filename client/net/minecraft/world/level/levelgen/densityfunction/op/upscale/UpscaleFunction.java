@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.densityfunction.op.upscale;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.jtracy.Zone;
 import com.mojang.serialization.Codec;
@@ -98,7 +99,8 @@ public record UpscaleFunction(DensityFunction input, Axis x, Axis y, Axis z) imp
          super();
       }
 
-      private Upscaler.@Nullable AxisPlan planUpsample(final int outputMinBlock, final int outputSize, int outputStepBlocks) {
+      @VisibleForTesting
+      Upscaler.@Nullable AxisPlan planUpsample(final int outputMinBlock, final int outputSize, int outputStepBlocks) {
          if (outputSize == 1) {
             outputStepBlocks = this.cellSize;
          }
@@ -122,7 +124,7 @@ public record UpscaleFunction(DensityFunction input, Axis x, Axis y, Axis z) imp
                int minCellOutput;
                int cellSizeOutput;
                if (outputStepBlocks != 1 && outputSize != 1) {
-                  if (!Mth.isMultipleOf(minCellBlockRelative, this.cellSize)) {
+                  if (!Mth.isMultipleOf(minCellBlockRelative, outputStepBlocks)) {
                      return null;
                   }
 

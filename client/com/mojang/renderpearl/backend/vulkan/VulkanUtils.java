@@ -188,7 +188,15 @@ public class VulkanUtils {
       return (bitfield & bitmask) == 0L;
    }
 
-   public static VkClearColorValue putArgb(final VkClearColorValue vkClearColor, final Vector4fc argb) {
+   public static boolean hasBit(final int bitfield, final int bitIndex) {
+      return hasAnyBit(bitfield, 1 << bitIndex);
+   }
+
+   public static boolean hasBit(final long bitfield, final int bitIndex) {
+      return hasAnyBit(bitfield, 1L << bitIndex);
+   }
+
+   public static VkClearColorValue putRGBA(final VkClearColorValue vkClearColor, final Vector4fc argb) {
       vkClearColor.float32(0, argb.x());
       vkClearColor.float32(1, argb.y());
       vkClearColor.float32(2, argb.z());

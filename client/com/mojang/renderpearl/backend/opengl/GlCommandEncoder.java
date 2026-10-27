@@ -10,6 +10,7 @@ import com.mojang.renderpearl.api.commands.GpuQueryPool;
 import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.commands.RenderPassDescriptor;
 import com.mojang.renderpearl.api.pipeline.IndexType;
+import com.mojang.renderpearl.api.pipeline.RenderPassLayout;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import com.mojang.renderpearl.backend.api.CommandEncoderBackend;
@@ -17,14 +18,13 @@ import com.mojang.renderpearl.backend.api.RenderPassBackend;
 import com.mojang.renderpearl.util.ScissorState;
 import com.mojang.renderpearl.util.TextureViewAndSampler;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalDouble;
 import org.joml.Vector4fc;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
@@ -47,8 +47,7 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
    private final int readFbo;
    private final int drawFbo;
    private @Nullable GlRenderPipeline lastPipeline;
-   private @Nullable GlProgram lastProgram;
-   private final List<@Nullable FrameBufferAttachment> renderPassColorTextures = new ArrayList();
+   private final List<@Nullable FrameBufferAttachment> renderPassAttachments = new ArrayList();
 
    protected GlCommandEncoder(final GlDevice device) {
       super();
@@ -119,70 +118,80 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
    public RenderPassBackend createRenderPass(final RenderPassDescriptor descriptor) {
       this.device.ensureCurrent();
       this.device.debugLabels().pushDebugGroup(descriptor.label());
-      List<RenderPassDescriptor.Attachment<Optional<Vector4fc>>> colorAttachments = descriptor.colorAttachments();
-      this.renderPassColorTextures.clear();
+      this.stateManager._depthMask(true);
+      this.stateManager._colorMask(15);
+      GL33C.glStencilMask(-1);
+      int width = ((RenderPassDescriptor.Attachment)descriptor.attachments().getFirst()).textureView().getWidth(0);
+      int height = ((RenderPassDescriptor.Attachment)descriptor.attachments().getFirst()).textureView().getHeight(0);
+      GL33C.glViewport(0, 0, width, height);
+      RenderPass.RenderArea renderArea = descriptor.renderArea();
+      this.stateManager._enableScissorTest();
+      GL33C.glScissor(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
+      this.renderPassAttachments.clear();
 
-      for(RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
-         this.renderPassColorTextures.add(colorAttachment != null ? (GlTextureView)colorAttachment.textureView() : null);
+      for(RenderPassDescriptor.Attachment attachment : descriptor.attachments()) {
+         this.renderPassAttachments.add((GlTextureView)attachment.textureView());
+         if (attachment.clearValue() != null) {
+            GpuFormat format = attachment.textureView().texture().getFormat();
+            if (format.hasColorAspect()) {
+               int clearFBO = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), List.of((GlTextureView)attachment.textureView()), (FrameBufferAttachment)null);
+               this.stateManager._glBindFramebuffer(36160, clearFBO);
+               GL33C.glDrawBuffers(36064);
+               Vector4fc clearColor = attachment.clearValue().color();
+               GL33C.glClearColor(clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w());
+               GL33C.glClear(16384);
+            } else {
+               int clearFBO = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), List.of(), (GlTextureView)attachment.textureView());
+               this.stateManager._glBindFramebuffer(36160, clearFBO);
+               float clearDepth = attachment.clearValue().depth();
+               int clearStencil = attachment.clearValue().stencil();
+               GL33C.glClearDepth((double)clearDepth);
+               GL33C.glClearStencil(clearStencil);
+               if (format.hasDepthAspect()) {
+                  GL33C.glClear(256);
+               }
+
+               if (format.hasDepthAspect()) {
+                  GL33C.glClear(1024);
+               }
+            }
+         }
       }
 
-      RenderPassDescriptor.Attachment<OptionalDouble> depthAttachment = descriptor.depthAttachment();
-      int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), this.renderPassColorTextures, depthAttachment == null ? null : (GlTextureView)depthAttachment.textureView());
-      this.stateManager._glBindFramebuffer(36160, fbo);
-      int[] drawBuffers = new int[this.renderPassColorTextures.size()];
+      this.stateManager._glBindFramebuffer(36160, 0);
+      this.beginSubpass(descriptor.layout(), 0);
+      ScissorState scissorState = new ScissorState();
+      scissorState.enable(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
+      return new GlRenderPass(this, this.device, scissorState, descriptor.layout());
+   }
 
-      for(int i = 0; i < this.renderPassColorTextures.size(); ++i) {
-         if (colorAttachments.get(i) != null) {
+   public void beginSubpass(final RenderPassLayout layout, final int subpassIndex) {
+      RenderPassLayout.Subpass subpassLayout = layout.subpass(subpassIndex);
+      int[] drawBuffers = new int[subpassLayout.colorAttachments().size()];
+      ReferenceArrayList<FrameBufferAttachment> subpassColorAttachments = new ReferenceArrayList();
+      subpassColorAttachments.size(subpassLayout.colorAttachments().size());
+
+      for(int i = 0; i < drawBuffers.length; ++i) {
+         int attachment = subpassLayout.colorAttachments().getByte(i);
+         if (attachment != -1) {
             drawBuffers[i] = '\u8ce0' + i;
+            subpassColorAttachments.set(i, (FrameBufferAttachment)this.renderPassAttachments.get(attachment));
          } else {
             drawBuffers[i] = 0;
          }
       }
 
+      FrameBufferAttachment depthAttachment;
+      if (subpassLayout.depthStencilAttachment() != -1) {
+         depthAttachment = (FrameBufferAttachment)this.renderPassAttachments.get(subpassLayout.depthStencilAttachment());
+      } else {
+         depthAttachment = null;
+      }
+
+      int fbo = this.device.frameBufferCache().getFbo(this.device.directStateAccess(), subpassColorAttachments, depthAttachment);
+      this.stateManager._glBindFramebuffer(36160, fbo);
       GL33C.glDrawBuffers(drawBuffers);
-      int width = 0;
-      int height = 0;
-      if (!colorAttachments.isEmpty()) {
-         for(RenderPassDescriptor.Attachment<Optional<Vector4fc>> colorAttachment : colorAttachments) {
-            if (colorAttachment != null) {
-               GpuTextureView colorTexture = colorAttachment.textureView();
-               width = colorTexture.getWidth(0);
-               height = colorTexture.getHeight(0);
-            }
-         }
-      } else if (depthAttachment != null) {
-         width = depthAttachment.textureView().getWidth(0);
-         height = depthAttachment.textureView().getHeight(0);
-      }
-
-      RenderPass.RenderArea renderArea = descriptor.renderArea();
-      this.stateManager._enableScissorTest();
-      GL33C.glScissor(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
-
-      for(int i = 0; i < colorAttachments.size(); ++i) {
-         RenderPassDescriptor.Attachment<Optional<Vector4fc>> attachment = (RenderPassDescriptor.Attachment)colorAttachments.get(i);
-         if (attachment != null) {
-            Optional<Vector4fc> clearValue = attachment.clearValue();
-            if (clearValue.isPresent()) {
-               this.stateManager._colorMask(i, 15);
-               GlStateManager._clearBuffer(i, (Vector4fc)clearValue.get());
-            }
-         }
-      }
-
-      if (depthAttachment != null) {
-         OptionalDouble clearValue = depthAttachment.clearValue();
-         if (clearValue.isPresent()) {
-            this.stateManager._depthMask(true);
-            GlStateManager._clearBuffer(clearValue.getAsDouble());
-         }
-      }
-
-      GL33C.glViewport(0, 0, width, height);
       this.lastPipeline = null;
-      ScissorState scissorState = new ScissorState();
-      scissorState.enable(renderArea.x(), renderArea.y(), renderArea.width(), renderArea.height());
-      return new GlRenderPass(this, this.device, this.renderPassColorTextures.size(), scissorState);
    }
 
    public void clearColorTexture(final GpuTexture colorTexture, final Vector4fc clearColor) {
@@ -430,7 +439,7 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
       if (renderPass.anyUniformDirty) {
          renderPass.anyUniformDirty = false;
 
-         label136:
+         label152:
          for(int i = 0; i < renderPass.dirtyUniforms.size(); ++i) {
             if (renderPass.dirtyUniforms.getBoolean(i)) {
                renderPass.dirtyUniforms.set(i, false);
@@ -445,70 +454,71 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
                      //0->com/mojang/renderpearl/backend/opengl/Uniform$Ubo
                      //1->com/mojang/renderpearl/backend/opengl/Uniform$Utb
                      //2->com/mojang/renderpearl/backend/opengl/Uniform$Sampler
+                     //3->com/mojang/renderpearl/backend/opengl/Uniform$InputAttachment
                      switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
                         case 0:
                            Uniform.Ubo var7 = (Uniform.Ubo)var5;
-                           Uniform.Ubo var41 = var7;
+                           Uniform.Ubo var49 = var7;
 
                            try {
-                              var42 = var41.blockBinding();
+                              var50 = var49.blockBinding();
                            } catch (Throwable var19) {
                               throw new MatchException(var19.toString(), var19);
                            }
 
-                           int blockBinding = var42;
+                           int blockBinding = var50;
                            if (true) {
-                              GpuBufferSlice var27 = (GpuBufferSlice)renderPass.uniforms.get(i);
-                              GL33C.glBindBufferRange(35345, blockBinding, ((GlBuffer)var27.buffer()).handle(), var27.offset(), var27.length());
-                              continue label136;
+                              GpuBufferSlice var28 = (GpuBufferSlice)renderPass.uniforms.get(i);
+                              GL33C.glBindBufferRange(35345, blockBinding, ((GlBuffer)var28.buffer()).handle(), var28.offset(), var28.length());
+                              continue label152;
                            }
 
                            var6 = 1;
                            break;
                         case 1:
                            Uniform.Utb bufferView = (Uniform.Utb)var5;
-                           Uniform.Utb var34 = bufferView;
+                           Uniform.Utb var42 = bufferView;
 
                            try {
-                              var34.stateManager();
+                              var42.stateManager();
+                           } catch (Throwable var25) {
+                              throw new MatchException(var25.toString(), var25);
+                           }
+
+                           var42 = bufferView;
+
+                           try {
+                              var44 = var42.samplerIndex();
                            } catch (Throwable var24) {
                               throw new MatchException(var24.toString(), var24);
                            }
 
-                           var34 = bufferView;
-
-                           try {
-                              var36 = var34.samplerIndex();
-                           } catch (Throwable var23) {
-                              throw new MatchException(var23.toString(), var23);
-                           }
-
-                           int texture = var36;
+                           int texture = var44;
                            if (true) {
-                              var34 = bufferView;
+                              var42 = bufferView;
 
                               try {
-                                 var38 = var34.format();
+                                 var46 = var42.format();
+                              } catch (Throwable var23) {
+                                 throw new MatchException(var23.toString(), var23);
+                              }
+
+                              GpuFormat texture = var46;
+                              var42 = bufferView;
+
+                              try {
+                                 var48 = var42.texture();
                               } catch (Throwable var22) {
                                  throw new MatchException(var22.toString(), var22);
                               }
 
-                              GpuFormat texture = var38;
-                              var34 = bufferView;
-
-                              try {
-                                 var40 = var34.texture();
-                              } catch (Throwable var21) {
-                                 throw new MatchException(var21.toString(), var21);
-                              }
-
-                              int texture = var40;
+                              int texture = var48;
                               if (true) {
                                  this.stateManager._activeTexture('\u84c0' + texture);
                                  GL33C.glBindTexture(35882, texture);
                                  GpuBufferSlice texture = (GpuBufferSlice)renderPass.uniforms.get(i);
                                  GL33C.glTexBuffer(35882, GlConst.toGlInternalId(texture), ((GlBuffer)texture.buffer()).handle());
-                                 continue label136;
+                                 continue label152;
                               }
                            }
 
@@ -516,15 +526,15 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
                            break;
                         case 2:
                            Uniform.Sampler bufferView = (Uniform.Sampler)var5;
-                           Uniform.Sampler var10000 = bufferView;
+                           Uniform.Sampler var40 = bufferView;
 
                            try {
-                              var33 = var10000.samplerIndex();
-                           } catch (Throwable var20) {
-                              throw new MatchException(var20.toString(), var20);
+                              var41 = var40.samplerIndex();
+                           } catch (Throwable var21) {
+                              throw new MatchException(var21.toString(), var21);
                            }
 
-                           int samplerIndex = var33;
+                           int samplerIndex = var41;
                            if (true) {
                               TextureViewAndSampler viewAndSampler = (TextureViewAndSampler)renderPass.uniforms.get(i);
                               if (viewAndSampler != null) {
@@ -544,13 +554,39 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
                                  GL33C.glTexParameteri(target, 33084, textureView.baseMipLevel());
                                  GL33C.glTexParameteri(target, 33085, textureView.baseMipLevel() + textureView.mipLevels() - 1);
                               }
-                              continue label136;
+                              continue label152;
                            }
 
                            var6 = 3;
                            break;
+                        case 3:
+                           Uniform.InputAttachment viewAndSampler = (Uniform.InputAttachment)var5;
+                           Uniform.InputAttachment var10000 = viewAndSampler;
+
+                           try {
+                              var39 = var10000.samplerIndex();
+                           } catch (Throwable var20) {
+                              throw new MatchException(var20.toString(), var20);
+                           }
+
+                           int texture = var39;
+                           if (true) {
+                              GlTextureView textureView = (GlTextureView)renderPass.uniforms.get(i);
+                              if (textureView != null) {
+                                 this.stateManager._activeTexture('\u84c0' + texture);
+                                 GlTexture texture = textureView.texture();
+                                 this.stateManager._bindTexture(texture.id);
+                                 GL33C.glBindSampler(texture, 0);
+                                 GL33C.glTexParameteri(3553, 33084, textureView.baseMipLevel());
+                                 GL33C.glTexParameteri(3553, 33085, textureView.baseMipLevel() + textureView.mipLevels() - 1);
+                              }
+                              continue label152;
+                           }
+
+                           var6 = 4;
+                           break;
                         default:
-                           throw new MatchException((String)null, (Throwable)null);
+                           throw new IllegalArgumentException();
                      }
                   }
                }

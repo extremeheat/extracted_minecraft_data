@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -13,7 +14,6 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -250,7 +250,7 @@ public class CreateFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(final GuiGraphicsExtractor graphics, final int x, final int y) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)CreateFlatWorldScreen.SLOT_SPRITE, x, y, 18, 18);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)CreateFlatWorldScreen.SLOT_SPRITE, x, y, 18, 18);
          }
       }
 

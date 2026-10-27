@@ -10,13 +10,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.PreeditEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -427,7 +427,7 @@ public class EditBox extends AbstractWidget {
       if (this.isVisible()) {
          if (this.isBordered()) {
             Identifier sprite = SPRITES.get(this.isActive(), this.isFocused());
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
          int color = this.isEditable ? this.textColor : this.textColorUneditable;

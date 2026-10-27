@@ -8,7 +8,7 @@ import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.core.ClientAsset;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -116,13 +116,16 @@ public class AdvancementTab {
       this.type.extractIcon(graphics, xo, yo, this.index, this.icon);
    }
 
-   public void extractContents(final GuiGraphicsExtractor graphics, final int windowLeft, final int windowTop) {
+   public void centerIfNeeded() {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
          this.centered = true;
       }
 
+   }
+
+   public void extractContents(final GuiGraphicsExtractor graphics, final int windowLeft, final int windowTop) {
       graphics.enableScissor(windowLeft, windowTop, windowLeft + 234, windowTop + 113);
       graphics.pose().pushMatrix();
       graphics.pose().translate((float)windowLeft, (float)windowTop);
@@ -133,7 +136,7 @@ public class AdvancementTab {
 
       for(int x = -1; x <= 15; ++x) {
          for(int y = -1; y <= 8; ++y) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, this.background, left + 16 * x, top + 16 * y, 0.0F, 0.0F, 16, 16, 16, 16);
+            graphics.blit(GuiPipeline.TEXTURED, this.background, left + 16 * x, top + 16 * y, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 

@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -118,7 +118,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, BEACON_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, BEACON_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       graphics.item(new ItemStack(Items.NETHERITE_INGOT), xo + 20, yo + 109);
       graphics.item(new ItemStack(Items.EMERALD), xo + 41, yo + 109);
       graphics.item(new ItemStack(Items.DIAMOND), xo + 41 + 22, yo + 109);
@@ -149,7 +149,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             sprite = BeaconScreen.BUTTON_SPRITE;
          }
 
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+         graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
          this.extractIcon(graphics);
       }
 
@@ -208,7 +208,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void extractIcon(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
 
       public void updateStatus(final int levels) {
@@ -253,7 +253,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void extractIcon(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
    }
 

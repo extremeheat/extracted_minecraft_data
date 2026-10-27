@@ -401,6 +401,10 @@ public class Items {
    public static final Item SNOW;
    public static final Item ICE;
    public static final Item SNOW_BLOCK;
+   public static final Item SNOW_BRICKS;
+   public static final Item SNOW_BRICK_STAIRS;
+   public static final Item SNOW_BRICK_SLAB;
+   public static final Item SNOW_BRICK_WALL;
    public static final Item CACTUS;
    public static final Item CACTUS_FLOWER;
    public static final Item CLAY;
@@ -1751,6 +1755,10 @@ public class Items {
       SNOW = registerBlock(BlockItemIds.SNOW, Blocks.SNOW);
       ICE = registerBlock(BlockItemIds.ICE, Blocks.ICE);
       SNOW_BLOCK = registerBlock(BlockItemIds.SNOW_BLOCK, Blocks.SNOW_BLOCK);
+      SNOW_BRICKS = registerBlock(BlockItemIds.SNOW_BRICKS, Blocks.SNOW_BRICKS);
+      SNOW_BRICK_STAIRS = registerBlock(BlockItemIds.SNOW_BRICK_STAIRS, Blocks.SNOW_BRICK_STAIRS);
+      SNOW_BRICK_SLAB = registerBlock(BlockItemIds.SNOW_BRICK_SLAB, Blocks.SNOW_BRICK_SLAB);
+      SNOW_BRICK_WALL = registerBlock(BlockItemIds.SNOW_BRICK_WALL, Blocks.SNOW_BRICK_WALL);
       CACTUS = registerBlock(BlockItemIds.CACTUS, Blocks.CACTUS, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW_MEDIUM));
       CACTUS_FLOWER = registerBlock(BlockItemIds.CACTUS_FLOWER, Blocks.CACTUS_FLOWER, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW));
       CLAY = registerBlock(BlockItemIds.CLAY, Blocks.CLAY);

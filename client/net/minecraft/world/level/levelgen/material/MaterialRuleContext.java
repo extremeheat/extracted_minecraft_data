@@ -35,7 +35,6 @@ public final class MaterialRuleContext {
    private final DensitySamplerSet densitySamplers;
    private final Map<DensityFunction, PrefillableDensityGetter> densityGetterCache = new HashMap();
    private final BiomeResolver biomeGetter;
-   private final VerticalAnchor.Context verticalAnchorContext;
    private final @Nullable Set<Holder<Biome>> possibleBiomes;
    private final DensityVolume expectedVolume2d;
    private @Nullable DensityBuffer preliminarySurfaceBuffer;
@@ -59,7 +58,7 @@ public final class MaterialRuleContext {
    private int stoneDepthBelow;
    private int stoneDepthAbove;
 
-   public MaterialRuleContext(final MaterialSystem system, final RandomState randomState, final DensityVolume expectedVolume, final DensitySamplerSet densitySamplers, final BiomeResolver biomeGetter, final VerticalAnchor.Context verticalAnchorContext, final @Nullable Set<Holder<Biome>> possibleBiomes) {
+   public MaterialRuleContext(final MaterialSystem system, final RandomState randomState, final DensityVolume expectedVolume, final DensitySamplerSet densitySamplers, final BiomeResolver biomeGetter, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       super();
       this.lastSurfaceDepth2Update = this.lastUpdateXZ - 1L;
       this.lastMinSurfaceLevelUpdate = this.lastUpdateXZ - 1L;
@@ -70,7 +69,6 @@ public final class MaterialRuleContext {
       this.expectedVolume = expectedVolume;
       this.densitySamplers = densitySamplers;
       this.biomeGetter = biomeGetter;
-      this.verticalAnchorContext = verticalAnchorContext;
       this.possibleBiomes = possibleBiomes;
       this.expectedVolume2d = new DensityVolume(expectedVolume.sizeX(), 1, expectedVolume.sizeZ(), expectedVolume.minBlockX(), 0, expectedVolume.minBlockZ(), expectedVolume.stepBlockX(), 1, expectedVolume.stepBlockZ());
    }
@@ -247,7 +245,7 @@ public final class MaterialRuleContext {
    }
 
    public int resolveAnchorY(final VerticalAnchor anchor) {
-      return anchor.resolveY(this.verticalAnchorContext);
+      return anchor.resolveY(this.randomState.verticalAnchors());
    }
 
    public BlockState getBand(final int x, final int y, final int z) {

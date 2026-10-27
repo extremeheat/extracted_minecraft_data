@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
@@ -15,16 +16,17 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.CornerConstraint;
 import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((e) -> e.elements), projectionCodec()).apply(i, ListPoolElement::new));
+   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((e) -> e.elements), projectionCodec(), cornerConstraintCodec()).apply(i, ListPoolElement::new));
    private final List<StructurePoolElement> elements;
 
-   public ListPoolElement(final List<StructurePoolElement> elements, final StructureTemplatePool.Projection projection) {
-      super(projection);
+   public ListPoolElement(final List<StructurePoolElement> elements, final StructureTemplatePool.Projection projection, final Optional<CornerConstraint> cornerConstraint) {
+      super(projection, cornerConstraint);
       if (elements.isEmpty()) {
          throw new IllegalArgumentException("Elements are empty");
       } else {

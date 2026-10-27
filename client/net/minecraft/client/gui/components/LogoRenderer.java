@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
@@ -36,10 +36,10 @@ public class LogoRenderer {
       int logoX = width / 2 - 128;
       float effectiveAlpha = this.keepLogoThroughFade ? 1.0F : alpha;
       int color = ARGB.white(effectiveAlpha);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, logoX, heightOffset, 0.0F, 0.0F, 256, 44, 256, 64, color);
+      graphics.blit(GuiPipeline.TEXTURED, this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, logoX, heightOffset, 0.0F, 0.0F, 256, 44, 256, 64, color);
       int editionX = width / 2 - 64;
       int y = heightOffset + 44 - 7;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, MINECRAFT_EDITION, editionX, y, 0.0F, 0.0F, 128, 14, 128, 16, color);
+      graphics.blit(GuiPipeline.TEXTURED, MINECRAFT_EDITION, editionX, y, 0.0F, 0.0F, 128, 14, 128, 16, color);
    }
 
    public boolean keepLogoThroughFade() {

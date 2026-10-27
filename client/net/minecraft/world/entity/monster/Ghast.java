@@ -80,7 +80,7 @@ public class Ghast extends Mob implements Enemy {
       return this.isInvulnerable() && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(source) && super.isInvulnerableTo(level, source);
    }
 
-   protected void checkFallDamage(final double ya, final boolean onGround, final BlockState onState, final BlockPos pos) {
+   protected void checkFallDamage(final boolean onGround, final BlockState onState, final BlockPos pos) {
    }
 
    public boolean onClimbable() {

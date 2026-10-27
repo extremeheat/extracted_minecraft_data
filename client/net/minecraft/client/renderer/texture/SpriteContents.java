@@ -358,11 +358,11 @@ public class SpriteContents implements AutoCloseable, Stitcher.Entry {
          int frameProgressAsInt = (int)(frameProgress * 1000.0F);
          if (this.animationInfo.interpolateFrames) {
             int newFrame = ((FrameInfo)frames.get((this.frame + 1) % frames.size())).index;
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_INTERPOLATE, renderPass.activeSubpass()));
             renderPass.setUniform("CurrentSprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
             renderPass.setUniform("NextSprite", (GpuTextureView)this.frameTexturesByIndex.get(newFrame), sampler);
          } else if (this.isDirty) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT));
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.ANIMATE_SPRITE_BLIT, renderPass.activeSubpass()));
             renderPass.setUniform("Sprite", (GpuTextureView)this.frameTexturesByIndex.get(oldFrame), sampler);
          }
 

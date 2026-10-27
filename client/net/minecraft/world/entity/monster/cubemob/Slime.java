@@ -90,7 +90,7 @@ public class Slime extends AbstractCubeMob implements Enemy {
       return false;
    }
 
-   protected boolean canBeABaby() {
+   public boolean canBeABaby() {
       return false;
    }
 

@@ -94,7 +94,7 @@ public class PostChain implements AutoCloseable {
       pipelineBuilder.withBindGroupLayout(bindGroupLayoutBuilder.build());
       pipelineBuilder.withColorTargetState(ColorTargetState.DEFAULT);
       RenderPipeline pipeline = pipelineBuilder.build();
-      if (RenderSystem.getCompiledPipelineNullable(pipeline) == null) {
+      if (RenderSystem.getCompiledPipelineNullable(pipeline, RenderPassLayouts.COLOR_ONLY.subpass(0)) == null) {
          throw new ShaderManager.CompilationException("Failed to compile post processing pipeline " + String.valueOf(pipeline.getLocation()));
       } else {
          List<PostPass.Input> inputs = new ArrayList();

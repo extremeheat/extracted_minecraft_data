@@ -2,7 +2,7 @@ package net.minecraft.gizmos;
 
 import net.minecraft.world.phys.Vec3;
 
-public record CircleGizmo(Vec3 pos, float radius, GizmoStyle style) implements Gizmo {
+public record CircleGizmo(Vec3 pos, float radius, Plane plane, GizmoStyle style) implements Gizmo {
    private static final int CIRCLE_VERTICES = 20;
    private static final float SEGMENT_SIZE_RADIANS = 0.31415927F;
 
@@ -16,7 +16,15 @@ public record CircleGizmo(Vec3 pos, float radius, GizmoStyle style) implements G
 
          for(int i = 0; i < 20; ++i) {
             float theta = (float)i * 0.31415927F;
-            Vec3 point = this.pos.add((double)((float)((double)this.radius * Math.cos((double)theta))), 0.0, (double)((float)((double)this.radius * Math.sin((double)theta))));
+            Vec3 var10000;
+            switch (this.plane.ordinal()) {
+               case 0 -> var10000 = this.pos.add((double)((float)((double)this.radius * Math.cos((double)theta))), 0.0, (double)((float)((double)this.radius * Math.sin((double)theta))));
+               case 1 -> var10000 = this.pos.add((double)((float)((double)this.radius * Math.cos((double)theta))), (double)((float)((double)this.radius * Math.sin((double)theta))), 0.0);
+               case 2 -> var10000 = this.pos.add(0.0, (double)((float)((double)this.radius * Math.cos((double)theta))), (double)((float)((double)this.radius * Math.sin((double)theta))));
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            Vec3 point = var10000;
             points[i] = point;
          }
 
@@ -34,6 +42,20 @@ public record CircleGizmo(Vec3 pos, float radius, GizmoStyle style) implements G
             }
          }
 
+      }
+   }
+
+   public static enum Plane {
+      XZ,
+      XY,
+      YZ;
+
+      private Plane() {
+      }
+
+      // $FF: synthetic method
+      private static Plane[] $values() {
+         return new Plane[]{XZ, XY, YZ};
       }
    }
 }

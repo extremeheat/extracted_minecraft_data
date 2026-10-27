@@ -452,7 +452,7 @@ public class RenderTypes {
       DEBUG_POINT = RenderType.create("debug_point", RenderSetup.builder((stage) -> RenderPipelines.debugPrimitive(new RenderPipelines.DebugPrimitiveParameters(DebugPrimitiveRenderPipelineVariant.POINTS, stage))).createRenderSetup());
       DEBUG_QUADS = RenderType.create("debug_quads", RenderSetup.builder((stage) -> RenderPipelines.debugPrimitive(new RenderPipelines.DebugPrimitiveParameters(DebugPrimitiveRenderPipelineVariant.QUADS, stage))).sortOnUpload().createRenderSetup());
       DEBUG_TRIANGLE_FAN = RenderType.create("debug_triangle_fan", RenderSetup.builder((stage) -> RenderPipelines.debugPrimitive(new RenderPipelines.DebugPrimitiveParameters(DebugPrimitiveRenderPipelineVariant.TRIANGLE_FAN, stage))).createRenderSetup());
-      BLOCK_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("block_screen_effect", RenderSetup.nonOitBuilder(RenderPipelines.BLOCK_SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
-      FIRE_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("fire_screen_effect", RenderSetup.nonOitBuilder(RenderPipelines.FIRE_SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
+      BLOCK_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("block_screen_effect", RenderSetup.nonOitBuilder(RenderPipelines.SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
+      FIRE_SCREEN_EFFECT = Util.memoize((Function)((texture) -> RenderType.create("fire_screen_effect", RenderSetup.nonOitBuilder(RenderPipelines.SCREEN_EFFECT).withTexture("Sampler0", texture).createRenderSetup())));
    }
 }

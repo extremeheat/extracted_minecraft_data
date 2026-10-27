@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.reporting;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -72,7 +72,7 @@ public class DiscardReportWarningScreen extends Screen {
       super.extractMenuBackground(graphics);
       boolean inWorld = this.minecraft.level != null;
       Identifier menuListBackground = inWorld ? Screen.INWORLD_MENU_LIST_BACKGROUND : Screen.MENU_LIST_BACKGROUND;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, menuListBackground, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight()), this.width, this.layout.getContentHeight(), 32, 32);
+      graphics.blit(GuiPipeline.TEXTURED, menuListBackground, this.layout.getX(), this.layout.getHeaderHeight(), (float)this.width, (float)(this.height - this.layout.getFooterHeight()), this.width, this.layout.getContentHeight(), 32, 32);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.screens.PauseScreen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
@@ -79,7 +79,7 @@ public class TutorialToast implements Toast {
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
       int height = this.height();
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), height);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), height);
       this.icon.extractRenderState(graphics, 6, 6);
       int textHeight = this.lines.size() * 11;
       int textTop = 7 + (this.contentHeight() - textHeight) / 2;
@@ -127,7 +127,7 @@ public class TutorialToast implements Toast {
       }
 
       public void extractRenderState(final GuiGraphicsExtractor graphics, final int x, final int y) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.sprite, x, y, 20, 20);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)this.sprite, x, y, 20, 20);
       }
 
       // $FF: synthetic method

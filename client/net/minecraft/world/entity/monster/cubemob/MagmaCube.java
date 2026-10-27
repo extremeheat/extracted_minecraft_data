@@ -122,7 +122,7 @@ public class MagmaCube extends AbstractCubeMob implements Enemy {
       return SoundEvents.MAGMA_CUBE_JUMP;
    }
 
-   protected boolean canBeABaby() {
+   public boolean canBeABaby() {
       return false;
    }
 

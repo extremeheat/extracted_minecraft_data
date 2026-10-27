@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
@@ -15,7 +16,6 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -127,7 +127,7 @@ public class RealmsPreferredRegionSelectionScreen extends Screen {
             graphics.text(RealmsPreferredRegionSelectionScreen.this.font, (Component)this.name, this.getContentX() + 5, this.getContentY() + 2, -1);
             if (this.regionSelection.region() != null && RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.containsKey(this.regionSelection.region())) {
                ServiceQuality serviceQuality = (ServiceQuality)RealmsPreferredRegionSelectionScreen.this.regionServiceQuality.getOrDefault(this.regionSelection.region(), ServiceQuality.UNKNOWN);
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)serviceQuality.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)serviceQuality.getIcon(), this.getContentRight() - 18, this.getContentY() + 2, 10, 8);
             }
 
          }

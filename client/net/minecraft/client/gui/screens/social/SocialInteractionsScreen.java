@@ -6,9 +6,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.SpriteIconCycleButton;
@@ -28,7 +30,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -157,18 +158,24 @@ public class SocialInteractionsScreen extends Screen {
       this.updateServerLabel();
    }
 
+   public void update(final DeltaTracker deltaTracker) {
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.update(deltaTracker);
+      }
+
+      super.update(deltaTracker);
+   }
+
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.backgroundScreen != null) {
-         this.backgroundScreen.extractBackground(graphics);
-         graphics.nextStratum();
-         this.backgroundScreen.extractRenderState(graphics);
+         extractBackgroundScreen(graphics, this.backgroundScreen);
          graphics.nextStratum();
          this.extractBlurredBackground(graphics);
       } else {
          super.extractBackground(graphics);
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
+      graphics.blitSprite(GuiPipeline.TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
       Tab var3 = this.tabManager.getCurrentTab();
       if (var3 instanceof AbstractFriendsTab tab) {
          tab.extractBackground(graphics);

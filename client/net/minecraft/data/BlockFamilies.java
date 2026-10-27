@@ -82,6 +82,8 @@ public class BlockFamilies {
    public static final ColorCollection<BlockFamily> CONCRETE;
    public static final BlockFamily PACKED_ICE;
    public static final BlockFamily PACKED_ICE_BRICKS;
+   public static final BlockFamily SNOW_BLOCK;
+   public static final BlockFamily SNOW_BRICKS;
 
    public BlockFamilies() {
       super();
@@ -173,5 +175,7 @@ public class BlockFamilies {
       CONCRETE = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.CONCRETE.pick(color)).stairs(Blocks.CONCRETE_STAIRS.pick(color)).slab(Blocks.CONCRETE_SLAB.pick(color)).recipeGroupPrefix("concrete").generateStonecutterRecipe().getFamily());
       PACKED_ICE = familyBuilder(Blocks.PACKED_ICE).bricks(Blocks.PACKED_ICE_BRICKS).generateStonecutterRecipe().getFamily();
       PACKED_ICE_BRICKS = familyBuilder(Blocks.PACKED_ICE_BRICKS).slab(Blocks.PACKED_ICE_BRICK_SLAB).stairs(Blocks.PACKED_ICE_BRICK_STAIRS).wall(Blocks.PACKED_ICE_BRICK_WALL).chiseled(Blocks.CHISELED_PACKED_ICE).generateStonecutterRecipe().getFamily();
+      SNOW_BLOCK = familyBuilder(Blocks.SNOW_BLOCK).bricks(Blocks.SNOW_BRICKS).dontGenerateModel().getFamily();
+      SNOW_BRICKS = familyBuilder(Blocks.SNOW_BRICKS).slab(Blocks.SNOW_BRICK_SLAB).stairs(Blocks.SNOW_BRICK_STAIRS).wall(Blocks.SNOW_BRICK_WALL).getFamily();
    }
 }

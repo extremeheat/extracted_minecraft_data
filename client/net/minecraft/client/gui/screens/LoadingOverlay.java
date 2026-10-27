@@ -10,9 +10,10 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
@@ -34,7 +35,7 @@ public class LoadingOverlay extends Overlay {
    private static final int LOGO_QUARTER = 60;
    private static final int LOGO_HALF = 120;
    private static final float LOGO_OVERLAP = 0.0625F;
-   private static final float SMOOTHING = 0.95F;
+   private static final float PROGRESS_RETENTION_PER_TICK = 0.85F;
    public static final long FADE_OUT_TIME = 1000L;
    public static final long FADE_IN_TIME = 500L;
    private final Minecraft minecraft;
@@ -86,16 +87,32 @@ public class LoadingOverlay extends Overlay {
       return color & 16777215 | alpha << 24;
    }
 
+   public void update(final DeltaTracker deltaTracker) {
+      if (this.fadeIn && this.fadeInStart == -1L) {
+         this.fadeInStart = Util.getMillis();
+      }
+
+      float progressDelta = 1.0F - (float)Math.pow(0.8500000238418579, (double)deltaTracker.getRealtimeDeltaTicks());
+      this.currentProgress = Math.clamp(Mth.lerp(progressDelta, this.currentProgress, this.reload.getActualProgress()), 0.0F, 1.0F);
+      if (this.fadeOutAnim() >= 2.0F) {
+         this.minecraft.gui.setOverlay((Overlay)null);
+      }
+
+   }
+
+   private float fadeOutAnim() {
+      return this.fadeOutStart > -1L ? (float)(Util.getMillis() - this.fadeOutStart) / 1000.0F : -1.0F;
+   }
+
+   private float fadeInAnim() {
+      return this.fadeInStart > -1L ? (float)(Util.getMillis() - this.fadeInStart) / 500.0F : -1.0F;
+   }
+
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       int width = graphics.guiWidth();
       int height = graphics.guiHeight();
-      long now = Util.getMillis();
-      if (this.fadeIn && this.fadeInStart == -1L) {
-         this.fadeInStart = now;
-      }
-
-      float fadeOutAnim = this.fadeOutStart > -1L ? (float)(now - this.fadeOutStart) / 1000.0F : -1.0F;
-      float fadeInAnim = this.fadeInStart > -1L ? (float)(now - this.fadeInStart) / 500.0F : -1.0F;
+      float fadeOutAnim = this.fadeOutAnim();
+      float fadeInAnim = this.fadeInAnim();
       float logoAlpha;
       if (fadeOutAnim >= 1.0F) {
          Screen screen = this.minecraft.gui.screen();
@@ -132,17 +149,11 @@ public class LoadingOverlay extends Overlay {
       double contentWidth = logoHeight * 4.0;
       int logoWidthHalf = (int)(contentWidth * 0.5);
       int color = ARGB.white(logoAlpha);
-      graphics.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX - logoWidthHalf, logoY - logoHeightHalf, -0.0625F, 0.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
-      graphics.blit(RenderPipelines.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX, logoY - logoHeightHalf, 0.0625F, 60.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
+      graphics.blit(GuiPipeline.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX - logoWidthHalf, logoY - logoHeightHalf, -0.0625F, 0.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
+      graphics.blit(GuiPipeline.MOJANG_LOGO, MOJANG_STUDIOS_LOGO_LOCATION, contentX, logoY - logoHeightHalf, 0.0625F, 60.0F, logoWidthHalf, (int)logoHeight, 120, 60, 120, 120, color);
       int barY = (int)((double)graphics.guiHeight() * 0.8325);
-      float actualProgress = this.reload.getActualProgress();
-      this.currentProgress = Math.clamp(this.currentProgress * 0.95F + actualProgress * 0.050000012F, 0.0F, 1.0F);
       if (fadeOutAnim < 1.0F) {
          this.extractProgressBar(graphics, width / 2 - logoWidthHalf, barY - 5, width / 2 + logoWidthHalf, barY + 5, 1.0F - Math.clamp(fadeOutAnim, 0.0F, 1.0F));
-      }
-
-      if (fadeOutAnim >= 2.0F) {
-         this.minecraft.gui.setOverlay((Overlay)null);
       }
 
    }

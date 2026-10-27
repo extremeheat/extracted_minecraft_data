@@ -1,9 +1,9 @@
 package com.mojang.realmsclient.gui.screens;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.Identifier;
@@ -23,7 +23,7 @@ public abstract class AbstractRealmsCodeScreen extends RealmsScreen {
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
       super.extractMenuBackground(graphics, 0, 0, this.width, this.height);
       if (this.shouldRenderListBackgroundAndSeparators()) {
-         graphics.blit(RenderPipelines.GUI_TEXTURED, MENU_LIST_BACKGROUND, 0, this.layout.getHeaderHeight(), 0.0F, 0.0F, this.width, this.layout.getContentHeight(), 32, 32);
+         graphics.blit(GuiPipeline.TEXTURED, MENU_LIST_BACKGROUND, 0, this.layout.getHeaderHeight(), 0.0F, 0.0F, this.width, this.layout.getContentHeight(), 32, 32);
       }
 
    }
@@ -31,8 +31,8 @@ public abstract class AbstractRealmsCodeScreen extends RealmsScreen {
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       super.extractRenderState(graphics);
       if (this.shouldRenderListBackgroundAndSeparators()) {
-         graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-         graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
+         graphics.blit(GuiPipeline.TEXTURED, Screen.HEADER_SEPARATOR, 0, this.layout.getHeaderHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+         graphics.blit(GuiPipeline.TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight(), 0.0F, 0.0F, this.width, 2, 32, 2);
       }
 
    }

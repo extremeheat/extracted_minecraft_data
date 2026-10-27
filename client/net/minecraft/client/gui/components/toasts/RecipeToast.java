@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
@@ -48,7 +48,7 @@ public class RecipeToast implements Toast {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final Font font, final long fullyVisibleForMs) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       graphics.text(font, (Component)TITLE_TEXT, 30, 7, -11534256, false);
       graphics.text(font, (Component)DESCRIPTION_TEXT, 30, 18, -16777216, false);
       Entry items = (Entry)this.recipeItems.get(this.displayedRecipeIndex);

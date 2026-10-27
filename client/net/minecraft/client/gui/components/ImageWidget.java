@@ -2,9 +2,9 @@ package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.Identifier;
@@ -48,7 +48,7 @@ public abstract class ImageWidget extends AbstractWidget {
       }
 
       public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       }
 
       public void updateResource(final Identifier identifier) {
@@ -69,7 +69,7 @@ public abstract class ImageWidget extends AbstractWidget {
       }
 
       protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
-         graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
+         graphics.blit(GuiPipeline.TEXTURED, this.texture, this.getX(), this.getY(), 0.0F, 0.0F, this.getWidth(), this.getHeight(), this.textureWidth, this.textureHeight);
       }
 
       public void updateResource(final Identifier identifier) {

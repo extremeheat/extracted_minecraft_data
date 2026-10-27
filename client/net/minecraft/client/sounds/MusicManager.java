@@ -68,17 +68,27 @@ public class MusicManager {
    }
 
    public void startPlaying(final Music music) {
-      SoundEvent soundEvent = (SoundEvent)music.sound().value();
-      this.currentMusic = SimpleSoundInstance.forMusic(soundEvent);
-      switch (this.minecraft.getSoundManager().play(this.currentMusic)) {
+      SimpleSoundInstance nextMusic = SimpleSoundInstance.forMusic((SoundEvent)music.sound().value());
+      SimpleSoundInstance var10001;
+      switch (this.minecraft.getSoundManager().play(nextMusic)) {
          case STARTED:
             this.minecraft.gui.toastManager().showNowPlayingToast();
             this.toastShown = true;
+            var10001 = nextMusic;
             break;
          case STARTED_SILENTLY:
             this.toastShown = false;
+            var10001 = nextMusic;
+            break;
+         case NOT_STARTED:
+            this.minecraft.gui.toastManager().hideNowPlayingToast();
+            var10001 = null;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
+      this.currentMusic = var10001;
       this.nextSongDelay = 2147483647;
    }
 

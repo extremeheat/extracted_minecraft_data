@@ -39,7 +39,7 @@ public record PreparedRenderType(String name, Function<@Nullable OitStage, @Null
    private void draw(final StagedVertexBuffer.ExecuteInfo info, final RenderPass renderPass, final RenderPipeline renderPipeline) {
       renderPass.pushDebugGroup(() -> "Render Type " + this.name);
       GpuBuffer indexBuffer = info.indexBuffer();
-      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline));
+      renderPass.setPipeline(RenderSystem.getCompiledPipeline(renderPipeline, renderPass.activeSubpass()));
       RenderSystem.bindDefaultUniforms(renderPass);
       renderPass.setUniform("DynamicTransforms", this.dynamicTransforms);
       renderPass.setVertexBuffer(0, info.vertexBuffer().slice());

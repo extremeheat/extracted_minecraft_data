@@ -6,13 +6,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundChangeGameModePacket;
@@ -93,7 +93,7 @@ public class GameModeSwitcherScreen extends Screen {
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       int xo = this.width / 2 - 62;
       int yo = this.height / 2 - 31 - 27;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, GAMEMODE_SWITCHER_LOCATION, xo, yo, 0.0F, 0.0F, 125, 75, 128, 128);
+      graphics.blit(GuiPipeline.TEXTURED, GAMEMODE_SWITCHER_LOCATION, xo, yo, 0.0F, 0.0F, 125, 75, 128, 128);
    }
 
    private void switchToHoveredGameMode() {
@@ -230,11 +230,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       private void extractSlot(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
       private void extractSelection(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }
 }

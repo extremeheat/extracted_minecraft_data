@@ -587,6 +587,10 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.PACKED_ICE_BRICK_STAIRS);
       this.dropSelf(Blocks.PACKED_ICE_BRICK_WALL);
       this.dropSelf(Blocks.CHISELED_PACKED_ICE);
+      this.dropSelf(Blocks.SNOW_BRICKS);
+      this.add(Blocks.SNOW_BRICK_SLAB, (x$0) -> this.createSlabItemTable(x$0));
+      this.dropSelf(Blocks.SNOW_BRICK_STAIRS);
+      this.dropSelf(Blocks.SNOW_BRICK_WALL);
       this.dropOther(Blocks.FARMLAND, Blocks.DIRT);
       this.dropOther(Blocks.TRIPWIRE, Items.STRING);
       this.dropOther(Blocks.DIRT_PATH, Blocks.DIRT);

@@ -52,6 +52,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.NoteBlock;
 import net.minecraft.world.level.block.Portal;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
@@ -411,7 +412,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
-      private Function<BlockState, MapColor> mapColor = (state) -> MapColor.NONE;
+      private Function<BlockState, MapColor> mapColor = (var0) -> MapColor.NONE;
       private boolean hasCollision = true;
       private Optional<ResourceKey<BlockSoundSet>> blockSoundSet;
       private ToIntFunction<BlockState> lightEmission;
@@ -454,7 +455,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private Properties() {
          super();
          this.blockSoundSet = Optional.of(BlockSoundSets.STONE);
-         this.lightEmission = (state) -> 0;
+         this.lightEmission = (var0) -> 0;
          this.friction = 0.6F;
          this.speedFactor = 1.0F;
          this.jumpFactor = 1.0F;
@@ -463,12 +464,12 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.canOcclude = true;
          this.pushReaction = PushReaction.PUSH_PULL;
          this.spawnTerrainParticles = true;
-         this.instrument = NoteBlockInstrument.HARP;
-         this.isValidSpawn = (state, level, pos, entityType) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
+         this.instrument = NoteBlock.DEFAULT_INSTRUMENT;
+         this.isValidSpawn = (state, level, pos, var3) -> state.isFaceSturdy(level, pos, Direction.UP) && state.getLightEmission() < 14;
          this.isRedstoneConductor = BlockStateBase::isCollisionShapeFullBlock;
          this.isSuffocating = (state, level, pos) -> state.is(BlockTags.CAUSES_SUFFOCATION) && state.isCollisionShapeFullBlock(level, pos);
          this.isViewBlocking = (state, level, pos, var4) -> this.isSuffocating.test(state, level, pos);
-         this.postProcess = (state, level, pos) -> null;
+         this.postProcess = (var0, var1, var2) -> null;
          this.emissiveRendering = (var0) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
       }

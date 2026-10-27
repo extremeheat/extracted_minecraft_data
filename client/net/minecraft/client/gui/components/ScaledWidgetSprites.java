@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 
 public record ScaledWidgetSprites(WidgetSprites sprites, int width, int height) {
@@ -19,7 +19,7 @@ public record ScaledWidgetSprites(WidgetSprites sprites, int width, int height) 
 
    public void extractSprite(final AbstractWidget widget, final GuiGraphicsExtractor graphics, final int x, final int y) {
       Identifier texture = this.sprites.get(widget.isActive(), widget.isHoveredOrFocused());
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, this.width, this.height, widget.alpha);
+      graphics.blitSprite(GuiPipeline.TEXTURED, texture, x, y, this.width, this.height, widget.alpha);
    }
 
    public void extractCenteredSprite(final AbstractWidget widget, final GuiGraphicsExtractor graphics) {

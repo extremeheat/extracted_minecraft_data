@@ -33,9 +33,9 @@ public class ChunkTerrainBuilder {
    private final SurfaceExtensions surfaceExtensions;
    private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
-   public ChunkTerrainBuilder(final RandomState randomState, final DensitySamplerSet densitySamplers, final DensityVolume expectedVolume, final VerticalAnchor.Context verticalAnchorContext, final MaterialRule materialRule, final BiomeResolver biomeResolver, final @Nullable Set<Holder<Biome>> possibleBiomes) {
+   public ChunkTerrainBuilder(final RandomState randomState, final DensitySamplerSet densitySamplers, final DensityVolume expectedVolume, final MaterialRule materialRule, final BiomeResolver biomeResolver, final @Nullable Set<Holder<Biome>> possibleBiomes) {
       super();
-      this.ruleContext = new MaterialRuleContext(randomState.materialSystem(), randomState, expectedVolume, densitySamplers, biomeResolver, verticalAnchorContext, possibleBiomes);
+      this.ruleContext = new MaterialRuleContext(randomState.materialSystem(), randomState, expectedVolume, densitySamplers, biomeResolver, possibleBiomes);
       MaterialRule modifiedRule = SharedConstants.DEBUG_DISABLE_SURFACE ? DISABLED_MATERIAL_RULE : materialRule;
       this.ruleEvaluator = modifiedRule.compile(this.ruleContext);
       this.surfaceExtensions = randomState.materialSystem().surfaceExtensions();

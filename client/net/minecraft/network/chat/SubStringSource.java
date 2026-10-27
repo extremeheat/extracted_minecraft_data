@@ -61,7 +61,7 @@ public class SubStringSource {
    public static SubStringSource create(final FormattedText text, final Int2IntFunction reverseCharModifier, final UnaryOperator<String> shaper) {
       StringBuilder plainText = new StringBuilder();
       List<Style> charStyles = new ArrayList();
-      text.visit((style, contents) -> {
+      text.visitWithoutResult((style, contents) -> {
          StringDecomposer.iterateFormatted((String)contents, style, (position, charStyle, codepoint) -> {
             plainText.appendCodePoint(codepoint);
             int charCount = Character.charCount(codepoint);

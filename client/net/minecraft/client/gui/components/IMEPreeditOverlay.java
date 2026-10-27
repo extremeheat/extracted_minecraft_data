@@ -4,8 +4,8 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.input.PreeditEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
@@ -68,7 +68,7 @@ public class IMEPreeditOverlay implements Renderable {
       Minecraft.getInstance().textInputManager().setTextInputArea(preeditLeft, preeditTop, preeditRight, preeditBottom);
       int backgroundWidth = preeditRight - preeditLeft + 10;
       int backgroundHeight = preeditBottom - preeditTop + 10;
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND, preeditLeft - 5, preeditTop - 5, backgroundWidth, backgroundHeight);
+      graphics.blitSprite(GuiPipeline.TEXTURED, BACKGROUND, preeditLeft - 5, preeditTop - 5, backgroundWidth, backgroundHeight);
       graphics.text(this.font, this.preEditText, preeditLeft, preeditTop, -16777216, false);
       if (TextCursorUtils.isCursorVisible(Util.getMillis() - this.initTimeMs)) {
          int var10001 = preeditLeft + this.caretPos;

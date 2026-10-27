@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
@@ -31,7 +31,7 @@ public class SignEditScreen extends AbstractSignEditScreen {
 
    protected void extractSignBackground(final GuiGraphicsExtractor graphics) {
       graphics.pose().scale(3.9F, 3.9F);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, -12, -13, 0.0F, 0.0F, 24, this.displayedHeight, 24, 26);
+      graphics.blit(GuiPipeline.TEXTURED, this.texture, -12, -13, 0.0F, 0.0F, 24, this.displayedHeight, 24, 26);
    }
 
    protected int getSignTextSpacing() {

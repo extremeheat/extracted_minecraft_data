@@ -11,6 +11,8 @@ import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 
 public interface RenderPassBackend {
+   void nextSubpass();
+
    void pushDebugGroup(final Supplier<String> label);
 
    void popDebugGroup();

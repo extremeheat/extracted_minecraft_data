@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.spectator.PlayerMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -50,7 +50,7 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
    }
 
    public void extractIcon(final GuiGraphicsExtractor graphics, final float brightness, final float alpha) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16, ARGB.colorFromFloat(alpha, brightness, brightness, brightness));
    }
 
    public boolean isEnabled() {

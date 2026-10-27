@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,9 +24,9 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
       super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.getBackgroundTextureLocation(), xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, this.getBackgroundTextureLocation(), xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (this.inventoryColumns > 0 && this.getChestSlotsSpriteLocation() != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.getChestSlotsSpriteLocation(), 90, 54, 0, 0, xo + 79, yo + 17, this.inventoryColumns * 18, 54);
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.getChestSlotsSpriteLocation(), 90, 54, 0, 0, xo + 79, yo + 17, this.inventoryColumns * 18, 54);
       }
 
       if (this.shouldRenderSaddleSlot()) {
@@ -41,7 +41,7 @@ public abstract class AbstractMountInventoryScreen<T extends AbstractMountInvent
    }
 
    protected void extractSlot(final GuiGraphicsExtractor graphics, final int x, final int y) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)this.getSlotSpriteLocation(), x, y, 18, 18);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)this.getSlotSpriteLocation(), x, y, 18, 18);
    }
 
    protected abstract Identifier getBackgroundTextureLocation();

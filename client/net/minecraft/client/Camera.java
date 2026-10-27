@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.attribute.EnvironmentAttributeProbe;
 import net.minecraft.world.effect.MobEffects;
@@ -470,30 +469,25 @@ public class Camera implements TrackedWaypoint.Camera {
    }
 
    private FogType calculateFogType() {
-      FluidState fluidState1 = this.level.getFluidState(this.blockPosition);
-      if (fluidState1.is(FluidTags.WATER) && this.position.y < (double)((float)this.blockPosition.getY() + fluidState1.getHeightForCamera(this.level, this.blockPosition))) {
-         return FogType.WATER;
-      } else {
-         NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
+      NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
 
-         for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
-            Vec3 offsetPos = this.position.add(point);
-            BlockPos checkPos = BlockPos.containing(offsetPos);
-            FluidState fluidState = this.level.getFluidState(checkPos);
-            if (fluidState.is(FluidTags.LAVA)) {
-               if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
-                  return FogType.LAVA;
-               }
-            } else {
-               BlockState state = this.level.getBlockState(checkPos);
-               if (state.is(Blocks.POWDER_SNOW)) {
-                  return FogType.POWDER_SNOW;
-               }
+      for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
+         Vec3 offsetPos = this.position.add(point);
+         BlockPos checkPos = BlockPos.containing(offsetPos);
+         FluidState fluidState = this.level.getFluidState(checkPos);
+         if (!fluidState.isEmpty()) {
+            if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
+               return fluidState.getType().getFogType();
+            }
+         } else {
+            BlockState state = this.level.getBlockState(checkPos);
+            if (state.is(Blocks.POWDER_SNOW)) {
+               return FogType.POWDER_SNOW;
             }
          }
-
-         return FogType.NONE;
       }
+
+      return FogType.NONE;
    }
 
    public Vector3fc forwardVector() {

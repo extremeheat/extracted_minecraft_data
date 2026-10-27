@@ -10,8 +10,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -22,13 +24,12 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget {
+public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget implements Updatable {
    private static final int SEPARATOR_HEIGHT = 2;
    protected final Minecraft minecraft;
    protected final int defaultEntryHeight;
@@ -204,8 +205,18 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return totalHeight + 4;
    }
 
+   public void update(final DeltaTracker deltaTracker) {
+      if (this.minecraft.gui.overlay() != null) {
+         this.hovered = null;
+      } else {
+         int mouseX = (int)this.minecraft.mouseHandler.getScaledXPos(this.minecraft.getWindow());
+         int mouseY = (int)this.minecraft.mouseHandler.getScaledYPos(this.minecraft.getWindow());
+         this.hovered = this.isMouseOver((double)mouseX, (double)mouseY) ? this.getEntryAtPosition((double)mouseX, (double)mouseY) : null;
+      }
+
+   }
+
    public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
-      this.hovered = this.isMouseOver((double)graphics.mouseX(), (double)graphics.mouseY()) ? this.getEntryAtPosition((double)graphics.mouseX(), (double)graphics.mouseY()) : null;
       this.extractListBackground(graphics);
       this.enableScissor(graphics);
       this.extractListItems(graphics);
@@ -220,7 +231,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    protected void extractListBackground(final GuiGraphicsExtractor graphics) {
       Identifier menuListBackground = this.minecraft.level == null ? Screen.MENU_LIST_BACKGROUND : Screen.INWORLD_MENU_LIST_BACKGROUND;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, menuListBackground, this.getX(), this.getY(), (float)this.getRight(), (float)(this.getBottom() + (int)this.scrollAmount()), this.getWidth(), this.getHeight(), 32, 32);
+      graphics.blit(GuiPipeline.TEXTURED, menuListBackground, this.getX(), this.getY(), (float)this.getRight(), (float)(this.getBottom() + (int)this.scrollAmount()), this.getWidth(), this.getHeight(), 32, 32);
    }
 
    protected void enableScissor(final GuiGraphicsExtractor graphics) {

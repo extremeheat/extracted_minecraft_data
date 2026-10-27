@@ -27,7 +27,7 @@ public class ComponentRenderUtils {
 
    public static List<FormattedCharSequence> wrapComponents(final FormattedText message, final int maxWidth, final Font font) {
       ComponentCollector collector = new ComponentCollector();
-      message.visit((style, contents) -> {
+      message.visitWithoutResult((style, contents) -> {
          collector.append(FormattedText.of(stripColor(contents), style));
          return Optional.empty();
       }, Style.EMPTY);

@@ -152,11 +152,11 @@ public class TranslatableContents implements ComponentContents {
       }
    }
 
-   public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+   public <T> Optional<T> visitUnbounded(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
       this.decompose();
 
       for(FormattedText part : this.decomposedParts) {
-         Optional<T> result = part.<T>visit(output, currentStyle);
+         Optional<T> result = part.<T>visitUnbounded(output, currentStyle);
          if (result.isPresent()) {
             return result;
          }
@@ -165,11 +165,12 @@ public class TranslatableContents implements ComponentContents {
       return Optional.empty();
    }
 
-   public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
+   public <T> Optional<T> visitUnbounded(final FormattedText.ContentConsumer<T> output) {
       this.decompose();
+      int decomposedPartsSize = this.decomposedParts.size();
 
-      for(FormattedText part : this.decomposedParts) {
-         Optional<T> result = part.<T>visit(output);
+      for(int i = 0; i < decomposedPartsSize; ++i) {
+         Optional<T> result = ((FormattedText)this.decomposedParts.get(i)).<T>visitUnbounded(output);
          if (result.isPresent()) {
             return result;
          }

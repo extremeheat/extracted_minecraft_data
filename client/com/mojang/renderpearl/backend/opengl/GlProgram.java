@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.UniformType;
 import com.mojang.renderpearl.util.ShaderCompileException;
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
@@ -100,13 +101,14 @@ public class GlProgram implements UncheckedAutoCloseable {
                }
                break;
             case COMBINED_IMAGE_SAMPLER:
+            case INPUT_ATTACHMENT:
                int location = GL33C.glGetUniformLocation(this.programId, uniformName);
                if (location == -1) {
                   var20 = null;
                } else {
                   int samplerIndex = nextSamplerIndex++;
                   GL33C.glUniform1i(location, samplerIndex);
-                  var20 = new Uniform.Sampler(samplerIndex);
+                  var20 = uniformDescription.type() == UniformType.COMBINED_IMAGE_SAMPLER ? new Uniform.Sampler(samplerIndex) : new Uniform.InputAttachment(samplerIndex);
                }
                break;
             default:

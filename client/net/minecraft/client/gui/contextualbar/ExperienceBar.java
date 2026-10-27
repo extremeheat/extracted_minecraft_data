@@ -2,8 +2,8 @@ package net.minecraft.client.gui.contextualbar;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 public class ExperienceBar implements ContextualBar {
@@ -23,9 +23,9 @@ public class ExperienceBar implements ContextualBar {
       int xpNeededForNextLevel = player.getXpNeededForNextLevel();
       if (xpNeededForNextLevel > 0) {
          int progress = (int)(player.experienceProgress * 183.0F);
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, left, top, 182, 5);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)EXPERIENCE_BAR_BACKGROUND_SPRITE, left, top, 182, 5);
          if (progress > 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, left, top, progress, 5);
+            graphics.blitSprite(GuiPipeline.TEXTURED, EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, left, top, progress, 5);
          }
       }
 

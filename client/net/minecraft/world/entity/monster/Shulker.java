@@ -179,6 +179,14 @@ public class Shulker extends AbstractGolem implements Enemy {
          }
       }
 
+      if (!this.level().isClientSide() && this.getAttachFace() == Direction.DOWN) {
+         BlockPos pos = this.blockPosition().below();
+         BlockState state = this.level().getBlockState(pos);
+         if (state.is(Blocks.BRITTLE_ICE)) {
+            state.getBlock().stepOn(this.level(), pos, state, this);
+         }
+      }
+
    }
 
    private void findNewAttachment() {

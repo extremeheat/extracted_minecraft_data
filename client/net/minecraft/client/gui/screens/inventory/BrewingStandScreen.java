@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -29,12 +29,12 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       super.extractBackground(graphics);
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, BREWING_STAND_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, BREWING_STAND_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int fuel = ((BrewingStandMenu)this.menu).getFuel();
       int totalFuel = ((BrewingStandMenu)this.menu).getTotalFuel();
       int fuelLength = totalFuel > 0 ? Math.clamp((long)Mth.positiveCeilDiv(18 * fuel, totalFuel), 0, 18) : 0;
       if (fuelLength > 0) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, FUEL_LENGTH_SPRITE, 18, 4, 0, 0, xo + 60, yo + 44, fuelLength, 4);
+         graphics.blitSprite(GuiPipeline.TEXTURED, FUEL_LENGTH_SPRITE, 18, 4, 0, 0, xo + 60, yo + 44, fuelLength, 4);
       }
 
       int tickCount = ((BrewingStandMenu)this.menu).getBrewingTicks();
@@ -42,12 +42,12 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       if (tickCount > 0 && totalTickCount > 0) {
          int length = (int)(28.0F * (1.0F - (float)tickCount / (float)totalTickCount));
          if (length > 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BREW_PROGRESS_SPRITE, 9, 28, 0, 0, xo + 97, yo + 16, 9, length);
+            graphics.blitSprite(GuiPipeline.TEXTURED, BREW_PROGRESS_SPRITE, 9, 28, 0, 0, xo + 97, yo + 16, 9, length);
          }
 
          length = BUBBLELENGTHS[tickCount / 2 % 7];
          if (length > 0) {
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BUBBLES_SPRITE, 12, 29, 0, 29 - length, xo + 63, yo + 14 + 29 - length, 12, length);
+            graphics.blitSprite(GuiPipeline.TEXTURED, BUBBLES_SPRITE, 12, 29, 0, 29 - length, xo + 63, yo + 14 + 29 - length, 12, length);
          }
       }
 

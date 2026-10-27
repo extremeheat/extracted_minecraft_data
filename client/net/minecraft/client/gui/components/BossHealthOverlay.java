@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
@@ -68,9 +68,9 @@ public class BossHealthOverlay implements Renderable {
    }
 
    private void extractBar(final GuiGraphicsExtractor graphics, final int x, final int y, final BossEvent event, final int width, final Identifier[] sprites, final Identifier[] overlaySprites) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprites[event.getColor().ordinal()], 182, 5, 0, 0, x, y, width, 5);
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprites[event.getColor().ordinal()], 182, 5, 0, 0, x, y, width, 5);
       if (event.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, overlaySprites[event.getOverlay().ordinal() - 1], 182, 5, 0, 0, x, y, width, 5);
+         graphics.blitSprite(GuiPipeline.TEXTURED, overlaySprites[event.getOverlay().ordinal() - 1], 182, 5, 0, 0, x, y, width, 5);
       }
 
    }

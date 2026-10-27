@@ -33,11 +33,11 @@ public record ObjectContents(ObjectInfo contents, Optional<Component> fallback) 
       return validatedContents == null ? (MutableComponent)fallback.orElseGet(() -> Component.literal(this.contents.defaultFallback())) : MutableComponent.create(new ObjectContents(validatedContents, fallback.map((o) -> o)));
    }
 
-   public <T> Optional<T> visit(final FormattedText.ContentConsumer<T> output) {
-      return this.fallback.isPresent() ? ((Component)this.fallback.get()).visit(output) : output.accept(this.contents.defaultFallback());
+   public <T> Optional<T> visitUnbounded(final FormattedText.ContentConsumer<T> output) {
+      return this.fallback.isPresent() ? ((Component)this.fallback.get()).visitUnbounded(output) : output.accept(this.contents.defaultFallback());
    }
 
-   public <T> Optional<T> visit(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
+   public <T> Optional<T> visitUnbounded(final FormattedText.StyledContentConsumer<T> output, final Style currentStyle) {
       return output.accept(currentStyle.withFont(this.contents.fontDescription()), PLACEHOLDER);
    }
 }

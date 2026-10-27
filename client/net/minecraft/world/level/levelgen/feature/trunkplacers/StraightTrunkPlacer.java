@@ -41,6 +41,10 @@ public class StraightTrunkPlacer extends TrunkPlacer {
       BlockPos northWestCorner = origin.relative(Direction.NORTH, distToNorthWestCorner).relative(Direction.WEST, distToNorthWestCorner);
       BlockPos southEastCorner = origin.relative(Direction.SOUTH, distToSouthEastCorner).relative(Direction.EAST, distToSouthEastCorner);
 
+      for(BlockPos pos : BlockPos.betweenClosed(northWestCorner, southEastCorner)) {
+         placeBelowTrunkBlock(level, trunkSetter, random, pos.below(), tree);
+      }
+
       for(int y = 0; y < treeHeight; ++y) {
          for(BlockPos pos : BlockPos.betweenClosed(northWestCorner, southEastCorner)) {
             this.placeLog(level, trunkSetter, random, pos.above(y), tree);

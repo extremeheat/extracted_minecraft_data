@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.LoadingDotsWidget;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
@@ -27,7 +29,6 @@ import net.minecraft.client.gui.screens.social.SocialInteractionsPlayerList;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.PlayerSkin;
@@ -141,18 +142,24 @@ public class FriendsOverlayScreen extends Screen implements PresenceAwareScreen 
 
    }
 
+   public void update(final DeltaTracker deltaTracker) {
+      if (this.backgroundScreen != null) {
+         this.backgroundScreen.update(deltaTracker);
+      }
+
+      super.update(deltaTracker);
+   }
+
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       if (this.backgroundScreen != null) {
-         this.backgroundScreen.extractBackground(graphics);
-         graphics.nextStratum();
-         this.backgroundScreen.extractRenderState(graphics);
+         extractBackgroundScreen(graphics, this.backgroundScreen);
          graphics.nextStratum();
          this.extractBlurredBackground(graphics);
       } else {
          super.extractBackground(graphics);
       }
 
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
+      graphics.blitSprite(GuiPipeline.TEXTURED, BACKGROUND_SPRITE, this.contentLayout.getX() - 8, this.contentLayout.getY() - 8, this.contentLayout.getWidth() + 16, this.contentLayout.getHeight() + 16 + 1);
       Tab var3 = this.tabManager.getCurrentTab();
       if (var3 instanceof AbstractFriendsTab tab) {
          tab.extractBackground(graphics);
@@ -268,7 +275,7 @@ public class FriendsOverlayScreen extends Screen implements PresenceAwareScreen 
 
       if (gameProfile != null) {
          Supplier<PlayerSkin> skinGetter = this.minecraft.getSkinManager().createLookup(gameProfile, true);
-         this.minecraft.gui.setScreen(new FriendOptionsScreen(this, playerId, gameProfile.name(), this.friendsListActions, skinGetter, true, true, gameProfileFromChat != null));
+         this.minecraft.gui.setScreen(new FriendOptionsScreen(this, playerId, gameProfile.name(), this.friendsListActions, skinGetter, true, true, this.minecraft.player != null && gameProfileFromChat != null));
       } else {
          ResolvableProfile skinProfile = ResolvableProfile.createUnresolved(playerId);
          Supplier<PlayerSkin> skinGetter = this.minecraft.playerSkinRenderCache().createSkinLookup(skinProfile);

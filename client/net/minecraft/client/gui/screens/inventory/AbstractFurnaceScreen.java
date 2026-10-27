@@ -2,10 +2,10 @@ package net.minecraft.client.gui.screens.inventory;
 
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.FurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -38,15 +38,15 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       super.extractBackground(graphics);
       int xo = this.leftPos;
       int yo = this.topPos;
-      graphics.blit(RenderPipelines.GUI_TEXTURED, this.texture, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      graphics.blit(GuiPipeline.TEXTURED, this.texture, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
          int litSpriteHeight = 14;
          int litProgressHeight = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - litProgressHeight, xo + 56, yo + 36 + 14 - litProgressHeight, 14, litProgressHeight);
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.litProgressSprite, 14, 14, 0, 14 - litProgressHeight, xo + 56, yo + 36 + 14 - litProgressHeight, 14, litProgressHeight);
       }
 
       int burnSpriteWidth = 24;
       int burnProgressWidth = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, xo + 79, yo + 34, burnProgressWidth, 16);
+      graphics.blitSprite(GuiPipeline.TEXTURED, this.burnProgressSprite, 24, 16, 0, 0, xo + 79, yo + 34, burnProgressWidth, 16);
    }
 }

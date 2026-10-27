@@ -2,7 +2,7 @@ package net.minecraft.client.gui.contextualbar;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.resources.WaypointStyle;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
@@ -32,7 +32,7 @@ public class LocatorBar implements ContextualBar {
    }
 
    public void extractBackground(final GuiGraphicsExtractor graphics) {
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)LOCATOR_BAR_BACKGROUND, this.left(this.minecraft.getWindow()), this.top(this.minecraft.getWindow()), 182, 5);
+      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)LOCATOR_BAR_BACKGROUND, this.left(this.minecraft.getWindow()), this.top(this.minecraft.getWindow()), 182, 5);
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
@@ -53,7 +53,7 @@ public class LocatorBar implements ContextualBar {
                   Identifier sprite = style.sprite(distance);
                   int color = (Integer)icon.color.orElseGet(() -> (Integer)waypoint.id().map((uuid) -> ARGB.setBrightness(ARGB.color(255, uuid.hashCode()), 0.9F), (name) -> ARGB.setBrightness(ARGB.color(255, name.hashCode()), 0.9F)));
                   int dotPosition = Mth.floor(angle * 173.0 / 2.0 / 60.0);
-                  graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)sprite, screenMiddle + dotPosition, top - 2, 9, 9, color);
+                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, screenMiddle + dotPosition, top - 2, 9, 9, color);
                   TrackedWaypoint.PitchDirection pitchDirection = waypoint.pitchDirectionToCamera(level, this.minecraft.gameRenderer, partialTickSupplier);
                   if (pitchDirection != TrackedWaypoint.PitchDirection.NONE) {
                      int arrowTop;
@@ -66,7 +66,7 @@ public class LocatorBar implements ContextualBar {
                         arrowSprite = LOCATOR_BAR_ARROW_UP;
                      }
 
-                     graphics.blitSprite(RenderPipelines.GUI_TEXTURED, (Identifier)arrowSprite, screenMiddle + dotPosition + 1, top + arrowTop, 7, 5);
+                     graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)arrowSprite, screenMiddle + dotPosition + 1, top + arrowTop, 7, 5);
                   }
 
                }

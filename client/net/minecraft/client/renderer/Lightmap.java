@@ -10,7 +10,6 @@ import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import java.util.Optional;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.state.LightmapRenderState;
 import net.minecraft.util.ARGB;
@@ -57,8 +56,8 @@ public class Lightmap implements AutoCloseable {
             Std140Builder.intoBuffer(view.data()).putFloat(renderState.skyFactor).putFloat(renderState.blockFactor).putFloat(renderState.nightVisionEffectIntensity).putFloat(renderState.darknessEffectScale).putFloat(renderState.bossOverlayWorldDarkening).putFloat(renderState.brightness).putVec3(renderState.blockLightTint).putVec3(renderState.skyLightColor).putVec3(renderState.ambientColor).putVec3(renderState.nightVisionColor);
          }
 
-         try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Update light", this.textureView, Optional.empty())) {
-            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.LIGHTMAP));
+         try (RenderPass renderPass = commandEncoder.createRenderPass(() -> "Update light", RenderPassLayouts.COLOR_ONLY, this.textureView)) {
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(RenderPipelines.LIGHTMAP, renderPass.activeSubpass()));
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("LightmapInfo", this.ubo.currentBuffer());
             renderPass.draw(3, 1, 0, 0);

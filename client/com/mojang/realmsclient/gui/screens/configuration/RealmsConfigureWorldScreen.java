@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.LoadingTab;
@@ -40,7 +41,6 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
@@ -174,7 +174,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       super.extractRenderState(graphics);
-      graphics.blit(RenderPipelines.GUI_TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+      graphics.blit(GuiPipeline.TEXTURED, Screen.FOOTER_SEPARATOR, 0, this.height - this.layout.getFooterHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
    }
 
    public boolean keyPressed(final KeyEvent event) {
@@ -182,7 +182,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    protected void extractMenuBackground(final GuiGraphicsExtractor graphics) {
-      graphics.blit(RenderPipelines.GUI_TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
+      graphics.blit(GuiPipeline.TEXTURED, CreateWorldScreen.TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
       this.extractMenuBackground(graphics, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 

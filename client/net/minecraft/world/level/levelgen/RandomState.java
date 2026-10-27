@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,9 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBufferPool;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunctionCompiler;
@@ -32,6 +35,7 @@ public final class RandomState {
    private final PositionalRandomFactory random;
    private final HolderGetter<NormalNoise> noises;
    private final NoiseRouter router;
+   private final VerticalAnchor.Context verticalAnchors;
    private final MaterialSystem materialSystem;
    private final Map<ResourceKey<NormalNoise>, Noise> noiseInstances;
    private final Map<Identifier, PositionalRandomFactory> positionalRandoms;
@@ -39,24 +43,34 @@ public final class RandomState {
    private final ReentrantLock densityBufferPoolLock = new ReentrantLock();
    private final List<DensityBufferPool> densityBufferPools = new ArrayList(16);
 
-   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final NoiseGeneratorSettings settings) {
-      return create(noises, seed, settings.useLegacyRandomSource(), settings.seaLevel(), settings.noiseRouter());
+   @VisibleForTesting
+   public static RandomState createForTesting(final HolderGetter<NormalNoise> noises, final long seed, final NoiseGeneratorSettings generatorSettings) {
+      NoiseSettings noiseSettings = generatorSettings.noiseSettings();
+      VerticalAnchor.Context verticalAnchors = new VerticalAnchor.Context(noiseSettings.minY(), noiseSettings.height(), generatorSettings.seaLevel());
+      return new RandomState(noises, seed, generatorSettings.useLegacyRandomSource(), generatorSettings.noiseRouter(), verticalAnchors);
    }
 
-   public static RandomState create(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final int seaLevel, final NoiseRouter noiseRouter) {
-      return new RandomState(noises, seed, useLegacyRandom, seaLevel, noiseRouter);
+   public static RandomState createForGenerator(final HolderGetter<NormalNoise> noises, final long seed, final ChunkGenerator generator, final LevelHeightAccessor heightAccessor) {
+      VerticalAnchor.Context verticalAnchors = VerticalAnchor.Context.from(generator, heightAccessor);
+      if (generator instanceof NoiseBasedChunkGenerator noiseGenerator) {
+         NoiseGeneratorSettings settings = (NoiseGeneratorSettings)noiseGenerator.generatorSettings().value();
+         return new RandomState(noises, seed, settings.useLegacyRandomSource(), settings.noiseRouter(), verticalAnchors);
+      } else {
+         return new RandomState(noises, seed, false, NoiseRouterData.none(), verticalAnchors);
+      }
    }
 
-   private RandomState(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final int seaLevel, final NoiseRouter router) {
+   public RandomState(final HolderGetter<NormalNoise> noises, final long seed, final boolean useLegacyRandom, final NoiseRouter router, final VerticalAnchor.Context verticalAnchors) {
       super();
       WorldgenRandom.Algorithm randomAlgorithm = useLegacyRandom ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
       this.seed = seed;
       this.random = randomAlgorithm.newInstance(seed).forkPositional();
       this.noises = noises;
       this.router = router;
+      this.verticalAnchors = verticalAnchors;
       this.noiseInstances = new ConcurrentHashMap();
       this.positionalRandoms = new ConcurrentHashMap();
-      this.materialSystem = new MaterialSystem(this, seaLevel, router.chunkSurfaceLevel(), this.random);
+      this.materialSystem = new MaterialSystem(this, verticalAnchors.seaLevel(), router.chunkSurfaceLevel(), this.random);
       this.densityFunctionCompiler = new DensityFunctionCompiler(new DensityFunction.CompileContext() {
          private final Upscaler.Cache upscalerCache;
 
@@ -87,6 +101,10 @@ public final class RandomState {
 
          public Upscaler.Cache upscalerCache() {
             return this.upscalerCache;
+         }
+
+         public VerticalAnchor.Context verticalAnchors() {
+            return verticalAnchors;
          }
       });
    }
@@ -181,5 +199,9 @@ public final class RandomState {
    @Deprecated
    public long seed() {
       return this.seed;
+   }
+
+   public VerticalAnchor.Context verticalAnchors() {
+      return this.verticalAnchors;
    }
 }

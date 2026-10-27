@@ -3,12 +3,12 @@ package net.minecraft.client.gui.screens.friends;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.URI;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -53,6 +53,6 @@ public class FriendsListConfirmScreen extends ConfirmScreen {
 
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       super.extractBackground(graphics);
-      graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 10 - 8, this.layout.getY() - 10 - 8, this.layout.getWidth() + 20 + 16 + 1, this.layout.getHeight() + 20 + 16 + 1);
+      graphics.blitSprite(GuiPipeline.TEXTURED, BACKGROUND_SPRITE, this.layout.getX() - 10 - 8, this.layout.getY() - 10 - 8, this.layout.getWidth() + 20 + 16 + 1, this.layout.getHeight() + 20 + 16 + 1);
    }
 }

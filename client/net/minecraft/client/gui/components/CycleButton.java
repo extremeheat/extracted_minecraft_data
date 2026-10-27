@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.pipeline.RenderPipelines;
+import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -30,7 +30,7 @@ public class CycleButton<Value> extends AbstractCycleButton<Value> {
    protected void extractContents(final GuiGraphicsExtractor graphics) {
       Identifier sprite = this.spriteSupplier.apply(this, this.getValue());
       if (sprite != null) {
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+         graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
       } else {
          this.extractDefaultSprite(graphics);
       }
