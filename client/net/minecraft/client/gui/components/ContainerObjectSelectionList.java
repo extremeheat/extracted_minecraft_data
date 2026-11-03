@@ -5,10 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.navigation.ScreenDirection;
@@ -81,26 +81,15 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
       }
    }
 
-   public NarratableEntry.NarrationPriority narrationPriority() {
-      return this.isFocused() ? NarratableEntry.NarrationPriority.FOCUSED : super.narrationPriority();
-   }
-
    protected boolean entriesCanBeSelected() {
       return false;
    }
 
    public void updateWidgetNarration(final NarrationElementOutput output) {
-      E hovered = (E)(this.getHovered());
-      NarrationTrigger narrationTrigger = output.narrationTrigger();
-      if ((narrationTrigger == NarrationTrigger.MOUSE || narrationTrigger == NarrationTrigger.SYSTEM) && hovered != null) {
-         hovered.updateNarration(output.nest());
-         this.narrateListElementPosition(output, hovered);
-      } else {
-         E focused = (E)(this.getFocused());
-         if (focused != null) {
-            focused.updateNarration(output.nest());
-            this.narrateListElementPosition(output, focused);
-         }
+      E narrated = (E)(getNarratedChild(output.narrationTrigger(), (Entry)this.getHovered(), (Entry)this.getFocused()));
+      if (narrated != null) {
+         narrated.updateNarration(output.nest());
+         GroupNarration.LIST.narratePosition(output, this.children(), narrated);
       }
 
    }

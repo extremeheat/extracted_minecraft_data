@@ -39,7 +39,6 @@ public class BlockSoundSets {
    public static final ResourceKey<BlockSoundSet> ROOTS = key("roots");
    public static final ResourceKey<BlockSoundSet> SHROOMLIGHT = key("shroomlight");
    public static final ResourceKey<BlockSoundSet> WEEPING_VINES = key("weeping_vines");
-   public static final ResourceKey<BlockSoundSet> TWISTING_VINES = key("twisting_vines");
    public static final ResourceKey<BlockSoundSet> SOUL_SAND = key("soul_sand");
    public static final ResourceKey<BlockSoundSet> SOUL_SOIL = key("soul_soil");
    public static final ResourceKey<BlockSoundSet> BASALT = key("basalt");
@@ -144,6 +143,7 @@ public class BlockSoundSets {
    public static final ResourceKey<BlockSoundSet> PACKED_ICE = key("packed_ice");
    public static final ResourceKey<BlockSoundSet> ICE_CRYSTAL = key("ice_crystal");
    public static final ResourceKey<BlockSoundSet> ICICLE = key("icicle");
+   public static final ResourceKey<BlockSoundSet> CHISELED_SOULSHALE = key("chiseled_soulshale");
 
    public BlockSoundSets() {
       super();
@@ -182,7 +182,6 @@ public class BlockSoundSets {
       context.register(ROOTS, new BlockSoundSet(SoundEvents.ROOTS));
       context.register(SHROOMLIGHT, new BlockSoundSet(SoundEvents.SHROOMLIGHT));
       context.register(WEEPING_VINES, new BlockSoundSet(SoundEvents.WEEPING_VINES));
-      context.register(TWISTING_VINES, new BlockSoundSet(1.0F, 0.5F, SoundEvents.WEEPING_VINES));
       context.register(SOUL_SAND, new BlockSoundSet(SoundEvents.SOUL_SAND));
       context.register(SOUL_SOIL, new BlockSoundSet(SoundEvents.SOUL_SOIL));
       context.register(BASALT, new BlockSoundSet(SoundEvents.BASALT));
@@ -287,6 +286,7 @@ public class BlockSoundSets {
       context.register(PACKED_ICE, new BlockSoundSet(SoundEvents.PACKED_ICE));
       context.register(ICE_CRYSTAL, new BlockSoundSet(SoundEvents.ICE_CRYSTAL));
       context.register(ICICLE, new BlockSoundSet(SoundEvents.ICICLE));
+      context.register(CHISELED_SOULSHALE, new BlockSoundSet(SoundEvents.CHISELED_SOULSHALE));
    }
 
    private static ResourceKey<BlockSoundSet> key(final String id) {

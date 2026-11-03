@@ -10,6 +10,7 @@ import com.mojang.renderpearl.api.pipeline.CompareOp;
 import com.mojang.renderpearl.api.pipeline.PolygonMode;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.ShaderType;
+import com.mojang.renderpearl.api.pipeline.StencilTest;
 import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
@@ -309,6 +310,23 @@ public final class VulkanConst {
       switch (shaderType) {
          case VERTEX -> var10000 = 1;
          case FRAGMENT -> var10000 = 16;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public static int toVk(final StencilTest.Op op) {
+      byte var10000;
+      switch (op) {
+         case KEEP -> var10000 = 0;
+         case ZERO -> var10000 = 1;
+         case REPLACE -> var10000 = 2;
+         case INCREMENT_CLAMP -> var10000 = 3;
+         case DECREEMENT_CLAMP -> var10000 = 4;
+         case INVERT -> var10000 = 5;
+         case INCREMENT_WRAP -> var10000 = 6;
+         case DECREMENT_WRAP -> var10000 = 7;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

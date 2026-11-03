@@ -3,9 +3,11 @@ package com.mojang.renderpearl.backend.opengl;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
+import com.mojang.renderpearl.api.pipeline.StencilTest;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import java.util.Objects;
 import java.util.Optional;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL33C;
 
 public final class GlRenderPipeline implements BackendRenderPipeline {
@@ -20,6 +22,7 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
    private final boolean writeDepth;
    private final float depthBiasConstant;
    private final float depthBiasScaleFactor;
+   private final @Nullable StencilTest stencilTest;
    private final @ColorTargetState.WriteMask int[] writeMasks;
    private final boolean[] blendEnabled;
    private final int srcRgb;
@@ -44,11 +47,13 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
          this.writeDepth = createInfo.depthStencilState().writeDepth();
          this.depthBiasConstant = createInfo.depthStencilState().depthBiasConstant();
          this.depthBiasScaleFactor = createInfo.depthStencilState().depthBiasScaleFactor();
+         this.stencilTest = createInfo.depthStencilState().stencilTest();
       } else {
          this.depthFunc = 1280;
          this.writeDepth = false;
          this.depthBiasConstant = 0.0F;
          this.depthBiasScaleFactor = 0.0F;
+         this.stencilTest = null;
       }
 
       this.writeMasks = new int[createInfo.colorTargetStates().size()];
@@ -107,6 +112,12 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
       return this.vertexArray;
    }
 
+   private static void setupStencilState(final int face, final StencilTest.PerFace values) {
+      GL33C.glStencilFuncSeparate(face, GlConst.toGl(values.compare()), values.reference(), values.compareMask());
+      GL33C.glStencilOpSeparate(face, GlConst.toGl(values.fail()), GlConst.toGl(values.depthFail()), GlConst.toGl(values.pass()));
+      GL33C.glStencilMaskSeparate(face, values.writeMask());
+   }
+
    public void bind() {
       GL33C.glUseProgram(this.program.getProgramId());
       GlStateManager stateManager = this.device.stateManager();
@@ -119,6 +130,11 @@ public final class GlRenderPipeline implements BackendRenderPipeline {
          } else {
             stateManager._polygonOffset(this.depthBiasScaleFactor, this.depthBiasConstant);
             stateManager._enablePolygonOffset();
+         }
+
+         if (this.stencilTest != null) {
+            setupStencilState(1028, this.stencilTest.front());
+            setupStencilState(1029, this.stencilTest.back());
          }
       } else {
          stateManager._disableDepthTest();

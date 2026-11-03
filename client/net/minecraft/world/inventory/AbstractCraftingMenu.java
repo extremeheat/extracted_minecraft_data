@@ -30,7 +30,7 @@ public abstract class AbstractCraftingMenu extends RecipeBookMenu {
    protected void addCraftingGridSlots(final int left, final int top) {
       for(int y = 0; y < this.width; ++y) {
          for(int x = 0; x < this.height; ++x) {
-            this.addSlot(new Slot(this.craftSlots, x + y * this.width, left + x * 18, top + y * 18));
+            this.addSlot(new Slot(this.craftSlots, x + y * this.width, left + x * 18, top + y * 18, Slot.Section.INPUT));
          }
       }
 

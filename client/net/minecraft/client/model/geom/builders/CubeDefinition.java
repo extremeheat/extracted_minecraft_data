@@ -29,6 +29,12 @@ public final class CubeDefinition {
       this.visibleFaces = visibleFaces;
    }
 
+   public CubeDefinition growByFactor(final float scaleX, final float scaleY, final float scaleZ) {
+      Vector3f newDimensions = new Vector3f(this.dimensions.x() * scaleX, this.dimensions.y() * scaleY, this.dimensions.z() * scaleZ);
+      CubeDeformation newGrow = new CubeDeformation(this.grow.growX + (newDimensions.x() - this.dimensions.x()) / 2.0F, this.grow.growY + (newDimensions.y() - this.dimensions.y()) / 2.0F, this.grow.growZ + (newDimensions.z() - this.dimensions.z()) / 2.0F);
+      return new CubeDefinition(this.comment, this.texCoord.u(), this.texCoord.v(), this.origin.x(), this.origin.y(), this.origin.z(), this.dimensions.x(), this.dimensions.y(), this.dimensions.z(), newGrow, this.mirror, this.texScale.u(), this.texScale.v(), this.visibleFaces);
+   }
+
    public ModelPart.Cube bake(final int texScaleX, final int texScaleY) {
       return new ModelPart.Cube((int)this.texCoord.u(), (int)this.texCoord.v(), this.origin.x(), this.origin.y(), this.origin.z(), this.dimensions.x(), this.dimensions.y(), this.dimensions.z(), this.grow.growX, this.grow.growY, this.grow.growZ, this.mirror, (float)texScaleX * this.texScale.u(), (float)texScaleY * this.texScale.v(), this.visibleFaces);
    }

@@ -81,7 +81,6 @@ public class RealmsWorldSlotButton extends Button {
    public void extractContents(final GuiGraphicsExtractor graphics) {
       int x = this.getX();
       int y = this.getY();
-      boolean hoveredOrFocused = this.isHoveredOrFocused();
       Identifier texture;
       if (this.state.minigame) {
          texture = RealmsTextureManager.worldTemplate(String.valueOf(this.state.imageId), this.state.image);
@@ -105,7 +104,7 @@ public class RealmsWorldSlotButton extends Button {
       }
 
       graphics.blit(GuiPipeline.TEXTURED, texture, x + 1, y + 1, 0.0F, 0.0F, this.width - 2, this.height - 2, 74, 74, 74, 74, color);
-      if (hoveredOrFocused && this.state.action != RealmsWorldSlotButton.Action.NOTHING) {
+      if (this.isHighlighted() && this.state.action != RealmsWorldSlotButton.Action.NOTHING) {
          graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height);
       } else if (this.state.activeSlot) {
          graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_FRAME_SPRITE, x, y, this.width, this.height, ARGB.colorFromFloat(1.0F, 0.8F, 0.8F, 0.8F));

@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class NonInteractiveResultSlot extends Slot {
    public NonInteractiveResultSlot(final Container container, final int id, final int x, final int y) {
-      super(container, id, x, y);
+      super(container, id, x, y, Slot.Section.RESULT);
    }
 
    public void onQuickCraft(final ItemStack picked, final ItemStack original) {

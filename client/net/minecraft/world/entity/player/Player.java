@@ -70,11 +70,13 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoveSimulationType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.SteppedInterpolationHandler;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
@@ -131,6 +133,7 @@ public abstract class Player extends Avatar implements ContainerUser {
    public static final int MAX_HEALTH = 20;
    public static final int SLEEP_DURATION = 100;
    public static final int WAKE_UP_DURATION = 10;
+   public static final int INTERPOLATION_TICKS = 3;
    public static final int ENDER_SLOT_OFFSET = 200;
    public static final int HELD_ITEM_SLOT = 499;
    public static final int CRAFTING_SLOT_OFFSET = 500;
@@ -213,6 +216,10 @@ public abstract class Player extends Avatar implements ContainerUser {
       entityData.define(DATA_SCORE_ID, 0);
       entityData.define(DATA_SHOULDER_PARROT_LEFT, OptionalInt.empty());
       entityData.define(DATA_SHOULDER_PARROT_RIGHT, OptionalInt.empty());
+   }
+
+   protected InterpolationHandler createInterpolationHandler() {
+      return SteppedInterpolationHandler.create(this, 3);
    }
 
    public void tick() {
@@ -1495,10 +1502,6 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public boolean canEat(final boolean canAlwaysEat) {
       return this.abilities.invulnerable || canAlwaysEat || this.foodData.needsFood();
-   }
-
-   public boolean isHurt() {
-      return this.getHealth() > 0.0F && this.getHealth() < this.getMaxHealth();
    }
 
    public boolean mayBuild() {

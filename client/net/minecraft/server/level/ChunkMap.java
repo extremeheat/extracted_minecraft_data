@@ -527,7 +527,11 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
 
             return parsedData;
          }), Util.backgroundExecutor().forName("parseChunk"));
-      CompletableFuture<?> poiFuture = this.poiManager.prefetch(pos);
+      CompletableFuture<?> poiFuture = this.poiManager.prefetch(pos.x(), pos.z());
+      if (poiFuture == null) {
+         poiFuture = CompletableFuture.completedFuture((Object)null);
+      }
+
       return chunkDataFuture.thenCombine(poiFuture, (chunkData, ignored) -> chunkData).thenApplyAsync((chunkData) -> {
          Profiler.get().incrementCounter("chunkLoad");
          if (chunkData.isPresent()) {

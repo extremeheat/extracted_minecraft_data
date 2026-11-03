@@ -109,7 +109,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final List<TickingBlockEntity> pendingBlockEntityTickers = new ArrayList();
    private boolean tickingBlockEntities;
    private final Thread thread;
-   private final boolean isDebug;
    private int skyDarken;
    protected int randValue = RandomSource.createThreadLocalInstance().nextInt();
    protected final int addend = 1013904223;
@@ -130,14 +129,13 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final PalettedContainerFactory palettedContainerFactory;
    private long subTickCount;
 
-   protected Level(final WritableLevelData levelData, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final Holder<DimensionType> dimensionTypeRegistration, final boolean isClientSide, final boolean isDebug, final int maxChainedNeighborUpdates) {
+   protected Level(final WritableLevelData levelData, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final Holder<DimensionType> dimensionTypeRegistration, final boolean isClientSide, final int maxChainedNeighborUpdates) {
       super();
       this.levelData = levelData;
       this.dimensionTypeRegistration = dimensionTypeRegistration;
       this.dimension = dimension;
       this.isClientSide = isClientSide;
       this.thread = Thread.currentThread();
-      this.isDebug = isDebug;
       this.neighborUpdater = new CollectingNeighborUpdater(this, maxChainedNeighborUpdates);
       this.registryAccess = registryAccess;
       this.palettedContainerFactory = PalettedContainerFactory.create(registryAccess);
@@ -201,8 +199,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean setBlock(final BlockPos pos, final BlockState blockState, final @Block.UpdateFlags int updateFlags, final int updateLimit) {
       if (!this.isInValidBounds(pos)) {
-         return false;
-      } else if (!this.isClientSide() && this.isDebug()) {
          return false;
       } else {
          LevelChunk chunk = this.getChunkAt(pos);
@@ -835,10 +831,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean noSave() {
       return false;
-   }
-
-   public final boolean isDebug() {
-      return this.isDebug;
    }
 
    protected abstract LevelEntityGetter<Entity> getEntities();

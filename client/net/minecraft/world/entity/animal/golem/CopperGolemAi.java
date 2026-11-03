@@ -71,23 +71,25 @@ public class CopperGolemAi {
    private static TransportItemsBetweenContainers.OnTargetReachedInteraction onReachedTargetInteraction(final CopperGolemState state, final @Nullable SoundEvent sound) {
       return (body, target, ticksSinceReachingTarget) -> {
          if (body instanceof CopperGolem copperGolem) {
-            Container container = target.container();
-            if (ticksSinceReachingTarget == 1) {
-               container.startOpen(copperGolem);
-               copperGolem.setOpenedChestPos(target.pos());
-               copperGolem.setState(state);
-            }
-
-            if (ticksSinceReachingTarget == 9 && sound != null) {
-               copperGolem.playSound(sound);
-            }
-
-            if (ticksSinceReachingTarget == 60) {
-               if (container.getEntitiesWithContainerOpen().contains(body)) {
-                  container.stopOpen(copperGolem);
+            Container container = target.getBlockEntityContainer(copperGolem.level());
+            if (container != null) {
+               if (ticksSinceReachingTarget == 1) {
+                  container.startOpen(copperGolem);
+                  copperGolem.setOpenedChestPos(target.pos());
+                  copperGolem.setState(state);
                }
 
-               copperGolem.clearOpenedChestPos();
+               if (ticksSinceReachingTarget == 9 && sound != null) {
+                  copperGolem.playSound(sound);
+               }
+
+               if (ticksSinceReachingTarget == 60) {
+                  if (container.getEntitiesWithContainerOpen().contains(body)) {
+                     container.stopOpen(copperGolem);
+                  }
+
+                  copperGolem.clearOpenedChestPos();
+               }
             }
          }
 

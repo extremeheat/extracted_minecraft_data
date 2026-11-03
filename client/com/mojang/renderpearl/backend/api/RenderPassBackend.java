@@ -23,6 +23,8 @@ public interface RenderPassBackend {
 
    void pushConstants(ByteBuffer value);
 
+   void setViewport(int x, int y, int width, int height);
+
    void enableScissor(final int x, final int y, final int width, final int height);
 
    void disableScissor();

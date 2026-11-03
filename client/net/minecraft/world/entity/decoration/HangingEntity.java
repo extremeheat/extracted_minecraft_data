@@ -120,7 +120,7 @@ public abstract class HangingEntity extends BlockAttachedEntity {
    }
 
    public boolean canBePlaced() {
-      return this.survives();
+      return this.level().noBorderCollision(this, this.getPopBox()) && this.survives();
    }
 
    protected boolean collidesWithBlocks(final AABB popBox) {

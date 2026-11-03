@@ -21,7 +21,7 @@ public class Skeleton extends AbstractSkeleton {
 
    public Skeleton(final EntityType<? extends Skeleton> type, final Level level) {
       super(type, level);
-      this.freezingTracker = new ConversionTracker<AbstractSkeleton>(this, DATA_STRAY_CONVERSION_ID, () -> EntityTypes.STRAY, () -> 1048, () -> this.isInPowderSnow, "FreezingTime", 140, "StrayConversionTime", 300, (BiConsumer)null);
+      this.freezingTracker = new ConversionTracker<AbstractSkeleton>(this, DATA_STRAY_CONVERSION_ID, () -> EntityTypes.STRAY, () -> 1048, () -> this.isInPowderSnow && !this.isWearingFreezeImmuneWearables(), "FreezingTime", 140, "StrayConversionTime", 300, (BiConsumer)null);
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {

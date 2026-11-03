@@ -17,7 +17,7 @@ public class ResultSlot extends Slot {
    private int removeCount;
 
    public ResultSlot(final Player player, final CraftingContainer craftSlots, final Container container, final int id, final int x, final int y) {
-      super(container, id, x, y);
+      super(container, id, x, y, Slot.Section.RESULT);
       this.player = player;
       this.craftSlots = craftSlots;
    }

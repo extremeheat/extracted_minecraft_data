@@ -1,8 +1,11 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
+import net.minecraft.client.gui.components.inventory.CrafterSlotWidget;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.Identifier;
@@ -17,11 +20,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
-   private static final Identifier DISABLED_SLOT_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/disabled_slot");
    private static final Identifier POWERED_REDSTONE_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/powered_redstone");
    private static final Identifier UNPOWERED_REDSTONE_LOCATION_SPRITE = Identifier.withDefaultNamespace("container/crafter/unpowered_redstone");
    private static final Identifier CONTAINER_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/crafter.png");
-   private static final Component DISABLED_SLOT_TOOLTIP = Component.translatable("gui.togglable_slot");
    private final Player player;
 
    public CrafterScreen(final CrafterMenu menu, final Inventory inventory, final Component title) {
@@ -34,25 +35,45 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.titleLabelX = (this.imageWidth - this.font.width((FormattedText)this.title)) / 2;
    }
 
-   protected void slotClicked(final @Nullable Slot slot, final int slotId, final int buttonNum, final ContainerInput containerInput) {
-      if (slot instanceof CrafterSlot && !slot.hasItem() && !this.player.isSpectator()) {
-         switch (containerInput) {
-            case PICKUP:
-               if (((CrafterMenu)this.menu).isSlotDisabled(slotId)) {
-                  this.enableSlot(slotId);
-               } else if (((CrafterMenu)this.menu).getCarried().isEmpty()) {
-                  this.disableSlot(slotId);
-               }
-               break;
-            case SWAP:
-               ItemStack playerInventoryItem = this.player.getInventory().getItem(buttonNum);
-               if (((CrafterMenu)this.menu).isSlotDisabled(slotId) && !playerInventoryItem.isEmpty()) {
-                  this.enableSlot(slotId);
-               }
+   protected void updateSlotWidgets() {
+      List<SlotWidget> widgets = new ArrayList();
+
+      for(Slot slot : (this.menu).slots) {
+         if (slot instanceof CrafterSlot crafterSlot) {
+            widgets.add(new CrafterSlotWidget(crafterSlot, this.minecraft, this.imageWidth, this.leftPos, this.topPos));
+         } else {
+            widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos));
          }
       }
 
-      super.slotClicked(slot, slotId, buttonNum, containerInput);
+      this.setSlotWidgets(widgets);
+   }
+
+   protected void slotClicked(final @Nullable SlotWidget slotWidget, final int slotId, final int buttonNum, final ContainerInput containerInput) {
+      if (slotWidget != null) {
+         Slot var6 = slotWidget.slot();
+         if (var6 instanceof CrafterSlot) {
+            CrafterSlot crafterSlot = (CrafterSlot)var6;
+            if (!crafterSlot.hasItem() && !this.player.isSpectator()) {
+               switch (containerInput) {
+                  case PICKUP:
+                     if (crafterSlot.isDisabled()) {
+                        this.enableSlot(slotId);
+                     } else if (((CrafterMenu)this.menu).getCarried().isEmpty()) {
+                        this.disableSlot(slotId);
+                     }
+                     break;
+                  case SWAP:
+                     ItemStack playerInventoryItem = this.player.getInventory().getItem(buttonNum);
+                     if (crafterSlot.isDisabled() && !playerInventoryItem.isEmpty()) {
+                        this.enableSlot(slotId);
+                     }
+               }
+            }
+         }
+      }
+
+      super.slotClicked(slotWidget, slotId, buttonNum, containerInput);
    }
 
    private void enableSlot(final int slotId) {
@@ -70,36 +91,9 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
       this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, pitch);
    }
 
-   public void extractSlot(final GuiGraphicsExtractor graphics, final Slot slot) {
-      if (slot instanceof CrafterSlot crafterSlot) {
-         if (((CrafterMenu)this.menu).isSlotDisabled(slot.index)) {
-            this.extractDisabledSlot(graphics, crafterSlot);
-         } else {
-            super.extractSlot(graphics, slot);
-         }
-
-         int x0 = this.leftPos + crafterSlot.x - 2;
-         int y0 = this.topPos + crafterSlot.y - 2;
-         if (graphics.mouseX() > x0 && graphics.mouseY() > y0 && graphics.mouseX() < x0 + 19 && graphics.mouseY() < y0 + 19) {
-            graphics.requestCursor(CursorTypes.POINTING_HAND);
-         }
-      } else {
-         super.extractSlot(graphics, slot);
-      }
-
-   }
-
-   private void extractDisabledSlot(final GuiGraphicsExtractor graphics, final CrafterSlot cs) {
-      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)DISABLED_SLOT_LOCATION_SPRITE, cs.x - 1, cs.y - 1, 18, 18);
-   }
-
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       super.extractRenderState(graphics);
       this.extractRedstone(graphics);
-      if (this.hoveredSlot instanceof CrafterSlot && !((CrafterMenu)this.menu).isSlotDisabled(this.hoveredSlot.index) && ((CrafterMenu)this.menu).getCarried().isEmpty() && !this.hoveredSlot.hasItem() && !this.player.isSpectator()) {
-         graphics.setTooltipForNextFrame(this.font, DISABLED_SLOT_TOOLTIP, graphics.mouseX(), graphics.mouseY());
-      }
-
    }
 
    private void extractRedstone(final GuiGraphicsExtractor graphics) {

@@ -104,7 +104,7 @@ public class Zombie extends Monster {
       this.breakDoorGoal = new BreakDoorGoal(this, DOOR_BREAKING_PREDICATE);
       this.canBreakDoors = false;
       this.drowningTracker = new ConversionTracker<Zombie>(this, DATA_DROWNED_CONVERSION_ID, this::convertsToWhenDrowning, this::getConversionSound, () -> this.isEyeInFluid(FluidTags.WATER), "InWaterTime", 600, "DrownedConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
-      this.freezingTracker = new ConversionTracker<Zombie>(this, DATA_FROSTBITE_CONVERSION_ID, this::convertsToWhenFreezing, this::getFreezingConversionSound, () -> this.isInPowderSnow, "FreezingTime", 140, "FrostbiteConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
+      this.freezingTracker = new ConversionTracker<Zombie>(this, DATA_FROSTBITE_CONVERSION_ID, this::convertsToWhenFreezing, this::getFreezingConversionSound, () -> this.isInPowderSnow && !this.isWearingFreezeImmuneWearables(), "FreezingTime", 140, "FrostbiteConversionTime", 300, (converted, serverLevel) -> converted.handleAttributes(serverLevel.getCurrentDifficultyAt(converted.blockPosition()).getSpecialMultiplier(), EntitySpawnReason.CONVERSION));
    }
 
    public Zombie(final Level level) {

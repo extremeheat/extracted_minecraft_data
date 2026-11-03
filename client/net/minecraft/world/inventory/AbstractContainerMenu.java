@@ -83,7 +83,7 @@ public abstract class AbstractContainerMenu {
 
    protected void addInventoryHotbarSlots(final Container inventory, final int left, final int top) {
       for(int x = 0; x < 9; ++x) {
-         this.addSlot(new Slot(inventory, x, left + x * 18, top));
+         this.addSlot(new Slot(inventory, x, left + x * 18, top, Slot.Section.HOTBAR));
       }
 
    }
@@ -91,7 +91,7 @@ public abstract class AbstractContainerMenu {
    protected void addInventoryExtendedSlots(final Container inventory, final int left, final int top) {
       for(int y = 0; y < 3; ++y) {
          for(int x = 0; x < 9; ++x) {
-            this.addSlot(new Slot(inventory, x + (y + 1) * 9, left + x * 18, top + y * 18));
+            this.addSlot(new Slot(inventory, x + (y + 1) * 9, left + x * 18, top + y * 18, Slot.Section.INVENTORY));
          }
       }
 

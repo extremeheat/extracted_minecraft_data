@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-public record KeyEvent(@InputConstants.Value int key, int keycode, @InputWithModifiers.Modifiers int modifiers) implements InputWithModifiers {
+public record KeyEvent(@InputConstants.Value int key, int keycode, @InputWithModifiers.Modifiers int modifiers, boolean repeat) implements InputWithModifiers {
    public KeyEvent {
       super();
    }

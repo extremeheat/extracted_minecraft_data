@@ -14,7 +14,7 @@ public class RealmsButton extends Button {
    }
 
    protected void extractContents(final GuiGraphicsExtractor graphics) {
-      Identifier sprite = SPRITES.get(this.active, this.isHoveredOrFocused());
+      Identifier sprite = SPRITES.get(this.active, this.isHighlighted());
       graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
       this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
    }

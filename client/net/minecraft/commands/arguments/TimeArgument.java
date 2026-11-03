@@ -25,34 +25,43 @@ public class TimeArgument implements ArgumentType<Integer> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
    private static final SimpleCommandExceptionType ERROR_INVALID_UNIT = new SimpleCommandExceptionType(Component.translatable("argument.time.invalid_unit"));
    private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((value, limit) -> Component.translatableEscape("argument.time.tick_count_too_low", limit, value));
+   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_HIGH = new Dynamic2CommandExceptionType((value, limit) -> Component.translatableEscape("argument.time.tick_count_too_high", limit, value));
    private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap();
    private final int minimum;
+   private final int maximum;
 
-   private TimeArgument(final int minimum) {
+   private TimeArgument(final int minimum, final int maximum) {
       super();
       this.minimum = minimum;
+      this.maximum = maximum;
    }
 
    public static TimeArgument time() {
-      return new TimeArgument(0);
+      return new TimeArgument(0, 2147483647);
    }
 
    public static TimeArgument time(final int minimum) {
-      return new TimeArgument(minimum);
+      return new TimeArgument(minimum, 2147483647);
+   }
+
+   public static TimeArgument time(final int minimum, final int maximum) {
+      return new TimeArgument(minimum, maximum);
    }
 
    public Integer parse(final StringReader reader) throws CommandSyntaxException {
-      float value = reader.readFloat();
+      double value = reader.readDouble();
       String unit = reader.readUnquotedString();
       int factor = UNITS.getOrDefault(unit, 0);
       if (factor == 0) {
          throw ERROR_INVALID_UNIT.createWithContext(reader);
       } else {
-         int ticks = Math.round(value * (float)factor);
-         if (ticks < this.minimum) {
+         long ticks = Math.round(value * (double)factor);
+         if (ticks < (long)this.minimum) {
             throw ERROR_TICK_COUNT_TOO_LOW.createWithContext(reader, ticks, this.minimum);
+         } else if (ticks > (long)this.maximum) {
+            throw ERROR_TICK_COUNT_TOO_HIGH.createWithContext(reader, ticks, this.maximum);
          } else {
-            return ticks;
+            return (int)ticks;
          }
       }
    }

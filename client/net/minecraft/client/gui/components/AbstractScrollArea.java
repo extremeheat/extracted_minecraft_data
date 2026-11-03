@@ -40,7 +40,7 @@ public abstract class AbstractScrollArea extends AbstractWidget {
          } else {
             double max = (double)Math.max(1, this.maxScrollAmount());
             int barHeight = this.scrollerHeight();
-            double yDragScale = Math.max(1.0, max / (double)(this.height - barHeight));
+            double yDragScale = max / (double)Math.max(1, this.height - barHeight);
             this.setScrollAmount(this.scrollAmount() + dy * yDragScale);
          }
 
@@ -87,8 +87,12 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       return this.scrollbarSettings.scrollbarWidth();
    }
 
+   private int scrollbarMinHeight() {
+      return this.scrollbarSettings.scrollbarMinHeight();
+   }
+
    protected int scrollerHeight() {
-      return Math.clamp((long)((int)((float)(this.height * this.height) / (float)this.contentHeight())), 32, Math.max(this.height - 8, 32));
+      return this.scrollbarSettings.resizingScrollbar() ? Math.clamp((long)((int)((float)(this.height * this.height) / (float)this.contentHeight())), this.scrollbarMinHeight(), Math.max(this.height - 8, 32)) : this.scrollbarMinHeight();
    }
 
    protected int scrollBarX() {
@@ -104,7 +108,7 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       int scrollerHeight = this.scrollerHeight();
       int scrollerY = this.scrollBarY();
       if (!this.scrollable() && this.scrollbarSettings.disabledScrollerSprite() != null) {
-         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
+         this.extractBackground(graphics, scrollbarX);
          graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.disabledScrollerSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), scrollerHeight);
          if (this.isOverScrollbar((double)graphics.mouseX(), (double)graphics.mouseY())) {
             graphics.requestCursor(CursorTypes.NOT_ALLOWED);
@@ -112,11 +116,18 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       }
 
       if (this.scrollable()) {
-         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
+         this.extractBackground(graphics, scrollbarX);
          graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.scrollerSprite(), scrollbarX, scrollerY, this.scrollbarWidth(), scrollerHeight);
          if (this.isOverScrollbar((double)graphics.mouseX(), (double)graphics.mouseY())) {
             graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
          }
+      }
+
+   }
+
+   private void extractBackground(final GuiGraphicsExtractor graphics, final int scrollbarX) {
+      if (this.scrollbarSettings.backgroundSprite() != null) {
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.scrollbarSettings.backgroundSprite(), scrollbarX, this.getY(), this.scrollbarWidth(), this.getHeight());
       }
 
    }
@@ -131,7 +142,7 @@ public abstract class AbstractScrollArea extends AbstractWidget {
       return new ScrollbarSettings(SCROLLER_SPRITE, (Identifier)null, SCROLLER_BACKGROUND_SPRITE, 6, 32, scrollRate, true);
    }
 
-   public static record ScrollbarSettings(Identifier scrollerSprite, @Nullable Identifier disabledScrollerSprite, Identifier backgroundSprite, int scrollbarWidth, int scrollbarMinHeight, int scrollRate, boolean resizingScrollbar) {
+   public static record ScrollbarSettings(Identifier scrollerSprite, @Nullable Identifier disabledScrollerSprite, @Nullable Identifier backgroundSprite, int scrollbarWidth, int scrollbarMinHeight, int scrollRate, boolean resizingScrollbar) {
       public static final ScrollbarSettings NO_SCROLL = AbstractScrollArea.defaultSettings(0);
 
       public ScrollbarSettings {

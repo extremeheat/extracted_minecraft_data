@@ -44,10 +44,10 @@ public abstract class DirectStateAccess {
 
    public abstract int createFrameBufferObject();
 
-   public abstract void bindFrameBufferTextures(int fbo, int[] color, int[] colorMipLevels, int depth, int depthMipLevel, int bindSlot);
+   public abstract void bindFrameBufferTextures(int fbo, int[] color, int[] colorMipLevels, int depth, int depthMipLevel, int stencil, int stencilMipLevel, int bindSlot);
 
-   public void bindFrameBufferTextures(final int fbo, final int color, final int depth, final int mipLevel, final int bindSlot) {
-      this.bindFrameBufferTextures(fbo, new int[]{color}, new int[]{mipLevel}, depth, mipLevel, bindSlot);
+   public void bindFrameBufferTextures(final int fbo, final int color, final int depth, final int stencil, final int mipLevel, final int bindSlot) {
+      this.bindFrameBufferTextures(fbo, new int[]{color}, new int[]{mipLevel}, depth, mipLevel, stencil, mipLevel, bindSlot);
    }
 
    public abstract void blitFrameBuffers(int source, int dest, int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1, int mask, int filter);
@@ -98,12 +98,13 @@ public abstract class DirectStateAccess {
          return ARBDirectStateAccess.glCreateFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int bindSlot) {
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int stencil, final int stencilMipLevel, final int bindSlot) {
          for(int i = 0; i < color.length; ++i) {
             ARBDirectStateAccess.glNamedFramebufferTexture(fbo, '\u8ce0' + i, color[i], colorMipLevels[i]);
          }
 
          ARBDirectStateAccess.glNamedFramebufferTexture(fbo, 36096, depth, depthMipLevel);
+         ARBDirectStateAccess.glNamedFramebufferTexture(fbo, 36128, stencil, stencilMipLevel);
          if (bindSlot != 0) {
             this.stateManager._glBindFramebuffer(bindSlot, fbo);
          }
@@ -201,7 +202,7 @@ public abstract class DirectStateAccess {
          return GL33C.glGenFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int bindSlot) {
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int stencil, final int stencilMipLevel, final int depthMipLevel, final int bindSlot) {
          int tempBindSlot = bindSlot == 0 ? '\u8ca9' : bindSlot;
          int oldFbo = this.stateManager.getFrameBuffer(tempBindSlot);
          this.stateManager._glBindFramebuffer(tempBindSlot, fbo);
@@ -211,6 +212,7 @@ public abstract class DirectStateAccess {
          }
 
          GL33C.glFramebufferTexture2D(tempBindSlot, 36096, 3553, depth, depthMipLevel);
+         GL33C.glFramebufferTexture2D(tempBindSlot, 36128, 3553, stencil, stencilMipLevel);
          if (bindSlot == 0) {
             this.stateManager._glBindFramebuffer(tempBindSlot, oldFbo);
          }

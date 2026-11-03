@@ -94,7 +94,7 @@ public abstract class AbstractTextAreaWidget extends AbstractScrollArea {
    }
 
    protected void extractBorder(final GuiGraphicsExtractor graphics, final int x, final int y, final int width, final int height) {
-      Identifier sprite = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
+      Identifier sprite = BACKGROUND_SPRITES.get(this.isActive(), this.isHighlighted());
       graphics.blitSprite(GuiPipeline.TEXTURED, sprite, x, y, width, height);
    }
 

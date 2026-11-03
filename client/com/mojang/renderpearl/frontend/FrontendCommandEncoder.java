@@ -1,6 +1,7 @@
 package com.mojang.renderpearl.frontend;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.buffers.TransientMemory;
@@ -162,6 +163,15 @@ public class FrontendCommandEncoder implements CommandEncoder {
       }
    }
 
+   public void clearStencilTexture(final GpuTexture stencilTexture, final byte clearStencil) {
+      if (this.isInRenderPass) {
+         throw new IllegalStateException("Close the existing render pass before creating a new one!");
+      } else {
+         this.verifyStencilTexture(stencilTexture);
+         this.backend.clearStencilTexture(stencilTexture, clearStencil);
+      }
+   }
+
    public void writeToBuffer(final GpuBufferSlice destination, final ByteBuffer data) {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
@@ -219,7 +229,7 @@ public class FrontendCommandEncoder implements CommandEncoder {
       if (this.isInRenderPass) {
          throw new IllegalStateException("Close the existing render pass before performing additional commands");
       } else if (mipLevel >= 0 && mipLevel < destination.getMipLevels()) {
-         if (width * height * destination.getFormat().blockSize() > source.remaining()) {
+         if ((long)width * (long)height * (long)destination.getFormat().blockSize() > (long)source.remaining()) {
             throw new IllegalArgumentException("Copy would overrun the source buffer (remaining length of " + source.remaining() + ", but copy is " + width + "x" + height + " of format " + String.valueOf(destination.getFormat()) + ")");
          } else if (destX + width <= destination.getWidth(mipLevel) && destY + height <= destination.getHeight(mipLevel)) {
             if (destination.isClosed()) {
@@ -327,7 +337,17 @@ public class FrontendCommandEncoder implements CommandEncoder {
                } else if (destination.getDepthOrLayers() > 1) {
                   throw new UnsupportedOperationException("Textures with multiple depths or layers are not yet supported for copying");
                } else {
-                  this.backend.copyTextureToTexture(source, destination, mipLevel, destX, destY, sourceX, sourceY, width, height);
+                  GpuFormat sourceFormat = source.getFormat();
+                  GpuFormat destFormat = destination.getFormat();
+                  if ((sourceFormat.hasDepthAspect() || sourceFormat.hasStencilAspect()) && sourceFormat != destFormat) {
+                     String var12 = String.valueOf(sourceFormat);
+                     throw new IllegalArgumentException("When copying depth or stencil data, the source and destination texture formats must be identical. Source: " + var12 + ", Destination: " + String.valueOf(destFormat));
+                  } else if (sourceFormat.hasColorAspect() != destFormat.hasColorAspect()) {
+                     String var10002 = String.valueOf(sourceFormat);
+                     throw new IllegalArgumentException("Source and destination texture formats must have consistent color aspects. Source: " + var10002 + ", Destination: " + String.valueOf(destFormat));
+                  } else {
+                     this.backend.copyTextureToTexture(source, destination, mipLevel, destX, destY, sourceX, sourceY, width, height);
+                  }
                }
             } else {
                throw new IllegalArgumentException("Source texture (" + source.getWidth(mipLevel) + "x" + source.getHeight(mipLevel) + ") is not large enough to read a rectangle of " + width + "x" + height + " at " + sourceX + "x" + sourceY);
@@ -379,6 +399,18 @@ public class FrontendCommandEncoder implements CommandEncoder {
          throw new IllegalStateException("Depth texture must have USAGE_RENDER_ATTACHMENT");
       } else if ((depthTexture.usage() & 1) == 0) {
          throw new IllegalStateException("Depth texture must have USAGE_COPY_DST");
+      } else if (depthTexture.getDepthOrLayers() > 1) {
+         throw new UnsupportedOperationException("Clearing a texture with multiple layers or depths is not yet supported");
+      }
+   }
+
+   private void verifyStencilTexture(final GpuTexture depthTexture) {
+      if (!depthTexture.getFormat().hasStencilAspect()) {
+         throw new IllegalStateException("Trying to clear a non-stencil texture as stencil");
+      } else if (depthTexture.isClosed()) {
+         throw new IllegalStateException("Stencil texture is closed");
+      } else if ((depthTexture.usage() & 1) == 0) {
+         throw new IllegalStateException("Stencil texture must have USAGE_COPY_DST");
       } else if (depthTexture.getDepthOrLayers() > 1) {
          throw new UnsupportedOperationException("Clearing a texture with multiple layers or depths is not yet supported");
       }

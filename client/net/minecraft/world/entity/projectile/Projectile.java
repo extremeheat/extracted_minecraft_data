@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -187,6 +188,16 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       double yd = dragDown ? -0.03 : 0.06;
       this.addDeltaMovement(0.0, yd, 0.0);
       this.resetFallDistance();
+   }
+
+   public void addBubbleParticles(final Vec3 position) {
+      Vec3 movement = this.getDeltaMovement();
+
+      for(int i = 0; i < 4; ++i) {
+         float s = 0.25F;
+         this.level().addParticle(ParticleTypes.BUBBLE, position.x - movement.x * 0.25, position.y - movement.y * 0.25, position.z - movement.z * 0.25, movement.x, movement.y, movement.z);
+      }
+
    }
 
    public boolean ownerCanBreakBlock(final ServerLevel level, final BlockInWorld blockInWorld) {

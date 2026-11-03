@@ -48,7 +48,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
 
    private void createInputSlots(final ItemCombinerMenuSlotDefinition itemInputSlots) {
       for(final ItemCombinerMenuSlotDefinition.SlotDefinition slot : itemInputSlots.getSlots()) {
-         this.addSlot(new Slot(this.inputSlots, slot.slotIndex(), slot.x(), slot.y()) {
+         this.addSlot(new Slot(this.inputSlots, slot.slotIndex(), slot.x(), slot.y(), slot.section()) {
             {
                Objects.requireNonNull(ItemCombinerMenu.this);
             }
@@ -62,7 +62,7 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createResultSlot(final ItemCombinerMenuSlotDefinition itemInputSlots) {
-      this.addSlot(new Slot(this.resultSlots, itemInputSlots.getResultSlot().slotIndex(), itemInputSlots.getResultSlot().x(), itemInputSlots.getResultSlot().y()) {
+      this.addSlot(new Slot(this.resultSlots, itemInputSlots.getResultSlot().slotIndex(), itemInputSlots.getResultSlot().x(), itemInputSlots.getResultSlot().y(), itemInputSlots.getResultSlot().section()) {
          {
             Objects.requireNonNull(ItemCombinerMenu.this);
          }

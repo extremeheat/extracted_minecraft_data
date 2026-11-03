@@ -44,7 +44,7 @@ public abstract class AbstractFriendsTab implements Tab {
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       this.headerFrame = new FrameLayout(0, 0, width, 0);
       this.scrollableContent = LinearLayout.vertical();
-      this.scrollableLayout = new ScrollableLayout(minecraft, this.scrollableContent, height, ScrollableLayout.ReserveStrategy.BOTH);
+      this.scrollableLayout = new ScrollableLayout(minecraft, this.scrollableContent, height);
       this.scrollableLayout.setScrollbarSpacing(0);
       this.layout.addChild(this.headerFrame);
       this.layout.addChild(this.scrollableLayout);

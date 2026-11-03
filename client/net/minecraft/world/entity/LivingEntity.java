@@ -1123,6 +1123,17 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
+   public void healNaturally(final float heal) {
+      if (heal > 0.0F && this.canHealNaturally()) {
+         this.setHealth(Math.min(this.getHealth() + heal, this.getMaxHealth()));
+      }
+
+   }
+
+   public boolean canHealNaturally() {
+      return this.getHealth() > 0.0F && this.getHealth() < this.getMaxHealth();
+   }
+
    public float getHealth() {
       return (Float)this.entityData.get(DATA_HEALTH_ID);
    }
@@ -3908,14 +3919,18 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       if (this.isSpectator()) {
          return false;
       } else {
-         for(EquipmentSlot slot : EquipmentSlotGroup.ARMOR) {
-            if (this.getItemBySlot(slot).is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
-               return false;
-            }
-         }
-
-         return super.canFreeze();
+         return this.isWearingFreezeImmuneWearables() ? false : super.canFreeze();
       }
+   }
+
+   protected boolean isWearingFreezeImmuneWearables() {
+      for(EquipmentSlot slot : EquipmentSlotGroup.ARMOR) {
+         if (this.getItemBySlot(slot).is(ItemTags.FREEZE_IMMUNE_WEARABLES)) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public boolean isCurrentlyGlowing() {

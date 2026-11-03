@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.input.KeyEvent;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -35,7 +34,6 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       int xo = (this.width - this.imageWidth) / 2;
       int yo = (this.height - this.imageHeight) / 2;
       this.name = new EditBox(this.font, xo + 62, yo + 24, 103, 12, Component.translatable("container.repair"));
-      this.name.setCanLoseFocus(false);
       this.name.setTextColor(-1);
       this.name.setTextColorUneditable(-1);
       this.name.setInvertHighlightedTextColor(false);
@@ -52,23 +50,10 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.minecraft.player.experienceDisplayStartTick = this.minecraft.player.tickCount;
    }
 
-   protected void setInitialFocus() {
-      this.setInitialFocus(this.name);
-   }
-
    public void resize(final int width, final int height) {
       String oldEdit = this.name.getValue();
       this.init(width, height);
       this.name.setValue(oldEdit);
-   }
-
-   public boolean keyPressed(final KeyEvent event) {
-      if (event.isEscape()) {
-         this.minecraft.player.closeContainer();
-         return true;
-      } else {
-         return !this.name.keyPressed(event) && !this.name.canConsumeInput() ? super.keyPressed(event) : true;
-      }
    }
 
    private void onNameChanged(final String name) {

@@ -271,19 +271,20 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    protected final void extractNameTags(final T entity, final S state, final float partialTicks, final double nameTagDistance, final double belowNameDistance) {
       if (this.entityRenderDispatcher.camera != null) {
          state.distanceToCameraSq = this.entityRenderDispatcher.distanceToSqr(entity);
-         boolean shouldShowName = state.distanceToCameraSq < Mth.square(nameTagDistance) && this.shouldShowName(entity, state.distanceToCameraSq);
-         if (shouldShowName) {
-            state.nameTag = this.getNameTag(entity);
-            this.setNameTagAttachment(entity, state, partialTicks);
-         } else {
-            state.nameTag = null;
-         }
+         if (this.shouldShowName(entity, state.distanceToCameraSq)) {
+            if (state.distanceToCameraSq < Mth.square(nameTagDistance)) {
+               state.nameTag = this.getNameTag(entity);
+               this.setNameTagAttachment(entity, state, partialTicks);
+            } else {
+               state.nameTag = null;
+            }
 
-         if (state.distanceToCameraSq < Mth.square(belowNameDistance)) {
-            state.scoreText = entity.belowNameDisplay();
-            this.setNameTagAttachment(entity, state, partialTicks);
-         } else {
-            state.scoreText = null;
+            if (state.distanceToCameraSq < Mth.square(belowNameDistance)) {
+               state.scoreText = entity.belowNameDisplay();
+               this.setNameTagAttachment(entity, state, partialTicks);
+            } else {
+               state.scoreText = null;
+            }
          }
       }
 

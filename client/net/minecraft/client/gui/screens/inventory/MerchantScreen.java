@@ -1,14 +1,21 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
+import net.minecraft.client.gui.components.AbstractScrollArea;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.components.ScrollableLayout;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.GroupNarration;
+import net.minecraft.client.gui.navigation.ScreenAxis;
+import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -18,6 +25,7 @@ import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
+import org.jspecify.annotations.Nullable;
 
 public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private static final Identifier OUT_OF_STOCK_SPRITE = Identifier.withDefaultNamespace("container/villager/out_of_stock");
@@ -39,7 +47,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private static final int SELL_ITEM_2_X = 35;
    private static final int BUY_ITEM_X = 68;
    private static final int LABEL_Y = 6;
-   private static final int NUMBER_OF_OFFER_BUTTONS = 7;
    private static final int TRADE_BUTTON_X = 5;
    private static final int TRADE_BUTTON_HEIGHT = 20;
    private static final int TRADE_BUTTON_WIDTH = 88;
@@ -47,42 +54,55 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private static final int SCROLLER_WIDTH = 6;
    private static final int SCROLL_BAR_HEIGHT = 139;
    private static final int SCROLL_BAR_TOP_POS_Y = 18;
-   private static final int SCROLL_BAR_START_X = 94;
    private static final Component TRADES_LABEL = Component.translatable("merchant.trades");
    private static final Component DEPRECATED_TOOLTIP = Component.translatable("merchant.deprecated");
-   private int shopItem;
-   private final TradeOfferButton[] tradeOfferButtons = new TradeOfferButton[7];
-   private int scrollOff;
-   private boolean isDragging;
+   private int selectedOfferIndex;
+   private @Nullable ScrollableLayout tradeArea;
 
    public MerchantScreen(final MerchantMenu menu, final Inventory inventory, final Component title) {
       super(menu, inventory, title, 276, 166);
       this.inventoryLabelX = 107;
+      menu.registerUpdateListener(this::tradesChanged);
    }
 
-   private void postButtonClick() {
-      ((MerchantMenu)this.menu).setSelectionHint(this.shopItem);
-      ((MerchantMenu)this.menu).tryMoveItems(this.shopItem);
-      this.minecraft.getConnection().send(new ServerboundSelectTradePacket(this.shopItem));
-   }
-
-   protected void init() {
-      super.init();
-      int xo = (this.width - this.imageWidth) / 2;
-      int yo = (this.height - this.imageHeight) / 2;
-      int buttonY = yo + 16 + 2;
-
-      for(int i = 0; i < 7; ++i) {
-         this.tradeOfferButtons[i] = (TradeOfferButton)this.addRenderableWidget(new TradeOfferButton(xo + 5, buttonY, i, (button) -> {
-            if (button instanceof TradeOfferButton tradeOfferButton) {
-               this.shopItem = tradeOfferButton.getIndex() + this.scrollOff;
-               this.postButtonClick();
-            }
-
-         }));
-         buttonY += 20;
+   private void tradesChanged() {
+      double scrollAmount = 0.0;
+      if (this.tradeArea != null) {
+         scrollAmount = this.tradeArea.getScrollAmount();
+         this.tradeArea.visitWidgets((x$0) -> this.removeWidget(x$0));
       }
 
+      LinearLayout layout = LinearLayout.vertical();
+      MerchantOffers menuOffers = ((MerchantMenu)this.menu).getOffers();
+
+      for(int i = 0; i < menuOffers.size(); ++i) {
+         layout.addChild(new TradeOfferButton((MerchantOffer)menuOffers.get(i), (var2) -> this.selectTrade(i)));
+      }
+
+      this.tradeArea = this.createScrollableLayout(layout);
+      this.tradeArea.setScrollAmount(scrollAmount);
+      if (this.selectedOfferIndex >= menuOffers.size()) {
+         this.selectedOfferIndex = 0;
+      }
+
+   }
+
+   protected void repositionElements() {
+      this.leftPos = (this.width - this.imageWidth) / 2;
+      this.topPos = (this.height - this.imageHeight) / 2;
+      this.updateSlotWidgets();
+      if (this.tradeArea != null) {
+         this.tradeArea.setPosition(this.leftPos + 5, this.topPos + 18);
+         this.tradeArea.arrangeElements();
+      }
+
+   }
+
+   private void selectTrade(final int index) {
+      this.selectedOfferIndex = index;
+      ((MerchantMenu)this.menu).setSelectionHint(this.selectedOfferIndex);
+      ((MerchantMenu)this.menu).tryMoveItems(this.selectedOfferIndex);
+      this.minecraft.getConnection().send(new ServerboundSelectTradePacket(this.selectedOfferIndex));
    }
 
    protected void extractLabels(final GuiGraphicsExtractor graphics) {
@@ -108,7 +128,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       graphics.blit(GuiPipeline.TEXTURED, VILLAGER_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
       MerchantOffers offers = ((MerchantMenu)this.menu).getOffers();
       if (!offers.isEmpty()) {
-         int itemIndex = this.shopItem;
+         int itemIndex = this.selectedOfferIndex;
          if (itemIndex < 0 || itemIndex >= offers.size()) {
             return;
          }
@@ -121,7 +141,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
    }
 
-   private void extractProgressBar(final GuiGraphicsExtractor graphics, final int xo, final int yo, final MerchantOffer offer) {
+   private void extractProgressBar(final GuiGraphicsExtractor graphics, final int xo, final int yo) {
       int traderLevel = ((MerchantMenu)this.menu).getTraderLevel();
       int traderXp = ((MerchantMenu)this.menu).getTraderXp();
       if (traderLevel < 5) {
@@ -142,183 +162,121 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       }
    }
 
-   private void extractScroller(final GuiGraphicsExtractor graphics, final int xo, final int yo, final MerchantOffers offers) {
-      int steps = offers.size() + 1 - 7;
-      if (steps > 1) {
-         int leftOver = 139 - (27 + (steps - 1) * 139 / steps);
-         int stepHeight = 1 + leftOver / steps + 139 / steps;
-         int maxScrollerOff = 113;
-         int scrollerYOff = Math.min(113, this.scrollOff * stepHeight);
-         if (this.scrollOff == steps - 1) {
-            scrollerYOff = 113;
-         }
-
-         int scrollerX = xo + 94;
-         int scrollerY = yo + 18 + scrollerYOff;
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SCROLLER_SPRITE, scrollerX, scrollerY, 6, 27);
-         if (graphics.mouseX() >= scrollerX && graphics.mouseX() < xo + 94 + 6 && graphics.mouseY() >= scrollerY && graphics.mouseY() <= scrollerY + 27) {
-            graphics.requestCursor(this.isDragging ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
-         }
-      } else {
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SCROLLER_DISABLED_SPRITE, xo + 94, yo + 18, 6, 27);
-      }
-
-   }
-
    public void extractContents(final GuiGraphicsExtractor graphics) {
       super.extractContents(graphics);
       MerchantOffers offers = ((MerchantMenu)this.menu).getOffers();
       if (!offers.isEmpty()) {
-         int xo = (this.width - this.imageWidth) / 2;
-         int yo = (this.height - this.imageHeight) / 2;
-         int offerY = yo + 16 + 1;
-         int sellItem1X = xo + 5 + 5;
-         this.extractScroller(graphics, xo, yo, offers);
-         int currentOfferIndex = 0;
-
-         for(MerchantOffer offer : offers) {
-            if (!this.canScroll(offers.size()) || currentOfferIndex >= this.scrollOff && currentOfferIndex < 7 + this.scrollOff) {
-               ItemStack baseCostA = offer.getBaseCostA();
-               ItemStack costA = offer.getCostA();
-               ItemStack costB = offer.getCostB();
-               ItemStack result = offer.getResult();
-               int decorHeight = offerY + 2;
-               this.extractAndDecorateCostA(graphics, costA, baseCostA, sellItem1X, decorHeight);
-               if (!costB.isEmpty()) {
-                  graphics.fakeItem(costB, xo + 5 + 35, decorHeight);
-                  graphics.itemDecorations(this.font, costB, xo + 5 + 35, decorHeight);
-               }
-
-               this.extractButtonArrows(graphics, offer, xo, decorHeight);
-               graphics.fakeItem(result, xo + 5 + 68, decorHeight);
-               graphics.itemDecorations(this.font, result, xo + 5 + 68, decorHeight);
-               offerY += 20;
-               ++currentOfferIndex;
-            } else {
-               ++currentOfferIndex;
-            }
-         }
-
-         int itemIndex = this.shopItem;
-         MerchantOffer selectedOffer = (MerchantOffer)offers.get(itemIndex);
          if (((MerchantMenu)this.menu).showProgressBar()) {
-            this.extractProgressBar(graphics, xo, yo, selectedOffer);
+            this.extractProgressBar(graphics, this.leftPos, this.topPos);
          }
 
-         if (selectedOffer.isOutOfStock() && this.isHovering(186, 35, 22, 21, (double)graphics.mouseX(), (double)graphics.mouseY()) && ((MerchantMenu)this.menu).canRestock()) {
-            graphics.setTooltipForNextFrame(this.font, DEPRECATED_TOOLTIP, graphics.mouseX(), graphics.mouseY());
-         }
-
-         for(TradeOfferButton button : this.tradeOfferButtons) {
-            if (button.isHoveredOrFocused()) {
-               button.extractToolTip(graphics);
+         if (this.selectedOfferIndex < offers.size()) {
+            MerchantOffer selectedOffer = (MerchantOffer)offers.get(this.selectedOfferIndex);
+            if (selectedOffer.isOutOfStock() && this.isHovering(186, 35, 22, 21, (double)graphics.mouseX(), (double)graphics.mouseY()) && ((MerchantMenu)this.menu).canRestock()) {
+               graphics.setTooltipForNextFrame(this.font, DEPRECATED_TOOLTIP, graphics.mouseX(), graphics.mouseY());
             }
-
-            button.setVisible(button.index < ((MerchantMenu)this.menu).getOffers().size());
          }
       }
 
    }
 
-   private void extractButtonArrows(final GuiGraphicsExtractor graphics, final MerchantOffer offer, final int xo, final int decorHeight) {
-      if (offer.isOutOfStock()) {
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)TRADE_ARROW_OUT_OF_STOCK_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
-      } else {
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)TRADE_ARROW_SPRITE, xo + 5 + 35 + 20, decorHeight + 3, 10, 9);
-      }
-
-   }
-
-   private void extractAndDecorateCostA(final GuiGraphicsExtractor graphics, final ItemStack costA, final ItemStack baseCostA, final int sellItem1X, final int decorHeight) {
-      graphics.fakeItem(costA, sellItem1X, decorHeight);
-      if (baseCostA.getCount() == costA.getCount()) {
-         graphics.itemDecorations(this.font, costA, sellItem1X, decorHeight);
-      } else {
-         graphics.itemDecorations(this.font, baseCostA, sellItem1X, decorHeight, baseCostA.getCount() == 1 ? "1" : null);
-         graphics.itemDecorations(this.font, costA, sellItem1X + 14, decorHeight, costA.getCount() == 1 ? "1" : null);
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)DISCOUNT_STRIKETHRUOGH_SPRITE, sellItem1X + 7, decorHeight + 12, 9, 2);
-      }
-
-   }
-
-   private boolean canScroll(final int numberOfOffers) {
-      return numberOfOffers > 7;
-   }
-
-   public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
-      if (super.mouseScrolled(x, y, scrollX, scrollY)) {
-         return true;
-      } else {
-         int numberOfOffers = ((MerchantMenu)this.menu).getOffers().size();
-         if (this.canScroll(numberOfOffers)) {
-            int maxScrollOff = numberOfOffers - 7;
-            this.scrollOff = Math.clamp((long)((int)((double)this.scrollOff - scrollY)), 0, maxScrollOff);
-         }
-
-         return true;
-      }
-   }
-
-   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
-      int numberOfOffers = ((MerchantMenu)this.menu).getOffers().size();
-      if (this.isDragging) {
-         int fullScrollTopPos = this.topPos + 18;
-         int fullScrollBottomPos = fullScrollTopPos + 139;
-         int maxScrollOff = numberOfOffers - 7;
-         float scrolling = ((float)event.y() - (float)fullScrollTopPos - 13.5F) / ((float)(fullScrollBottomPos - fullScrollTopPos) - 27.0F);
-         scrolling = scrolling * (float)maxScrollOff + 0.5F;
-         this.scrollOff = Math.clamp((long)((int)scrolling), 0, maxScrollOff);
-         return true;
-      } else {
-         return super.mouseDragged(event, dx, dy);
-      }
-   }
-
-   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      int xo = (this.width - this.imageWidth) / 2;
-      int yo = (this.height - this.imageHeight) / 2;
-      if (this.canScroll(((MerchantMenu)this.menu).getOffers().size()) && event.x() > (double)(xo + 94) && event.x() < (double)(xo + 94 + 6) && event.y() > (double)(yo + 18) && event.y() <= (double)(yo + 18 + 139 + 1)) {
-         this.isDragging = true;
-      }
-
-      return super.mouseClicked(event, doubleClick);
-   }
-
-   public boolean mouseReleased(final MouseButtonEvent event) {
-      this.isDragging = false;
-      return super.mouseReleased(event);
+   private ScrollableLayout createScrollableLayout(final Layout layout) {
+      ScrollableLayout scrollableLayout = new ScrollableLayout(this.minecraft, layout, 139, new AbstractScrollArea.ScrollbarSettings(SCROLLER_SPRITE, SCROLLER_DISABLED_SPRITE, (Identifier)null, 6, 27, 20, false), 1, ScrollableLayout.ReserveStrategy.RIGHT, GroupNarration.list("narrator.position.list", "narration.group_navigation.usage.trade", ScreenAxis.VERTICAL));
+      scrollableLayout.setPosition(this.leftPos + 5, this.topPos + 18);
+      scrollableLayout.setMinWidth(88);
+      scrollableLayout.setMinHeight(139);
+      scrollableLayout.arrangeElements();
+      scrollableLayout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
+      scrollableLayout.setTabGroup(3);
+      scrollableLayout.allowTabNavigationInside(false);
+      return scrollableLayout;
    }
 
    private class TradeOfferButton extends Button.Plain {
-      private final int index;
+      private final MerchantOffer offer;
 
-      public TradeOfferButton(final int x, final int y, final int index, final Button.OnPress onPress) {
+      public TradeOfferButton(final MerchantOffer offer, final Button.OnPress onPress) {
          Objects.requireNonNull(MerchantScreen.this);
-         super(x, y, 88, 20, CommonComponents.EMPTY, onPress, DEFAULT_NARRATION);
-         this.index = index;
-         this.visible = false;
+         super(0, 0, 88, 20, CommonComponents.EMPTY, onPress, DEFAULT_NARRATION);
+         this.offer = offer;
       }
 
-      public int getIndex() {
-         return this.index;
-      }
-
-      public void extractToolTip(final GuiGraphicsExtractor graphics) {
-         if (this.isHovered && ((MerchantMenu)MerchantScreen.this.menu).getOffers().size() > this.index + MerchantScreen.this.scrollOff) {
-            if (graphics.mouseX() < this.getX() + 20) {
-               ItemStack item = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostA();
-               graphics.setTooltipForNextFrame(MerchantScreen.this.font, item, graphics.mouseX(), graphics.mouseY());
-            } else if (graphics.mouseX() < this.getX() + 50 && graphics.mouseX() > this.getX() + 30) {
-               ItemStack item = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostB();
-               if (!item.isEmpty()) {
-                  graphics.setTooltipForNextFrame(MerchantScreen.this.font, item, graphics.mouseX(), graphics.mouseY());
-               }
-            } else if (graphics.mouseX() > this.getX() + 65) {
-               ItemStack item = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getResult();
-               graphics.setTooltipForNextFrame(MerchantScreen.this.font, item, graphics.mouseX(), graphics.mouseY());
-            }
+      protected MutableComponent createNarrationMessage() {
+         Component costA = countAndItem(this.offer.getCostA());
+         Component result = countAndItem(this.offer.getResult());
+         MutableComponent tradeOffer;
+         if (this.offer.getCostB().isEmpty()) {
+            tradeOffer = Component.translatable("narration.trade_offer.one_cost", costA, result);
+         } else {
+            Component costB = countAndItem(this.offer.getCostB());
+            tradeOffer = Component.translatable("narration.trade_offer.two_costs", costA, costB, result);
          }
 
+         return this.offer.isOutOfStock() ? Component.translatable("narration.trade_offer.out_of_stock", tradeOffer) : tradeOffer;
+      }
+
+      private static Component countAndItem(final ItemStack itemStack) {
+         return Component.translatable("narration.count_and_item", itemStack.count(), itemStack.getHoverName());
+      }
+
+      protected void extractContents(final GuiGraphicsExtractor graphics) {
+         super.extractContents(graphics);
+         ItemStack baseCostA = this.offer.getBaseCostA();
+         ItemStack costA = this.offer.getCostA();
+         ItemStack costB = this.offer.getCostB();
+         ItemStack result = this.offer.getResult();
+         int decorHeight = this.getY() + 1;
+         int sellItem1X = this.getX() + 5;
+         this.extractAndDecorateCostA(graphics, costA, baseCostA, sellItem1X, decorHeight);
+         if (!costB.isEmpty()) {
+            graphics.fakeItem(costB, this.getX() + 35, decorHeight);
+            graphics.itemDecorations(MerchantScreen.this.font, costB, this.getX() + 35, decorHeight);
+         }
+
+         this.extractButtonArrows(graphics, decorHeight);
+         graphics.fakeItem(result, this.getX() + 68, decorHeight);
+         graphics.itemDecorations(MerchantScreen.this.font, result, this.getX() + 68, decorHeight);
+         this.extractTooltip(graphics);
+      }
+
+      private void extractButtonArrows(final GuiGraphicsExtractor graphics, final int decorHeight) {
+         if (this.offer.isOutOfStock()) {
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)MerchantScreen.TRADE_ARROW_OUT_OF_STOCK_SPRITE, this.getX() + 35 + 20, decorHeight + 3, 10, 9);
+         } else {
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)MerchantScreen.TRADE_ARROW_SPRITE, this.getX() + 35 + 20, decorHeight + 3, 10, 9);
+         }
+
+      }
+
+      private void extractAndDecorateCostA(final GuiGraphicsExtractor graphics, final ItemStack costA, final ItemStack baseCostA, final int sellItem1X, final int decorHeight) {
+         graphics.fakeItem(costA, sellItem1X, decorHeight);
+         if (baseCostA.getCount() == costA.getCount()) {
+            graphics.itemDecorations(MerchantScreen.this.font, costA, sellItem1X, decorHeight);
+         } else {
+            graphics.itemDecorations(MerchantScreen.this.font, baseCostA, sellItem1X, decorHeight, baseCostA.getCount() == 1 ? "1" : null);
+            graphics.itemDecorations(MerchantScreen.this.font, costA, sellItem1X + 14, decorHeight, costA.getCount() == 1 ? "1" : null);
+            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)MerchantScreen.DISCOUNT_STRIKETHRUOGH_SPRITE, sellItem1X + 7, decorHeight + 12, 9, 2);
+         }
+
+      }
+
+      private void extractTooltip(final GuiGraphicsExtractor graphics) {
+         if (this.isHighlighted()) {
+            if (this.isHovered()) {
+               if (graphics.mouseX() < this.getX() + 20) {
+                  graphics.setTooltipForNextFrame(MerchantScreen.this.font, this.offer.getCostA(), graphics.mouseX(), graphics.mouseY());
+               } else if (graphics.mouseX() < this.getX() + 50 && graphics.mouseX() > this.getX() + 30) {
+                  if (!this.offer.getCostB().isEmpty()) {
+                     graphics.setTooltipForNextFrame(MerchantScreen.this.font, this.offer.getCostB(), graphics.mouseX(), graphics.mouseY());
+                  }
+               } else if (graphics.mouseX() > this.getX() + 65) {
+                  graphics.setTooltipForNextFrame(MerchantScreen.this.font, this.offer.getResult(), graphics.mouseX(), graphics.mouseY());
+               }
+            } else if (this.isFocused()) {
+               graphics.setTooltipForNextFrame(MerchantScreen.this.minecraft.font, List.of(this.createNarrationMessage().getVisualOrderText()), new BelowOrAboveWidgetTooltipPositioner(this.getRectangle()), this.getX(), this.getY(), true);
+            }
+
+         }
       }
    }
 }

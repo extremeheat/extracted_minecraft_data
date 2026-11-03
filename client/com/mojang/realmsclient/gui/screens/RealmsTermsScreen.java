@@ -64,7 +64,7 @@ public class RealmsTermsScreen extends RealmsScreen {
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (this.onLink) {
+      if (event.isLeftMouse() && this.onLink) {
          this.minecraft.keyboardHandler.setClipboard(CommonLinks.REALMS_TERMS.toString());
          Blaze3D.openUri(CommonLinks.REALMS_TERMS);
          return true;

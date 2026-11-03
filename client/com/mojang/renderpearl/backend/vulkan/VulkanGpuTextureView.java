@@ -25,7 +25,7 @@ public class VulkanGpuTextureView extends BaseGpuTextureView implements Destroya
          imageViewCreateInfo.viewType(isCubemap ? 3 : 1);
          imageViewCreateInfo.format(VulkanConst.toVk(texture.getFormat()));
          VkImageSubresourceRange subresourceRange = imageViewCreateInfo.subresourceRange();
-         subresourceRange.aspectMask(texture.getFormat().hasColorAspect() ? 1 : 2);
+         subresourceRange.aspectMask(VulkanConst.formatAspectMask(texture.getFormat()));
          subresourceRange.baseMipLevel(baseMipLevel);
          subresourceRange.levelCount(mipLevels);
          subresourceRange.baseArrayLayer(0);

@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.control;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 
-public class SmoothSwimmingLookControl extends LookControl {
+public class SmoothSwimmingLookControl extends StandardLookControl {
    private final int maxYRotFromCenter;
    private static final int HEAD_TILT_X = 10;
    private static final int HEAD_TILT_Y = 20;

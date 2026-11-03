@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -11,12 +12,16 @@ public class FurnaceResultSlot extends Slot {
    private int removeCount;
 
    public FurnaceResultSlot(final Player player, final Container container, final int slot, final int x, final int y) {
-      super(container, slot, x, y);
+      super(container, slot, x, y, Slot.Section.RESULT);
       this.player = player;
    }
 
    public boolean mayPlace(final ItemStack itemStack) {
       return false;
+   }
+
+   public Component getNarrationName() {
+      return Component.translatable("narration.slot.name.result");
    }
 
    public ItemStack remove(final int amount) {

@@ -8,11 +8,13 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -45,6 +47,7 @@ public class EditBox extends AbstractWidget {
    private boolean centered;
    private boolean textShadow;
    private boolean invertHighlightedTextColor;
+   private boolean canChangeValue;
    private int displayPos;
    private int cursorPos;
    private int highlightPos;
@@ -82,6 +85,7 @@ public class EditBox extends AbstractWidget {
       this.centered = false;
       this.textShadow = true;
       this.invertHighlightedTextColor = true;
+      this.canChangeValue = true;
       this.textColor = -2039584;
       this.textColorUneditable = -9408400;
       this.formatters = new ArrayList();
@@ -292,65 +296,74 @@ public class EditBox extends AbstractWidget {
 
    public boolean keyPressed(final KeyEvent event) {
       if (this.isActive() && this.isFocused()) {
-         switch (event.shortcutKey()) {
-            case 8:
-               if (this.isEditable) {
-                  this.deleteText(-1, event.hasControlDownWithQuirk());
-               }
-
+         if (!this.isInEditMode()) {
+            if (event.isSelection()) {
+               this.setCanChangeValue(true);
                return true;
-            case 127:
-               if (this.isEditable) {
-                  this.deleteText(1, event.hasControlDownWithQuirk());
-               }
-
-               return true;
-            case 1073741898:
-               this.moveCursorToStart(event.hasShiftDown());
-               return true;
-            case 1073741901:
-               this.moveCursorToEnd(event.hasShiftDown());
-               return true;
-            case 1073741903:
-               if (event.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(1), event.hasShiftDown());
-               } else {
-                  this.moveCursor(1, event.hasShiftDown());
-               }
-
-               return true;
-            case 1073741904:
-               if (event.hasControlDownWithQuirk()) {
-                  this.moveCursorTo(this.getWordPosition(-1), event.hasShiftDown());
-               } else {
-                  this.moveCursor(-1, event.hasShiftDown());
-               }
-
-               return true;
-            default:
-               if (event.isSelectAll()) {
-                  this.moveCursorToEnd(false);
-                  this.setHighlightPos(0);
-                  return true;
-               } else if (event.isCopy()) {
-                  Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-                  return true;
-               } else if (event.isPaste()) {
-                  if (this.isEditable()) {
-                     this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
+            } else {
+               return false;
+            }
+         } else {
+            switch (event.shortcutKey()) {
+               case 8:
+                  if (this.isEditable) {
+                     this.deleteText(-1, event.hasControlDownWithQuirk());
                   }
 
                   return true;
-               } else if (event.isCut()) {
-                  Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-                  if (this.isEditable()) {
-                     this.insertText("");
+               case 127:
+                  if (this.isEditable) {
+                     this.deleteText(1, event.hasControlDownWithQuirk());
                   }
 
                   return true;
-               } else {
-                  return false;
-               }
+               case 1073741898:
+                  this.moveCursorToStart(event.hasShiftDown());
+                  return true;
+               case 1073741901:
+                  this.moveCursorToEnd(event.hasShiftDown());
+                  return true;
+               case 1073741903:
+                  if (event.hasControlDownWithQuirk()) {
+                     this.moveCursorTo(this.getWordPosition(1), event.hasShiftDown());
+                  } else {
+                     this.moveCursor(1, event.hasShiftDown());
+                  }
+
+                  return true;
+               case 1073741904:
+                  if (event.hasControlDownWithQuirk()) {
+                     this.moveCursorTo(this.getWordPosition(-1), event.hasShiftDown());
+                  } else {
+                     this.moveCursor(-1, event.hasShiftDown());
+                  }
+
+                  return true;
+               default:
+                  if (event.isSelectAll()) {
+                     this.moveCursorToEnd(false);
+                     this.setHighlightPos(0);
+                     return true;
+                  } else if (event.isCopy()) {
+                     Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
+                     return true;
+                  } else if (event.isPaste()) {
+                     if (this.isEditable()) {
+                        this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
+                     }
+
+                     return true;
+                  } else if (event.isCut()) {
+                     Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
+                     if (this.isEditable()) {
+                        this.insertText("");
+                     }
+
+                     return true;
+                  } else {
+                     return false;
+                  }
+            }
          }
       } else {
          return false;
@@ -362,18 +375,20 @@ public class EditBox extends AbstractWidget {
    }
 
    public boolean capturesInput() {
-      return this.canConsumeInput();
+      return this.canConsumeInput() && this.isInEditMode();
    }
 
    public boolean charTyped(final CharacterEvent event) {
-      if (!this.canConsumeInput()) {
-         return false;
-      } else if (event.isAllowedChatCharacter()) {
-         if (this.isEditable) {
-            this.insertText(event.codepointAsString());
-         }
+      if (this.canConsumeInput() && this.isInEditMode()) {
+         if (event.isAllowedChatCharacter()) {
+            if (this.isEditable) {
+               this.insertText(event.codepointAsString());
+            }
 
-         return true;
+            return true;
+         } else {
+            return false;
+         }
       } else {
          return false;
       }
@@ -408,6 +423,7 @@ public class EditBox extends AbstractWidget {
    }
 
    public void onClick(final MouseButtonEvent event, final boolean doubleClick) {
+      this.setCanChangeValue(true);
       if (doubleClick) {
          this.selectWord(event);
       } else {
@@ -426,7 +442,7 @@ public class EditBox extends AbstractWidget {
    public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible()) {
          if (this.isBordered()) {
-            Identifier sprite = SPRITES.get(this.isActive(), this.isFocused());
+            Identifier sprite = SPRITES.get(this.isActive(), this.isInEditMode() || this.isHighlighted());
             graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          }
 
@@ -434,7 +450,7 @@ public class EditBox extends AbstractWidget {
          int relCursorPos = this.cursorPos - this.displayPos;
          String displayed = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
          boolean cursorOnScreen = relCursorPos >= 0 && relCursorPos <= displayed.length();
-         boolean showCursor = this.isFocused() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime) && cursorOnScreen;
+         boolean showCursor = this.isInEditMode() && TextCursorUtils.isCursorVisible(Util.getMillis() - this.focusedTime) && cursorOnScreen;
          int drawX = this.textX;
          int relHighlightPos = Math.clamp((long)(this.highlightPos - this.displayPos), 0, displayed.length());
          if (!displayed.isEmpty()) {
@@ -457,7 +473,7 @@ public class EditBox extends AbstractWidget {
             graphics.text(this.font, this.applyFormat(displayed.substring(relCursorPos), this.cursorPos), drawX, this.textY, color, this.textShadow);
          }
 
-         if (this.hint != null && displayed.isEmpty() && !this.isFocused()) {
+         if (this.hint != null && displayed.isEmpty() && !this.isInEditMode()) {
             graphics.text(this.font, this.hint, drawX, this.textY, color);
          }
 
@@ -568,13 +584,40 @@ public class EditBox extends AbstractWidget {
          super.setFocused(focused);
          if (focused) {
             this.focusedTime = Util.getMillis();
+         } else {
+            this.canChangeValue = true;
          }
 
-         if (this.isEditable()) {
-            Minecraft.getInstance().onTextInputFocusChange(this, focused);
-         }
-
+         this.updateTextInput();
       }
+   }
+
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
+      ComponentPath path = super.nextFocusPath(navigationEvent);
+      if (path != null && !this.isFocused()) {
+         this.canChangeValue = !(navigationEvent instanceof FocusNavigationEvent.ArrowNavigation);
+      }
+
+      return path;
+   }
+
+   private boolean isInEditMode() {
+      return this.isFocused() && this.canChangeValue;
+   }
+
+   public void setCanChangeValue(final boolean canChangeValue) {
+      if (this.isFocused() && this.canChangeValue != canChangeValue) {
+         this.canChangeValue = canChangeValue;
+         this.updateTextInput();
+      }
+
+   }
+
+   private void updateTextInput() {
+      if (this.isEditable()) {
+         Minecraft.getInstance().onTextInputFocusChange(this, this.isInEditMode());
+      }
+
    }
 
    private boolean isEditable() {
@@ -583,7 +626,7 @@ public class EditBox extends AbstractWidget {
 
    public void setEditable(final boolean isEditable) {
       if (this.isFocused()) {
-         Minecraft.getInstance().onTextInputFocusChange(this, isEditable);
+         Minecraft.getInstance().onTextInputFocusChange(this, isEditable && this.isInEditMode());
       }
 
       this.isEditable = isEditable;

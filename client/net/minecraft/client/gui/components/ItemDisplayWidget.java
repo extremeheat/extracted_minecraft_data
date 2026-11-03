@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -13,7 +14,6 @@ public class ItemDisplayWidget extends AbstractWidget {
    private final int offsetY;
    private final ItemStack itemStack;
    private final boolean decorations;
-   private final boolean tooltip;
 
    public ItemDisplayWidget(final Minecraft minecraft, final int offsetX, final int offsetY, final int width, final int height, final Component message, final ItemStack itemStack, final boolean decorations, final boolean tooltip) {
       super(0, 0, width, height, message);
@@ -22,7 +22,10 @@ public class ItemDisplayWidget extends AbstractWidget {
       this.offsetY = offsetY;
       this.itemStack = itemStack;
       this.decorations = decorations;
-      this.tooltip = tooltip;
+      if (tooltip) {
+         this.setTooltip(Tooltip.createForItem(Screen.getTooltipFromItem(minecraft, itemStack), itemStack));
+      }
+
    }
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
@@ -31,18 +34,6 @@ public class ItemDisplayWidget extends AbstractWidget {
          graphics.itemDecorations(this.minecraft.font, this.itemStack, this.getX() + this.offsetX, this.getY() + this.offsetY, (String)null);
       }
 
-      if (this.isFocused()) {
-         graphics.outline(this.getX(), this.getY(), this.getWidth(), this.getHeight(), -1);
-      }
-
-      if (this.tooltip && this.isHovered()) {
-         this.extractTooltip(graphics, graphics.mouseX(), graphics.mouseY());
-      }
-
-   }
-
-   protected void extractTooltip(final GuiGraphicsExtractor graphics, final int x, final int y) {
-      graphics.setTooltipForNextFrame(this.minecraft.font, this.itemStack, x, y);
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {

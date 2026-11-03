@@ -188,7 +188,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    public void aiStep() {
       super.aiStep();
       if (!this.level().isClientSide() && this.isAlive() && this.tickCount % 10 == 0) {
-         this.heal(1.0F);
+         this.healNaturally(1.0F);
       }
 
       if (this.isDancing() && this.shouldStopDancing() && this.tickCount % 20 == 0) {

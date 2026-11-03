@@ -466,8 +466,16 @@ public class GameTestHelper {
       this.setBlock(blockPos, block.defaultBlockState());
    }
 
+   public void setBlock(final BlockPos blockPos, final Block block, final @Block.UpdateFlags int flags) {
+      this.setBlock(blockPos, block.defaultBlockState(), flags);
+   }
+
    public void setBlock(final BlockPos blockPos, final BlockState state) {
-      this.getLevel().setBlockAndUpdate(this.absolutePos(blockPos), state);
+      this.setBlock(blockPos, (BlockState)state, 3);
+   }
+
+   public void setBlock(final BlockPos blockPos, final BlockState state, final @Block.UpdateFlags int flags) {
+      this.getLevel().setBlock(this.absolutePos(blockPos), state, flags);
    }
 
    public void setBlock(final BlockPos blockPos, final Block block, final Direction direction) {

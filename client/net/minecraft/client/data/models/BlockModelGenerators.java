@@ -898,14 +898,13 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.dispatch(Blocks.COMPARATOR).with(PropertyDispatch.initial(BlockStateProperties.MODE_COMPARATOR, BlockStateProperties.POWERED).select(ComparatorMode.COMPARE, false, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPARATOR))).select(ComparatorMode.COMPARE, true, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPARATOR, "_on"))).select(ComparatorMode.SUBTRACT, false, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPARATOR, "_subtract"))).select(ComparatorMode.SUBTRACT, true, plainVariant(ModelLocationUtils.getModelLocation(Blocks.COMPARATOR, "_on_subtract")))).with(ROTATION_HORIZONTAL_FACING_ALT));
    }
 
-   private void createSmoothStoneSlab() {
-      TextureMapping smoothStoneTextures = TextureMapping.cube(Blocks.SMOOTH_STONE);
-      TextureMapping smoothStoneSlabTextures = TextureMapping.column(TextureMapping.getBlockTexture(Blocks.SMOOTH_STONE_SLAB, "_side"), smoothStoneTextures.get(TextureSlot.TOP));
-      MultiVariant bottom = plainVariant(ModelTemplates.SLAB_BOTTOM.create(Blocks.SMOOTH_STONE_SLAB, smoothStoneSlabTextures, this.modelOutput));
-      MultiVariant top = plainVariant(ModelTemplates.SLAB_TOP.create(Blocks.SMOOTH_STONE_SLAB, smoothStoneSlabTextures, this.modelOutput));
-      MultiVariant doubleSlab = plainVariant(ModelTemplates.CUBE_COLUMN.createWithOverride(Blocks.SMOOTH_STONE_SLAB, "_double", smoothStoneSlabTextures, this.modelOutput));
-      this.blockStateOutput.accept(createSlab(Blocks.SMOOTH_STONE_SLAB, bottom, top, doubleSlab));
-      this.blockStateOutput.accept(createSimpleBlock(Blocks.SMOOTH_STONE, plainVariant(ModelTemplates.CUBE_ALL.create(Blocks.SMOOTH_STONE, smoothStoneTextures, this.modelOutput))));
+   private void createDoubleSlab(final Block block, final Block slab) {
+      TextureMapping blockTextures = TextureMapping.cube(block);
+      TextureMapping slabTextures = TextureMapping.column(TextureMapping.getBlockTexture(slab, "_side"), blockTextures.get(TextureSlot.TOP));
+      MultiVariant bottom = plainVariant(ModelTemplates.SLAB_BOTTOM.create(slab, slabTextures, this.modelOutput));
+      MultiVariant top = plainVariant(ModelTemplates.SLAB_TOP.create(slab, slabTextures, this.modelOutput));
+      MultiVariant doubleSlab = plainVariant(ModelTemplates.CUBE_COLUMN.createWithOverride(slab, "_double", slabTextures, this.modelOutput));
+      this.blockStateOutput.accept(createSlab(slab, bottom, top, doubleSlab));
    }
 
    private void createBrewingStand() {
@@ -1070,13 +1069,12 @@ public class BlockModelGenerators {
       Material sideTexture = TextureMapping.getBlockTexture(block, "_side");
 
       for(SpeleothemThickness speleothemThickness : SpeleothemThickness.values()) {
-         String var10000 = Direction.DOWN.getSerializedName();
-         String thicknessSuffix = "_" + var10000 + "_" + speleothemThickness.getSerializedName();
+         String thicknessSuffix = "_" + speleothemThickness.getSerializedName();
          Material thicknessTexture = TextureMapping.getBlockTexture(block, thicknessSuffix);
          TextureMapping mapping = TextureMapping.cross(thicknessTexture);
          TextureMapping baseMapping = (new TextureMapping()).put(TextureSlot.CROSS, thicknessTexture).put(TextureSlot.TOP, topTexture).put(TextureSlot.SIDE, sideTexture);
          Identifier icicleTemplate = ModelTemplates.ICICLE.createWithSuffix(block, thicknessSuffix, mapping, this.modelOutput);
-         Identifier icicleBaseTemplate = ModelTemplates.ICICLE_BASE.createWithSuffix(block, thicknessSuffix + "_base", baseMapping, this.modelOutput);
+         Identifier icicleBaseTemplate = ModelTemplates.ICICLE_BASE.createWithSuffix(block, "_base" + thicknessSuffix, baseMapping, this.modelOutput);
          generator.select(Direction.DOWN, speleothemThickness, false, plainVariant(icicleTemplate));
          generator.select(Direction.DOWN, speleothemThickness, true, plainVariant(icicleBaseTemplate).with(UV_LOCK));
          generator.select(Direction.UP, speleothemThickness, false, plainVariant(icicleTemplate).with(Z_ROT_180));
@@ -2078,12 +2076,12 @@ public class BlockModelGenerators {
       this.createTrivialCube(Blocks.WET_SPONGE);
       this.createTrivialCube(Blocks.AMETHYST_BLOCK);
       this.createTrivialCube(Blocks.BUDDING_AMETHYST);
-      this.createTrivialCube(Blocks.CALCITE);
       this.createTrivialCube(Blocks.DRIPSTONE_BLOCK);
       this.createTrivialCube(Blocks.RAW_IRON_BLOCK);
       this.createTrivialCube(Blocks.RAW_COPPER_BLOCK);
       this.createTrivialCube(Blocks.RAW_GOLD_BLOCK);
       this.createRotatedMirroredVariantBlock(Blocks.SCULK);
+      this.createTrivialCube(Blocks.CHISELED_SOULSHALE);
       this.createNonTemplateModelBlock(Blocks.HEAVY_CORE);
       this.createPetrifiedOakSlab();
       this.createTrivialCube(Blocks.COPPER_ORE);
@@ -2371,7 +2369,9 @@ public class BlockModelGenerators {
       this.registerSimpleFlatItemModel(Items.NETHER_SPROUTS);
       this.createDoor(Blocks.IRON_DOOR);
       this.createTrapdoor(Blocks.IRON_TRAPDOOR);
-      this.createSmoothStoneSlab();
+      this.createTrivialCube(Blocks.SMOOTH_STONE);
+      this.createDoubleSlab(Blocks.SMOOTH_STONE, Blocks.SMOOTH_STONE_SLAB);
+      this.createDoubleSlab(Blocks.POLISHED_CALCITE, Blocks.POLISHED_CALCITE_SLAB);
       this.createPassiveRail(Blocks.RAIL);
       this.createActiveRail(Blocks.POWERED_RAIL);
       this.createActiveRail(Blocks.DETECTOR_RAIL);

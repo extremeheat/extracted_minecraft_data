@@ -3,6 +3,7 @@ package net.minecraft.world.inventory;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.recipebook.ServerPlaceRecipe;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -47,7 +48,15 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
       this.data = data;
       this.level = inventory.player.level();
       this.acceptedInputs = this.level.recipeAccess().propertySet(allowedInputs);
-      this.addSlot(new Slot(container, 0, 56, 17));
+      this.addSlot(new Slot(container, 0, 56, 17, Slot.Section.INPUT) {
+         {
+            Objects.requireNonNull(AbstractFurnaceMenu.this);
+         }
+
+         public Component getNarrationName() {
+            return Component.translatable("narration.slot.name.ingredient");
+         }
+      });
       this.addSlot(new FurnaceFuelSlot(this, container, 1, 56, 53));
       this.addSlot(new FurnaceResultSlot(inventory.player, container, 2, 116, 35));
       this.addStandardInventorySlots(inventory, 8, 84);

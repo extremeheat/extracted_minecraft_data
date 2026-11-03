@@ -105,7 +105,7 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
          Objects.requireNonNull(map);
          ColorCollection.zipApply(var10000, var10001, map::put);
       });
-      DEFAULT_COLOR_NAMES = ColorCollection.VALUES.<Component>map((dye) -> Component.translatable("item.minecraft.firework_star." + dye.getName()));
+      DEFAULT_COLOR_NAMES = ColorCollection.VALUES.map((dye) -> Component.translatable("item.minecraft.firework_star." + dye.getName()));
       CUSTOM_COLOR_NAME = Component.translatable("item.minecraft.firework_star.custom_color");
    }
 

@@ -31,7 +31,7 @@ public class DispenserMenu extends AbstractContainerMenu {
       for(int y = 0; y < 3; ++y) {
          for(int x = 0; x < 3; ++x) {
             int slot = x + y * 3;
-            this.addSlot(new Slot(container, slot, left + x * 18, top + y * 18));
+            this.addSlot(new Slot(container, slot, left + x * 18, top + y * 18, Slot.Section.CONTAINER));
          }
       }
 

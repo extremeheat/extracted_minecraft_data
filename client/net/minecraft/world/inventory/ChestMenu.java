@@ -61,7 +61,7 @@ public class ChestMenu extends AbstractContainerMenu {
    private void addChestGrid(final Container container, final int left, final int top) {
       for(int y = 0; y < this.containerRows; ++y) {
          for(int x = 0; x < 9; ++x) {
-            this.addSlot(new Slot(container, x + y * 9, left + x * 18, top + y * 18));
+            this.addSlot(new Slot(container, x + y * 9, left + x * 18, top + y * 18, Slot.Section.CONTAINER));
          }
       }
 

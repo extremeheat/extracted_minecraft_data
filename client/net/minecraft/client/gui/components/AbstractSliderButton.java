@@ -34,11 +34,11 @@ public abstract class AbstractSliderButton extends AbstractWidget.WithInactiveMe
    }
 
    private Identifier getSprite() {
-      return this.isActive() && this.isFocused() && !this.canChangeValue ? HIGHLIGHTED_SPRITE : SLIDER_SPRITE;
+      return this.isActive() && this.isFocused() && !this.canChangeValue && Minecraft.getInstance().getLastInputType().isKeyboard() ? HIGHLIGHTED_SPRITE : SLIDER_SPRITE;
    }
 
    private Identifier getHandleSprite() {
-      return !this.isActive() || !this.isHovered && !this.canChangeValue ? SLIDER_HANDLE_SPRITE : SLIDER_HANDLE_HIGHLIGHTED_SPRITE;
+      return !this.isActive() || !this.isHovered && (!this.canChangeValue || !Minecraft.getInstance().getLastInputType().isKeyboard()) ? SLIDER_HANDLE_SPRITE : SLIDER_HANDLE_HIGHLIGHTED_SPRITE;
    }
 
    protected MutableComponent createNarrationMessage() {

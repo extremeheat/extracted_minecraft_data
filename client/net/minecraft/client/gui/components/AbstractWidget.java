@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.time.Duration;
 import java.util.function.Consumer;
+import net.minecraft.client.InputType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.ComponentPath;
@@ -54,7 +55,12 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
 
    public final void extractRenderState(final GuiGraphicsExtractor graphics) {
       if (this.isVisible()) {
-         this.isHovered = graphics.containsPointInScissor(graphics.mouseX(), graphics.mouseY()) && this.areCoordinatesInRectangle((double)graphics.mouseX(), (double)graphics.mouseY());
+         boolean previouslyHovered = this.isHovered;
+         this.isHovered = graphics.containsPointInScissor(graphics.mouseX(), graphics.mouseY()) && Minecraft.getInstance().getLastInputType().isMouse() && this.areCoordinatesInRectangle((double)graphics.mouseX(), (double)graphics.mouseY());
+         if (previouslyHovered && !this.isHovered) {
+            this.onStopHovering();
+         }
+
          this.extractWidgetRenderState(graphics);
          this.extractTooltipForNextRenderPass(graphics);
       }
@@ -106,6 +112,9 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
    protected void onDrag(final MouseButtonEvent event, final double dx, final double dy) {
    }
 
+   protected void onStopHovering() {
+   }
+
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
       if (!this.isActive()) {
          return false;
@@ -154,7 +163,7 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
    }
 
    public boolean isMouseOver(final double mouseX, final double mouseY) {
-      return this.isActive() && this.areCoordinatesInRectangle(mouseX, mouseY);
+      return this.isActive() && this.areCoordinatesInRectangle(mouseX, mouseY) && Minecraft.getInstance().getLastInputType().isMouse();
    }
 
    public void playDownSound(final SoundManager soundManager) {
@@ -201,8 +210,13 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return this.isHovered;
    }
 
-   public boolean isHoveredOrFocused() {
-      return this.isHovered() || this.isFocused();
+   public boolean isHighlighted() {
+      InputType lastInputType = Minecraft.getInstance().getLastInputType();
+      if (lastInputType.isMouse()) {
+         return this.isHovered();
+      } else {
+         return lastInputType.isKeyboard() ? this.isFocused() : false;
+      }
    }
 
    public boolean isActive() {
@@ -222,19 +236,19 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
    }
 
    public NarratableEntry.NarrationPriority narrationPriority() {
-      if (this.isFocused()) {
-         return NarratableEntry.NarrationPriority.FOCUSED;
-      } else {
-         return this.isHovered ? NarratableEntry.NarrationPriority.HOVERED : NarratableEntry.NarrationPriority.NONE;
-      }
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.isHovered());
    }
 
    public final void updateNarration(final NarrationElementOutput output) {
       this.updateWidgetNarration(output);
-      this.tooltip.updateNarration(output);
+      this.updateTooltipNarration(output);
    }
 
    protected abstract void updateWidgetNarration(final NarrationElementOutput output);
+
+   protected void updateTooltipNarration(final NarrationElementOutput output) {
+      this.tooltip.updateNarration(output);
+   }
 
    protected void defaultButtonNarrationText(final NarrationElementOutput output) {
       output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
@@ -285,7 +299,7 @@ public abstract class AbstractWidget implements LayoutElement, Renderable, GuiEv
       return LayoutElement.super.getRectangle();
    }
 
-   private boolean areCoordinatesInRectangle(final double x, final double y) {
+   protected boolean areCoordinatesInRectangle(final double x, final double y) {
       return x >= (double)this.getX() && y >= (double)this.getY() && x < (double)this.getRight() && y < (double)this.getBottom();
    }
 

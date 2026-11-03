@@ -477,6 +477,18 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.MUD_BRICK_STAIRS);
       this.dropSelf(Blocks.AMETHYST_BLOCK);
       this.dropSelf(Blocks.CALCITE);
+      this.dropSelf(Blocks.CALCITE_PILLAR);
+      this.add(Blocks.CALCITE_SLAB, (x$0) -> this.createSlabItemTable(x$0));
+      this.dropSelf(Blocks.CALCITE_STAIRS);
+      this.dropSelf(Blocks.CALCITE_WALL);
+      this.dropSelf(Blocks.POLISHED_CALCITE);
+      this.add(Blocks.POLISHED_CALCITE_SLAB, (x$0) -> this.createSlabItemTable(x$0));
+      this.dropSelf(Blocks.POLISHED_CALCITE_STAIRS);
+      this.dropSelf(Blocks.POLISHED_CALCITE_WALL);
+      this.dropSelf(Blocks.POLISHED_CALCITE_BRICKS);
+      this.add(Blocks.POLISHED_CALCITE_BRICK_SLAB, (x$0) -> this.createSlabItemTable(x$0));
+      this.dropSelf(Blocks.POLISHED_CALCITE_BRICK_STAIRS);
+      this.dropSelf(Blocks.POLISHED_CALCITE_BRICK_WALL);
       this.dropSelf(Blocks.TUFF);
       this.dropSelf(Blocks.TINTED_GLASS);
       this.dropWhenSilkTouch(Blocks.SCULK_SENSOR);
@@ -485,6 +497,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropWhenSilkTouch(Blocks.SCULK_CATALYST);
       this.add(Blocks.SCULK_VEIN, (block) -> this.createMultifaceBlockDrops(block, this.hasSilkTouch()));
       this.dropWhenSilkTouch(Blocks.SCULK_SHRIEKER);
+      this.dropSelf(Blocks.CHISELED_SOULSHALE);
       this.dropWhenSilkTouch(Blocks.CHISELED_BOOKSHELF);
       Blocks.COPPER_BLOCK.forEach((x$0) -> this.dropSelf(x$0));
       Blocks.CUT_COPPER.forEach((x$0) -> this.dropSelf(x$0));

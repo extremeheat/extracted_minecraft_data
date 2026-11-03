@@ -27,7 +27,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.clock.WorldClock;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -72,10 +71,6 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
       } else {
          return result;
       }
-   }
-
-   public static Holder.Reference<MobEffect> getMobEffect(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return getResource(context, name, Registries.MOB_EFFECT);
    }
 
    public static Holder.Reference<Enchantment> getEnchantment(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {

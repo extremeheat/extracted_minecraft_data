@@ -5,6 +5,7 @@ import com.mojang.renderpearl.api.pipeline.ColorTargetState;
 import com.mojang.renderpearl.api.pipeline.CompiledRenderPipeline;
 import com.mojang.renderpearl.api.pipeline.DepthStencilState;
 import com.mojang.renderpearl.api.pipeline.SpvModule;
+import com.mojang.renderpearl.api.pipeline.StencilTest;
 import com.mojang.renderpearl.api.pipeline.UniformType;
 import com.mojang.renderpearl.backend.api.BackendRenderPipeline;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -35,6 +36,7 @@ import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo;
 import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo;
 import org.lwjgl.vulkan.VkPushConstantRange;
 import org.lwjgl.vulkan.VkShaderModuleCreateInfo;
+import org.lwjgl.vulkan.VkStencilOpState;
 import org.lwjgl.vulkan.VkVertexInputAttributeDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDescription;
 import org.lwjgl.vulkan.VkVertexInputBindingDivisorDescriptionEXT;
@@ -177,14 +179,14 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
             try {
                VkShaderModuleCreateInfo info = VkShaderModuleCreateInfo.calloc(stack).sType$Default().pCode(shader.spv());
                LongBuffer pointer = stack.callocLong(1);
-               int var68 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
+               int var69 = VK12.vkCreateShaderModule(device.vkDevice(), info, (VkAllocationCallbacks)null, pointer);
                String var10002 = shader.name();
-               VulkanUtils.crashIfFailure(device, var68, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
+               VulkanUtils.crashIfFailure(device, var69, "Can't compile " + var10002 + " (" + String.valueOf(shader.type()) + ") for pipeline " + pipelineCreateInfo.name());
                VulkanDebug var10000 = device.instance().debug();
-               VkDevice var69 = device.vkDevice();
+               VkDevice var70 = device.vkDevice();
                long var10003 = pointer.get(0);
                Objects.requireNonNull(pipelineCreateInfo);
-               var10000.setObjectName(var69, 15, var10003, (Supplier)(pipelineCreateInfo::name));
+               var10000.setObjectName(var70, 15, var10003, (Supplier)(pipelineCreateInfo::name));
                module = pointer.get(0);
                compiledShaderModules.add(module);
             } catch (Throwable var34) {
@@ -249,6 +251,12 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
             vkDepthStencilState.depthTestEnable(true);
             vkDepthStencilState.depthWriteEnable(depthStencilState.writeDepth());
             vkDepthStencilState.depthCompareOp(VulkanConst.toVk(depthStencilState.depthTest()));
+            StencilTest stencilTest = depthStencilState.stencilTest();
+            if (stencilTest != null) {
+               vkDepthStencilState.stencilTestEnable(true);
+               setupStencilState(stencilTest.front(), vkDepthStencilState.front());
+               setupStencilState(stencilTest.back(), vkDepthStencilState.back());
+            }
          }
 
          VkPipelineColorBlendAttachmentState.Buffer blendAttachments = VkPipelineColorBlendAttachmentState.calloc(pipelineCreateInfo.subpass().colorAttachments().size(), stack);
@@ -314,6 +322,15 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
          }
 
       }
+   }
+
+   private static void setupStencilState(final StencilTest.PerFace face, final VkStencilOpState vkState) {
+      vkState.failOp(VulkanConst.toVk(face.fail()));
+      vkState.passOp(VulkanConst.toVk(face.pass()));
+      vkState.depthFailOp(VulkanConst.toVk(face.depthFail()));
+      vkState.compareMask(face.compareMask());
+      vkState.writeMask(face.writeMask());
+      vkState.reference(face.reference());
    }
 
    private static void applyBlendInformation(final VkPipelineColorBlendAttachmentState.Buffer blendAttachments, final BlendFunction blendFunction) {

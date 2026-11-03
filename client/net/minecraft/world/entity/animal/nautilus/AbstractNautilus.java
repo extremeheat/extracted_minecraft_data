@@ -376,7 +376,7 @@ public abstract class AbstractNautilus extends TamableAnimal implements PlayerRi
                return InteractionResult.SUCCESS_SERVER;
             }
 
-            if (this.isFood(itemStack) && this.getHealth() < this.getMaxHealth()) {
+            if (this.isFood(itemStack) && this.canHealNaturally()) {
                this.feed(player, hand, itemStack, 2.0F, 1.0F);
                return InteractionResult.SUCCESS;
             }

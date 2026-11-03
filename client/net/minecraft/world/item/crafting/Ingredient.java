@@ -85,8 +85,17 @@ public final class Ingredient implements Predicate<ItemStack>, StackedContents.I
       return of(Arrays.stream(items));
    }
 
-   public static Ingredient of(final Stream<? extends ItemLike> stream) {
-      return new Ingredient(HolderSet.direct(stream.map((e) -> e.asItem().builtInRegistryHolder()).toList()));
+   public static Ingredient of(final Holder<Item> item) {
+      return new Ingredient(HolderSet.direct(item));
+   }
+
+   @SafeVarargs
+   public static Ingredient of(final Holder<Item>... items) {
+      return new Ingredient(HolderSet.direct(items));
+   }
+
+   public static Ingredient of(final Stream<? extends ItemLike> items) {
+      return new Ingredient(HolderSet.direct(items.map((e) -> e.asItem().builtInRegistryHolder()).toList()));
    }
 
    public static Ingredient of(final HolderSet<Item> tag) {

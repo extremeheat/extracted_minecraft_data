@@ -18,7 +18,7 @@ public record ScaledWidgetSprites(WidgetSprites sprites, int width, int height) 
    }
 
    public void extractSprite(final AbstractWidget widget, final GuiGraphicsExtractor graphics, final int x, final int y) {
-      Identifier texture = this.sprites.get(widget.isActive(), widget.isHoveredOrFocused());
+      Identifier texture = this.sprites.get(widget.isActive(), widget.isHighlighted());
       graphics.blitSprite(GuiPipeline.TEXTURED, texture, x, y, this.width, this.height, widget.alpha);
    }
 

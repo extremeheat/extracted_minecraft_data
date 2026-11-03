@@ -69,7 +69,7 @@ public class SDLEventHandler {
                   this.handleDropBeginEvent();
                   break;
                case 4099:
-                  this.handleDropCompleteEvent(event);
+                  this.handleDropCompleteEvent();
                   break;
                default:
                   this.window.handleEvent(event);
@@ -117,7 +117,7 @@ public class SDLEventHandler {
       SDL_KeyboardEvent keyEvent = event.key();
       Integer action = getKeyAction(keyEvent);
       if (action != null) {
-         KeyEvent key = new KeyEvent(keyEvent.scancode(), keyEvent.key(), keyEvent.mod());
+         KeyEvent key = new KeyEvent(keyEvent.scancode(), keyEvent.key(), keyEvent.mod(), keyEvent.repeat());
          this.minecraft.execute(() -> this.minecraft.keyboardHandler.keyPress(getWindowHandle(event), action, key));
       }
    }
@@ -179,11 +179,10 @@ public class SDLEventHandler {
       this.minecraft.execute(() -> this.minecraft.mouseHandler.onScroll(handle, (double)wheel.x(), (double)wheel.y()));
    }
 
-   private void handleDropCompleteEvent(final SDL_Event event) {
+   private void handleDropCompleteEvent() {
       if (!this.dropFiles.isEmpty()) {
-         long handle = getWindowHandle(event);
          List<String> files = List.copyOf(this.dropFiles);
-         this.minecraft.execute(() -> this.minecraft.mouseHandler.onDrop(handle, files));
+         this.minecraft.execute(() -> this.minecraft.mouseHandler.onDrop(files));
       }
 
       this.dropFiles.clear();

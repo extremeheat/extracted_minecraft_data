@@ -12,7 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.apache.commons.lang3.function.TriFunction;
 
-public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T yellow, T lime, T pink, T gray, T lightGray, T cyan, T purple, T blue, T brown, T green, T red, T black) {
+public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T yellow, T lime, T pink, T gray, T lightGray, T cyan, T purple, T blue, T brown, T green, T red, T black) implements Group<T> {
    public static final ColorCollection<DyeColor> VALUES;
    public static final ColorCollection<String> NAMES;
 
@@ -120,6 +120,6 @@ public record ColorCollection<T>(T white, T orange, T magenta, T lightBlue, T ye
 
    static {
       VALUES = new ColorCollection<DyeColor>(DyeColor.WHITE, DyeColor.ORANGE, DyeColor.MAGENTA, DyeColor.LIGHT_BLUE, DyeColor.YELLOW, DyeColor.LIME, DyeColor.PINK, DyeColor.GRAY, DyeColor.LIGHT_GRAY, DyeColor.CYAN, DyeColor.PURPLE, DyeColor.BLUE, DyeColor.BROWN, DyeColor.GREEN, DyeColor.RED, DyeColor.BLACK);
-      NAMES = VALUES.<String>map(DyeColor::getName);
+      NAMES = VALUES.map(DyeColor::getName);
    }
 }

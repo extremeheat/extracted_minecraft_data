@@ -22,6 +22,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.Updatable;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenAxis;
@@ -137,7 +138,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       this.searchBox.setHint(SEARCH_HINT);
       this.magnifierIconPlacement = ScreenRectangle.of(ScreenAxis.HORIZONTAL, xo + 8, this.searchBox.getY(), this.searchBox.getX() - this.getXOrigin(), this.searchBox.getHeight());
       this.recipeBookPage.init(this.minecraft, xo, yo);
-      this.filterButton = ((CycleButton.Builder)CycleButton.booleanBuilder(this.getRecipeFilterName(), ALL_RECIPES_TOOLTIP, isFiltering).withTooltip((filtering) -> filtering ? Tooltip.create(this.getRecipeFilterName()) : Tooltip.create(ALL_RECIPES_TOOLTIP))).withSprite((cycleButton, filtering) -> this.getFilterButtonTextures().get(filtering, cycleButton.isHoveredOrFocused())).displayState(CycleButton.DisplayState.HIDE).create(xo + 110, yo + 12, 26, 16, CommonComponents.EMPTY, (button, value) -> {
+      this.filterButton = ((CycleButton.Builder)CycleButton.booleanBuilder(this.getRecipeFilterName(), ALL_RECIPES_TOOLTIP, isFiltering).withTooltip((filtering) -> filtering ? Tooltip.create(this.getRecipeFilterName()) : Tooltip.create(ALL_RECIPES_TOOLTIP))).withSprite((cycleButton, filtering) -> this.getFilterButtonTextures().get(filtering, cycleButton.isHighlighted())).displayState(CycleButton.DisplayState.HIDE).create(xo + 110, yo + 12, 26, 16, CommonComponents.EMPTY, (button, value) -> {
          this.toggleFiltering();
          this.sendUpdateSettings();
          this.updateCollections(false, value);
@@ -183,6 +184,10 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       return leftPos;
    }
 
+   public boolean isActive() {
+      return this.isVisible();
+   }
+
    public void toggleVisibility() {
       this.setVisible(!this.isVisible());
    }
@@ -211,8 +216,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
 
    protected abstract boolean isCraftingSlot(Slot slot);
 
-   public void slotClicked(final @Nullable Slot slot) {
-      if (slot != null && this.isCraftingSlot(slot)) {
+   public void slotClicked(final @Nullable SlotWidget slotWidget) {
+      if (slotWidget != null && this.isCraftingSlot(slotWidget.slot())) {
          this.lastPlacedRecipe = null;
          this.ghostSlots.clear();
          if (this.isVisible()) {
@@ -333,8 +338,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
 
    protected abstract Component getRecipeFilterName();
 
-   public void extractGhostRecipe(final GuiGraphicsExtractor graphics, final boolean isResultSlotBig) {
-      this.ghostSlots.extractRenderState(graphics, this.minecraft, isResultSlotBig);
+   public void extractGhostRecipe(final GuiGraphicsExtractor graphics, final int xOffset, final int yOffset, final boolean isResultSlotBig) {
+      this.ghostSlots.extractRenderState(graphics, xOffset, yOffset, this.minecraft, isResultSlotBig);
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -427,7 +432,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements G
       } else {
          boolean clickedOutside = mx < (double)leftPos || my < (double)topPos || mx >= (double)(leftPos + imageWidth) || my >= (double)(topPos + imageHeight);
          boolean clickedOnRecipeBook = (double)(leftPos - 147) < mx && mx < (double)leftPos && (double)topPos < my && my < (double)(topPos + imageHeight);
-         return clickedOutside && !clickedOnRecipeBook && !this.selectedTab.isHoveredOrFocused();
+         return clickedOutside && !clickedOnRecipeBook && (this.selectedTab == null || !this.selectedTab.isHighlighted());
       }
    }
 

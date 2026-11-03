@@ -42,6 +42,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private static final int BAR_BORDER = 1;
    private static final String[] DOTS = new String[]{"", ".", ". .", ". . ."};
    private static final Component VERIFYING_TEXT = Component.translatable("mco.upload.verifying");
+   private static final Component PROCESSING_TEXT = Component.translatable("mco.upload.processing");
    private final RealmsResetWorldScreen lastScreen;
    private final LevelSummary selectedLevel;
    private final @Nullable RealmCreationTask realmCreationTask;
@@ -56,6 +57,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    private volatile boolean cancelled;
    private volatile boolean uploadFinished;
    private volatile boolean showDots = true;
+   private volatile boolean showUploadProgress = true;
    private volatile boolean uploadStarted;
    private @Nullable Button backButton;
    private @Nullable Button cancelButton;
@@ -140,7 +142,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
       super.extractRenderState(graphics);
-      if (!this.uploadFinished && this.uploadStatus.uploadStarted() && this.uploadStatus.uploadCompleted() && this.cancelButton != null) {
+      if (this.showUploadProgress && !this.uploadFinished && this.uploadStatus.uploadStarted() && this.uploadStatus.uploadCompleted() && this.cancelButton != null) {
          this.status = VERIFYING_TEXT;
          this.cancelButton.active = false;
       }
@@ -150,7 +152,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
          graphics.text(this.font, (String)DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width((FormattedText)this.status) / 2 + 5, 50, -1);
       }
 
-      if (this.uploadStatus.uploadStarted() && !this.cancelled) {
+      if (this.showUploadProgress && this.uploadStatus.uploadStarted() && !this.cancelled) {
          this.extractProgressBar(graphics);
          this.extractUploadSpeed(graphics);
       }
@@ -271,6 +273,31 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    }
 
    public void setUploading() {
-      this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
+      this.minecraft.execute(() -> {
+         this.showUploadProgress = true;
+         this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
+      });
+   }
+
+   public void setCommitting() {
+      this.setPostUploadStatus(VERIFYING_TEXT);
+   }
+
+   public void setProcessing() {
+      this.setPostUploadStatus(PROCESSING_TEXT);
+   }
+
+   private void setPostUploadStatus(final Component status) {
+      this.minecraft.execute(() -> {
+         if (!this.uploadFinished) {
+            this.showUploadProgress = false;
+            this.progress = null;
+            this.status = status;
+            if (this.cancelButton != null && !this.cancelled) {
+               this.cancelButton.active = true;
+            }
+         }
+
+      });
    }
 }

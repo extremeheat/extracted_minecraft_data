@@ -23,14 +23,14 @@ public final class SoundPreviewHandler {
       if (canPlaySound(soundManager)) {
          SimpleSoundInstance var10000;
          switch (category) {
-            case RECORDS -> var10000 = SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_GUITAR, 1.0F, volume);
-            case WEATHER -> var10000 = SimpleSoundInstance.forUI(SoundEvents.LIGHTNING_BOLT_THUNDER, 1.0F, volume);
-            case BLOCKS -> var10000 = SimpleSoundInstance.forUI((Holder)((Optional)SoundEvents.GRASS.placeSound()).orElseThrow(), 1.0F, volume);
-            case HOSTILE -> var10000 = SimpleSoundInstance.forUI(SoundEvents.ZOMBIE_AMBIENT, 1.0F, volume);
-            case NEUTRAL -> var10000 = SimpleSoundInstance.forUI((Holder)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().orElseThrow(), 1.0F, volume);
-            case PLAYERS -> var10000 = SimpleSoundInstance.forUI(SoundEvents.GENERIC_EAT, 1.0F, volume);
-            case AMBIENT -> var10000 = SimpleSoundInstance.forUI(SoundEvents.AMBIENT_CAVE, 1.0F, volume);
-            case UI -> var10000 = SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F, volume);
+            case RECORDS -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.NOTE_BLOCK_GUITAR, category, volume);
+            case WEATHER -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.LIGHTNING_BOLT_THUNDER, category, volume);
+            case BLOCKS -> var10000 = SimpleSoundInstance.forPreview((Holder)((Optional)SoundEvents.GRASS.placeSound()).orElseThrow(), category, volume);
+            case HOSTILE -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.ZOMBIE_AMBIENT, category, volume);
+            case NEUTRAL -> var10000 = SimpleSoundInstance.forPreview((Holder)((CowSoundVariant)SoundEvents.COW_SOUNDS.get(CowSoundVariants.SoundSet.CLASSIC)).ambientSound().orElseThrow(), category, volume);
+            case PLAYERS -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.GENERIC_EAT, category, volume);
+            case AMBIENT -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.AMBIENT_CAVE, category, volume);
+            case UI -> var10000 = SimpleSoundInstance.forPreview(SoundEvents.UI_BUTTON_CLICK, category, volume);
             default -> var10000 = null;
          }
 

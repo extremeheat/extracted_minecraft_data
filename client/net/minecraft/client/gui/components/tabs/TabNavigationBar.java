@@ -4,21 +4,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -34,6 +32,7 @@ public class TabNavigationBar extends AbstractContainerWidget {
    private static final int NO_TAB = -1;
    private static final Component USAGE_NARRATION = Component.translatable("narration.tab_navigation.usage");
    private static final Component USAGE_NARRATION_MAC = Component.translatable("narration.tab_navigation.mac.usage");
+   private static final GroupNarration GROUP_NARRATION = GroupNarration.list("narrator.position.tab");
    protected final FrameLayout layout;
    private final TabManager tabManager;
    protected final ImmutableList<Tab> tabs;
@@ -119,29 +118,33 @@ public class TabNavigationBar extends AbstractContainerWidget {
    }
 
    public NarratableEntry.NarrationPriority narrationPriority() {
-      return (NarratableEntry.NarrationPriority)this.tabButtons.stream().map(AbstractWidget::narrationPriority).max(Comparator.naturalOrder()).orElse(NarratableEntry.NarrationPriority.NONE);
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredTabButton() != null);
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {
-      Optional<TabButton> selected = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> Optional.ofNullable(this.currentTabButton()));
-      selected.ifPresent((button) -> {
-         this.narrateListElementPosition(output.nest(), button);
-         button.updateNarration(output);
-      });
+      TabButton narrated = (TabButton)getNarratedChild(output.narrationTrigger(), this.getHoveredTabButton(), this.currentTabButton());
+      if (narrated != null) {
+         GROUP_NARRATION.narratePosition(output.nest(), this.tabButtons, narrated);
+         narrated.updateNarration(output);
+      }
+
       if (this.isFocused()) {
          output.add(NarratedElementType.USAGE, InputQuirks.REPLACE_CTRL_KEY_WITH_CMD_KEY ? USAGE_NARRATION_MAC : USAGE_NARRATION);
       }
 
    }
 
-   protected void narrateListElementPosition(final NarrationElementOutput output, final TabButton widget) {
-      if (this.tabs.size() > 1) {
-         int index = this.tabButtons.indexOf(widget);
-         if (index != -1) {
-            output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.tab", index + 1, this.tabs.size()));
+   private @Nullable TabButton getHoveredTabButton() {
+      UnmodifiableIterator var1 = this.tabButtons.iterator();
+
+      while(var1.hasNext()) {
+         TabButton button = (TabButton)var1.next();
+         if (button.isHovered()) {
+            return button;
          }
       }
 
+      return null;
    }
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {

@@ -64,6 +64,8 @@ public interface CommandEncoder {
 
    void clearDepthTexture(GpuTexture depthTexture, double clearDepth);
 
+   void clearStencilTexture(GpuTexture depthTexture, byte clearStencil);
+
    void writeToBuffer(GpuBufferSlice destination, ByteBuffer data);
 
    void copyToBuffer(GpuBufferSlice source, GpuBufferSlice target);

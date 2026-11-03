@@ -146,7 +146,7 @@ public abstract class AgeableMob extends PathfinderMob {
 
    }
 
-   protected void setAgeLocked(final boolean locked) {
+   public void setAgeLocked(final boolean locked) {
       this.entityData.set(AGE_LOCKED, locked);
    }
 

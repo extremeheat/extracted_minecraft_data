@@ -44,6 +44,8 @@ public interface RenderPass extends UncheckedAutoCloseable {
 
    void pushConstants(ByteBuffer value);
 
+   void setViewport(int x, int y, int width, int height);
+
    void enableScissor(int x, int y, int width, int height);
 
    void disableScissor();

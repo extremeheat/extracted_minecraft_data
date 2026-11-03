@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -130,7 +131,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       private final RecipeAccess recipeAccess;
 
       public PotionSlot(final RecipeAccess recipeAccess, final Container container, final int slot, final int x, final int y) {
-         super(container, slot, x, y);
+         super(container, slot, x, y, Slot.Section.RESULT);
          this.recipeAccess = recipeAccess;
       }
 
@@ -154,24 +155,32 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       public Identifier getNoItemIcon() {
          return BrewingStandMenu.EMPTY_SLOT_POTION;
       }
+
+      public Component getNarrationName() {
+         return Component.translatable("narration.slot.name.potion");
+      }
    }
 
    private static class IngredientsSlot extends Slot {
       private final RecipePropertySet propertySet;
 
       public IngredientsSlot(final RecipePropertySet propertySet, final Container container, final int slot, final int x, final int y) {
-         super(container, slot, x, y);
+         super(container, slot, x, y, Slot.Section.INPUT);
          this.propertySet = propertySet;
       }
 
       public boolean mayPlace(final ItemStack itemStack) {
          return this.propertySet.test(itemStack);
       }
+
+      public Component getNarrationName() {
+         return Component.translatable("narration.slot.name.ingredient");
+      }
    }
 
    private static class FuelSlot extends Slot {
       public FuelSlot(final Container container, final int slot, final int x, final int y) {
-         super(container, slot, x, y);
+         super(container, slot, x, y, Slot.Section.FUEL);
       }
 
       public boolean mayPlace(final ItemStack itemStack) {
@@ -184,6 +193,10 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
       public Identifier getNoItemIcon() {
          return BrewingStandMenu.EMPTY_SLOT_FUEL;
+      }
+
+      public Component getNarrationName() {
+         return Component.translatable("narration.slot.name.fuel");
       }
    }
 }

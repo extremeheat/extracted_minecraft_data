@@ -27,8 +27,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.control.JumpControl;
-import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.control.StandardLookControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -490,7 +490,7 @@ public class Creaking extends Monster {
       BRAIN_PROVIDER = Brain.<Creaking>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS), CreakingAi::getActivities);
    }
 
-   private class CreakingLookControl extends LookControl {
+   private class CreakingLookControl extends StandardLookControl {
       public CreakingLookControl(final Creaking creaking) {
          Objects.requireNonNull(Creaking.this);
          super(creaking);

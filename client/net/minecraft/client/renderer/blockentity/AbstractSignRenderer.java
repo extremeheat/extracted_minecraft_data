@@ -104,6 +104,6 @@ public abstract class AbstractSignRenderer<S extends SignRenderState> implements
    }
 
    static {
-      DARK_TEXT_COLORS = BRIGHT_TEXT_COLORS.<Integer>map((c) -> ARGB.scaleRGB(c, 0.4F));
+      DARK_TEXT_COLORS = BRIGHT_TEXT_COLORS.map((c) -> ARGB.scaleRGB(c, 0.4F));
    }
 }

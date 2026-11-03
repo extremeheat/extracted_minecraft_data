@@ -17,10 +17,7 @@ import net.minecraft.util.ARGB;
 import org.jspecify.annotations.Nullable;
 
 public class Checkbox extends AbstractButton {
-   private static final Identifier CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_selected_highlighted");
-   private static final Identifier CHECKBOX_SELECTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_selected");
-   private static final Identifier CHECKBOX_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("widget/checkbox_highlighted");
-   private static final Identifier CHECKBOX_SPRITE = Identifier.withDefaultNamespace("widget/checkbox");
+   private static final WidgetSprites SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("widget/checkbox_selected"), Identifier.withDefaultNamespace("widget/checkbox"), Identifier.withDefaultNamespace("widget/checkbox_selected_highlighted"), Identifier.withDefaultNamespace("widget/checkbox_highlighted"));
    private static final int SPACING = 4;
    private static final int ROWS = 2;
    private static final int BOX_PADDING = 8;
@@ -93,15 +90,8 @@ public class Checkbox extends AbstractButton {
    public void extractContents(final GuiGraphicsExtractor graphics) {
       Minecraft minecraft = Minecraft.getInstance();
       Font font = minecraft.font;
-      Identifier sprite;
-      if (this.selected) {
-         sprite = this.isFocused() ? CHECKBOX_SELECTED_HIGHLIGHTED_SPRITE : CHECKBOX_SELECTED_SPRITE;
-      } else {
-         sprite = this.isFocused() ? CHECKBOX_HIGHLIGHTED_SPRITE : CHECKBOX_SPRITE;
-      }
-
       int boxSize = getBoxSize(font);
-      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), boxSize, boxSize, ARGB.white(this.alpha));
+      graphics.blitSprite(GuiPipeline.TEXTURED, SPRITES.get(this.selected, this.isHighlighted()), this.getX(), this.getY(), boxSize, boxSize, ARGB.white(this.alpha));
       int textX = this.getX() + boxSize + 4;
       int textY = this.getY() + boxSize / 2 - this.textWidget.getHeight() / 2;
       this.textWidget.setPosition(textX, textY);

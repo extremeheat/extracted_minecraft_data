@@ -84,6 +84,9 @@ public class BlockFamilies {
    public static final BlockFamily PACKED_ICE_BRICKS;
    public static final BlockFamily SNOW_BLOCK;
    public static final BlockFamily SNOW_BRICKS;
+   public static final BlockFamily CALCITE;
+   public static final BlockFamily POLISHED_CALCITE;
+   public static final BlockFamily POLISHED_CALCITE_BRICKS;
 
    public BlockFamilies() {
       super();
@@ -171,11 +174,14 @@ public class BlockFamilies {
       POLISHED_DEEPSLATE = familyBuilder(Blocks.POLISHED_DEEPSLATE).slab(Blocks.POLISHED_DEEPSLATE_SLAB).stairs(Blocks.POLISHED_DEEPSLATE_STAIRS).wall(Blocks.POLISHED_DEEPSLATE_WALL).bricks(Blocks.DEEPSLATE_BRICKS).generateStonecutterRecipe().getFamily();
       DEEPSLATE_BRICKS = familyBuilder(Blocks.DEEPSLATE_BRICKS).slab(Blocks.DEEPSLATE_BRICK_SLAB).stairs(Blocks.DEEPSLATE_BRICK_STAIRS).wall(Blocks.DEEPSLATE_BRICK_WALL).cracked(Blocks.CRACKED_DEEPSLATE_BRICKS).tiles(Blocks.DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
       DEEPSLATE_TILES = familyBuilder(Blocks.DEEPSLATE_TILES).slab(Blocks.DEEPSLATE_TILE_SLAB).stairs(Blocks.DEEPSLATE_TILE_STAIRS).wall(Blocks.DEEPSLATE_TILE_WALL).cracked(Blocks.CRACKED_DEEPSLATE_TILES).generateStonecutterRecipe().getFamily();
-      WOOL = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.WOOL.pick(color)).carpet(Blocks.CARPET.pick(color)).stairs(Blocks.WOOL_STAIRS.pick(color)).slab(Blocks.WOOL_SLAB.pick(color)).recipeGroupPrefix("woolen").getFamily());
-      CONCRETE = ColorCollection.VALUES.<BlockFamily>map((color) -> familyBuilder(Blocks.CONCRETE.pick(color)).stairs(Blocks.CONCRETE_STAIRS.pick(color)).slab(Blocks.CONCRETE_SLAB.pick(color)).recipeGroupPrefix("concrete").generateStonecutterRecipe().getFamily());
+      WOOL = ColorCollection.VALUES.map((color) -> familyBuilder(Blocks.WOOL.pick(color)).carpet(Blocks.CARPET.pick(color)).stairs(Blocks.WOOL_STAIRS.pick(color)).slab(Blocks.WOOL_SLAB.pick(color)).recipeGroupPrefix("woolen").getFamily());
+      CONCRETE = ColorCollection.VALUES.map((color) -> familyBuilder(Blocks.CONCRETE.pick(color)).stairs(Blocks.CONCRETE_STAIRS.pick(color)).slab(Blocks.CONCRETE_SLAB.pick(color)).recipeGroupPrefix("concrete").generateStonecutterRecipe().getFamily());
       PACKED_ICE = familyBuilder(Blocks.PACKED_ICE).bricks(Blocks.PACKED_ICE_BRICKS).generateStonecutterRecipe().getFamily();
       PACKED_ICE_BRICKS = familyBuilder(Blocks.PACKED_ICE_BRICKS).slab(Blocks.PACKED_ICE_BRICK_SLAB).stairs(Blocks.PACKED_ICE_BRICK_STAIRS).wall(Blocks.PACKED_ICE_BRICK_WALL).chiseled(Blocks.CHISELED_PACKED_ICE).generateStonecutterRecipe().getFamily();
       SNOW_BLOCK = familyBuilder(Blocks.SNOW_BLOCK).bricks(Blocks.SNOW_BRICKS).dontGenerateModel().getFamily();
       SNOW_BRICKS = familyBuilder(Blocks.SNOW_BRICKS).slab(Blocks.SNOW_BRICK_SLAB).stairs(Blocks.SNOW_BRICK_STAIRS).wall(Blocks.SNOW_BRICK_WALL).getFamily();
+      CALCITE = familyBuilder(Blocks.CALCITE).slab(Blocks.CALCITE_SLAB).stairs(Blocks.CALCITE_STAIRS).wall(Blocks.CALCITE_WALL).pillar(Blocks.CALCITE_PILLAR).polished(Blocks.POLISHED_CALCITE).generateStonecutterRecipe().getFamily();
+      POLISHED_CALCITE = familyBuilder(Blocks.POLISHED_CALCITE).stairs(Blocks.POLISHED_CALCITE_STAIRS).wall(Blocks.POLISHED_CALCITE_WALL).bricks(Blocks.POLISHED_CALCITE_BRICKS).generateStonecutterRecipe().getFamily();
+      POLISHED_CALCITE_BRICKS = familyBuilder(Blocks.POLISHED_CALCITE_BRICKS).slab(Blocks.POLISHED_CALCITE_BRICK_SLAB).stairs(Blocks.POLISHED_CALCITE_BRICK_STAIRS).wall(Blocks.POLISHED_CALCITE_BRICK_WALL).generateStonecutterRecipe().getFamily();
    }
 }

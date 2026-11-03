@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.world.entity.PositionPath;
+import net.minecraft.world.entity.PositionStep;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -47,51 +48,70 @@ public class VecDeltaCodec {
 
    public @Nullable VecDelta tryEncode(final PositionPath position) {
       Objects.requireNonNull(position);
+      PositionPath var2 = position;
       byte var3 = 0;
-      Object var15;
-      //$FF: var3->value
-      //0->net/minecraft/world/entity/PositionPath$Linear
-      //1->net/minecraft/world/entity/PositionPath$Stepped
-      switch (position.typeSwitch<invokedynamic>(position, var3)) {
-         case 0:
-            PositionPath.Linear var4 = (PositionPath.Linear)position;
-            PositionPath.Linear var16 = var4;
 
-            try {
-               var17 = var16.endPosition();
-            } catch (Throwable var11) {
-               throw new MatchException(var11.toString(), var11);
-            }
+      while(true) {
+         Object var21;
+         //$FF: var3->value
+         //0->net/minecraft/world/entity/PositionPath$Linear
+         //1->net/minecraft/world/entity/PositionPath$Stepped
+         switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
+            case 0:
+               PositionPath.Linear var4 = (PositionPath.Linear)var2;
+               PositionPath.Linear var22 = var4;
 
-            Vec3 pos = var17;
-            var15 = this.tryEncode(pos);
-            break;
-         case 1:
-            PositionPath.Stepped pos = (PositionPath.Stepped)position;
-            PositionPath.Stepped var10000 = pos;
+               try {
+                  var23 = var22.endPosition();
+               } catch (Throwable var11) {
+                  throw new MatchException(var11.toString(), var11);
+               }
 
-            try {
-               var10000.endPosition();
-            } catch (Throwable var10) {
-               throw new MatchException(var10.toString(), var10);
-            }
+               Vec3 pos = var23;
+               var21 = this.tryEncode(pos);
+               break;
+            case 1:
+               PositionPath.Stepped pos = (PositionPath.Stepped)var2;
+               PositionPath.Stepped var10000 = pos;
 
-            var10000 = pos;
+               try {
+                  var10000.endPosition();
+               } catch (Throwable var14) {
+                  throw new MatchException(var14.toString(), var14);
+               }
 
-            try {
-               var14 = var10000.steps();
-            } catch (Throwable var9) {
-               throw new MatchException(var9.toString(), var9);
-            }
+               var10000 = pos;
 
-            List steps = var14;
-            var15 = VecDelta.Stepped.tryEncode(this, steps);
-            break;
-         default:
-            throw new MatchException((String)null, (Throwable)null);
+               try {
+                  var18 = var10000.steps();
+               } catch (Throwable var13) {
+                  throw new MatchException(var13.toString(), var13);
+               }
+
+               List startImmediately = var18;
+               List<PositionStep> steps = startImmediately;
+               var10000 = pos;
+
+               try {
+                  var20 = var10000.startImmediately();
+               } catch (Throwable var12) {
+                  throw new MatchException(var12.toString(), var12);
+               }
+
+               boolean startImmediately = var20;
+               if (false) {
+                  var3 = 2;
+                  continue;
+               }
+
+               var21 = VecDelta.Stepped.tryEncode(this, steps, startImmediately);
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (VecDelta)var21;
       }
-
-      return (VecDelta)var15;
    }
 
    public @Nullable VecDelta tryEncode(final Vec3 pos) {

@@ -77,7 +77,7 @@ public class OreFeatures {
    }
 
    private static List<BlockReplacement> oreTargetList(final Block stoneOre, final Block deepslateOre, final RuleTest heightSpecificReplaceables) {
-      return List.of(BlockReplacement.replace(new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES), stoneOre.defaultBlockState()), BlockReplacement.replace(new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES), deepslateOre.defaultBlockState()), BlockReplacement.replace(RuleTest.allOf(HeightMatchTest.min(0), heightSpecificReplaceables), stoneOre.defaultBlockState()), BlockReplacement.replace(heightSpecificReplaceables, deepslateOre.defaultBlockState()));
+      return List.of(BlockReplacement.replace(new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES), stoneOre.defaultBlockState()), BlockReplacement.replace(new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES), deepslateOre.defaultBlockState()), BlockReplacement.replace(RuleTest.allOf(HeightMatchTest.min(4), heightSpecificReplaceables), stoneOre.defaultBlockState()), BlockReplacement.replace(heightSpecificReplaceables, deepslateOre.defaultBlockState()));
    }
 
    private static List<BlockReplacement> oreTargetList(final Block stoneOre, final Block deepslateOre) {

@@ -63,7 +63,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       this.enchantClue = new int[]{-1, -1, -1};
       this.levelClue = new int[]{-1, -1, -1};
       this.access = access;
-      this.addSlot(new Slot(this.enchantSlots, 0, 15, 47) {
+      this.addSlot(new Slot(this.enchantSlots, 0, 15, 47, Slot.Section.INPUT) {
          {
             Objects.requireNonNull(EnchantmentMenu.this);
          }
@@ -72,7 +72,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return 1;
          }
       });
-      this.addSlot(new Slot(this.enchantSlots, 1, 35, 47) {
+      this.addSlot(new Slot(this.enchantSlots, 1, 35, 47, Slot.Section.INPUT) {
          {
             Objects.requireNonNull(EnchantmentMenu.this);
          }

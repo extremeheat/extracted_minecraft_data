@@ -200,7 +200,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    public static enum Occupancy {
       HAS_SPACE(PoiRecord::hasSpace),
       IS_OCCUPIED(PoiRecord::isOccupied),
-      ANY((poiRecord) -> true);
+      ANY((var0) -> true);
 
       private final Predicate<? super PoiRecord> test;
 

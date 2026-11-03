@@ -19,13 +19,10 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
@@ -353,12 +350,16 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    protected void extractItem(final GuiGraphicsExtractor graphics, final E entry) {
-      if (this.entriesCanBeSelected() && this.getSelected() == entry) {
-         int outlineColor = this.isFocused() ? -1 : -8355712;
-         this.extractSelection(graphics, entry, outlineColor);
+      boolean hoveringEntry = Objects.equals(this.getHovered(), entry);
+      if (this.entriesCanBeSelected()) {
+         if (this.getSelected() == entry) {
+            this.extractSelection(graphics, entry, this.isFocused() ? -1 : -8355712);
+         } else if (hoveringEntry && this.minecraft.getLastInputType().isMouse()) {
+            this.extractSelection(graphics, entry, -8355712);
+         }
       }
 
-      entry.extractContent(graphics, Objects.equals(this.hovered, entry));
+      entry.extractContent(graphics, hoveringEntry);
    }
 
    protected void extractSelection(final GuiGraphicsExtractor graphics, final E entry, final int outlineColor) {
@@ -392,11 +393,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    }
 
    public NarratableEntry.NarrationPriority narrationPriority() {
-      if (this.isFocused()) {
-         return NarratableEntry.NarrationPriority.FOCUSED;
-      } else {
-         return this.hovered != null ? NarratableEntry.NarrationPriority.HOVERED : NarratableEntry.NarrationPriority.NONE;
-      }
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.hovered != null);
    }
 
    protected void removeEntries(final List<E> entries) {
@@ -420,17 +417,6 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    private void bindEntryToSelf(final Entry<E> entry) {
       entry.list = this;
-   }
-
-   protected void narrateListElementPosition(final NarrationElementOutput output, final E element) {
-      List<E> children = this.children();
-      if (children.size() > 1) {
-         int index = children.indexOf(element);
-         if (index != -1) {
-            output.add(NarratedElementType.POSITION, (Component)Component.translatable("narrator.position.list", index + 1, children.size()));
-         }
-      }
-
    }
 
    protected abstract static class Entry<E extends Entry<E>> implements LayoutElement, GuiEventListener {

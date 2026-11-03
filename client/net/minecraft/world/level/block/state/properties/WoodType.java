@@ -1,11 +1,5 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -13,8 +7,6 @@ import net.minecraft.world.level.block.sounds.BlockSoundSet;
 import net.minecraft.world.level.block.sounds.BlockSoundSets;
 
 public record WoodType(String name, BlockSetType setType, ResourceKey<BlockSoundSet> blockSoundSet, ResourceKey<BlockSoundSet> hangingSignSoundSet, SoundEvent fenceGateClose, SoundEvent fenceGateOpen) {
-   private static final Map<String, WoodType> TYPES = new Object2ObjectArrayMap();
-   public static final Codec<WoodType> CODEC;
    public static final WoodType OAK;
    public static final WoodType SPRUCE;
    public static final WoodType BIRCH;
@@ -37,32 +29,19 @@ public record WoodType(String name, BlockSetType setType, ResourceKey<BlockSound
       super();
    }
 
-   private static WoodType register(final WoodType type) {
-      TYPES.put(type.name(), type);
-      return type;
-   }
-
-   public static Stream<WoodType> values() {
-      return TYPES.values().stream();
-   }
-
    static {
-      Function var10000 = WoodType::name;
-      Map var10001 = TYPES;
-      Objects.requireNonNull(var10001);
-      CODEC = Codec.stringResolver(var10000, var10001::get);
-      OAK = register(new WoodType("oak", BlockSetType.OAK));
-      SPRUCE = register(new WoodType("spruce", BlockSetType.SPRUCE));
-      BIRCH = register(new WoodType("birch", BlockSetType.BIRCH));
-      ACACIA = register(new WoodType("acacia", BlockSetType.ACACIA));
-      CHERRY = register(new WoodType("cherry", BlockSetType.CHERRY, BlockSoundSets.CHERRY_WOOD, BlockSoundSets.CHERRY_WOOD_HANGING_SIGN, SoundEvents.CHERRY_WOOD_FENCE_GATE_CLOSE, SoundEvents.CHERRY_WOOD_FENCE_GATE_OPEN));
-      JUNGLE = register(new WoodType("jungle", BlockSetType.JUNGLE));
-      DARK_OAK = register(new WoodType("dark_oak", BlockSetType.DARK_OAK));
-      PALE_OAK = register(new WoodType("pale_oak", BlockSetType.PALE_OAK));
-      POPLAR = register(new WoodType("poplar", BlockSetType.POPLAR));
-      CRIMSON = register(new WoodType("crimson", BlockSetType.CRIMSON, BlockSoundSets.NETHER_WOOD, BlockSoundSets.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN));
-      WARPED = register(new WoodType("warped", BlockSetType.WARPED, BlockSoundSets.NETHER_WOOD, BlockSoundSets.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN));
-      MANGROVE = register(new WoodType("mangrove", BlockSetType.MANGROVE));
-      BAMBOO = register(new WoodType("bamboo", BlockSetType.BAMBOO, BlockSoundSets.BAMBOO_WOOD, BlockSoundSets.BAMBOO_WOOD_HANGING_SIGN, SoundEvents.BAMBOO_WOOD_FENCE_GATE_CLOSE, SoundEvents.BAMBOO_WOOD_FENCE_GATE_OPEN));
+      OAK = new WoodType("oak", BlockSetType.DEFAULT_WOOD);
+      SPRUCE = new WoodType("spruce", BlockSetType.DEFAULT_WOOD);
+      BIRCH = new WoodType("birch", BlockSetType.DEFAULT_WOOD);
+      ACACIA = new WoodType("acacia", BlockSetType.DEFAULT_WOOD);
+      CHERRY = new WoodType("cherry", BlockSetType.CHERRY, BlockSoundSets.CHERRY_WOOD, BlockSoundSets.CHERRY_WOOD_HANGING_SIGN, SoundEvents.CHERRY_WOOD_FENCE_GATE_CLOSE, SoundEvents.CHERRY_WOOD_FENCE_GATE_OPEN);
+      JUNGLE = new WoodType("jungle", BlockSetType.DEFAULT_WOOD);
+      DARK_OAK = new WoodType("dark_oak", BlockSetType.DEFAULT_WOOD);
+      PALE_OAK = new WoodType("pale_oak", BlockSetType.DEFAULT_WOOD);
+      POPLAR = new WoodType("poplar", BlockSetType.DEFAULT_WOOD);
+      CRIMSON = new WoodType("crimson", BlockSetType.CRIMSON, BlockSoundSets.NETHER_WOOD, BlockSoundSets.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN);
+      WARPED = new WoodType("warped", BlockSetType.WARPED, BlockSoundSets.NETHER_WOOD, BlockSoundSets.NETHER_WOOD_HANGING_SIGN, SoundEvents.NETHER_WOOD_FENCE_GATE_CLOSE, SoundEvents.NETHER_WOOD_FENCE_GATE_OPEN);
+      MANGROVE = new WoodType("mangrove", BlockSetType.DEFAULT_WOOD);
+      BAMBOO = new WoodType("bamboo", BlockSetType.BAMBOO, BlockSoundSets.BAMBOO_WOOD, BlockSoundSets.BAMBOO_WOOD_HANGING_SIGN, SoundEvents.BAMBOO_WOOD_FENCE_GATE_CLOSE, SoundEvents.BAMBOO_WOOD_FENCE_GATE_OPEN);
    }
 }

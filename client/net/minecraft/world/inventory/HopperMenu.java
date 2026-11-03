@@ -21,7 +21,7 @@ public class HopperMenu extends AbstractContainerMenu {
       hopper.startOpen(inventory.player);
 
       for(int x = 0; x < 5; ++x) {
-         this.addSlot(new Slot(hopper, x, 44 + x * 18, 20));
+         this.addSlot(new Slot(hopper, x, 44 + x * 18, 20, Slot.Section.CONTAINER));
       }
 
       this.addStandardInventorySlots(inventory, 8, 51);

@@ -239,8 +239,8 @@ public class ClientLevel extends Level implements BlockAndTintGetter, CacheSlot.
       }
    }
 
-   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelExtractor levelExtractor, final boolean isDebug, final int seaLevel) {
-      super(levelData, dimension, connection.registryAccess(), dimensionType, true, isDebug, 1000000);
+   public ClientLevel(final ClientPacketListener connection, final ClientLevelData levelData, final ResourceKey<Level> dimension, final Holder<DimensionType> dimensionType, final int serverChunkRadius, final int serverSimulationDistance, final LevelExtractor levelExtractor, final int seaLevel) {
+      super(levelData, dimension, connection.registryAccess(), dimensionType, true, 1000000);
       this.connection = connection;
       this.chunkSource = new ClientChunkCache(this, serverChunkRadius);
       this.tickRateManager = new TickRateManager();

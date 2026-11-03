@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.opengl.GL33C;
 
 class GlRenderPass implements RenderPassBackend {
    private final GlCommandEncoder encoder;
@@ -106,6 +107,10 @@ class GlRenderPass implements RenderPassBackend {
    public void pushConstants(final ByteBuffer value) {
       this.pushConstants = this.encoder.transientMemory().uploadGpu(value, (long)this.device.getDeviceInfo().limits().minUniformOffsetAlignment(), 128);
       this.pushConstantsDirty = true;
+   }
+
+   public void setViewport(final int x, final int y, final int width, final int height) {
+      GL33C.glViewport(x, y, width, height);
    }
 
    public void enableScissor(final int x, final int y, final int width, final int height) {

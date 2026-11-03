@@ -3,6 +3,7 @@ package net.minecraft.client.gui.components;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -11,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractContainerWidget extends AbstractScrollArea implements ContainerEventHandler {
    private @Nullable GuiEventListener focused;
    private boolean isDragging;
+   private boolean allowTabNavigationInside = true;
 
    public AbstractContainerWidget(final int x, final int y, final int width, final int height, final Component message) {
       super(x, y, width, height, message, AbstractScrollArea.ScrollbarSettings.NO_SCROLL);
@@ -45,7 +47,15 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
    }
 
    public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
-      return ContainerEventHandler.super.nextFocusPath(navigationEvent);
+      if (!this.allowTabNavigationInside && navigationEvent instanceof FocusNavigationEvent.TabNavigation) {
+         return this.isFocused() ? null : ContainerEventHandler.super.nextFocusPath(new FocusNavigationEvent.TabNavigation(true));
+      } else {
+         return ContainerEventHandler.super.nextFocusPath(navigationEvent);
+      }
+   }
+
+   protected void allowTabNavigationInside(final boolean allowTabNavigationInside) {
+      this.allowTabNavigationInside = allowTabNavigationInside;
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
@@ -69,5 +79,9 @@ public abstract class AbstractContainerWidget extends AbstractScrollArea impleme
 
    public void setFocused(final boolean focused) {
       ContainerEventHandler.super.setFocused(focused);
+   }
+
+   protected static <T> @Nullable T getNarratedChild(final NarrationTrigger narrationTrigger, final @Nullable T hovered, final @Nullable T focused) {
+      return (T)(narrationTrigger != NarrationTrigger.KEYBOARD && hovered != null ? hovered : focused);
    }
 }

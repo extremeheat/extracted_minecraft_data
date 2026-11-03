@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -44,6 +45,7 @@ public class ExperienceOrb extends Entity {
    private int health;
    private int count;
    private @Nullable Player followingPlayer;
+   private final RandomSource synchronizedRandom;
 
    public ExperienceOrb(final Level level, final double x, final double y, final double z, final int value) {
       this(level, new Vec3(x, y, z), Vec3.ZERO, value);
@@ -75,6 +77,7 @@ public class ExperienceOrb extends Entity {
       this.age = 0;
       this.health = 5;
       this.count = 1;
+      this.synchronizedRandom = RandomSource.create(0L);
    }
 
    protected void unstuckIfPossible(final double maxDistance) {
@@ -108,7 +111,9 @@ public class ExperienceOrb extends Entity {
          }
 
          if (this.level().getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
-            this.setDeltaMovement((double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F), 0.20000000298023224, (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F));
+            this.setSynchronizedRandomSeed(this.synchronizedRandom);
+            this.setDeltaMovement((double)((this.synchronizedRandom.nextFloat() - this.synchronizedRandom.nextFloat()) * 0.2F), 0.20000000298023224, (double)((this.synchronizedRandom.nextFloat() - this.synchronizedRandom.nextFloat()) * 0.2F));
+            this.needsSync = true;
          }
 
          if (this.tickCount % 20 == 1) {
@@ -150,7 +155,7 @@ public class ExperienceOrb extends Entity {
    }
 
    private void followNearbyPlayer() {
-      if (this.followingPlayer == null || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr(this) > 64.0) {
+      if (this.followingPlayer == null || this.followingPlayer.isRemoved() || this.followingPlayer.isSpectator() || this.followingPlayer.distanceToSqr(this) > 64.0) {
          Player nearestPlayer = this.level().getNearestPlayer(this, 8.0);
          if (nearestPlayer != null && !nearestPlayer.isSpectator() && !nearestPlayer.isDeadOrDying()) {
             this.followingPlayer = nearestPlayer;

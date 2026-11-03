@@ -57,7 +57,7 @@ public class VulkanGpuTexture extends BaseGpuTexture implements Destroyable {
          barrier.dstQueueFamilyIndex(-1);
          barrier.image(this.vkImage);
          VkImageSubresourceRange subresourceRange = barrier.subresourceRange();
-         subresourceRange.aspectMask(this.getFormat().hasColorAspect() ? 1 : 2);
+         subresourceRange.aspectMask(VulkanConst.formatAspectMask(format));
          subresourceRange.baseMipLevel(0);
          subresourceRange.levelCount(this.getMipLevels());
          subresourceRange.baseArrayLayer(0);

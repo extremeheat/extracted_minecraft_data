@@ -17,8 +17,8 @@ public sealed interface PositionPath {
       return new Linear(position);
    }
 
-   static PositionPath stepped(final List<PositionStep> steps) {
-      return new Stepped(steps);
+   static PositionPath stepped(final List<PositionStep> steps, final boolean startImmediately) {
+      return new Stepped(steps, startImmediately);
    }
 
    public static record Linear(Vec3 endPosition) implements PositionPath {
@@ -37,11 +37,11 @@ public sealed interface PositionPath {
       }
    }
 
-   public static record Stepped(Vec3 endPosition, List<PositionStep> steps) implements PositionPath {
+   public static record Stepped(Vec3 endPosition, List<PositionStep> steps, boolean startImmediately) implements PositionPath {
       public static final StreamCodec<ByteBuf, Stepped> STREAM_CODEC;
 
-      public Stepped(final List<PositionStep> steps) {
-         this(((PositionStep)steps.getLast()).position(), steps);
+      public Stepped(final List<PositionStep> steps, final boolean startImmediately) {
+         this(((PositionStep)steps.getLast()).position(), steps, startImmediately);
       }
 
       public Stepped {
@@ -53,7 +53,7 @@ public sealed interface PositionPath {
       }
 
       static {
-         STREAM_CODEC = PositionStep.STREAM_CODEC.apply(ByteBufCodecs.list()).map(Stepped::new, Stepped::steps);
+         STREAM_CODEC = StreamCodec.composite(PositionStep.STREAM_CODEC.apply(ByteBufCodecs.list()), Stepped::steps, ByteBufCodecs.BOOL, Stepped::startImmediately, Stepped::new);
       }
    }
 

@@ -9,9 +9,20 @@ import net.minecraft.world.phys.Vec3;
 
 public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
    private final InterpolationData interpolationData = new InterpolationData();
+   private final int updateInterval;
+
+   private SteppedInterpolationHandler(final Entity entity, final int interpolationSteps) {
+      super(entity, interpolationSteps);
+      this.updateInterval = entity.getType().updateInterval();
+   }
 
    private SteppedInterpolationHandler(final Entity entity) {
       super(entity, entity.getType().updateInterval());
+      this.updateInterval = this.interpolationSteps;
+   }
+
+   public static InterpolationHandler create(final Entity entity, final int interpolationSteps) {
+      return (InterpolationHandler)(entity.level().isClientSide() ? new SteppedInterpolationHandler(entity, interpolationSteps) : new SteppedInterpolationTracker(entity));
    }
 
    public static InterpolationHandler create(final Entity entity) {
@@ -23,30 +34,36 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
    }
 
    protected void startInterpolating(final PositionPath position, final float yRot, final float xRot) {
+      if (position instanceof PositionPath.Stepped stepped) {
+         if (stepped.startImmediately()) {
+            this.cancel();
+         }
+      }
+
       if (!this.hasActiveInterpolation()) {
          this.interpolationData.setStartingPoint(this.entity.position(), this.entity.getYRot(), this.entity.getXRot());
       }
 
       Vec3 endPosition = position.endPosition();
       if (Objects.equals(endPosition, this.interpolationData.position())) {
-         this.interpolationData.addStep(endPosition, yRot, xRot, this.interpolationSteps);
+         this.interpolationData.addStep(endPosition, yRot, xRot, this.updateInterval);
       } else {
-         this.interpolationData.addSteps(position, yRot, xRot, this.interpolationSteps);
+         this.interpolationData.addSteps(position, yRot, xRot, this.updateInterval);
       }
 
       this.interpolationData.set(endPosition, yRot, xRot);
+      this.interpolationData.remainingTicks = (float)this.interpolationSteps;
    }
 
    protected void doInterpolate() {
-      PositionAndRotation target = this.interpolationData.getNewPositionAndRotation();
+      this.interpolationData.advance(this.entity.level().getRelativeTickSpeed());
+      PositionAndRotation target = this.interpolationData.currentStepPosRot;
       this.entity.setPos(target.position());
       this.entity.setRot(target.yRot(), target.xRot());
-      float tick = this.entity.level().getRelativeTickSpeed();
-      this.interpolationData.advance(tick, this.interpolationSteps);
    }
 
    public boolean hasActiveInterpolation() {
-      return !this.interpolationData.remainingSteps.isEmpty();
+      return this.interpolationData.remainingTicks > 0.0F;
    }
 
    public void cancel() {
@@ -54,44 +71,61 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
    }
 
    private static class Step extends PositionAndRotation.Mutable {
-      private final int tickOffset;
+      private float weight;
 
-      public Step(final Vec3 position, final float yRot, final float xRot, final int tickOffset) {
+      public Step(final Vec3 position, final float yRot, final float xRot, final int weight) {
          super();
-         this.tickOffset = tickOffset;
+         this.weight = (float)weight;
          this.set(position, yRot, xRot);
       }
    }
 
    private static class InterpolationData extends PositionAndRotation.Mutable {
       private final List<Step> remainingSteps = new ArrayListDeque<Step>();
-      private final PositionAndRotation.Mutable lastStepPosRot = new PositionAndRotation.Mutable();
-      private float currentStepTicks;
+      private final PositionAndRotation.Mutable currentStepPosRot = new PositionAndRotation.Mutable();
       private float remainingTicks;
-      private float interpolationSpeed = 1.0F;
+      private float totalWeight;
 
       private InterpolationData() {
          super();
       }
 
-      private void advance(float ticks, final int interpolationSteps) {
-         float targetSpeed = Math.max(this.remainingTicks / (float)interpolationSteps, 1.0F);
-         this.interpolationSpeed = Mth.lerp(1.0F / (float)interpolationSteps, this.interpolationSpeed, targetSpeed);
-         if (ticks * this.interpolationSpeed < this.remainingTicks) {
-            ticks *= this.interpolationSpeed;
-         } else {
-            ticks = this.remainingTicks;
-            this.interpolationSpeed = 1.0F;
+      private void advance(final float ticks) {
+         float advanceByWeight = ticks * this.totalWeight / this.remainingTicks;
+         this.totalWeight -= advanceByWeight;
+         this.remainingTicks -= ticks;
+         if (!this.advanceToNextStep(advanceByWeight)) {
+            this.reset();
          }
 
-         this.currentStepTicks += ticks;
-         this.remainingTicks -= ticks;
+      }
+
+      private boolean advanceToNextStep(float advanceByWeight) {
+         while(!this.remainingSteps.isEmpty()) {
+            Step step = (Step)this.remainingSteps.getFirst();
+            float weight = step.weight;
+            if (advanceByWeight < weight) {
+               float a = advanceByWeight / weight;
+               if (a > 0.0F) {
+                  this.currentStepPosRot.set(this.currentStepPosRot.position().lerp(step.position(), (double)a), Mth.rotLerp(a, this.currentStepPosRot.yRot(), step.yRot()), Mth.lerp(a, this.currentStepPosRot.xRot(), step.xRot()));
+               }
+
+               step.weight -= advanceByWeight;
+               return true;
+            }
+
+            advanceByWeight -= weight;
+            this.currentStepPosRot.set(step.position(), step.yRot(), step.xRot());
+            this.remainingSteps.removeFirst();
+         }
+
+         return false;
       }
 
       private void reset() {
          this.remainingSteps.clear();
          this.remainingTicks = 0.0F;
-         this.interpolationSpeed = 1.0F;
+         this.totalWeight = 0.0F;
       }
 
       public void addDelta(final Vec3 delta) {
@@ -101,7 +135,7 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
             step.addDelta(delta);
          }
 
-         this.lastStepPosRot.addDelta(delta);
+         this.currentStepPosRot.addDelta(delta);
       }
 
       public void addRotation(final float yRot, final float xRot) {
@@ -111,20 +145,19 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
             step.addRotation(yRot, xRot);
          }
 
-         this.lastStepPosRot.addRotation(yRot, xRot);
+         this.currentStepPosRot.addRotation(yRot, xRot);
       }
 
       private void setStartingPoint(final Vec3 position, final float yRot, final float xRot) {
-         this.lastStepPosRot.set(position, yRot, xRot);
-         this.currentStepTicks = 1.0F;
+         this.currentStepPosRot.set(position, yRot, xRot);
       }
 
-      private void addStep(final Vec3 position, final float yRot, final float xRot, final int interpolationSteps) {
-         this.remainingSteps.add(new Step(position, yRot, xRot, interpolationSteps));
-         this.remainingTicks += (float)interpolationSteps;
+      private void addStep(final Vec3 position, final float yRot, final float xRot, final int weight) {
+         this.remainingSteps.add(new Step(position, yRot, xRot, weight));
+         this.totalWeight += (float)weight;
       }
 
-      private void addSteps(final PositionPath position, final float yRot, final float xRot, final int interpolationSteps) {
+      private void addSteps(final PositionPath position, final float yRot, final float xRot, final int weight) {
          Objects.requireNonNull(position);
          byte var6 = 0;
          //$FF: var6->value
@@ -133,16 +166,16 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
          switch (position.typeSwitch<invokedynamic>(position, var6)) {
             case 0:
                PositionPath.Linear var7 = (PositionPath.Linear)position;
-               PositionPath.Linear var25 = var7;
+               PositionPath.Linear var27 = var7;
 
                try {
-                  var26 = var25.endPosition();
-               } catch (Throwable var18) {
-                  throw new MatchException(var18.toString(), var18);
+                  var28 = var27.endPosition();
+               } catch (Throwable var19) {
+                  throw new MatchException(var19.toString(), var19);
                }
 
-               Vec3 pos = var26;
-               this.addStep(pos, yRot, xRot, interpolationSteps);
+               Vec3 pos = var28;
+               this.addStep(pos, yRot, xRot, weight);
                break;
             case 1:
                PositionPath.Stepped pos = (PositionPath.Stepped)position;
@@ -150,20 +183,28 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
 
                try {
                   var10000.endPosition();
-               } catch (Throwable var17) {
-                  throw new MatchException(var17.toString(), var17);
+               } catch (Throwable var18) {
+                  throw new MatchException(var18.toString(), var18);
                }
 
                var10000 = pos;
 
                try {
-                  var24 = var10000.steps();
+                  var25 = var10000.steps();
+               } catch (Throwable var17) {
+                  throw new MatchException(var17.toString(), var17);
+               }
+
+               List var11 = var25;
+               List<PositionStep> steps = var11;
+               var10000 = pos;
+
+               try {
+                  var10000.startImmediately();
                } catch (Throwable var16) {
                   throw new MatchException(var16.toString(), var16);
                }
 
-               List var11 = var24;
-               List<PositionStep> steps = var11;
                if (yRot == this.yRot() && xRot == this.xRot()) {
                   for(PositionStep step : var11) {
                      this.addStep(step.position(), yRot, xRot, step.tickOffset());
@@ -195,23 +236,6 @@ public class SteppedInterpolationHandler extends AbstractInterpolationHandler {
          }
 
          return ticks;
-      }
-
-      private PositionAndRotation getNewPositionAndRotation() {
-         while(!this.remainingSteps.isEmpty()) {
-            Step step = (Step)this.remainingSteps.getFirst();
-            int offset = step.tickOffset;
-            if (this.currentStepTicks < (float)offset) {
-               float a = this.currentStepTicks / (float)offset;
-               return PositionAndRotation.of(this.lastStepPosRot.position().lerp(step.position(), (double)a), Mth.rotLerp(a, this.lastStepPosRot.yRot(), step.yRot()), Mth.lerp(a, this.lastStepPosRot.xRot(), step.xRot()));
-            }
-
-            this.currentStepTicks -= (float)offset;
-            this.lastStepPosRot.set(step.position(), step.yRot(), step.xRot());
-            this.remainingSteps.removeFirst();
-         }
-
-         return this;
       }
    }
 }

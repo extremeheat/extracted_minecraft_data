@@ -8,6 +8,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -85,9 +86,9 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          int x = this.x + 4 + 25 * (i % maxRow);
          int y = this.y + 5 + 25 * (i / maxRow);
          if (this.isFurnaceMenu) {
-            this.recipeButtons.add(new OverlaySmeltingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft));
+            this.recipeButtons.add(new OverlaySmeltingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft, this.slotSelectTime));
          } else {
-            this.recipeButtons.add(new OverlayCraftingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft));
+            this.recipeButtons.add(new OverlayCraftingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft, this.slotSelectTime));
          }
       }
 
@@ -115,10 +116,6 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
 
          return false;
       }
-   }
-
-   public boolean isMouseOver(final double mouseX, final double mouseY) {
-      return false;
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
@@ -151,15 +148,11 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
       return false;
    }
 
-   private class OverlaySmeltingRecipeButton extends OverlayRecipeButton {
-      private static final Identifier ENABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/furnace_overlay");
-      private static final Identifier HIGHLIGHTED_ENABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/furnace_overlay_highlighted");
-      private static final Identifier DISABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled");
-      private static final Identifier HIGHLIGHTED_DISABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled_highlighted");
+   private static class OverlaySmeltingRecipeButton extends OverlayRecipeButton {
+      private static final WidgetSprites FURNACE_OVERLAY_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/furnace_overlay"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled_highlighted"));
 
-      public OverlaySmeltingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable) {
-         Objects.requireNonNull(OverlayRecipeComponent.this);
-         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context));
+      public OverlaySmeltingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable, final SlotSelectTime slotSelectTime) {
+         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context), slotSelectTime);
       }
 
       private static List<OverlayRecipeButton.Pos> calculateIngredientsPositions(final RecipeDisplay recipe, final ContextMap context) {
@@ -174,25 +167,17 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
       }
 
       protected Identifier getSprite(final boolean isCraftable) {
-         if (isCraftable) {
-            return this.isHoveredOrFocused() ? HIGHLIGHTED_ENABLED_SPRITE : ENABLED_SPRITE;
-         } else {
-            return this.isHoveredOrFocused() ? HIGHLIGHTED_DISABLED_SPRITE : DISABLED_SPRITE;
-         }
+         return FURNACE_OVERLAY_SPRITES.get(isCraftable, this.isHighlighted());
       }
    }
 
-   private class OverlayCraftingRecipeButton extends OverlayRecipeButton {
-      private static final Identifier ENABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/crafting_overlay");
-      private static final Identifier HIGHLIGHTED_ENABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/crafting_overlay_highlighted");
-      private static final Identifier DISABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled");
-      private static final Identifier HIGHLIGHTED_DISABLED_SPRITE = Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled_highlighted");
+   private static class OverlayCraftingRecipeButton extends OverlayRecipeButton {
+      private static final WidgetSprites CRAFTING_OVERLAY_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/crafting_overlay"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled_highlighted"));
       private static final int GRID_WIDTH = 3;
       private static final int GRID_HEIGHT = 3;
 
-      public OverlayCraftingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable) {
-         Objects.requireNonNull(OverlayRecipeComponent.this);
-         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context));
+      public OverlayCraftingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable, final SlotSelectTime slotSelectTime) {
+         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context), slotSelectTime);
       }
 
       private static List<OverlayRecipeButton.Pos> calculateIngredientsPositions(final RecipeDisplay recipe, final ContextMap context) {
@@ -205,7 +190,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          switch (recipe.typeSwitch<invokedynamic>(recipe, var4)) {
             case 0:
                ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)recipe;
-               PlaceRecipeHelper.placeRecipe(3, 3, shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, gridIndex, gridXPos, gridYPos) -> {
+               PlaceRecipeHelper.placeRecipe(3, 3, shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, var3, gridXPos, gridYPos) -> {
                   List<ItemStack> items = ingredient.resolveForStacks(context);
                   if (!items.isEmpty()) {
                      result.add(createGridPos(gridXPos, gridYPos, items));
@@ -229,25 +214,22 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
       }
 
       protected Identifier getSprite(final boolean isCraftable) {
-         if (isCraftable) {
-            return this.isHoveredOrFocused() ? HIGHLIGHTED_ENABLED_SPRITE : ENABLED_SPRITE;
-         } else {
-            return this.isHoveredOrFocused() ? HIGHLIGHTED_DISABLED_SPRITE : DISABLED_SPRITE;
-         }
+         return CRAFTING_OVERLAY_SPRITES.get(isCraftable, this.isHighlighted());
       }
    }
 
-   private abstract class OverlayRecipeButton extends AbstractWidget {
+   private abstract static class OverlayRecipeButton extends AbstractWidget {
       private final RecipeDisplayId recipe;
       private final boolean isCraftable;
       private final List<Pos> slots;
+      private final SlotSelectTime slotSelectTime;
 
-      public OverlayRecipeButton(final int x, final int y, final RecipeDisplayId recipe, final boolean isCraftable, final List<Pos> slots) {
-         Objects.requireNonNull(OverlayRecipeComponent.this);
+      public OverlayRecipeButton(final int x, final int y, final RecipeDisplayId recipe, final boolean isCraftable, final List<Pos> slots, final SlotSelectTime slotSelectTime) {
          super(x, y, 24, 24, CommonComponents.EMPTY);
          this.slots = slots;
          this.recipe = recipe;
          this.isCraftable = isCraftable;
+         this.slotSelectTime = slotSelectTime;
       }
 
       protected static Pos createGridPos(final int gridXPos, final int gridYPos, final List<ItemStack> itemStacks) {
@@ -270,7 +252,7 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
             graphics.pose().translate(gridPosX + (float)pos.x, gridPosY + (float)pos.y);
             graphics.pose().scale(0.375F, 0.375F);
             graphics.pose().translate(-8.0F, -8.0F);
-            graphics.item(pos.selectIngredient(OverlayRecipeComponent.this.slotSelectTime.currentIndex()), 0, 0);
+            graphics.item(pos.selectIngredient(this.slotSelectTime.currentIndex()), 0, 0);
             graphics.pose().popMatrix();
          }
 

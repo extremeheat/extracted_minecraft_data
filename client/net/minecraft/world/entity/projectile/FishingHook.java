@@ -53,7 +53,7 @@ import org.slf4j.Logger;
 
 public class FishingHook extends Projectile {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final RandomSource syncronizedRandom;
+   private final RandomSource synchronizedRandom;
    private boolean biting;
    private int outOfWaterTime;
    private static final int MAX_OUT_OF_WATER_TIME = 10;
@@ -73,7 +73,7 @@ public class FishingHook extends Projectile {
 
    private FishingHook(final EntityType<? extends FishingHook> type, final Level level, final int luck, final int lureSpeed) {
       super(type, level);
-      this.syncronizedRandom = RandomSource.create();
+      this.synchronizedRandom = RandomSource.create(0L);
       this.openWater = true;
       this.currentState = FishingHook.FishHookState.FLYING;
       this.luck = Math.max(0, luck);
@@ -129,7 +129,7 @@ public class FishingHook extends Projectile {
       if (DATA_BITING.equals(accessor)) {
          this.biting = (Boolean)this.getEntityData().get(DATA_BITING);
          if (this.biting) {
-            this.setDeltaMovement(this.getDeltaMovement().x, (double)(-0.4F * Mth.nextFloat(this.syncronizedRandom, 0.6F, 1.0F)), this.getDeltaMovement().z);
+            this.setDeltaMovement(this.getDeltaMovement().x, (double)(-0.4F * Mth.nextFloat(this.synchronizedRandom, 0.6F, 1.0F)), this.getDeltaMovement().z);
          }
       }
 
@@ -142,7 +142,6 @@ public class FishingHook extends Projectile {
    }
 
    public void tick() {
-      this.syncronizedRandom.setSeed(this.getUUID().getLeastSignificantBits() ^ this.level().getGameTime());
       super.tick();
       Player owner = this.getPlayerOwner();
       if (owner == null) {
@@ -211,7 +210,8 @@ public class FishingHook extends Projectile {
                if (isInWater) {
                   this.outOfWaterTime = Math.max(0, this.outOfWaterTime - 1);
                   if (this.biting) {
-                     this.addDeltaMovement(0.0, -0.1 * (double)this.syncronizedRandom.nextFloat() * (double)this.syncronizedRandom.nextFloat(), 0.0);
+                     this.setSynchronizedRandomSeed(this.synchronizedRandom);
+                     this.addDeltaMovement(0.0, -0.1 * (double)this.synchronizedRandom.nextFloat() * (double)this.synchronizedRandom.nextFloat(), 0.0);
                   }
 
                   if (!this.level().isClientSide()) {

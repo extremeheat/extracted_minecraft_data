@@ -5,12 +5,12 @@ import com.mojang.renderpearl.api.device.GpuBackend;
 import com.mojang.renderpearl.api.device.GpuDebugOptions;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import com.mojang.renderpearl.frontend.FrontendGpuDevice;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.sdl.SDLError;
 import org.lwjgl.sdl.SDLVideo;
-import org.lwjgl.system.SharedLibrary;
 
 public class GlBackend implements GpuBackend {
    private static final int VERSION_MAJOR = 3;
@@ -30,21 +30,26 @@ public class GlBackend implements GpuBackend {
       if (!this.libraryLoaded) {
          if (this.libraryLoadFailure != null) {
             throw this.libraryLoadFailure;
-         } else if (!SDLVideo.SDL_GL_LoadLibrary(((SharedLibrary)GL.getFunctionProvider()).getPath())) {
+         } else if (!SDLVideo.SDL_GL_LoadLibrary((ByteBuffer)null)) {
             this.libraryLoadFailure = new BackendCreationException("OpenGL is not supported: " + (String)Objects.requireNonNullElse(SDLError.SDL_GetError(), "<no error>"), BackendCreationException.Reason.OPENGL_MISSING);
             throw this.libraryLoadFailure;
-         } else if (GL.getFunctionProvider().getFunctionAddress("glGetError") != SDLVideo.SDL_GL_GetProcAddress("glGetError")) {
-            this.libraryLoadFailure = new BackendCreationException("glGetError mismatch", BackendCreationException.Reason.OPENGL_MISSING);
-            SDLVideo.SDL_GL_UnloadLibrary();
-            throw this.libraryLoadFailure;
          } else {
-            this.libraryLoaded = true;
+            GL.destroy();
+            GL.create(SDLVideo::SDL_GL_GetProcAddress);
+            if (GL.getFunctionProvider().getFunctionAddress("glGetError") != SDLVideo.SDL_GL_GetProcAddress("glGetError")) {
+               this.libraryLoadFailure = new BackendCreationException("glGetError mismatch", BackendCreationException.Reason.OPENGL_MISSING);
+               SDLVideo.SDL_GL_UnloadLibrary();
+               throw this.libraryLoadFailure;
+            } else {
+               this.libraryLoaded = true;
+            }
          }
       }
    }
 
    public void unloadLibrary() {
       if (this.libraryLoaded) {
+         GL.destroy();
          SDLVideo.SDL_GL_UnloadLibrary();
          this.libraryLoaded = false;
       }

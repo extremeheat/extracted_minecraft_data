@@ -372,26 +372,24 @@ public class ServerPlayerGameMode {
             return InteractionResult.CONSUME;
          } else {
             ServerLevel serverLevel = player.level();
-            if (!serverLevel.isDebug()) {
-               Block var19 = state.getBlock();
-               if (var19 instanceof Portal) {
-                  Portal portal = (Portal)var19;
-                  TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
-                  if (teleportTransition != null) {
-                     if (player.getCamera() != player) {
-                        player.setCamera(player);
-                     }
-
-                     player.teleportToPortalDestination(serverLevel, teleportTransition);
-                  } else {
-                     player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
+            Block var19 = state.getBlock();
+            if (var19 instanceof Portal) {
+               Portal portal = (Portal)var19;
+               TeleportTransition teleportTransition = portal.getPortalDestination(serverLevel, player, pos);
+               if (teleportTransition != null) {
+                  if (player.getCamera() != player) {
+                     player.setCamera(player);
                   }
 
-                  return InteractionResult.CONSUME;
+                  player.teleportToPortalDestination(serverLevel, teleportTransition);
+               } else {
+                  player.sendOverlayMessage(Component.translatable("spectator.cannot_teleport").withStyle(ChatFormatting.RED));
                }
-            }
 
-            return InteractionResult.PASS;
+               return InteractionResult.CONSUME;
+            } else {
+               return InteractionResult.PASS;
+            }
          }
       } else {
          boolean haveSomethingInOurHands = !player.getMainHandItem().isEmpty() || !player.getOffhandItem().isEmpty();

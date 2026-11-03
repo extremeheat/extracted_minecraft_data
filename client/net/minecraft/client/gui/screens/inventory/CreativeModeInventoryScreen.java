@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
@@ -19,6 +20,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.inventory.SlotWidget;
 import net.minecraft.client.gui.screens.social.EntityPortraitWidget;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -87,6 +90,38 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    private final Set<TagKey<Item>> visibleTags = new HashSet();
    private final boolean displayOperatorCreativeTab;
    private final EffectsInInventory effects;
+   private final Function<Slot, Tooltip> tooltipSupplier = (slot) -> {
+      ItemStack item = slot.getItem();
+      boolean isCreativeSlot = slot instanceof CustomCreativeSlot;
+      boolean isSingleCategoryTab = selectedTab.getType() == CreativeModeTab.Type.CATEGORY;
+      boolean isSearchTab = selectedTab.getType() == CreativeModeTab.Type.SEARCH;
+      TooltipFlag.Default originalTooltipStyle = this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
+      TooltipFlag tooltipStyle = isCreativeSlot ? originalTooltipStyle.asCreative() : originalTooltipStyle;
+      List<Component> originalLines = item.getTooltipLines(Item.TooltipContext.of((Level)this.minecraft.level), this.minecraft.player, tooltipStyle);
+      if (!originalLines.isEmpty() && (!isSingleCategoryTab || !isCreativeSlot)) {
+         List<Component> linesToDisplay = new ArrayList(originalLines);
+         if (isSearchTab && isCreativeSlot) {
+            this.visibleTags.forEach((tag) -> {
+               if (item.is(tag)) {
+                  linesToDisplay.add(1, Component.literal("#" + String.valueOf(tag.location())).withStyle(ChatFormatting.DARK_PURPLE));
+               }
+
+            });
+         }
+
+         int i = 1;
+
+         for(CreativeModeTab tab : CreativeModeTabs.tabs()) {
+            if (tab.getType() != CreativeModeTab.Type.SEARCH && tab.contains(item)) {
+               linesToDisplay.add(i++, tab.getDisplayName().copy().withStyle(ChatFormatting.BLUE));
+            }
+         }
+
+         return Tooltip.createForItem(linesToDisplay, item);
+      } else {
+         return Tooltip.createForItem(originalLines, item);
+      }
+   };
 
    public CreativeModeInventoryScreen(final LocalPlayer player, final FeatureFlagSet enabledFeatures, final boolean displayOperatorCreativeTab) {
       super(new ItemPickerMenu(player), player.getInventory(), CommonComponents.EMPTY, 195, 136);
@@ -156,12 +191,13 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    }
 
-   protected void slotClicked(final @Nullable Slot slot, final int slotId, final int buttonNum, ContainerInput containerInput) {
-      if (this.isCreativeSlot(slot)) {
+   protected void slotClicked(final @Nullable SlotWidget slotWidget, final int slotId, final int buttonNum, ContainerInput containerInput) {
+      if (this.isCreativeSlot(slotWidget)) {
          this.searchBox.moveCursorToEnd(false);
          this.searchBox.setHighlightPos(0);
       }
 
+      Slot slot = slotWidget != null ? slotWidget.slot() : null;
       boolean quickKey = containerInput == ContainerInput.QUICK_MOVE;
       if (quickKey) {
          this.updateLastQuickMoved(slot);
@@ -169,7 +205,10 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
       containerInput = slotId == -999 && containerInput == ContainerInput.PICKUP ? ContainerInput.THROW : containerInput;
       if (containerInput != ContainerInput.THROW || this.minecraft.player.canDropItems()) {
-         this.onMouseClickAction(slot, containerInput);
+         if (slotWidget != null) {
+            slotWidget.clickSlot(containerInput);
+         }
+
          if (slot == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && containerInput != ContainerInput.QUICK_CRAFT) {
             if (!((ItemPickerMenu)this.menu).getCarried().isEmpty() && this.hasClickedOutside) {
                if (!this.minecraft.player.canDropItems()) {
@@ -215,7 +254,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
                   this.minecraft.player.inventoryMenu.clicked(slot == null ? slotId : ((SlotWrapper)slot).target.index, buttonNum, containerInput, this.minecraft.player);
                   this.minecraft.player.inventoryMenu.broadcastChanges();
                }
-            } else if (containerInput != ContainerInput.QUICK_CRAFT && slot.container == CONTAINER) {
+            } else if (containerInput != ContainerInput.QUICK_CRAFT && slot != null && slot.container == CONTAINER) {
                ItemStack carried = ((ItemPickerMenu)this.menu).getCarried();
                ItemStack clicked = slot.getItem();
                if (containerInput == ContainerInput.SWAP) {
@@ -286,8 +325,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
    }
 
-   private boolean isCreativeSlot(final @Nullable Slot slot) {
-      return slot != null && slot.container == CONTAINER;
+   private boolean isCreativeSlot(final @Nullable SlotWidget slotWidget) {
+      return slotWidget != null && slotWidget.slot().container == CONTAINER;
    }
 
    protected void init() {
@@ -378,7 +417,8 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
             return super.keyPressed(event);
          }
       } else {
-         boolean doQuickSwap = !this.isCreativeSlot(this.hoveredSlot) || this.hoveredSlot.hasItem();
+         SlotWidget hoveredSlotWidget = this.getHoveredSlot();
+         boolean doQuickSwap = !this.isCreativeSlot(hoveredSlotWidget) || hoveredSlotWidget.slot().hasItem();
          boolean pressingNumber = InputConstants.getKey(event).getNumericKeyValue().isPresent();
          if (doQuickSwap && pressingNumber && this.checkHotbarKeyPressed(event)) {
             this.ignoreTextInput = true;
@@ -538,18 +578,15 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
          (this.menu).slots.clear();
 
-         for(int i = 0; i < invMenu.slots.size(); ++i) {
+         for(int i = 5; i < invMenu.slots.size(); ++i) {
             int x;
             int y;
-            if (i >= 5 && i < 9) {
+            if (i < 9) {
                int pos = i - 5;
                int col = pos / 2;
                int row = pos % 2;
                x = 54 + col * 54;
                y = 6 + row * 27;
-            } else if (i >= 0 && i < 5) {
-               x = -2000;
-               y = -2000;
             } else if (i == 45) {
                x = 35;
                y = 20;
@@ -569,7 +606,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
             (this.menu).slots.add(slot);
          }
 
-         this.destroyItemSlot = new Slot(CONTAINER, 0, 173, 112);
+         this.destroyItemSlot = new Slot(CONTAINER, 0, 173, 112, Slot.Section.HOTBAR);
          (this.menu).slots.add(this.destroyItemSlot);
       } else if (oldTab.getType() == CreativeModeTab.Type.INVENTORY) {
          (this.menu).slots.clear();
@@ -593,8 +630,20 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          this.searchBox.setValue("");
       }
 
+      this.updateSlotWidgets();
       this.scrollOffs = 0.0F;
       ((ItemPickerMenu)this.menu).scrollTo(0.0F);
+   }
+
+   protected void updateSlotWidgets() {
+      List<SlotWidget> widgets = new ArrayList();
+
+      for(Slot slot : (this.menu).slots) {
+         Tooltip emptySlotTooltip = slot == this.destroyItemSlot ? Tooltip.create(TRASH_SLOT_TOOLTIP) : null;
+         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, this.tooltipSupplier, () -> emptySlotTooltip));
+      }
+
+      this.setSlotWidgets(widgets);
    }
 
    public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
@@ -648,48 +697,10 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
          }
       }
 
-      if (this.destroyItemSlot != null && selectedTab.getType() == CreativeModeTab.Type.INVENTORY && this.isHovering(this.destroyItemSlot.x, this.destroyItemSlot.y, 16, 16, (double)graphics.mouseX(), (double)graphics.mouseY())) {
-         graphics.setTooltipForNextFrame(this.font, TRASH_SLOT_TOOLTIP, graphics.mouseX(), graphics.mouseY());
-      }
-
    }
 
    public boolean showsActiveEffects() {
       return this.effects.canSeeEffects();
-   }
-
-   public List<Component> getTooltipFromContainerItem(final ItemStack itemStack) {
-      boolean isCreativeSlot = this.hoveredSlot != null && this.hoveredSlot instanceof CustomCreativeSlot;
-      boolean isSingleCategoryTab = selectedTab.getType() == CreativeModeTab.Type.CATEGORY;
-      boolean isSearchTab = selectedTab.getType() == CreativeModeTab.Type.SEARCH;
-      TooltipFlag.Default originalTooltipStyle = this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
-      TooltipFlag tooltipStyle = isCreativeSlot ? originalTooltipStyle.asCreative() : originalTooltipStyle;
-      List<Component> originalLines = itemStack.getTooltipLines(Item.TooltipContext.of((Level)this.minecraft.level), this.minecraft.player, tooltipStyle);
-      if (originalLines.isEmpty()) {
-         return originalLines;
-      } else if (isSingleCategoryTab && isCreativeSlot) {
-         return originalLines;
-      } else {
-         List<Component> linesToDisplay = new ArrayList(originalLines);
-         if (isSearchTab && isCreativeSlot) {
-            this.visibleTags.forEach((tag) -> {
-               if (itemStack.is(tag)) {
-                  linesToDisplay.add(1, Component.literal("#" + String.valueOf(tag.location())).withStyle(ChatFormatting.DARK_PURPLE));
-               }
-
-            });
-         }
-
-         int i = 1;
-
-         for(CreativeModeTab tab : CreativeModeTabs.tabs()) {
-            if (tab.getType() != CreativeModeTab.Type.SEARCH && tab.contains(itemStack)) {
-               linesToDisplay.add(i++, tab.getDisplayName().copy().withStyle(ChatFormatting.BLUE));
-            }
-         }
-
-         return linesToDisplay;
-      }
    }
 
    public void extractBackground(final GuiGraphicsExtractor graphics) {
@@ -910,7 +921,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       private final Slot target;
 
       public SlotWrapper(final Slot target, final int index, final int x, final int y) {
-         super(target.container, index, x, y);
+         super(target.container, index, x, y, target.getSection());
          this.target = target;
       }
 
@@ -969,7 +980,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    private static class CustomCreativeSlot extends Slot {
       public CustomCreativeSlot(final Container container, final int slot, final int x, final int y) {
-         super(container, slot, x, y);
+         super(container, slot, x, y, Slot.Section.CONTAINER);
       }
 
       public boolean mayPickup(final Player player) {

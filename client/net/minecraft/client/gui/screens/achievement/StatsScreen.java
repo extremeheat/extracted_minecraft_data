@@ -32,7 +32,6 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
@@ -243,10 +242,6 @@ public class StatsScreen extends Screen {
 
          public Component getNarration() {
             return Component.translatable("narrator.select", Component.empty().append(this.statDisplay).append(CommonComponents.SPACE).append(this.getValueText()));
-         }
-
-         public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            return event.isLeftMouse();
          }
       }
    }
@@ -496,10 +491,6 @@ public class StatsScreen extends Screen {
                graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)StatsScreen.SLOT_SPRITE, ItemRow.this.getContentX(), ItemRow.this.getContentY(), 18, 18);
                super.extractWidgetRenderState(graphics);
             }
-
-            protected void extractTooltip(final GuiGraphicsExtractor graphics, final int x, final int y) {
-               super.extractTooltip(graphics, ItemRow.this.getContentX() + 18, ItemRow.this.getContentY() + 18);
-            }
          }
       }
 
@@ -571,8 +562,7 @@ public class StatsScreen extends Screen {
             }
 
             public void extractContents(final GuiGraphicsExtractor graphics) {
-               Identifier background = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-               graphics.blitSprite(GuiPipeline.TEXTURED, background, this.getX(), this.getY(), this.width, this.height);
+               graphics.blitSprite(GuiPipeline.TEXTURED, this.sprites.get(this.isActive(), this.isHighlighted()), this.getX(), this.getY(), this.width, this.height);
                graphics.blitSprite(GuiPipeline.TEXTURED, this.sprite, this.getX(), this.getY(), this.width, this.height);
             }
          }
@@ -654,10 +644,6 @@ public class StatsScreen extends Screen {
 
          public Component getNarration() {
             return Component.translatable("narrator.select", CommonComponents.joinForNarration(this.kills, this.killedBy));
-         }
-
-         public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-            return event.isLeftMouse();
          }
       }
    }

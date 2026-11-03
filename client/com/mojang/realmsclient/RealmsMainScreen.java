@@ -164,7 +164,7 @@ public class RealmsMainScreen extends RealmsScreen {
    public void init() {
       this.serverList = new RealmsServerList(this.minecraft);
       this.realmSelectionList = new RealmSelectionList();
-      this.playButton = Button.builder(PLAY_TEXT, (button) -> play(this.getSelectedServer(), this)).width(100).build();
+      this.playButton = this.createPlayButton();
       this.configureButton = Button.builder(CONFIGURE_SERVER_TEXT, (button) -> this.configureClicked(this.getSelectedServer())).width(100).build();
       this.renewButton = Button.builder(SUBSCRIPTION_RENEW_TEXT, (button) -> this.onRenew(this.getSelectedServer())).width(100).build();
       this.leaveButton = Button.builder(LEAVE_SERVER_TEXT, (button) -> this.leaveClicked(this.getSelectedServer())).width(100).build();
@@ -248,6 +248,11 @@ public class RealmsMainScreen extends RealmsScreen {
 
    private Button createAddRealmButton() {
       return (Button)(this.trialAvailable ? new RealmsButton(0, 0, 100, 20, FREE_TRIAL, (var1) -> this.openRealmsPdp()) : Button.builder(ADD_REALM_TEXT, (var1) -> this.openRealmsPdp()).size(100, 20).build());
+   }
+
+   private Button createPlayButton() {
+      Button.OnPress onPress = (var1) -> play(this.getSelectedServer(), this);
+      return (Button)(this.trialAvailable ? Button.builder(PLAY_TEXT, onPress).width(100).build() : new RealmsButton(0, 0, 100, 20, PLAY_TEXT, onPress));
    }
 
    private Layout createFooter(final LayoutState state) {
@@ -440,6 +445,7 @@ public class RealmsMainScreen extends RealmsScreen {
       if (this.trialAvailable != trialAvailable) {
          this.trialAvailable = trialAvailable;
          this.addRealmButton = this.createAddRealmButton();
+         this.playButton = this.createPlayButton();
          this.updateLayout(this.activeLayoutState, true);
          this.updateButtonStates();
       }
@@ -912,7 +918,7 @@ public class RealmsMainScreen extends RealmsScreen {
          }
 
          this.button = (Button)this.gridLayout.addChild(notification.buildOpenLinkButton(realmsMainScreen), 1, 1, this.gridLayout.newCellSettings().alignHorizontallyCenter().padding(4));
-         this.button.setOverrideRenderHighlightedSprite(() -> this.isFocused());
+         this.button.setOverrideRenderHighlightedSprite(() -> this.button.isHighlighted() || this.isFocused() && RealmsMainScreen.this.minecraft.getLastInputType().isKeyboard());
          GridLayout var10000 = this.gridLayout;
          List var10001 = this.children;
          Objects.requireNonNull(var10001);

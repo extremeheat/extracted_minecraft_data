@@ -167,7 +167,7 @@ public class BeaconMenu extends AbstractContainerMenu {
 
    private static class PaymentSlot extends Slot {
       public PaymentSlot(final Container container, final int slot, final int x, final int y) {
-         super(container, slot, x, y);
+         super(container, slot, x, y, Slot.Section.INPUT);
       }
 
       public boolean mayPlace(final ItemStack itemStack) {

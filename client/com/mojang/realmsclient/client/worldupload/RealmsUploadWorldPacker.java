@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.BooleanSupplier;
 import java.util.zip.GZIPOutputStream;
@@ -18,7 +20,7 @@ public class RealmsUploadWorldPacker {
    private final Path directoryToPack;
 
    public static File pack(final Path directoryToPack, final BooleanSupplier isCanceled) throws IOException {
-      return (new RealmsUploadWorldPacker(directoryToPack, isCanceled)).tarGzipArchive();
+      return (new RealmsUploadWorldPacker(directoryToPack, isCanceled)).tarGzipArchive(File.createTempFile("realms-upload-file", ".tar.gz"));
    }
 
    private RealmsUploadWorldPacker(final Path directoryToPack, final BooleanSupplier isCanceled) {
@@ -27,30 +29,68 @@ public class RealmsUploadWorldPacker {
       this.directoryToPack = directoryToPack;
    }
 
-   private File tarGzipArchive() throws IOException {
-      TarArchiveOutputStream tar = null;
-
-      File var3;
+   private File tarGzipArchive(final File file) throws IOException {
       try {
-         File file = File.createTempFile("realms-upload-file", ".tar.gz");
-         tar = new TarArchiveOutputStream(new GZIPOutputStream(new FileOutputStream(file)));
-         tar.setLongFileMode(3);
-         this.addFileToTarGz(tar, this.directoryToPack, "world", true);
-         if (this.isCanceled.getAsBoolean()) {
-            throw new RealmsUploadCanceledException();
+         OutputStream output = new FileOutputStream(file);
+
+         try {
+            GZIPOutputStream gzip = new GZIPOutputStream(output);
+
+            try {
+               TarArchiveOutputStream tar = new TarArchiveOutputStream(gzip);
+
+               try {
+                  tar.setLongFileMode(3);
+                  this.addFileToTarGz(tar, this.directoryToPack, "world", true);
+                  if (this.isCanceled.getAsBoolean()) {
+                     throw new RealmsUploadCanceledException();
+                  }
+
+                  tar.finish();
+               } catch (Throwable var11) {
+                  try {
+                     tar.close();
+                  } catch (Throwable var10) {
+                     var11.addSuppressed(var10);
+                  }
+
+                  throw var11;
+               }
+
+               tar.close();
+            } catch (Throwable var12) {
+               try {
+                  gzip.close();
+               } catch (Throwable var9) {
+                  var12.addSuppressed(var9);
+               }
+
+               throw var12;
+            }
+
+            gzip.close();
+         } catch (Throwable var13) {
+            try {
+               output.close();
+            } catch (Throwable var8) {
+               var13.addSuppressed(var8);
+            }
+
+            throw var13;
          }
 
-         tar.finish();
+         output.close();
          this.verifyBelowSizeLimit(file.length());
-         var3 = file;
-      } finally {
-         if (tar != null) {
-            tar.close();
+         return file;
+      } catch (RuntimeException | Error | IOException var14) {
+         try {
+            Files.deleteIfExists(file.toPath());
+         } catch (IOException cleanupFailure) {
+            ((Throwable)var14).addSuppressed(cleanupFailure);
          }
 
+         throw var14;
       }
-
-      return var3;
    }
 
    private void addFileToTarGz(final TarArchiveOutputStream out, final Path path, final String base, final boolean root) throws IOException {

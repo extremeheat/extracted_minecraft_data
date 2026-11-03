@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
@@ -65,11 +64,7 @@ public abstract class ThrowableProjectile extends Projectile {
       Vec3 position = this.position();
       float inertia;
       if (this.isInWater()) {
-         for(int i = 0; i < 4; ++i) {
-            float s = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, position.x - movement.x * 0.25, position.y - movement.y * 0.25, position.z - movement.z * 0.25, movement.x, movement.y, movement.z);
-         }
-
+         this.addBubbleParticles(position);
          inertia = 0.8F;
       } else {
          inertia = this.getAirDrag();

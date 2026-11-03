@@ -27,8 +27,8 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
-import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.control.StandardLookControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.feline.Cat;
@@ -261,7 +261,7 @@ public class Phantom extends Mob implements Enemy {
       }
    }
 
-   private static class PhantomLookControl extends LookControl {
+   private static class PhantomLookControl extends StandardLookControl {
       public PhantomLookControl(final Mob mob) {
          super(mob);
       }

@@ -1,36 +1,36 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
-import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.ScrollableLayout;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.inventory.EnchantmentOptionButton;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.GroupNarration;
+import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.object.book.BookModel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.jspecify.annotations.Nullable;
 
 public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> {
-   private static final Identifier[] ENABLED_LEVEL_SPRITES = new Identifier[]{Identifier.withDefaultNamespace("container/enchanting_table/level_1"), Identifier.withDefaultNamespace("container/enchanting_table/level_2"), Identifier.withDefaultNamespace("container/enchanting_table/level_3")};
-   private static final Identifier[] DISABLED_LEVEL_SPRITES = new Identifier[]{Identifier.withDefaultNamespace("container/enchanting_table/level_1_disabled"), Identifier.withDefaultNamespace("container/enchanting_table/level_2_disabled"), Identifier.withDefaultNamespace("container/enchanting_table/level_3_disabled")};
-   private static final Identifier ENCHANTMENT_SLOT_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot_disabled");
-   private static final Identifier ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot_highlighted");
-   private static final Identifier ENCHANTMENT_SLOT_SPRITE = Identifier.withDefaultNamespace("container/enchanting_table/enchantment_slot");
    private static final Identifier ENCHANTING_TABLE_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/enchanting_table.png");
    private static final Identifier ENCHANTING_BOOK_LOCATION = Identifier.withDefaultNamespace("textures/entity/enchantment/enchanting_table_book.png");
    private final RandomSource random = RandomSource.create();
@@ -42,14 +42,34 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
    public float open;
    public float oOpen;
    private ItemStack last;
+   private final EnchantmentOptionButton[] enchantmentOptions;
 
    public EnchantmentScreen(final EnchantmentMenu menu, final Inventory inventory, final Component title) {
       super(menu, inventory, title);
       this.last = ItemStack.EMPTY;
+      this.enchantmentOptions = new EnchantmentOptionButton[3];
    }
 
    protected void init() {
       super.init();
+      LinearLayout layout = LinearLayout.vertical();
+
+      for(int i = 0; i < this.enchantmentOptions.length; ++i) {
+         this.enchantmentOptions[i] = (EnchantmentOptionButton)layout.addChild(new EnchantmentOptionButton(0, 0, this.menu, i, (button) -> {
+            if (((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, i)) {
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, i);
+            }
+
+         }));
+      }
+
+      ScrollableLayout scrollableLayout = new ScrollableLayout(this.minecraft, layout, 19 * this.enchantmentOptions.length, AbstractScrollArea.ScrollbarSettings.NO_SCROLL, 0, ScrollableLayout.ReserveStrategy.RIGHT, GroupNarration.list("narrator.position.list", "narration.group_navigation.usage.enchantment", ScreenAxis.VERTICAL));
+      scrollableLayout.setPosition(this.leftPos + 60, this.topPos + 14);
+      scrollableLayout.arrangeElements();
+      scrollableLayout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
+      scrollableLayout.setTabGroup(7);
+      scrollableLayout.allowTabNavigationInside(false);
+      this.tickTooltipAndActiveState();
       this.bookModel = new BookModel(this.minecraft.getEntityModels().bakeLayer(ModelLayers.BOOK));
    }
 
@@ -57,69 +77,14 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       super.containerTick();
       this.minecraft.player.experienceDisplayStartTick = this.minecraft.player.tickCount;
       this.tickBook();
-   }
-
-   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      int xo = (this.width - this.imageWidth) / 2;
-      int yo = (this.height - this.imageHeight) / 2;
-
-      for(int i = 0; i < 3; ++i) {
-         double xx = event.x() - (double)(xo + 60);
-         double yy = event.y() - (double)(yo + 14 + 19 * i);
-         if (xx >= 0.0 && yy >= 0.0 && xx < 108.0 && yy < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, i)) {
-            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, i);
-            return true;
-         }
-      }
-
-      return super.mouseClicked(event, doubleClick);
+      this.tickTooltipAndActiveState();
    }
 
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       super.extractBackground(graphics);
-      int xo = (this.width - this.imageWidth) / 2;
-      int yo = (this.height - this.imageHeight) / 2;
-      graphics.blit(GuiPipeline.TEXTURED, ENCHANTING_TABLE_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      this.extractBook(graphics, xo, yo);
+      graphics.blit(GuiPipeline.TEXTURED, ENCHANTING_TABLE_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+      this.extractBook(graphics, this.leftPos, this.topPos);
       EnchantmentNames.getInstance().initSeed((long)((EnchantmentMenu)this.menu).getEnchantmentSeed());
-      int goldCount = ((EnchantmentMenu)this.menu).getGoldCount();
-
-      for(int i = 0; i < 3; ++i) {
-         int leftPos = xo + 60;
-         int leftPosText = leftPos + 20;
-         int cost = (this.menu).costs[i];
-         if (cost == 0) {
-            graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ENCHANTMENT_SLOT_DISABLED_SPRITE, leftPos, yo + 14 + 19 * i, 108, 19);
-         } else {
-            String costText = "" + cost;
-            int textWidth = 86 - this.font.width(costText);
-            FormattedText message = EnchantmentNames.getInstance().getRandomName(this.font, textWidth);
-            int col = -9937334;
-            if ((goldCount < i + 1 || this.minecraft.player.experienceLevel < cost) && !this.minecraft.player.hasInfiniteMaterials()) {
-               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ENCHANTMENT_SLOT_DISABLED_SPRITE, leftPos, yo + 14 + 19 * i, 108, 19);
-               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)DISABLED_LEVEL_SPRITES[i], leftPos + 1, yo + 15 + 19 * i, 16, 16);
-               graphics.textWithWordWrap(this.font, message, leftPosText, yo + 16 + 19 * i, textWidth, ARGB.opaque((col & 16711422) >> 1), false);
-               col = -12550384;
-            } else {
-               int xx = graphics.mouseX() - (xo + 60);
-               int yy = graphics.mouseY() - (yo + 14 + 19 * i);
-               if (xx >= 0 && yy >= 0 && xx < 108 && yy < 19) {
-                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ENCHANTMENT_SLOT_HIGHLIGHTED_SPRITE, leftPos, yo + 14 + 19 * i, 108, 19);
-                  graphics.requestCursor(CursorTypes.POINTING_HAND);
-                  col = -128;
-               } else {
-                  graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ENCHANTMENT_SLOT_SPRITE, leftPos, yo + 14 + 19 * i, 108, 19);
-               }
-
-               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)ENABLED_LEVEL_SPRITES[i], leftPos + 1, yo + 15 + 19 * i, 16, 16);
-               graphics.textWithWordWrap(this.font, message, leftPosText, yo + 16 + 19 * i, textWidth, col, false);
-               col = -8323296;
-            }
-
-            graphics.text(this.font, costText, leftPosText + 86 - this.font.width(costText), yo + 16 + 19 * i + 7, col);
-         }
-      }
-
    }
 
    private void extractBook(final GuiGraphicsExtractor graphics, final int left, final int top) {
@@ -131,53 +96,6 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int x1 = x0 + 38;
       int y1 = y0 + 31;
       graphics.book(this.bookModel, ENCHANTING_BOOK_LOCATION, 40.0F, open, flip, x0, y0, x1, y1);
-   }
-
-   public void extractRenderState(final GuiGraphicsExtractor graphics) {
-      float a = this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-      super.extractRenderState(graphics);
-      boolean infiniteMaterials = this.minecraft.player.hasInfiniteMaterials();
-      int gold = ((EnchantmentMenu)this.menu).getGoldCount();
-
-      for(int i = 0; i < 3; ++i) {
-         int minLevel = (this.menu).costs[i];
-         Optional<Holder.Reference<Enchantment>> enchant = this.minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get((this.menu).enchantClue[i]);
-         if (!enchant.isEmpty()) {
-            int enchantLevel = (this.menu).levelClue[i];
-            int cost = i + 1;
-            if (this.isHovering(60, 14 + 19 * i, 108, 17, (double)graphics.mouseX(), (double)graphics.mouseY()) && minLevel > 0 && enchantLevel >= 0) {
-               List<Component> texts = new ArrayList();
-               texts.add(Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder)enchant.get(), enchantLevel)).withStyle(ChatFormatting.WHITE));
-               if (!infiniteMaterials) {
-                  texts.add(CommonComponents.EMPTY);
-                  if (this.minecraft.player.experienceLevel < minLevel) {
-                     texts.add(Component.translatable("container.enchant.level.requirement", (this.menu).costs[i]).withStyle(ChatFormatting.RED));
-                  } else {
-                     MutableComponent lapisCost;
-                     if (cost == 1) {
-                        lapisCost = Component.translatable("container.enchant.lapis.one");
-                     } else {
-                        lapisCost = Component.translatable("container.enchant.lapis.many", cost);
-                     }
-
-                     texts.add(lapisCost.withStyle(gold >= cost ? ChatFormatting.GRAY : ChatFormatting.RED));
-                     MutableComponent levelCost;
-                     if (cost == 1) {
-                        levelCost = Component.translatable("container.enchant.level.one");
-                     } else {
-                        levelCost = Component.translatable("container.enchant.level.many", cost);
-                     }
-
-                     texts.add(levelCost.withStyle(ChatFormatting.GRAY));
-                  }
-               }
-
-               graphics.setComponentTooltipForNextFrame(this.font, texts, graphics.mouseX(), graphics.mouseY());
-               break;
-            }
-         }
-      }
-
    }
 
    public void tickBook() {
@@ -213,5 +131,56 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       diff = Math.clamp(diff, -0.2F, 0.2F);
       this.flipA += (diff - this.flipA) * 0.9F;
       this.flip += this.flipA;
+   }
+
+   private void tickTooltipAndActiveState() {
+      for(int i = 0; i < this.enchantmentOptions.length; ++i) {
+         Component clue = this.getClue(i);
+         this.enchantmentOptions[i].setMessage(clue != null ? clue : CommonComponents.EMPTY);
+         this.enchantmentOptions[i].setTooltip(clue != null ? this.getTooltip(i, clue) : Tooltip.create(CommonComponents.EMPTY));
+         this.enchantmentOptions[i].active = (this.menu).costs[i] > 0 && (((EnchantmentMenu)this.menu).getGoldCount() >= i + 1 && this.minecraft.player.experienceLevel >= (this.menu).costs[i] || this.minecraft.player.hasInfiniteMaterials());
+      }
+
+   }
+
+   private @Nullable Component getClue(final int index) {
+      int cost = (this.menu).costs[index];
+      int enchantLevel = (this.menu).levelClue[index];
+      Optional<Holder.Reference<Enchantment>> enchant = this.minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get((this.menu).enchantClue[index]);
+      return !enchant.isEmpty() && cost > 0 && enchantLevel >= 0 ? Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder)enchant.get(), enchantLevel)).withStyle(ChatFormatting.WHITE) : null;
+   }
+
+   private Tooltip getTooltip(final int index, final Component clue) {
+      if (this.minecraft.player.hasInfiniteMaterials()) {
+         return Tooltip.create(clue, (Component)null);
+      } else {
+         int gold = ((EnchantmentMenu)this.menu).getGoldCount();
+         int lapisCost = index + 1;
+         int cost = (this.menu).costs[index];
+         List<Component> costs = new ArrayList();
+         if (this.minecraft.player.experienceLevel < cost) {
+            costs.add(Component.translatable("container.enchant.level.requirement", (this.menu).costs[index]).withStyle(ChatFormatting.RED));
+         } else {
+            MutableComponent lapisCostText;
+            if (lapisCost == 1) {
+               lapisCostText = Component.translatable("container.enchant.lapis.one");
+            } else {
+               lapisCostText = Component.translatable("container.enchant.lapis.many", lapisCost);
+            }
+
+            costs.add(lapisCostText.withStyle(gold >= lapisCost ? ChatFormatting.GRAY : ChatFormatting.RED));
+            MutableComponent levelCost;
+            if (lapisCost == 1) {
+               levelCost = Component.translatable("container.enchant.level.one");
+            } else {
+               levelCost = Component.translatable("container.enchant.level.many", lapisCost);
+            }
+
+            costs.add(levelCost.withStyle(ChatFormatting.GRAY));
+         }
+
+         Component costText = CommonComponents.joinLines((Collection)costs);
+         return Tooltip.create(CommonComponents.joinLines(clue, CommonComponents.EMPTY, costText), costText);
+      }
    }
 }

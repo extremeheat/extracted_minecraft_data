@@ -78,6 +78,7 @@ public class FallingParticle extends SingleQuadParticle {
             this.xd *= (double)this.friction;
             this.yd *= (double)this.friction;
             this.zd *= (double)this.friction;
+            ++this.age;
          }
       }
    }

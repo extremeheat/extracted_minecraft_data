@@ -47,7 +47,10 @@ public class FrameBufferCache {
          depthAttachment.addAssociatedFbo(key);
       }
 
-      dsa.bindFrameBufferTextures(fbo, colorIds, mipLevels, depthAttachment == null ? 0 : depthAttachment.glId(), depthAttachment == null ? 0 : depthAttachment.fboMipLevel(), 0);
+      int depthMipLevel = depthAttachment == null ? 0 : depthAttachment.fboMipLevel();
+      int depthId = depthAttachment != null && depthAttachment.getFormat().hasDepthAspect() ? depthAttachment.glId() : 0;
+      int stencilId = depthAttachment != null && depthAttachment.getFormat().hasStencilAspect() ? depthAttachment.glId() : 0;
+      dsa.bindFrameBufferTextures(fbo, colorIds, mipLevels, depthId, depthId != 0 ? depthMipLevel : 0, stencilId, stencilId != 0 ? stencilId : depthMipLevel, 0);
       return fbo;
    }
 

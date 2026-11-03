@@ -16,19 +16,16 @@ import net.minecraft.world.level.chunk.EmptyLevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
-import net.minecraft.world.level.levelgen.DebugLevelSource;
 import org.jspecify.annotations.Nullable;
 
 public class SectionCopy {
    private final Map<BlockPos, BlockEntity> blockEntities;
    private final @Nullable PalettedContainer<BlockState> section;
-   private final boolean debug;
    private final LevelHeightAccessor levelHeightAccessor;
 
    public SectionCopy(final LevelChunk levelChunk, final int sectionIndex) {
       super();
       this.levelHeightAccessor = levelChunk;
-      this.debug = levelChunk.getLevel().isDebug();
       this.blockEntities = ImmutableMap.copyOf(levelChunk.getBlockEntities());
       if (levelChunk instanceof EmptyLevelChunk) {
          this.section = null;
@@ -52,18 +49,7 @@ public class SectionCopy {
       int x = pos.getX();
       int y = pos.getY();
       int z = pos.getZ();
-      if (this.debug) {
-         BlockState blockState = null;
-         if (y == 60) {
-            blockState = Blocks.BARRIER.defaultBlockState();
-         }
-
-         if (y == 70) {
-            blockState = DebugLevelSource.getBlockStateFor(x, z);
-         }
-
-         return blockState == null ? Blocks.AIR.defaultBlockState() : blockState;
-      } else if (this.section == null) {
+      if (this.section == null) {
          return Blocks.AIR.defaultBlockState();
       } else {
          try {

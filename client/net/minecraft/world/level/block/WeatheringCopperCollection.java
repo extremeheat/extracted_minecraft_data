@@ -12,7 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.apache.commons.lang3.function.TriFunction;
 
-public record WeatheringCopperCollection<T>(ByState<T> weathering, ByState<T> waxed) {
+public record WeatheringCopperCollection<T>(ByState<T> weathering, ByState<T> waxed) implements Group<T> {
    public static final ByState<WeatheringCopper.WeatherState> STATES;
    public static final WeatheringCopperCollection<String> PREFIXES;
 

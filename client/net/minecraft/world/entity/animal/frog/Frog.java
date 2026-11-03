@@ -44,8 +44,8 @@ import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
+import net.minecraft.world.entity.ai.control.StandardLookControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -312,7 +312,7 @@ public class Frog extends Animal {
       DEFAULT_VARIANT = FrogVariants.TEMPERATE;
    }
 
-   private class FrogLookControl extends LookControl {
+   private class FrogLookControl extends StandardLookControl {
       public FrogLookControl(final Mob mob) {
          Objects.requireNonNull(Frog.this);
          super(mob);

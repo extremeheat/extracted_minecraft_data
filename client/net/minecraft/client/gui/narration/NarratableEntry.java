@@ -27,6 +27,10 @@ public interface NarratableEntry extends NarrationSupplier, TabOrderedElement {
          return this == FOCUSED;
       }
 
+      public static NarrationPriority of(final boolean focused, final boolean hovered) {
+         return focused ? FOCUSED : (hovered ? HOVERED : NONE);
+      }
+
       // $FF: synthetic method
       private static NarrationPriority[] $values() {
          return new NarrationPriority[]{NONE, HOVERED, FOCUSED};

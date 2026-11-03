@@ -409,7 +409,7 @@ public class Cat extends TamableAnimal {
 
                   return InteractionResult.SUCCESS;
                }
-            } else if (this.isFood(itemStack) && this.getHealth() < this.getMaxHealth()) {
+            } else if (this.isFood(itemStack) && this.canHealNaturally()) {
                if (!this.level().isClientSide()) {
                   this.feed(player, hand, itemStack, 1.0F, 1.0F);
                }

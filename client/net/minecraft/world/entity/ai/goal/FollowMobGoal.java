@@ -10,6 +10,7 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class FollowMobGoal extends Goal {
@@ -81,7 +82,8 @@ public class FollowMobGoal extends Goal {
             } else {
                this.navigation.stop();
                LookControl lookControl = this.followingMob.getLookControl();
-               if (distSqr <= (double)this.stopDistance || lookControl.getWantedX() == this.mob.getX() && lookControl.getWantedY() == this.mob.getY() && lookControl.getWantedZ() == this.mob.getZ()) {
+               Vec3 wantedPosition = lookControl.getWantedPosition();
+               if (distSqr <= (double)this.stopDistance || wantedPosition != null && this.mob.position().equals(wantedPosition)) {
                   double deltaX = this.followingMob.getX() - this.mob.getX();
                   double deltaZ = this.followingMob.getZ() - this.mob.getZ();
                   this.navigation.moveTo(this.mob.getX() - deltaX, this.mob.getY(), this.mob.getZ() - deltaZ, this.speedModifier);

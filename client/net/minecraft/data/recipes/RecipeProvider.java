@@ -132,9 +132,10 @@ public abstract class RecipeProvider {
       SmithingTransformRecipeBuilder.smithing(Ingredient.of((ItemLike)Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of((ItemLike)base), this.tag(ItemTags.NETHERITE_TOOL_MATERIALS), category, result).unlocks("has_netherite_ingot", this.has(ItemTags.NETHERITE_TOOL_MATERIALS)).save(this.output, getItemName(result) + "_smithing");
    }
 
-   protected void trimSmithing(final Item trimTemplate, final ResourceKey<TrimPattern> patternId, final ResourceKey<Recipe<?>> id) {
+   protected void trimSmithing(final ResourceKey<Item> trimTemplateId, final ResourceKey<TrimPattern> patternId, final ResourceKey<Recipe<?>> recipeId) {
       Holder.Reference<TrimPattern> pattern = this.trimPatterns.getOrThrow(patternId);
-      SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of((ItemLike)trimTemplate), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), pattern, RecipeCategory.MISC).unlocks("has_smithing_trim_template", this.has(trimTemplate)).save(this.output, id);
+      Holder.Reference<Item> trimTemplate = this.items.getOrThrow(trimTemplateId);
+      SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of((Holder)trimTemplate), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), pattern, RecipeCategory.MISC).unlocks("has_smithing_trim_template", has((Holder)trimTemplate)).save(this.output, recipeId);
    }
 
    protected void twoByTwoPacker(final RecipeCategory category, final ItemLike result, final ItemLike ingredient) {
@@ -531,6 +532,10 @@ public abstract class RecipeProvider {
 
    protected Criterion<InventoryChangeTrigger.TriggerInstance> has(final ItemLike item) {
       return inventoryTrigger(ItemPredicate.Builder.item().of(this.items, item));
+   }
+
+   protected static Criterion<InventoryChangeTrigger.TriggerInstance> has(final Holder<Item> item) {
+      return inventoryTrigger(ItemPredicate.Builder.item().of(HolderSet.direct(item)));
    }
 
    protected Criterion<InventoryChangeTrigger.TriggerInstance> has(final TagKey<Item> tag) {

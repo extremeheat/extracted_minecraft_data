@@ -7,7 +7,7 @@ public class CrafterSlot extends Slot {
    private final CrafterMenu menu;
 
    public CrafterSlot(final Container container, final int slot, final int x, final int y, final CrafterMenu menu) {
-      super(container, slot, x, y);
+      super(container, slot, x, y, Slot.Section.INPUT);
       this.menu = menu;
    }
 
@@ -18,5 +18,9 @@ public class CrafterSlot extends Slot {
    public void setChanged() {
       super.setChanged();
       this.menu.slotsChanged(this.container);
+   }
+
+   public boolean isDisabled() {
+      return this.menu.isSlotDisabled(this.index);
    }
 }

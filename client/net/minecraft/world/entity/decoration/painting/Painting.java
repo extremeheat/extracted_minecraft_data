@@ -187,10 +187,6 @@ public class Painting extends HangingEntity {
       return new ItemStack(Items.PAINTING);
    }
 
-   public boolean canBePlaced() {
-      return this.level().noBorderCollision(this, this.getPopBox()) && super.canBePlaced();
-   }
-
    static {
       DATA_PAINTING_VARIANT_ID = SynchedEntityData.<Holder<PaintingVariant>>defineId(Painting.class, EntityDataSerializers.PAINTING_VARIANT);
    }

@@ -132,6 +132,6 @@ public class BlockIds {
    }
 
    private static ColorCollection<ResourceKey<Block>> createSimpleColored(final String baseName) {
-      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).<ResourceKey<Block>>map(BlockIds::create);
+      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).map(BlockIds::create);
    }
 }

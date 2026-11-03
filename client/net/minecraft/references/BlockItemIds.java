@@ -19,6 +19,18 @@ public class BlockItemIds {
    public static final BlockItemId COBBLED_DEEPSLATE = BlockItemId.create("cobbled_deepslate");
    public static final BlockItemId POLISHED_DEEPSLATE = BlockItemId.create("polished_deepslate");
    public static final BlockItemId CALCITE = BlockItemId.create("calcite");
+   public static final BlockItemId CALCITE_PILLAR = BlockItemId.create("calcite_pillar");
+   public static final BlockItemId CALCITE_SLAB = BlockItemId.create("calcite_slab");
+   public static final BlockItemId CALCITE_STAIRS = BlockItemId.create("calcite_stairs");
+   public static final BlockItemId CALCITE_WALL = BlockItemId.create("calcite_wall");
+   public static final BlockItemId POLISHED_CALCITE = BlockItemId.create("polished_calcite");
+   public static final BlockItemId POLISHED_CALCITE_SLAB = BlockItemId.create("polished_calcite_slab");
+   public static final BlockItemId POLISHED_CALCITE_STAIRS = BlockItemId.create("polished_calcite_stairs");
+   public static final BlockItemId POLISHED_CALCITE_WALL = BlockItemId.create("polished_calcite_wall");
+   public static final BlockItemId POLISHED_CALCITE_BRICKS = BlockItemId.create("polished_calcite_bricks");
+   public static final BlockItemId POLISHED_CALCITE_BRICK_SLAB = BlockItemId.create("polished_calcite_brick_slab");
+   public static final BlockItemId POLISHED_CALCITE_BRICK_STAIRS = BlockItemId.create("polished_calcite_brick_stairs");
+   public static final BlockItemId POLISHED_CALCITE_BRICK_WALL = BlockItemId.create("polished_calcite_brick_wall");
    public static final BlockItemId TUFF = BlockItemId.create("tuff");
    public static final BlockItemId TUFF_SLAB = BlockItemId.create("tuff_slab");
    public static final BlockItemId TUFF_STAIRS = BlockItemId.create("tuff_stairs");
@@ -411,6 +423,7 @@ public class BlockItemIds {
    public static final BlockItemId SCULK_VEIN = BlockItemId.create("sculk_vein");
    public static final BlockItemId SCULK_CATALYST = BlockItemId.create("sculk_catalyst");
    public static final BlockItemId SCULK_SHRIEKER = BlockItemId.create("sculk_shrieker");
+   public static final BlockItemId CHISELED_SOULSHALE = BlockItemId.create("chiseled_soulshale");
    public static final BlockItemId ENCHANTING_TABLE = BlockItemId.create("enchanting_table");
    public static final BlockItemId END_PORTAL_FRAME = BlockItemId.create("end_portal_frame");
    public static final BlockItemId END_STONE = BlockItemId.create("end_stone");
@@ -820,15 +833,15 @@ public class BlockItemIds {
    }
 
    private static ColorCollection<BlockItemId> createSimpleColored(final String baseName) {
-      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).<BlockItemId>map(BlockItemId::create);
+      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).map(BlockItemId::create);
    }
 
    private static WeatheringCopperCollection<BlockItemId> createSimpleCopper(final String baseName) {
-      return WeatheringCopperCollection.prefixWithState(WeatheringCopperCollection.create(baseName)).<BlockItemId>map(BlockItemId::create);
+      return WeatheringCopperCollection.prefixWithState(WeatheringCopperCollection.create(baseName)).map(BlockItemId::create);
    }
 
    static {
-      COPPER_BLOCK = WeatheringCopperCollection.prefixWithState(WeatheringCopperCollection.same(COPPER_BLOCK_SPECIAL_NAMES)).<BlockItemId>map(BlockItemId::create);
+      COPPER_BLOCK = WeatheringCopperCollection.prefixWithState(WeatheringCopperCollection.same(COPPER_BLOCK_SPECIAL_NAMES)).map(BlockItemId::create);
       COPPER_BARS = createSimpleCopper("copper_bars");
       COPPER_CHAIN = createSimpleCopper("copper_chain");
       COPPER_LANTERN = createSimpleCopper("copper_lantern");

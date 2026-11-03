@@ -458,24 +458,23 @@ public class KeyboardHandler {
 
          Screen screen = this.minecraft.gui.screen();
          if (screen != null) {
-            switch (event.shortcutKey()) {
-               case 9:
-                  this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
-                  break;
-               case 1073741903:
-               case 1073741904:
-               case 1073741905:
-               case 1073741906:
+            if (event.isCycleFocus()) {
+               this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
+            } else if (!screen.isInputCaptured()) {
+               if (event.isSelection()) {
+                  this.minecraft.setLastInputType(InputType.KEYBOARD_SELECTION);
+               } else if (event.isLeft() || event.isRight() || event.isUp() || event.isDown()) {
                   this.minecraft.setLastInputType(InputType.KEYBOARD_ARROW);
+               }
             }
          }
 
          if (action == 1) {
-            label193: {
+            label196: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label193;
+                     break label196;
                   }
                }
 
@@ -535,22 +534,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label172: {
+         label175: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label170: {
+               label173: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label170;
+                        break label173;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label172;
+                     break label175;
                   }
                }
             }

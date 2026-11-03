@@ -55,7 +55,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    }
 
    private static ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
-      return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, (itemStack) -> true).withSlot(1, 76, 47, (itemStack) -> true).withResultSlot(2, 134, 47).build();
+      return ItemCombinerMenuSlotDefinition.create().withSlot(0, 27, 47, (itemStack) -> true).withSlot(1, 76, 47, (itemStack) -> true, Slot.Section.SECOND_INPUT).withResultSlot(2, 134, 47).build();
    }
 
    protected boolean isValidBlock(final BlockState state) {

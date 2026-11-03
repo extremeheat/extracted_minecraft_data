@@ -423,7 +423,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
       if (this.isTame()) {
-         if (this.isFood(itemStack) && this.getHealth() < this.getMaxHealth()) {
+         if (this.isFood(itemStack) && this.canHealNaturally()) {
             this.feed(player, hand, itemStack, 2.0F, 2.0F);
             return InteractionResult.SUCCESS;
          } else {

@@ -30,7 +30,7 @@ public class LockIconButton extends Button {
       Icon icon;
       if (!this.active) {
          icon = this.locked ? LockIconButton.Icon.LOCKED_DISABLED : LockIconButton.Icon.UNLOCKED_DISABLED;
-      } else if (this.isHoveredOrFocused()) {
+      } else if (this.isHighlighted()) {
          icon = this.locked ? LockIconButton.Icon.LOCKED_HOVER : LockIconButton.Icon.UNLOCKED_HOVER;
       } else {
          icon = this.locked ? LockIconButton.Icon.LOCKED : LockIconButton.Icon.UNLOCKED;

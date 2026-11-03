@@ -483,12 +483,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Holder<DimensionType> dimensionType = spawnInfo.dimensionType();
       this.serverChunkRadius = packet.chunkRadius();
       this.serverSimulationDistance = packet.simulationDistance();
-      boolean isDebug = spawnInfo.isDebug();
       boolean isFlat = spawnInfo.isFlat();
       int seaLevel = spawnInfo.seaLevel();
       ClientLevel.ClientLevelData levelData = new ClientLevel.ClientLevelData(Difficulty.NORMAL, packet.hardcore(), isFlat);
       this.levelData = levelData;
-      this.level = new ClientLevel(this, levelData, dimension, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, isDebug, seaLevel);
+      this.level = new ClientLevel(this, levelData, dimension, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, seaLevel);
       this.minecraft.setLevel(this.level);
       if (this.minecraft.player == null) {
          this.minecraft.player = this.minecraft.gameMode.createPlayer(this.level, new StatsCounter(), new ClientRecipeBook(), new ItemActivation());
@@ -1168,12 +1167,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       LevelLoadingScreen.Reason levelLoadingReason = this.determineLevelLoadingReason(oldPlayer.isDeadOrDying(), dimensionKey, oldDimensionKey);
       if (dimensionChanged) {
          Map<MapId, MapItemSavedData> mapData = this.level.getAllMapData();
-         boolean isDebug = spawnInfo.isDebug();
          boolean isFlat = spawnInfo.isFlat();
          int seaLevel = spawnInfo.seaLevel();
          ClientLevel.ClientLevelData levelData = new ClientLevel.ClientLevelData(this.levelData.getDifficulty(), this.levelData.isHardcore(), isFlat);
          this.levelData = levelData;
-         this.level = new ClientLevel(this, levelData, dimensionKey, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, isDebug, seaLevel);
+         this.level = new ClientLevel(this, levelData, dimensionKey, dimensionType, this.serverChunkRadius, this.serverSimulationDistance, this.minecraft.levelExtractor, seaLevel);
          this.level.addMapData(mapData);
          this.minecraft.setLevel(this.level);
          this.debugSubscriber.dropLevel();

@@ -310,18 +310,16 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    private void tickChunks() {
-      if (!this.level.isDebug()) {
-         ProfilerFiller profiler = Profiler.get();
-         profiler.push("pollingChunks");
-         if (this.level.tickRateManager().runsNormally()) {
-            profiler.push("tickingChunks");
-            this.tickChunks(profiler);
-            profiler.pop();
-         }
-
-         this.broadcastChangedChunks(profiler);
+      ProfilerFiller profiler = Profiler.get();
+      profiler.push("pollingChunks");
+      if (this.level.tickRateManager().runsNormally()) {
+         profiler.push("tickingChunks");
+         this.tickChunks(profiler);
          profiler.pop();
       }
+
+      this.broadcastChangedChunks(profiler);
+      profiler.pop();
    }
 
    private void broadcastChangedChunks(final ProfilerFiller profiler) {
@@ -465,7 +463,7 @@ public class ServerChunkCache extends ChunkSource {
          this.runDistanceManagerUpdates();
          ChunkHolder chunkHolder = this.getVisibleChunkIfPresent(pos.pack());
          Objects.requireNonNull(chunkHolder, "No chunk was scheduled for loading");
-         return this.chunkMap.getChunkRangeFuture(chunkHolder, radius, (distance) -> ChunkStatus.FULL);
+         return this.chunkMap.getChunkRangeFuture(chunkHolder, radius, (var0) -> ChunkStatus.FULL);
       }
    }
 

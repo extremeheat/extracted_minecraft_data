@@ -13,7 +13,7 @@ public class MerchantResultSlot extends Slot {
    private final Merchant merchant;
 
    public MerchantResultSlot(final Player player, final Merchant merchant, final MerchantContainer slots, final int id, final int x, final int y) {
-      super(slots, id, x, y);
+      super(slots, id, x, y, Slot.Section.RESULT);
       this.player = player;
       this.merchant = merchant;
       this.slots = slots;

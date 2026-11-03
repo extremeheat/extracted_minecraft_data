@@ -2,6 +2,7 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
@@ -51,6 +52,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
 import net.minecraft.WorldVersion;
@@ -80,8 +82,11 @@ public class RealmsClient {
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
    private static final String FEATURE_FLAGS_RESOURCE = "feature/v1";
    private static final String INVITE_CODES_RESOURCE = "api/v1.0/invite/codes";
+   private static final String CONTENT_UPLOAD_RESOURCE = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/upload";
+   private static final String CONTENT_V2_UPLOAD_FLAG = "v2upload";
    private static final String ACCEPT_HEADER = "Accept";
    private static final String APPLICATION_JSON = "application/json";
+   private static final String CLIENT_VERSION_HEADER = "Client-Version";
    private static final String MOJANG_AUTH_HEADER = "x-mojangauth";
    private static final String REALMS_PLATFORM_HEADER = "X-Realms-Platform";
    private static final String PATH_INVITE_CODES_UPDATE = "/update";
@@ -160,6 +165,10 @@ public class RealmsClient {
 
    public Set<String> getFeatureFlags() {
       return (Set)this.featureFlags.join();
+   }
+
+   public boolean isContentV2UploadEnabled() {
+      return this.getFeatureFlags().contains("v2upload");
    }
 
    private Set<String> fetchFeatureFlags() {
@@ -512,6 +521,30 @@ public class RealmsClient {
       return uploadInfo;
    }
 
+   public CompletableFuture<String> createContentV2UploadSession(final long realmId, final int slotId, final String archiveFormat) {
+      String resource = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/upload".replace("$REALM_ID", String.valueOf(realmId)).replace("$SLOT_ID", String.valueOf(slotId));
+      JsonObject body = new JsonObject();
+      body.addProperty("archiveFormat", archiveFormat);
+      Request<?> request = frontendV2Request(Request.post(frontendV2Url(resource, (String)null), body.toString()), this.minecraft.getUser().getAccessToken());
+      request.connection.setRequestProperty("Client-Version", SharedConstants.getCurrentVersion().name());
+      request.connection.setRequestProperty("X-Realms-Platform", "Java");
+      request.connection.setInstanceFollowRedirects(false);
+      CompletableFuture<String> response = CompletableFuture.supplyAsync(() -> {
+         try {
+            return this.execute(request, true);
+         } catch (RealmsServiceException e) {
+            throw new CompletionException(e);
+         }
+      }, Util.nonCriticalIoPool());
+      response.whenComplete((result, error) -> {
+         if (error != null) {
+            request.cancel();
+         }
+
+      });
+      return response;
+   }
+
    public void rejectInvitation(final String invitationId) throws RealmsServiceException {
       String asciiUrl = this.url("invites" + "/reject/$INVITATION_ID".replace("$INVITATION_ID", invitationId));
       this.execute(Request.put(asciiUrl, ""));
@@ -569,6 +602,10 @@ public class RealmsClient {
    }
 
    private String execute(final Request<?> request) throws RealmsServiceException {
+      return this.execute(request, false);
+   }
+
+   private String execute(final Request<?> request, final boolean requireOkResponse) throws RealmsServiceException {
       request.cookie("sid", this.sessionId);
       request.cookie("user", this.username);
       WorldVersion version = SharedConstants.getCurrentVersion();
@@ -577,26 +614,31 @@ public class RealmsClient {
 
       try {
          int responseCode = request.responseCode();
+         String retryAfterHeader = requireOkResponse ? request.getHeader("Retry-After") : null;
          if (responseCode != 503 && responseCode != 277) {
             String responseText = request.text();
-            if (responseCode >= 200 && responseCode < 300) {
-               return responseText;
-            } else if (responseCode == 401) {
-               String authenticationHeader = request.getHeader("WWW-Authenticate");
-               LOGGER.info("Could not authorize you against Realms server: {}", authenticationHeader);
-               throw new RealmsServiceException(new RealmsError.AuthenticationError(authenticationHeader));
-            } else {
-               String contentType = request.connection.getContentType();
-               if (contentType != null && contentType.startsWith("text/html")) {
-                  throw new RealmsServiceException(RealmsError.CustomError.htmlPayload(responseCode, responseText));
+            if (!requireOkResponse || responseCode >= 200 && responseCode < 300) {
+               if (responseCode >= 200 && responseCode < 300) {
+                  return responseText;
+               } else if (responseCode == 401) {
+                  String authenticationHeader = request.getHeader("WWW-Authenticate");
+                  LOGGER.info("Could not authorize you against Realms server: {}", authenticationHeader);
+                  throw new RealmsServiceException(new RealmsError.AuthenticationError(authenticationHeader));
                } else {
-                  RealmsError error = RealmsError.parse(responseCode, responseText);
-                  throw new RealmsServiceException(error);
+                  String contentType = request.connection.getContentType();
+                  if (contentType != null && contentType.startsWith("text/html")) {
+                     throw new RealmsServiceException(RealmsError.CustomError.htmlPayload(responseCode, responseText));
+                  } else {
+                     RealmsError error = RealmsError.parse(responseCode, responseText);
+                     throw new RealmsServiceException(error);
+                  }
                }
+            } else {
+               throw new RealmsServiceException(RealmsError.CustomError.noPayload(responseCode), retryAfterHeader);
             }
          } else {
             int pauseTime = request.getRetryAfterHeader();
-            throw new RetryCallException(pauseTime, responseCode);
+            throw new RetryCallException(pauseTime, responseCode, retryAfterHeader);
          }
       } catch (RealmsHttpException e) {
          throw new RealmsServiceException(RealmsError.CustomError.connectivityError(e));

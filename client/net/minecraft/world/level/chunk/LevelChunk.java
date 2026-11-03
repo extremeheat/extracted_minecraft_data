@@ -49,7 +49,6 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.EuclideanGameEventListenerRegistry;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
-import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -188,34 +187,22 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
       int x = pos.getX();
       int y = pos.getY();
       int z = pos.getZ();
-      if (this.level.isDebug()) {
-         BlockState blockState = null;
-         if (y == 60) {
-            blockState = Blocks.BARRIER.defaultBlockState();
-         }
 
-         if (y == 70) {
-            blockState = DebugLevelSource.getBlockStateFor(x, z);
-         }
-
-         return blockState == null ? Blocks.AIR.defaultBlockState() : blockState;
-      } else {
-         try {
-            int sectionIndex = this.getSectionIndex(y);
-            if (sectionIndex >= 0 && sectionIndex < this.sections.length) {
-               LevelChunkSection currentSection = this.sections[sectionIndex];
-               if (!currentSection.hasOnlyAir()) {
-                  return currentSection.getBlockState(x & 15, y & 15, z & 15);
-               }
+      try {
+         int sectionIndex = this.getSectionIndex(y);
+         if (sectionIndex >= 0 && sectionIndex < this.sections.length) {
+            LevelChunkSection currentSection = this.sections[sectionIndex];
+            if (!currentSection.hasOnlyAir()) {
+               return currentSection.getBlockState(x & 15, y & 15, z & 15);
             }
-
-            return Blocks.AIR.defaultBlockState();
-         } catch (Throwable t) {
-            CrashReport report = CrashReport.forThrowable(t, "Getting block state");
-            CrashReportCategory category = report.addCategory("Block being got");
-            category.setDetail("Location", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
-            throw new ReportedException(report);
          }
+
+         return Blocks.AIR.defaultBlockState();
+      } catch (Throwable t) {
+         CrashReport report = CrashReport.forThrowable(t, "Getting block state");
+         CrashReportCategory category = report.addCategory("Block being got");
+         category.setDetail("Location", (CrashReportDetail)(() -> CrashReportUtil.formatLocation(this, x, y, z)));
+         throw new ReportedException(report);
       }
    }
 

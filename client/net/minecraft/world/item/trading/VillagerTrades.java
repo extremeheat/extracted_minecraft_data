@@ -839,21 +839,21 @@ public class VillagerTrades {
    }
 
    static {
-      SHEPHERD_2_EMERALD_WOOL = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("shepherd/2/emerald_" + color + "_wool"));
-      SHEPHERD_2_EMERALD_CARPETS = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("shepherd/2/emerald_" + color + "_carpet"));
+      SHEPHERD_2_EMERALD_WOOL = ColorCollection.NAMES.map((color) -> resourceKey("shepherd/2/emerald_" + color + "_wool"));
+      SHEPHERD_2_EMERALD_CARPETS = ColorCollection.NAMES.map((color) -> resourceKey("shepherd/2/emerald_" + color + "_carpet"));
       SHEPHERD_3_YELLOW_DYE_EMERALD = resourceKey("shepherd/3/yellow_dye_emerald");
       SHEPHERD_3_LIGHT_GRAY_DYE_EMERALD = resourceKey("shepherd/3/light_gray_dye_emerald");
       SHEPHERD_3_ORANGE_DYE_EMERALD = resourceKey("shepherd/3/orange_dye_emerald");
       SHEPHERD_3_RED_DYE_EMERALD = resourceKey("shepherd/3/red_dye_emerald");
       SHEPHERD_3_PINK_DYE_EMERALD = resourceKey("shepherd/3/pink_dye_emerald");
-      SHEPHERD_3_EMERALD_BED = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("shepherd/3/emerald_" + color + "_bed"));
+      SHEPHERD_3_EMERALD_BED = ColorCollection.NAMES.map((color) -> resourceKey("shepherd/3/emerald_" + color + "_bed"));
       SHEPHERD_4_BROWN_DYE_EMERALD = resourceKey("shepherd/4/brown_dye_emerald");
       SHEPHERD_4_PURPLE_DYE_EMERALD = resourceKey("shepherd/4/purple_dye_emerald");
       SHEPHERD_4_BLUE_DYE_EMERALD = resourceKey("shepherd/4/blue_dye_emerald");
       SHEPHERD_4_GREEN_DYE_EMERALD = resourceKey("shepherd/4/green_dye_emerald");
       SHEPHERD_4_MAGENTA_DYE_EMERALD = resourceKey("shepherd/4/magenta_dye_emerald");
       SHEPHERD_4_CYAN_DYE_EMERALD = resourceKey("shepherd/4/cyan_dye_emerald");
-      SHEPHERD_4_EMERALD_BANNER = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("shepherd/4/emerald_" + color + "_banner"));
+      SHEPHERD_4_EMERALD_BANNER = ColorCollection.NAMES.map((color) -> resourceKey("shepherd/4/emerald_" + color + "_banner"));
       SHEPHERD_5_EMERALD_PAINTING = resourceKey("shepherd/5/emerald_painting");
       FLETCHER_1_STICK_EMERALD = resourceKey("fletcher/1/stick_emerald");
       FLETCHER_1_EMERALD_ARROW = resourceKey("fletcher/1/emerald_arrow");
@@ -996,8 +996,8 @@ public class VillagerTrades {
       MASON_3_EMERALD_POLISHED_DIORITE = resourceKey("mason/3/emerald_polished_diorite");
       MASON_3_EMERALD_POLISHED_GRANTITE = resourceKey("mason/3/emerald_polished_granite");
       MASON_4_QUARTZ_EMERALD = resourceKey("mason/4/quartz_emerald");
-      MASON_4_EMERALD_TERRACOTTA = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("mason/4/emerald_" + color + "_terracotta"));
-      MASON_4_EMERALD_GLAZED_TERRACOTTA = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("mason/4/emerald_" + color + "_glazed_terracotta"));
+      MASON_4_EMERALD_TERRACOTTA = ColorCollection.NAMES.map((color) -> resourceKey("mason/4/emerald_" + color + "_terracotta"));
+      MASON_4_EMERALD_GLAZED_TERRACOTTA = ColorCollection.NAMES.map((color) -> resourceKey("mason/4/emerald_" + color + "_glazed_terracotta"));
       MASON_5_EMERALD_QUARTZ_PILLAR = resourceKey("mason/5/emerald_quartz_pillar");
       MASON_5_EMERALD_QUARTZ_BLOCK = resourceKey("mason/5/emerald_quartz_block");
       WANDERING_TRADER_WATER_BOTTLE_EMERALD = resourceKey("wandering_trader/water_bottle_emerald");
@@ -1061,7 +1061,7 @@ public class VillagerTrades {
       WANDERING_TRADER_EMERALD_PALE_OAK_SAPLING = resourceKey("wandering_trader/emerald_pale_oak_sapling");
       WANDERING_TRADER_EMERALD_POPLAR_SAPLING = resourceKey("wandering_trader/emerald_poplar_sapling");
       WANDERING_TRADER_EMERALD_MANGROVE_PROPAGULE = resourceKey("wandering_trader/emerald_mangrove_propagule");
-      WANDERING_TRADER_EMERALD_DYE = ColorCollection.NAMES.<ResourceKey<VillagerTrade>>map((color) -> resourceKey("wandering_trader/emerald_" + color + "_dye"));
+      WANDERING_TRADER_EMERALD_DYE = ColorCollection.NAMES.map((color) -> resourceKey("wandering_trader/emerald_" + color + "_dye"));
       WANDERING_TRADER_EMERALD_BRAIN_CORAL_BLOCK = resourceKey("wandering_trader/emerald_brain_coral_block");
       WANDERING_TRADER_EMERALD_BUBBLE_CORAL_BLOCK = resourceKey("wandering_trader/emerald_bubble_coral_block");
       WANDERING_TRADER_EMERALD_FIRE_CORAL_BLOCK = resourceKey("wandering_trader/emerald_fire_coral_block");

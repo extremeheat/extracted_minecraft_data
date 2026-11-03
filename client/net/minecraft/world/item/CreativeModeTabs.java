@@ -397,6 +397,19 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_WALL);
+         buildingBlocks.accept((ItemLike)Items.CALCITE);
+         buildingBlocks.accept((ItemLike)Items.CALCITE_PILLAR);
+         buildingBlocks.accept((ItemLike)Items.CALCITE_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.CALCITE_SLAB);
+         buildingBlocks.accept((ItemLike)Items.CALCITE_WALL);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_SLAB);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_WALL);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_BRICKS);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_BRICK_STAIRS);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_BRICK_SLAB);
+         buildingBlocks.accept((ItemLike)Items.POLISHED_CALCITE_BRICK_WALL);
          buildingBlocks.accept((ItemLike)Items.SEA_LANTERN);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE);
          buildingBlocks.accept((ItemLike)Items.PRISMARINE_STAIRS);
@@ -1126,6 +1139,7 @@ public class CreativeModeTabs {
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_TEARS);
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_LAVA_CHICKEN);
          toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_BOUNCE);
+         toolsAndUtilities.accept((ItemLike)Items.MUSIC_DISC_FLURRY);
       }).build());
       Registry.register(registry, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> new ItemStack(Items.NETHERITE_SWORD)).displayItems((parameters, combat) -> {
          combat.accept((ItemLike)Items.WOODEN_SWORD);

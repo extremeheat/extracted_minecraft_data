@@ -30,6 +30,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.RealmsButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.LoadingTab;
 import net.minecraft.client.gui.components.tabs.MenuTabBar;
@@ -103,10 +104,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       this.tabNavigationBar.setTabActiveState(3, false);
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      this.playButton = (Button)footer.addChild(Button.builder(PLAY_TEXT, (button) -> {
+      this.playButton = (Button)footer.addChild(new RealmsButton(0, 0, 150, 20, PLAY_TEXT, (button) -> {
          this.onClose();
          RealmsMainScreen.play(this.serverData, this);
-      }).width(150).build());
+      }));
       this.playButton.active = false;
       footer.addChild(Button.builder(CommonComponents.GUI_BACK, (button) -> this.onClose()).build());
       this.layout.visitWidgets((button) -> {

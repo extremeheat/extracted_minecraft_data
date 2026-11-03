@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -16,7 +17,7 @@ public class ArmorSlot extends Slot {
    private final @Nullable Identifier emptyIcon;
 
    public ArmorSlot(final Container inventory, final LivingEntity owner, final EquipmentSlot slot, final int slotIndex, final int x, final int y, final @Nullable Identifier emptyIcon) {
-      super(inventory, slotIndex, x, y);
+      super(inventory, slotIndex, x, y, Slot.Section.EQUIPMENT);
       this.owner = owner;
       this.slot = slot;
       this.emptyIcon = emptyIcon;
@@ -46,5 +47,9 @@ public class ArmorSlot extends Slot {
 
    public @Nullable Identifier getNoItemIcon() {
       return this.emptyIcon;
+   }
+
+   public Component getNarrationName() {
+      return Component.translatable("narration.slot.name." + this.slot.getName());
    }
 }

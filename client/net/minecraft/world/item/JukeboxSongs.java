@@ -33,6 +33,7 @@ public interface JukeboxSongs {
    ResourceKey<JukeboxSong> TEARS = create("tears");
    ResourceKey<JukeboxSong> LAVA_CHICKEN = create("lava_chicken");
    ResourceKey<JukeboxSong> BOUNCE = create("bounce");
+   ResourceKey<JukeboxSong> FLURRY = create("flurry");
 
    private static ResourceKey<JukeboxSong> create(final String id) {
       return ResourceKey.create(Registries.JUKEBOX_SONG, Identifier.withDefaultNamespace(id));
@@ -65,5 +66,6 @@ public interface JukeboxSongs {
       register(context, TEARS, SoundEvents.MUSIC_DISC_TEARS, 175, 10);
       register(context, LAVA_CHICKEN, SoundEvents.MUSIC_DISC_LAVA_CHICKEN, 134, 9);
       register(context, BOUNCE, SoundEvents.MUSIC_DISC_BOUNCE, 234, 8);
+      register(context, FLURRY, SoundEvents.MUSIC_DISC_FLURRY, 154, 7);
    }
 }

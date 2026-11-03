@@ -385,6 +385,7 @@ public class ItemIds {
    public static final ResourceKey<Item> MUSIC_DISC_CREATOR;
    public static final ResourceKey<Item> MUSIC_DISC_CREATOR_MUSIC_BOX;
    public static final ResourceKey<Item> MUSIC_DISC_FAR;
+   public static final ResourceKey<Item> MUSIC_DISC_FLURRY;
    public static final ResourceKey<Item> MUSIC_DISC_LAVA_CHICKEN;
    public static final ResourceKey<Item> MUSIC_DISC_MALL;
    public static final ResourceKey<Item> MUSIC_DISC_MELLOHI;
@@ -501,7 +502,7 @@ public class ItemIds {
    }
 
    private static ColorCollection<ResourceKey<Item>> createSimpleColored(final String baseName) {
-      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).<ResourceKey<Item>>map(ItemIds::create);
+      return ColorCollection.prefixWithColor(ColorCollection.create(baseName)).map(ItemIds::create);
    }
 
    static {
@@ -665,6 +666,7 @@ public class ItemIds {
       MUSIC_DISC_CREATOR = createMusicDisc(JukeboxSongs.CREATOR);
       MUSIC_DISC_CREATOR_MUSIC_BOX = createMusicDisc(JukeboxSongs.CREATOR_MUSIC_BOX);
       MUSIC_DISC_FAR = createMusicDisc(JukeboxSongs.FAR);
+      MUSIC_DISC_FLURRY = createMusicDisc(JukeboxSongs.FLURRY);
       MUSIC_DISC_LAVA_CHICKEN = createMusicDisc(JukeboxSongs.LAVA_CHICKEN);
       MUSIC_DISC_MALL = createMusicDisc(JukeboxSongs.MALL);
       MUSIC_DISC_MELLOHI = createMusicDisc(JukeboxSongs.MELLOHI);

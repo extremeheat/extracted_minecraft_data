@@ -255,6 +255,8 @@ public class VulkanBackend implements GpuBackend {
             throw new BackendCreationException("No Vulkan capable devices", BackendCreationException.Reason.VULKAN_NO_DEVICE);
          }
 
+         boolean allowCPUDevices = System.getProperty("renderpearl.vulkan.allowcpudevice") != null;
+
          for(int i = 0; i < numDevices; ++i) {
             if (pPhysicalDevices.get(i) != 0L) {
                VkPhysicalDevice currentDevice = new VkPhysicalDevice(pPhysicalDevices.get(i), instance.vkInstance());
@@ -263,6 +265,8 @@ public class VulkanBackend implements GpuBackend {
                   if (deviceFailureReason == null) {
                      deviceFailureReason = failureReason;
                   }
+               } else if (!allowCPUDevices && isDeviceCpu(currentDevice)) {
+                  LOGGER.info("Skipping CPU device: {}", getDeviceName(currentDevice));
                } else if (selectedDevice == null) {
                   selectedDevice = currentDevice;
                } else if (isDeviceDiscrete(currentDevice) && !isDeviceDiscrete(selectedDevice)) {
@@ -272,16 +276,16 @@ public class VulkanBackend implements GpuBackend {
                }
             }
          }
-      } catch (Throwable var13) {
+      } catch (Throwable var14) {
          if (stack != null) {
             try {
                stack.close();
-            } catch (Throwable var12) {
-               var13.addSuppressed(var12);
+            } catch (Throwable var13) {
+               var14.addSuppressed(var13);
             }
          }
 
-         throw var13;
+         throw var14;
       }
 
       if (stack != null) {
@@ -334,6 +338,33 @@ public class VulkanBackend implements GpuBackend {
          VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
          VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
          var3 = deviceProperties.properties().deviceType() == 2;
+      } catch (Throwable var5) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var4) {
+               var5.addSuppressed(var4);
+            }
+         }
+
+         throw var5;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+      return var3;
+   }
+
+   private static boolean isDeviceCpu(final VkPhysicalDevice vkPhysicalDevice) {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      boolean var3;
+      try {
+         VkPhysicalDeviceProperties2 deviceProperties = VkPhysicalDeviceProperties2.calloc(stack).sType$Default();
+         VK12.vkGetPhysicalDeviceProperties2(vkPhysicalDevice, deviceProperties);
+         var3 = deviceProperties.properties().deviceType() == 4;
       } catch (Throwable var5) {
          if (stack != null) {
             try {

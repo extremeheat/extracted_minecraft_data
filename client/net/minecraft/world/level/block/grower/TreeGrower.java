@@ -1,14 +1,9 @@
 package net.minecraft.world.level.block.grower;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -28,8 +23,6 @@ import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import org.jspecify.annotations.Nullable;
 
 public final class TreeGrower {
-   private static final Map<String, TreeGrower> GROWERS = new Object2ObjectArrayMap();
-   public static final Codec<TreeGrower> CODEC;
    public static final TreeGrower OAK;
    public static final TreeGrower SPRUCE;
    public static final TreeGrower MANGROVE;
@@ -41,20 +34,17 @@ public final class TreeGrower {
    public static final TreeGrower DARK_OAK;
    public static final TreeGrower PALE_OAK;
    public static final TreeGrower POPLAR;
-   private final String name;
    private final WeightedList<ResourceKey<Feature>> trees;
    private final WeightedList<ResourceKey<Feature>> megaTrees;
    private final WeightedList<ResourceKey<Feature>> flowerTrees;
    private final @Nullable ResourceKey<Feature> shortestTreeType;
 
-   public TreeGrower(final String name, final WeightedList<ResourceKey<Feature>> trees, final WeightedList<ResourceKey<Feature>> megaTrees, final WeightedList<ResourceKey<Feature>> flowerTrees, final @Nullable ResourceKey<Feature> shortestTreeType) {
+   public TreeGrower(final WeightedList<ResourceKey<Feature>> trees, final WeightedList<ResourceKey<Feature>> megaTrees, final WeightedList<ResourceKey<Feature>> flowerTrees, final @Nullable ResourceKey<Feature> shortestTreeType) {
       super();
-      this.name = name;
       this.trees = trees;
       this.megaTrees = megaTrees;
       this.flowerTrees = flowerTrees;
       this.shortestTreeType = shortestTreeType;
-      GROWERS.put(name, this);
    }
 
    private @Nullable ResourceKey<Feature> getConfiguredFeature(final RandomSource random, final boolean hasFlowers) {
@@ -186,21 +176,17 @@ public final class TreeGrower {
    }
 
    static {
-      Function var10000 = (g) -> g.name;
-      Map var10001 = GROWERS;
-      Objects.requireNonNull(var10001);
-      CODEC = Codec.stringResolver(var10000, var10001::get);
-      OAK = new TreeGrower("oak", WeightedList.of(new Weighted(TreeFeatures.OAK, 9), new Weighted(TreeFeatures.FANCY_OAK, 1)), WeightedList.of(), WeightedList.of(new Weighted(TreeFeatures.OAK_BEES_005, 9), new Weighted(TreeFeatures.FANCY_OAK_BEES_005, 1)), TreeFeatures.OAK);
-      SPRUCE = new TreeGrower("spruce", WeightedList.of(TreeFeatures.SPRUCE), WeightedList.of(new Weighted(TreeFeatures.MEGA_SPRUCE, 1), new Weighted(TreeFeatures.MEGA_PINE, 1)), WeightedList.of(), TreeFeatures.SPRUCE);
-      MANGROVE = new TreeGrower("mangrove", WeightedList.of(new Weighted(TreeFeatures.MANGROVE, 15), new Weighted(TreeFeatures.TALL_MANGROVE, 85)), WeightedList.of(), WeightedList.of(), TreeFeatures.MANGROVE);
-      AZALEA = new TreeGrower("azalea", WeightedList.of(TreeFeatures.AZALEA_TREE), WeightedList.of(), WeightedList.of(), TreeFeatures.AZALEA_TREE);
-      BIRCH = new TreeGrower("birch", WeightedList.of(TreeFeatures.BIRCH), WeightedList.of(), WeightedList.of(TreeFeatures.BIRCH_BEES_005), TreeFeatures.BIRCH);
-      JUNGLE = new TreeGrower("jungle", WeightedList.of(TreeFeatures.JUNGLE_TREE_NO_VINE), WeightedList.of(TreeFeatures.MEGA_JUNGLE_TREE), WeightedList.of(), TreeFeatures.JUNGLE_TREE_NO_VINE);
-      ACACIA = new TreeGrower("acacia", WeightedList.of(TreeFeatures.ACACIA), WeightedList.of(), WeightedList.of(), TreeFeatures.ACACIA);
-      CHERRY = new TreeGrower("cherry", WeightedList.of(TreeFeatures.CHERRY), WeightedList.of(), WeightedList.of(TreeFeatures.CHERRY_BEES_005), TreeFeatures.CHERRY);
-      DARK_OAK = new TreeGrower("dark_oak", WeightedList.of(), WeightedList.of(TreeFeatures.DARK_OAK), WeightedList.of(), (ResourceKey)null);
-      PALE_OAK = new TreeGrower("pale_oak", WeightedList.of(), WeightedList.of(TreeFeatures.PALE_OAK_BONEMEAL), WeightedList.of(), (ResourceKey)null);
-      POPLAR = new TreeGrower("poplar", WeightedList.of(new Weighted(TreeFeatures.RED_POPLAR, 1), new Weighted(TreeFeatures.ORANGE_POPLAR, 1), new Weighted(TreeFeatures.YELLOW_POPLAR, 1)), WeightedList.of(), WeightedList.of(), TreeFeatures.RED_POPLAR);
+      OAK = new TreeGrower(WeightedList.of(new Weighted(TreeFeatures.OAK, 9), new Weighted(TreeFeatures.FANCY_OAK, 1)), WeightedList.of(), WeightedList.of(new Weighted(TreeFeatures.OAK_BEES_005, 9), new Weighted(TreeFeatures.FANCY_OAK_BEES_005, 1)), TreeFeatures.OAK);
+      SPRUCE = new TreeGrower(WeightedList.of(TreeFeatures.SPRUCE), WeightedList.of(new Weighted(TreeFeatures.MEGA_SPRUCE, 1), new Weighted(TreeFeatures.MEGA_PINE, 1)), WeightedList.of(), TreeFeatures.SPRUCE);
+      MANGROVE = new TreeGrower(WeightedList.of(new Weighted(TreeFeatures.MANGROVE, 15), new Weighted(TreeFeatures.TALL_MANGROVE, 85)), WeightedList.of(), WeightedList.of(), TreeFeatures.MANGROVE);
+      AZALEA = new TreeGrower(WeightedList.of(TreeFeatures.AZALEA_TREE), WeightedList.of(), WeightedList.of(), TreeFeatures.AZALEA_TREE);
+      BIRCH = new TreeGrower(WeightedList.of(TreeFeatures.BIRCH), WeightedList.of(), WeightedList.of(TreeFeatures.BIRCH_BEES_005), TreeFeatures.BIRCH);
+      JUNGLE = new TreeGrower(WeightedList.of(TreeFeatures.JUNGLE_TREE_NO_VINE), WeightedList.of(TreeFeatures.MEGA_JUNGLE_TREE), WeightedList.of(), TreeFeatures.JUNGLE_TREE_NO_VINE);
+      ACACIA = new TreeGrower(WeightedList.of(TreeFeatures.ACACIA), WeightedList.of(), WeightedList.of(), TreeFeatures.ACACIA);
+      CHERRY = new TreeGrower(WeightedList.of(TreeFeatures.CHERRY), WeightedList.of(), WeightedList.of(TreeFeatures.CHERRY_BEES_005), TreeFeatures.CHERRY);
+      DARK_OAK = new TreeGrower(WeightedList.of(), WeightedList.of(TreeFeatures.DARK_OAK), WeightedList.of(), (ResourceKey)null);
+      PALE_OAK = new TreeGrower(WeightedList.of(), WeightedList.of(TreeFeatures.PALE_OAK_BONEMEAL), WeightedList.of(), (ResourceKey)null);
+      POPLAR = new TreeGrower(WeightedList.of(new Weighted(TreeFeatures.RED_POPLAR, 1), new Weighted(TreeFeatures.ORANGE_POPLAR, 1), new Weighted(TreeFeatures.YELLOW_POPLAR, 1)), WeightedList.of(), WeightedList.of(), TreeFeatures.RED_POPLAR);
    }
 
    private static record TwoByTwoSaplingPos(int offsetX, int offsetZ, List<Pair<BlockState, BlockPos>> groundLevelSurroundingBlocks) {

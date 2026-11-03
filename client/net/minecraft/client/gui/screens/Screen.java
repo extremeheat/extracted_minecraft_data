@@ -651,7 +651,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected void updateNarratedWidget(final NarrationElementOutput output) {
       List<? extends NarratableEntry> activeNarratables = this.narratables.stream().flatMap((narratableEntry) -> narratableEntry.getNarratables().stream()).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
-      NarratableSearchResult result = findNarratableWidget(activeNarratables, this.lastNarratable);
+      NarratableSearchResult result = findNarratableWidget(activeNarratables, output.narrationTrigger() == NarrationTrigger.KEYBOARD ? null : this.lastNarratable);
       if (result != null) {
          if (result.priority.isTerminal()) {
             this.lastNarratable = result.entry;

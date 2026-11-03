@@ -1,206 +1,116 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.ScrollableLayout;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.inventory.IconRadioButton;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.SelectableRecipe;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
-import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import org.jspecify.annotations.Nullable;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
+   private static final Identifier BG_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/stonecutter.png");
+   private static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("container/stonecutter/recipe_selected"), Identifier.withDefaultNamespace("container/stonecutter/recipe"), Identifier.withDefaultNamespace("container/stonecutter/recipe_selected"), Identifier.withDefaultNamespace("container/stonecutter/recipe_highlighted"));
    private static final Identifier SCROLLER_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/scroller");
    private static final Identifier SCROLLER_DISABLED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/scroller_disabled");
-   private static final Identifier RECIPE_SELECTED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe_selected");
-   private static final Identifier RECIPE_HIGHLIGHTED_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe_highlighted");
-   private static final Identifier RECIPE_SPRITE = Identifier.withDefaultNamespace("container/stonecutter/recipe");
-   private static final Identifier BG_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/stonecutter.png");
-   private static final int SCROLLER_WIDTH = 12;
-   private static final int SCROLLER_HEIGHT = 15;
    private static final int RECIPES_COLUMNS = 4;
    private static final int RECIPES_ROWS = 3;
    private static final int RECIPES_IMAGE_SIZE_WIDTH = 16;
    private static final int RECIPES_IMAGE_SIZE_HEIGHT = 18;
-   private static final int SCROLLER_FULL_HEIGHT = 54;
-   private static final int RECIPES_X = 52;
-   private static final int RECIPES_Y = 14;
-   private float scrollOffs;
-   private boolean scrolling;
-   private int startIndex;
-   private boolean displayRecipes;
+   private static final int SCROLLER_WIDTH = 12;
+   private static final int SCROLLER_HEIGHT = 15;
+   private static final int SCROLL_AREA_WIDTH = 64;
+   private static final int SCROLL_AREA_HEIGHT = 54;
+   private static final int RECIPES_START_X = 52;
+   private static final int RECIPES_START_Y = 15;
+   private ItemStack inputStack;
+   private @Nullable ScrollableLayout recipeArea;
 
    public StonecutterScreen(final StonecutterMenu menu, final Inventory inventory, final Component title) {
       super(menu, inventory, title);
+      this.inputStack = ItemStack.EMPTY;
       menu.registerUpdateListener(this::containerChanged);
       --this.titleLabelY;
    }
 
+   protected void init() {
+      super.init();
+      this.recipeArea = this.createScrollableLayout(new FrameLayout());
+   }
+
+   protected void repositionElements() {
+      this.leftPos = (this.width - this.imageWidth) / 2;
+      this.topPos = (this.height - this.imageHeight) / 2;
+      this.updateSlotWidgets();
+      if (this.recipeArea != null) {
+         this.recipeArea.setPosition(this.leftPos + 52, this.topPos + 15);
+         this.recipeArea.arrangeElements();
+      }
+
+   }
+
+   private void initButtons() {
+      if (this.recipeArea != null) {
+         this.recipeArea.visitWidgets((x$0) -> this.removeWidget(x$0));
+      }
+
+      GridLayout layout = new GridLayout();
+      GridLayout.RowHelper rowHelper = layout.createRowHelper(4);
+      ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
+      SelectableRecipe.SingleInputSet<StonecutterRecipe> visibleRecipes = ((StonecutterMenu)this.menu).getVisibleRecipes();
+
+      for(int index = 0; index < visibleRecipes.size(); ++index) {
+         ItemStack itemStack = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay().resolveForFirstStack(context);
+         IconRadioButton recipeButton = new IconRadioButton(16, 18, itemStack.getHoverName(), RECIPE_BUTTON_SPRITES, new IconRadioButton.ItemIcon(itemStack), SoundEvents.UI_STONECUTTER_SELECT_RECIPE, (button) -> {
+            if (((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, index)) {
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, index);
+            }
+
+         }, (defaultNarration) -> Component.translatable("narration.recipe", defaultNarration.get()), () -> Tooltip.createForItem(getTooltipFromItem(this.minecraft, itemStack), itemStack), () -> ((StonecutterMenu)this.menu).getSelectedRecipeIndex() == index);
+         rowHelper.addChild(recipeButton);
+      }
+
+      this.recipeArea = this.createScrollableLayout(layout);
+   }
+
    public void extractBackground(final GuiGraphicsExtractor graphics) {
       super.extractBackground(graphics);
-      int xo = this.leftPos;
-      int yo = this.topPos;
-      graphics.blit(GuiPipeline.TEXTURED, BG_LOCATION, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      int sy = (int)(41.0F * this.scrollOffs);
-      Identifier sprite = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      int scrollerXStart = xo + 119;
-      int scrollerYStart = yo + 15;
-      graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, scrollerXStart, scrollerYStart + sy, 12, 15);
-      if (graphics.mouseX() >= scrollerXStart && graphics.mouseY() >= scrollerYStart && graphics.mouseX() < scrollerXStart + 12 && graphics.mouseY() < scrollerYStart + 54) {
-         if (this.isScrollBarActive()) {
-            graphics.requestCursor(this.scrolling ? CursorTypes.RESIZE_NS : CursorTypes.POINTING_HAND);
-         } else {
-            graphics.requestCursor(CursorTypes.NOT_ALLOWED);
-         }
-      }
-
-      int x = this.leftPos + 52;
-      int y = this.topPos + 14;
-      int endIndex = this.startIndex + 12;
-      this.extractButtons(graphics, x, y, endIndex);
-      this.extractRecipes(graphics, x, y, endIndex);
+      graphics.blit(GuiPipeline.TEXTURED, BG_LOCATION, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
    }
 
-   protected void extractTooltip(final GuiGraphicsExtractor graphics) {
-      super.extractTooltip(graphics);
-      if (this.displayRecipes) {
-         int edgeLeft = this.leftPos + 52;
-         int edgeTop = this.topPos + 14;
-         int endIndex = this.startIndex + 12;
-         SelectableRecipe.SingleInputSet<StonecutterRecipe> visibleRecipes = ((StonecutterMenu)this.menu).getVisibleRecipes();
-
-         for(int index = this.startIndex; index < endIndex && index < visibleRecipes.size(); ++index) {
-            int posIndex = index - this.startIndex;
-            int itemLeft = edgeLeft + posIndex % 4 * 16;
-            int itemRight = edgeTop + posIndex / 4 * 18 + 2;
-            if (graphics.mouseX() >= itemLeft && graphics.mouseX() < itemLeft + 16 && graphics.mouseY() >= itemRight && graphics.mouseY() < itemRight + 18) {
-               ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
-               SlotDisplay buttonIcon = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay();
-               graphics.setTooltipForNextFrame(this.font, buttonIcon.resolveForFirstStack(context), graphics.mouseX(), graphics.mouseY());
-            }
-         }
-      }
-
-   }
-
-   private void extractButtons(final GuiGraphicsExtractor graphics, final int x, final int y, final int endIndex) {
-      for(int index = this.startIndex; index < endIndex && index < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++index) {
-         int posIndex = index - this.startIndex;
-         int posX = x + posIndex % 4 * 16;
-         int row = posIndex / 4;
-         int posY = y + row * 18 + 2;
-         Identifier sprite;
-         if (index == ((StonecutterMenu)this.menu).getSelectedRecipeIndex()) {
-            sprite = RECIPE_SELECTED_SPRITE;
-         } else if (graphics.mouseX() >= posX && graphics.mouseY() >= posY && graphics.mouseX() < posX + 16 && graphics.mouseY() < posY + 18) {
-            sprite = RECIPE_HIGHLIGHTED_SPRITE;
-         } else {
-            sprite = RECIPE_SPRITE;
-         }
-
-         int textureY = posY - 1;
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)sprite, posX, textureY, 16, 18);
-         if (graphics.mouseX() >= posX && graphics.mouseY() >= textureY && graphics.mouseX() < posX + 16 && graphics.mouseY() < textureY + 18) {
-            graphics.requestCursor(CursorTypes.POINTING_HAND);
-         }
-      }
-
-   }
-
-   private void extractRecipes(final GuiGraphicsExtractor graphics, final int x, final int y, final int endIndex) {
-      SelectableRecipe.SingleInputSet<StonecutterRecipe> visibleRecipes = ((StonecutterMenu)this.menu).getVisibleRecipes();
-      ContextMap context = SlotDisplayContext.fromLevel(this.minecraft.level);
-
-      for(int index = this.startIndex; index < endIndex && index < visibleRecipes.size(); ++index) {
-         int posIndex = index - this.startIndex;
-         int posX = x + posIndex % 4 * 16;
-         int row = posIndex / 4;
-         int posY = y + row * 18 + 2;
-         SlotDisplay buttonIcon = ((SelectableRecipe.SingleInputEntry)visibleRecipes.entries().get(index)).recipe().optionDisplay();
-         graphics.item(buttonIcon.resolveForFirstStack(context), posX, posY);
-      }
-
-   }
-
-   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (this.displayRecipes) {
-         int xo = this.leftPos + 52;
-         int yo = this.topPos + 14;
-         int endIndex = this.startIndex + 12;
-
-         for(int index = this.startIndex; index < endIndex && index < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++index) {
-            int posIndex = index - this.startIndex;
-            double xx = event.x() - (double)(xo + posIndex % 4 * 16);
-            double yy = event.y() - (double)(yo + posIndex / 4 * 18);
-            if (xx >= 0.0 && yy >= 0.0 && xx < 16.0 && yy < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, index)) {
-               Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, index);
-               return true;
-            }
-         }
-
-         xo = this.leftPos + 119;
-         yo = this.topPos + 9;
-         if (event.x() >= (double)xo && event.x() < (double)(xo + 12) && event.y() >= (double)yo && event.y() < (double)(yo + 54)) {
-            this.scrolling = true;
-         }
-      }
-
-      return super.mouseClicked(event, doubleClick);
-   }
-
-   public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy) {
-      if (this.scrolling && this.isScrollBarActive()) {
-         int yscr = this.topPos + 14;
-         int yscr2 = yscr + 54;
-         this.scrollOffs = ((float)event.y() - (float)yscr - 7.5F) / ((float)(yscr2 - yscr) - 15.0F);
-         this.scrollOffs = Math.clamp(this.scrollOffs, 0.0F, 1.0F);
-         this.startIndex = (int)((double)(this.scrollOffs * (float)this.getOffscreenRows()) + 0.5) * 4;
-         return true;
-      } else {
-         return super.mouseDragged(event, dx, dy);
-      }
-   }
-
-   public boolean mouseReleased(final MouseButtonEvent event) {
-      this.scrolling = false;
-      return super.mouseReleased(event);
-   }
-
-   public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
-      if (super.mouseScrolled(x, y, scrollX, scrollY)) {
-         return true;
-      } else {
-         if (this.isScrollBarActive()) {
-            int offscreenRows = this.getOffscreenRows();
-            float scrolledDelta = (float)scrollY / (float)offscreenRows;
-            this.scrollOffs = Math.clamp(this.scrollOffs - scrolledDelta, 0.0F, 1.0F);
-            this.startIndex = (int)((double)(this.scrollOffs * (float)offscreenRows) + 0.5) * 4;
-         }
-
-         return true;
-      }
-   }
-
-   private boolean isScrollBarActive() {
-      return this.displayRecipes && ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes() > 12;
-   }
-
-   protected int getOffscreenRows() {
-      return (((StonecutterMenu)this.menu).getNumberOfVisibleRecipes() + 4 - 1) / 4 - 3;
+   private ScrollableLayout createScrollableLayout(final Layout layout) {
+      ScrollableLayout scrollableLayout = new ScrollableLayout(this.minecraft, layout, 54, new AbstractScrollArea.ScrollbarSettings(SCROLLER_SPRITE, SCROLLER_DISABLED_SPRITE, (Identifier)null, 12, 15, 18, false), 3, ScrollableLayout.ReserveStrategy.RIGHT, GroupNarration.grid(4, "narration.group_navigation.usage.recipe"));
+      scrollableLayout.setPosition(this.leftPos + 52, this.topPos + 15);
+      scrollableLayout.setMinWidth(64);
+      scrollableLayout.setMinHeight(54);
+      scrollableLayout.arrangeElements();
+      scrollableLayout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
+      scrollableLayout.setTabGroup(7);
+      scrollableLayout.allowTabNavigationInside(false);
+      return scrollableLayout;
    }
 
    private void containerChanged() {
-      this.displayRecipes = ((StonecutterMenu)this.menu).hasInputItem();
-      this.scrollOffs = 0.0F;
-      this.startIndex = 0;
+      ItemStack newInputStack = ((StonecutterMenu)this.menu).getInputItem();
+      if (!ItemStack.isSameItemSameComponents(newInputStack, this.inputStack)) {
+         this.initButtons();
+      }
+
+      this.inputStack = newInputStack.copy();
    }
 }

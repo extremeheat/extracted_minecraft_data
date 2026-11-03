@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.Container;
@@ -37,11 +38,15 @@ public class HorseInventoryMenu extends AbstractMountInventoryMenu {
          public boolean isActive() {
             return horse.canUseSlot(EquipmentSlot.BODY) && (horse.is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || isLlama);
          }
+
+         public Component getNarrationName() {
+            return (Component)(isLlama ? Component.translatable("narration.slot.name.carpet") : super.getNarrationName());
+         }
       });
       if (inventoryColumns > 0) {
          for(int y = 0; y < 3; ++y) {
             for(int x = 0; x < inventoryColumns; ++x) {
-               this.addSlot(new Slot(horseInventory, x + y * inventoryColumns, 80 + x * 18, 18 + y * 18));
+               this.addSlot(new Slot(horseInventory, x + y * inventoryColumns, 80 + x * 18, 18 + y * 18, Slot.Section.CONTAINER));
             }
          }
       }

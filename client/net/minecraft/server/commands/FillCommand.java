@@ -60,48 +60,44 @@ public class FillCommand {
 
          List<UpdatedPosition> updatePositions = new ArrayList();
          ServerLevel level = source.getLevel();
-         if (level.isDebug()) {
-            throw ERROR_FAILED.create();
-         } else {
-            int count = 0;
+         int count = 0;
 
-            for(BlockPos pos : BlockPos.betweenClosed(region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ())) {
-               if (predicate == null || predicate.test(new BlockInWorld(level, pos, true))) {
-                  BlockState oldState = level.getBlockState(pos);
-                  boolean affected = false;
-                  if (mode.affector.affect(level, pos)) {
-                     affected = true;
-                  }
+         for(BlockPos pos : BlockPos.betweenClosed(region.minX(), region.minY(), region.minZ(), region.maxX(), region.maxY(), region.maxZ())) {
+            if (predicate == null || predicate.test(new BlockInWorld(level, pos, true))) {
+               BlockState oldState = level.getBlockState(pos);
+               boolean affected = false;
+               if (mode.affector.affect(level, pos)) {
+                  affected = true;
+               }
 
-                  BlockInput block = mode.filter.filter(region, pos, target, level);
-                  if (block == null) {
-                     if (affected) {
-                        ++count;
-                     }
-                  } else if (!block.place(level, pos, 2 | (strict ? 816 : 256))) {
-                     if (affected) {
-                        ++count;
-                     }
-                  } else {
-                     if (!strict) {
-                        updatePositions.add(new UpdatedPosition(pos.immutable(), oldState));
-                     }
-
+               BlockInput block = mode.filter.filter(region, pos, target, level);
+               if (block == null) {
+                  if (affected) {
                      ++count;
                   }
+               } else if (!block.place(level, pos, 2 | (strict ? 816 : 256))) {
+                  if (affected) {
+                     ++count;
+                  }
+               } else {
+                  if (!strict) {
+                     updatePositions.add(new UpdatedPosition(pos.immutable(), oldState));
+                  }
+
+                  ++count;
                }
             }
+         }
 
-            for(UpdatedPosition pos : updatePositions) {
-               level.updateNeighboursOnBlockSet(pos.pos, pos.oldState);
-            }
+         for(UpdatedPosition pos : updatePositions) {
+            level.updateNeighboursOnBlockSet(pos.pos, pos.oldState);
+         }
 
-            if (count == 0) {
-               throw ERROR_FAILED.create();
-            } else {
-               source.sendSuccess(() -> Component.translatable("commands.fill.success", count), true);
-               return count;
-            }
+         if (count == 0) {
+            throw ERROR_FAILED.create();
+         } else {
+            source.sendSuccess(() -> Component.translatable("commands.fill.success", count), true);
+            return count;
          }
       }
    }

@@ -345,7 +345,7 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          vkRenderArea.extent().set(renderArea.width(), renderArea.height());
          vkRenderArea.offset().set(renderArea.x(), renderArea.y());
          LongBuffer attachments = stack.callocLong(descriptor.attachments().size());
-         VkClearValue.Buffer clearValues = VkClearValue.calloc(descriptor.attachments().size());
+         VkClearValue.Buffer clearValues = VkClearValue.calloc(descriptor.attachments().size(), stack);
 
          for(int attachmentIndex = 0; attachmentIndex < descriptor.attachments().size(); ++attachmentIndex) {
             RenderPassDescriptor.Attachment attachment = (RenderPassDescriptor.Attachment)descriptor.attachments().get(attachmentIndex);
@@ -543,6 +543,37 @@ public class VulkanCommandEncoder implements CommandEncoderBackend, Destroyable 
          }
 
          throw var8;
+      }
+
+      if (stack != null) {
+         stack.close();
+      }
+
+   }
+
+   public void clearStencilTexture(final GpuTexture stencilTexture, final byte clearStencil) {
+      MemoryStack stack = MemoryStack.stackPush();
+
+      try {
+         VkClearDepthStencilValue vkClearStencil = VkClearDepthStencilValue.calloc(stack).stencil(clearStencil);
+         VkImageSubresourceRange subresourceRange = VkImageSubresourceRange.calloc(stack);
+         subresourceRange.baseMipLevel(0);
+         subresourceRange.levelCount(stencilTexture.getMipLevels());
+         subresourceRange.baseArrayLayer(0);
+         subresourceRange.layerCount(1);
+         subresourceRange.aspectMask(4);
+         VK12.vkCmdClearDepthStencilImage(this.commandBuffer(), ((VulkanGpuTexture)stencilTexture).vkImage(), 1, vkClearStencil, subresourceRange);
+         this.memoryBarrier(stack);
+      } catch (Throwable var7) {
+         if (stack != null) {
+            try {
+               stack.close();
+            } catch (Throwable var6) {
+               var7.addSuppressed(var6);
+            }
+         }
+
+         throw var7;
       }
 
       if (stack != null) {

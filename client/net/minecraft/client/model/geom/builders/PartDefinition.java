@@ -96,4 +96,11 @@ public class PartDefinition {
       newPart.children.putAll(this.children);
       return newPart;
    }
+
+   public PartDefinition transformCubes(final UnaryOperator<CubeDefinition> transformer) {
+      List<CubeDefinition> newCubes = (List)this.cubes.stream().map(transformer).collect(Collectors.toList());
+      PartDefinition newPart = new PartDefinition(newCubes, this.partPose);
+      newPart.children.putAll(this.children);
+      return newPart;
+   }
 }

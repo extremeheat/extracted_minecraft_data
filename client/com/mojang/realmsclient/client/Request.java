@@ -11,11 +11,16 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import net.minecraft.TracingExecutor;
+import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
 public abstract class Request<T extends Request<T>> {
    protected HttpURLConnection connection;
    private boolean connected;
+   private final AtomicBoolean cancelled = new AtomicBoolean();
    protected String url;
    private static final int DEFAULT_READ_TIMEOUT = 60000;
    private static final int DEFAULT_CONNECT_TIMEOUT = 5000;
@@ -154,10 +159,12 @@ public abstract class Request<T extends Request<T>> {
    }
 
    protected T connect() {
+      this.checkCancelled();
       if (this.connected) {
          return (T)this;
       } else {
          T t = this.doConnect();
+         this.checkCancelled();
          this.connected = true;
          return t;
       }
@@ -191,6 +198,23 @@ public abstract class Request<T extends Request<T>> {
 
    public static Request<?> put(final String url, final String content, final int connectTimeoutMillis, final int readTimeoutMillis) {
       return new Put(url, content, connectTimeoutMillis, readTimeoutMillis);
+   }
+
+   public void cancel() {
+      if (this.cancelled.compareAndSet(false, true)) {
+         TracingExecutor var10000 = Util.nonCriticalIoPool();
+         HttpURLConnection var10001 = this.connection;
+         Objects.requireNonNull(var10001);
+         var10000.execute(var10001::disconnect);
+      }
+
+   }
+
+   private void checkCancelled() {
+      if (this.cancelled.get()) {
+         this.connection.disconnect();
+         throw new RealmsHttpException("Request canceled", new IOException("Request canceled"));
+      }
    }
 
    public String getHeader(final String header) {

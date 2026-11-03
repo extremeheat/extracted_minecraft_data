@@ -95,110 +95,106 @@ public class CloneCommands {
          if (area > (long)limit) {
             throw ERROR_AREA_TOO_LARGE.create(limit, area);
          } else if (fromDimension.hasChunksAt(startPos, endPos) && toDimension.hasChunksAt(destPos, destEndPos)) {
-            if (toDimension.isDebug()) {
-               throw ERROR_FAILED.create();
-            } else {
-               List<CloneBlockInfo> solidList = new ArrayList();
-               List<CloneBlockInfo> blockEntitiesList = new ArrayList();
-               List<CloneBlockInfo> otherBlocksList = new ArrayList();
-               Deque<BlockPos> clearBlocksList = new ArrayListDeque<BlockPos>();
-               int count = 0;
-               ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER);
+            List<CloneBlockInfo> solidList = new ArrayList();
+            List<CloneBlockInfo> blockEntitiesList = new ArrayList();
+            List<CloneBlockInfo> otherBlocksList = new ArrayList();
+            Deque<BlockPos> clearBlocksList = new ArrayListDeque<BlockPos>();
+            int count = 0;
+            ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER);
 
-               try {
-                  BlockPos offset = new BlockPos(destination.minX() - from.minX(), destination.minY() - from.minY(), destination.minZ() - from.minZ());
+            try {
+               BlockPos offset = new BlockPos(destination.minX() - from.minX(), destination.minY() - from.minY(), destination.minZ() - from.minZ());
 
-                  for(int z = from.minZ(); z <= from.maxZ(); ++z) {
-                     for(int y = from.minY(); y <= from.maxY(); ++y) {
-                        for(int x = from.minX(); x <= from.maxX(); ++x) {
-                           BlockPos sourcePos = new BlockPos(x, y, z);
-                           BlockPos destinationPos = sourcePos.offset(offset);
-                           BlockInWorld block = new BlockInWorld(fromDimension, sourcePos, false);
-                           BlockState blockState = block.getState();
-                           if (predicate.test(block)) {
-                              BlockEntity blockEntity = fromDimension.getBlockEntity(sourcePos);
-                              if (blockEntity != null) {
-                                 TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), source.registryAccess());
-                                 blockEntity.saveCustomOnly((ValueOutput)output);
-                                 CloneBlockEntityInfo blockEntityInfo = new CloneBlockEntityInfo(output.buildResult(), blockEntity.components());
-                                 blockEntitiesList.add(new CloneBlockInfo(destinationPos, blockState, blockEntityInfo, toDimension.getBlockState(destinationPos)));
-                                 clearBlocksList.addLast(sourcePos);
-                              } else if (!blockState.isSolidRender() && !blockState.isCollisionShapeFullBlock(fromDimension, sourcePos)) {
-                                 otherBlocksList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
-                                 clearBlocksList.addFirst(sourcePos);
-                              } else {
-                                 solidList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
-                                 clearBlocksList.addLast(sourcePos);
-                              }
+               for(int z = from.minZ(); z <= from.maxZ(); ++z) {
+                  for(int y = from.minY(); y <= from.maxY(); ++y) {
+                     for(int x = from.minX(); x <= from.maxX(); ++x) {
+                        BlockPos sourcePos = new BlockPos(x, y, z);
+                        BlockPos destinationPos = sourcePos.offset(offset);
+                        BlockInWorld block = new BlockInWorld(fromDimension, sourcePos, false);
+                        BlockState blockState = block.getState();
+                        if (predicate.test(block)) {
+                           BlockEntity blockEntity = fromDimension.getBlockEntity(sourcePos);
+                           if (blockEntity != null) {
+                              TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), source.registryAccess());
+                              blockEntity.saveCustomOnly((ValueOutput)output);
+                              CloneBlockEntityInfo blockEntityInfo = new CloneBlockEntityInfo(output.buildResult(), blockEntity.components());
+                              blockEntitiesList.add(new CloneBlockInfo(destinationPos, blockState, blockEntityInfo, toDimension.getBlockState(destinationPos)));
+                              clearBlocksList.addLast(sourcePos);
+                           } else if (!blockState.isSolidRender() && !blockState.isCollisionShapeFullBlock(fromDimension, sourcePos)) {
+                              otherBlocksList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
+                              clearBlocksList.addFirst(sourcePos);
+                           } else {
+                              solidList.add(new CloneBlockInfo(destinationPos, blockState, (CloneBlockEntityInfo)null, toDimension.getBlockState(destinationPos)));
+                              clearBlocksList.addLast(sourcePos);
                            }
                         }
                      }
                   }
+               }
 
-                  int defaultUpdateFlags = 2 | (strict ? 816 : 0);
-                  if (mode == CloneCommands.Mode.MOVE) {
-                     for(BlockPos pos : clearBlocksList) {
-                        fromDimension.setBlock(pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
-                     }
-
-                     int standardUpdateFlags = strict ? defaultUpdateFlags : 3;
-
-                     for(BlockPos pos : clearBlocksList) {
-                        fromDimension.setBlock(pos, Blocks.AIR.defaultBlockState(), standardUpdateFlags);
-                     }
+               int defaultUpdateFlags = 2 | (strict ? 816 : 0);
+               if (mode == CloneCommands.Mode.MOVE) {
+                  for(BlockPos pos : clearBlocksList) {
+                     fromDimension.setBlock(pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
                   }
 
-                  List<CloneBlockInfo> blockInfoList = new ArrayList();
-                  blockInfoList.addAll(solidList);
-                  blockInfoList.addAll(blockEntitiesList);
-                  blockInfoList.addAll(otherBlocksList);
-                  List<CloneBlockInfo> reverse = Lists.reverse(blockInfoList);
+                  int standardUpdateFlags = strict ? defaultUpdateFlags : 3;
 
+                  for(BlockPos pos : clearBlocksList) {
+                     fromDimension.setBlock(pos, Blocks.AIR.defaultBlockState(), standardUpdateFlags);
+                  }
+               }
+
+               List<CloneBlockInfo> blockInfoList = new ArrayList();
+               blockInfoList.addAll(solidList);
+               blockInfoList.addAll(blockEntitiesList);
+               blockInfoList.addAll(otherBlocksList);
+               List<CloneBlockInfo> reverse = Lists.reverse(blockInfoList);
+
+               for(CloneBlockInfo cloneInfo : reverse) {
+                  toDimension.setBlock(cloneInfo.pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
+               }
+
+               for(CloneBlockInfo cloneInfo : blockInfoList) {
+                  if (toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags)) {
+                     ++count;
+                  }
+               }
+
+               for(CloneBlockInfo cloneInfo : blockEntitiesList) {
+                  BlockEntity newBlockEntity = toDimension.getBlockEntity(cloneInfo.pos);
+                  if (cloneInfo.blockEntityInfo != null && newBlockEntity != null) {
+                     newBlockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(newBlockEntity.problemPath()), toDimension.registryAccess(), cloneInfo.blockEntityInfo.tag));
+                     newBlockEntity.setComponents(cloneInfo.blockEntityInfo.components);
+                     newBlockEntity.setChanged();
+                  }
+
+                  toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags);
+               }
+
+               if (!strict) {
                   for(CloneBlockInfo cloneInfo : reverse) {
-                     toDimension.setBlock(cloneInfo.pos, Blocks.BARRIER.defaultBlockState(), defaultUpdateFlags | 816);
+                     toDimension.updateNeighboursOnBlockSet(cloneInfo.pos, cloneInfo.previousStateAtDestination);
                   }
-
-                  for(CloneBlockInfo cloneInfo : blockInfoList) {
-                     if (toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags)) {
-                        ++count;
-                     }
-                  }
-
-                  for(CloneBlockInfo cloneInfo : blockEntitiesList) {
-                     BlockEntity newBlockEntity = toDimension.getBlockEntity(cloneInfo.pos);
-                     if (cloneInfo.blockEntityInfo != null && newBlockEntity != null) {
-                        newBlockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(newBlockEntity.problemPath()), toDimension.registryAccess(), cloneInfo.blockEntityInfo.tag));
-                        newBlockEntity.setComponents(cloneInfo.blockEntityInfo.components);
-                        newBlockEntity.setChanged();
-                     }
-
-                     toDimension.setBlock(cloneInfo.pos, cloneInfo.state, defaultUpdateFlags);
-                  }
-
-                  if (!strict) {
-                     for(CloneBlockInfo cloneInfo : reverse) {
-                        toDimension.updateNeighboursOnBlockSet(cloneInfo.pos, cloneInfo.previousStateAtDestination);
-                     }
-                  }
-
-                  toDimension.getBlockTicks().copyAreaFrom(fromDimension.getBlockTicks(), from, offset);
-               } catch (Throwable var36) {
-                  try {
-                     reporter.close();
-                  } catch (Throwable var35) {
-                     var36.addSuppressed(var35);
-                  }
-
-                  throw var36;
                }
 
-               reporter.close();
-               if (count == 0) {
-                  throw ERROR_FAILED.create();
-               } else {
-                  source.sendSuccess(() -> Component.translatable("commands.clone.success", count), true);
-                  return count;
+               toDimension.getBlockTicks().copyAreaFrom(fromDimension.getBlockTicks(), from, offset);
+            } catch (Throwable var36) {
+               try {
+                  reporter.close();
+               } catch (Throwable var35) {
+                  var36.addSuppressed(var35);
                }
+
+               throw var36;
+            }
+
+            reporter.close();
+            if (count == 0) {
+               throw ERROR_FAILED.create();
+            } else {
+               source.sendSuccess(() -> Component.translatable("commands.clone.success", count), true);
+               return count;
             }
          } else {
             throw BlockPosArgument.ERROR_NOT_LOADED.create();

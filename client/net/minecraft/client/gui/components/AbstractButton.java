@@ -36,7 +36,7 @@ public abstract class AbstractButton extends AbstractWidget.WithInactiveMessage 
    }
 
    protected final void extractDefaultSprite(final GuiGraphicsExtractor graphics) {
-      graphics.blitSprite(GuiPipeline.TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHoveredOrFocused()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
+      graphics.blitSprite(GuiPipeline.TEXTURED, SPRITES.get(this.active, this.overrideRenderHighlightedSprite != null ? (Boolean)this.overrideRenderHighlightedSprite.get() : this.isHighlighted()), this.getX(), this.getY(), this.getWidth(), this.getHeight(), ARGB.white(this.alpha));
    }
 
    public void onClick(final MouseButtonEvent event, final boolean doubleClick) {

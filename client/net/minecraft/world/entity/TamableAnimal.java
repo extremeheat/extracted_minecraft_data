@@ -132,7 +132,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    protected void feed(final Player player, final InteractionHand hand, final ItemStack itemStack, final float healingFactor, final float defaultHeal) {
       FoodProperties foodProperties = (FoodProperties)itemStack.get(DataComponents.FOOD);
       this.usePlayerItem(player, hand, itemStack);
-      this.heal(foodProperties != null ? healingFactor * (float)foodProperties.nutrition() : defaultHeal);
+      this.healNaturally(foodProperties != null ? healingFactor * (float)foodProperties.nutrition() : defaultHeal);
       this.playEatingSound();
    }
 

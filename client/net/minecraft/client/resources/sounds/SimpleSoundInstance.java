@@ -33,6 +33,14 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       return new SimpleSoundInstance(sound.location(), SoundSource.UI, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
+   public static SimpleSoundInstance forPreview(final Holder<SoundEvent> sound, final SoundSource source, final float volume) {
+      return forPreview(sound.value(), source, volume);
+   }
+
+   public static SimpleSoundInstance forPreview(final SoundEvent sound, final SoundSource source, final float volume) {
+      return new SimpleSoundInstance(sound.location(), source, volume, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+   }
+
    public static SimpleSoundInstance forMusic(final SoundEvent sound) {
       return new SimpleSoundInstance(sound.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }

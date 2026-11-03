@@ -89,7 +89,7 @@ public class FriendEntry extends AbstractFriendsEntryContainerWidget {
       int x = this.playerFaceWidget.getX() + 1;
       int y = this.playerFaceWidget.getY() + 1;
       this.profileButton.setPosition(x, y);
-      if (this.isHoveredOrFocused()) {
+      if (this.isHighlighted()) {
          graphics.fill(x, y, x + this.profileButton.getWidth(), y + this.profileButton.getHeight(), -1601138544);
          this.profileButton.extractRenderState(graphics);
       }
@@ -101,6 +101,8 @@ public class FriendEntry extends AbstractFriendsEntryContainerWidget {
       this.statusWidget.extractRenderState(graphics);
       if (this.profileButton.isFocused()) {
          graphics.outline(this.getX() - 1, this.getY(), this.getWidth() + 1, this.getHeight() - 1, ARGB.white(this.alpha));
+      } else if (this.isHovered()) {
+         graphics.outline(this.getX() - 1, this.getY(), this.getWidth() + 1, this.getHeight() - 1, -8355712);
       }
 
    }

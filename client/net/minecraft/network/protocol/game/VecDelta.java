@@ -28,6 +28,7 @@ public sealed interface VecDelta {
          short za = input.readShort();
          return new Linear(xa, ya, za);
       } else {
+         boolean startImmediately = input.readBoolean();
          int maxSteps = input.readableBytes() / 7;
          if (stepCount > maxSteps) {
             throw new DecoderException("VecDelta with size " + stepCount + " is bigger than allowed " + maxSteps);
@@ -42,7 +43,7 @@ public sealed interface VecDelta {
                steps.add(new Stepped.DeltaStep(xa, ya, za, ticks));
             }
 
-            return new Stepped(steps);
+            return new Stepped(steps, startImmediately);
          }
       }
    }
@@ -53,52 +54,53 @@ public sealed interface VecDelta {
       byte var3 = 0;
 
       while(true) {
-         label66: {
+         label79:
+         while(true) {
             //$FF: var3->value
             //0->net/minecraft/network/protocol/game/VecDelta$Linear
             //1->net/minecraft/network/protocol/game/VecDelta$Stepped
             switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
                case 0:
                   Linear var4 = (Linear)var2;
-                  Linear var21 = var4;
+                  Linear var26 = var4;
 
                   try {
-                     var22 = var21.xa();
+                     var27 = var26.xa();
+                  } catch (Throwable var17) {
+                     throw new MatchException(var17.toString(), var17);
+                  }
+
+                  short za = var27;
+                  if (false) {
+                     break label79;
+                  }
+
+                  short xa = za;
+                  var26 = var4;
+
+                  try {
+                     var29 = var26.ya();
+                  } catch (Throwable var16) {
+                     throw new MatchException(var16.toString(), var16);
+                  }
+
+                  za = var29;
+                  if (false) {
+                     break label79;
+                  }
+
+                  short ya = za;
+                  var26 = var4;
+
+                  try {
+                     var31 = var26.za();
                   } catch (Throwable var15) {
                      throw new MatchException(var15.toString(), var15);
                   }
 
-                  short za = var22;
+                  za = var31;
                   if (false) {
-                     break label66;
-                  }
-
-                  short xa = za;
-                  var21 = var4;
-
-                  try {
-                     var24 = var21.ya();
-                  } catch (Throwable var14) {
-                     throw new MatchException(var14.toString(), var14);
-                  }
-
-                  za = var24;
-                  if (false) {
-                     break label66;
-                  }
-
-                  short ya = za;
-                  var21 = var4;
-
-                  try {
-                     var26 = var21.za();
-                  } catch (Throwable var13) {
-                     throw new MatchException(var13.toString(), var13);
-                  }
-
-                  za = var26;
-                  if (false) {
-                     break label66;
+                     break label79;
                   }
 
                   output.writeShort(xa);
@@ -110,12 +112,30 @@ public sealed interface VecDelta {
                   Stepped var10000 = za;
 
                   try {
-                     var20 = var10000.steps();
-                  } catch (Throwable var12) {
-                     throw new MatchException(var12.toString(), var12);
+                     var23 = var10000.steps();
+                  } catch (Throwable var14) {
+                     throw new MatchException(var14.toString(), var14);
                   }
 
-                  for(Stepped.DeltaStep step : var20) {
+                  List startImmediately = var23;
+                  List<Stepped.DeltaStep> steps = startImmediately;
+                  var10000 = za;
+
+                  try {
+                     var25 = var10000.startImmediately();
+                  } catch (Throwable var13) {
+                     throw new MatchException(var13.toString(), var13);
+                  }
+
+                  boolean startImmediately = var25;
+                  if (false) {
+                     var3 = 2;
+                     continue;
+                  }
+
+                  output.writeBoolean(startImmediately);
+
+                  for(Stepped.DeltaStep step : steps) {
                      output.writeVarInt(step.ticks);
                      output.writeShort(step.xa);
                      output.writeShort(step.ya);
@@ -156,7 +176,7 @@ public sealed interface VecDelta {
       }
    }
 
-   public static record Stepped(List<DeltaStep> steps) implements VecDelta {
+   public static record Stepped(List<DeltaStep> steps, boolean startImmediately) implements VecDelta {
       private static final int MIN_BYTES_PER_STEP = 7;
 
       public Stepped {
@@ -201,13 +221,13 @@ public sealed interface VecDelta {
             }
 
             positionCodec.setBase(originalBase);
-            return PositionPath.stepped(output);
+            return PositionPath.stepped(output, this.startImmediately);
          }
       }
 
-      public static @Nullable Stepped tryEncode(final VecDeltaCodec positionCodec, final List<PositionStep> steps) {
+      public static @Nullable Stepped tryEncode(final VecDeltaCodec positionCodec, final List<PositionStep> steps, final boolean startImmediately) {
          if (steps.isEmpty()) {
-            return new Stepped(List.of());
+            return new Stepped(List.of(), startImmediately);
          } else {
             List<DeltaStep> output = new ArrayList(steps.size());
             Vec3 originalBase = positionCodec.getBase();
@@ -227,7 +247,7 @@ public sealed interface VecDelta {
             }
 
             positionCodec.setBase(originalBase);
-            return new Stepped(output);
+            return new Stepped(output, startImmediately);
          }
       }
 

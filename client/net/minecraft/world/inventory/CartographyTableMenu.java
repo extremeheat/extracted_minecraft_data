@@ -58,7 +58,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          }
       };
       this.access = access;
-      this.addSlot(new Slot(this.container, 0, 15, 15) {
+      this.addSlot(new Slot(this.container, 0, 15, 15, Slot.Section.INPUT) {
          {
             Objects.requireNonNull(CartographyTableMenu.this);
          }
@@ -67,7 +67,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             return itemStack.has(DataComponents.MAP_ID);
          }
       });
-      this.addSlot(new Slot(this.container, 1, 15, 52) {
+      this.addSlot(new Slot(this.container, 1, 15, 52, Slot.Section.SECOND_INPUT) {
          {
             Objects.requireNonNull(CartographyTableMenu.this);
          }
@@ -76,7 +76,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             return itemStack.is(Items.PAPER) || itemStack.is(Items.MAP) || itemStack.is(Items.GLASS_PANE);
          }
       });
-      this.addSlot(new Slot(this.resultContainer, 2, 145, 39) {
+      this.addSlot(new Slot(this.resultContainer, 2, 145, 39, Slot.Section.RESULT) {
          {
             Objects.requireNonNull(CartographyTableMenu.this);
          }

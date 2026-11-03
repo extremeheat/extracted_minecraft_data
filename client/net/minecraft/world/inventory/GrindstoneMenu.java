@@ -51,7 +51,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          }
       };
       this.access = access;
-      this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
+      this.addSlot(new Slot(this.repairSlots, 0, 49, 19, Slot.Section.INPUT) {
          {
             Objects.requireNonNull(GrindstoneMenu.this);
          }
@@ -60,7 +60,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
             return itemStack.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(itemStack);
          }
       });
-      this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
+      this.addSlot(new Slot(this.repairSlots, 1, 49, 40, Slot.Section.INPUT) {
          {
             Objects.requireNonNull(GrindstoneMenu.this);
          }
@@ -69,7 +69,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
             return itemStack.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(itemStack);
          }
       });
-      this.addSlot(new Slot(this.resultSlots, 2, 129, 34) {
+      this.addSlot(new Slot(this.resultSlots, 2, 129, 34, Slot.Section.RESULT) {
          {
             Objects.requireNonNull(GrindstoneMenu.this);
          }

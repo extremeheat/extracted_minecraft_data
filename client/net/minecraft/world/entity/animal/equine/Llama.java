@@ -182,8 +182,8 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
          }
       }
 
-      if (this.getHealth() < this.getMaxHealth() && heal > 0.0F) {
-         this.heal(heal);
+      if (this.canHealNaturally() && heal > 0.0F) {
+         this.healNaturally(heal);
          itemUsed = true;
       }
 

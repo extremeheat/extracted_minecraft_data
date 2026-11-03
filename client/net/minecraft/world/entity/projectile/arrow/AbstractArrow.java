@@ -307,16 +307,6 @@ public abstract class AbstractArrow extends Projectile {
       this.setDeltaMovement(movement.scale((double)inertia));
    }
 
-   private void addBubbleParticles(final Vec3 position) {
-      Vec3 movement = this.getDeltaMovement();
-
-      for(int i = 0; i < 4; ++i) {
-         float s = 0.25F;
-         this.level().addParticle(ParticleTypes.BUBBLE, position.x - movement.x * 0.25, position.y - movement.y * 0.25, position.z - movement.z * 0.25, movement.x, movement.y, movement.z);
-      }
-
-   }
-
    protected double getDefaultGravity() {
       return 0.05;
    }

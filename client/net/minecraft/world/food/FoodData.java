@@ -45,18 +45,18 @@ public class FoodData {
       }
 
       boolean naturalRegen = (Boolean)level.getGameRules().get(GameRules.NATURAL_HEALTH_REGENERATION);
-      if (naturalRegen && this.saturationLevel > 0.0F && player.isHurt() && this.foodLevel >= 20) {
+      if (naturalRegen && this.saturationLevel > 0.0F && player.canHealNaturally() && this.foodLevel >= 20) {
          ++this.tickTimer;
          if (this.tickTimer >= 10) {
             float saturationSpent = Math.min(this.saturationLevel, 6.0F);
-            player.heal(saturationSpent / 6.0F);
+            player.healNaturally(saturationSpent / 6.0F);
             this.addExhaustion(saturationSpent);
             this.tickTimer = 0;
          }
-      } else if (naturalRegen && this.foodLevel >= 18 && player.isHurt()) {
+      } else if (naturalRegen && this.foodLevel >= 18 && player.canHealNaturally()) {
          ++this.tickTimer;
          if (this.tickTimer >= 80) {
-            player.heal(1.0F);
+            player.healNaturally(1.0F);
             this.addExhaustion(6.0F);
             this.tickTimer = 0;
          }

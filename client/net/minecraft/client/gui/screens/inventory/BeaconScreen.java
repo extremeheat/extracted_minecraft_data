@@ -143,7 +143,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             sprite = BeaconScreen.BUTTON_DISABLED_SPRITE;
          } else if (this.selected) {
             sprite = BeaconScreen.BUTTON_SELECTED_SPRITE;
-         } else if (this.isHoveredOrFocused()) {
+         } else if (this.isHighlighted()) {
             sprite = BeaconScreen.BUTTON_HIGHLIGHTED_SPRITE;
          } else {
             sprite = BeaconScreen.BUTTON_SPRITE;
@@ -180,6 +180,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
          this.isPrimary = isPrimary;
          this.tier = tier;
          this.setEffect(effect);
+         this.setTabOrderGroup(3);
       }
 
       protected void setEffect(final Holder<MobEffect> effect) {
@@ -249,6 +250,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       protected BeaconSpriteScreenButton(final int x, final int y, final Identifier sprite, final Component label) {
          super(x, y, label);
          this.setTooltip(Tooltip.create(label));
+         this.setTabOrderGroup(7);
          this.sprite = sprite;
       }
 

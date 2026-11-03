@@ -2171,7 +2171,7 @@ public class ServerPlayer extends Player {
    }
 
    public CommonPlayerSpawnInfo createCommonSpawnInfo(final ServerLevel level) {
-      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isDebug(), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
+      return new CommonPlayerSpawnInfo(level.dimensionTypeRegistration(), level.dimension(), this.gameMode.getGameModeForPlayer(), Optional.ofNullable(this.gameMode.getPreviousGameModeForPlayer()), level.isFlat(), this.getLastDeathLocation(), this.getPortalCooldown(), level.getSeaLevel());
    }
 
    public void setRaidOmenPosition(final BlockPos raidOmenPosition) {
