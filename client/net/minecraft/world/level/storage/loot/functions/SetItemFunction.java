@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetItemFunction extends LootItemConditionalFunction {
@@ -20,6 +21,9 @@ public class SetItemFunction extends LootItemConditionalFunction {
 
    public MapCodec<SetItemFunction> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {

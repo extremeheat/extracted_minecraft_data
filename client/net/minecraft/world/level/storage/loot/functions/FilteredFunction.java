@@ -34,8 +34,7 @@ public class FilteredFunction extends LootItemConditionalFunction {
       return function.isPresent() ? (ItemStack)((LootItemFunction)((Holder)function.get()).value()).apply(itemStack, context) : itemStack;
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
       Validatable.validateHolder(context, "on_pass", this.onPass);
       Validatable.validateHolder(context, "on_fail", this.onFail);
    }

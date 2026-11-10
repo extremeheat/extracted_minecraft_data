@@ -6,7 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.references.BlockItemIds;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -19,7 +20,6 @@ import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrowingPlantHeadBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -29,9 +29,9 @@ public class ShearsItem extends Item {
       super(properties);
    }
 
-   public static Tool createToolProperties() {
-      HolderGetter<Block> registrationLookup = BuiltInRegistries.<Block>acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK);
-      return new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(Blocks.COBWEB.builtInRegistryHolder()), 15.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.SHEARS_EXTREME_BREAKING_SPEED), 15.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.SHEARS_MAJOR_BREAKING_SPEED), 5.0F), Tool.Rule.overrideSpeed(registrationLookup.getOrThrow(BlockTags.SHEARS_MINOR_BREAKING_SPEED), 2.0F)), 1.0F, 1, true);
+   public static Tool createToolProperties(final HolderGetter.Provider context) {
+      HolderGetter<Block> blocks = context.<Block>lookupOrThrow(Registries.BLOCK);
+      return new Tool(List.of(Tool.Rule.minesAndDrops(HolderSet.direct(blocks.getOrThrow(BlockItemIds.COBWEB.block())), 15.0F), Tool.Rule.overrideSpeed(blocks.getOrThrow(BlockTags.SHEARS_EXTREME_BREAKING_SPEED), 15.0F), Tool.Rule.overrideSpeed(blocks.getOrThrow(BlockTags.SHEARS_MAJOR_BREAKING_SPEED), 5.0F), Tool.Rule.overrideSpeed(blocks.getOrThrow(BlockTags.SHEARS_MINOR_BREAKING_SPEED), 2.0F)), 1.0F, 1, true);
    }
 
    public boolean mineBlock(final ItemStack itemStack, final Level level, final BlockState state, final BlockPos pos, final LivingEntity miner) {

@@ -1,13 +1,9 @@
 package net.minecraft.commands.functions;
 
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.List;
-import java.util.Optional;
-import net.minecraft.commands.Commands;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.UnboundEntryAction;
@@ -16,18 +12,18 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public interface CommandFunction<T> {
+public interface CommandFunction<Runtime> {
    Identifier id();
 
-   InstantiatedFunction<T> instantiate(@Nullable CompoundTag arguments, CommandDispatcher<T> dispatcher) throws FunctionInstantiationException;
+   InstantiatedFunction<Runtime> instantiate(@Nullable CompoundTag arguments) throws FunctionInstantiationException;
 
    private static boolean shouldConcatenateNextLine(final CharSequence line) {
       int length = line.length();
       return length > 0 && line.charAt(length - 1) == '\\';
    }
 
-   static <T extends ExecutionCommandSource<T>> CommandFunction<T> fromLines(final Identifier id, final CommandDispatcher<T> dispatcher, final T compilationContext, final List<String> lines) {
-      FunctionBuilder<T> functionBuilder = new FunctionBuilder<T>();
+   static <Runtime extends ExecutionCommandSource<Runtime>> CommandFunction<Runtime> fromLines(final Identifier id, final CommandParser.Provider<Runtime> parserProvider, final List<String> lines) {
+      FunctionBuilder<Runtime> functionBuilder = new FunctionBuilder<Runtime>();
 
       for(int i = 0; i < lines.size(); ++i) {
          int lineNumber = i + 1;
@@ -56,29 +52,31 @@ public interface CommandFunction<T> {
          checkCommandLineLength(line);
          StringReader input = new StringReader(line);
          if (input.canRead() && input.peek() != '#') {
-            if (input.peek() == '/') {
-               input.skip();
+            try (CommandParser<Runtime> parser = parserProvider.create(id)) {
                if (input.peek() == '/') {
-                  throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (if you intended to make a comment, use '#' not '//')");
+                  input.skip();
+                  if (input.peek() == '/') {
+                     throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (if you intended to make a comment, use '#' not '//')");
+                  }
+
+                  String name = input.readUnquotedString();
+                  throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (did you mean '" + name + "'? Do not use a preceding forwards slash.)");
                }
 
-               String name = input.readUnquotedString();
-               throw new IllegalArgumentException("Unknown or invalid command '" + line + "' on line " + lineNumber + " (did you mean '" + name + "'? Do not use a preceding forwards slash.)");
-            }
-
-            if (input.peek() == '$') {
-               functionBuilder.addMacro(line.substring(1), lineNumber, compilationContext);
-            } else {
-               try {
-                  functionBuilder.addCommand(parseCommand(dispatcher, compilationContext, input));
-               } catch (CommandSyntaxException e) {
-                  throw new IllegalArgumentException("Whilst parsing command on line " + lineNumber + ": " + e.getMessage());
+               if (input.peek() == '$') {
+                  functionBuilder.addMacro(line.substring(1), lineNumber);
+               } else {
+                  try {
+                     functionBuilder.addCommand(parseCommand(parser, input));
+                  } catch (CommandSyntaxException e) {
+                     throw new IllegalArgumentException("Whilst parsing command on line " + lineNumber + ": " + e.getMessage());
+                  }
                }
             }
          }
       }
 
-      return functionBuilder.build(id);
+      return functionBuilder.build(id, parserProvider);
    }
 
    static void checkCommandLineLength(final CharSequence line) {
@@ -89,14 +87,8 @@ public interface CommandFunction<T> {
       }
    }
 
-   static <T extends ExecutionCommandSource<T>> UnboundEntryAction<T> parseCommand(final CommandDispatcher<T> dispatcher, final T compilationContext, final StringReader input) throws CommandSyntaxException {
-      ParseResults<T> parse = dispatcher.parse(input, compilationContext);
-      Commands.validateParseResults(parse);
-      Optional<ContextChain<T>> commandChain = ContextChain.tryFlatten(parse.getContext().build(input.getString()));
-      if (commandChain.isEmpty()) {
-         throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(parse.getReader());
-      } else {
-         return new BuildContexts.Unbound<T>(input.getString(), (ContextChain)commandChain.get());
-      }
+   static <Runtime extends ExecutionCommandSource<Runtime>> UnboundEntryAction<Runtime> parseCommand(final CommandParser<Runtime> parser, final StringReader input) throws CommandSyntaxException {
+      ContextChain<Runtime> parsedChain = parser.parse(input);
+      return new BuildContexts.Unbound<Runtime>(input.getString(), parsedChain);
    }
 }

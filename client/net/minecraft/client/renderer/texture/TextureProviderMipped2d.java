@@ -11,12 +11,13 @@ import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 
-public class TextureProviderMipped2d implements TextureProvider<TextureContents> {
+public class TextureProviderMipped2d implements TextureProvider<TextureContents, TextureResources> {
    private final int maxMipLevel;
 
    public TextureProviderMipped2d(final int maxMipLevel) {
@@ -56,9 +57,17 @@ public class TextureProviderMipped2d implements TextureProvider<TextureContents>
       return new TextureResources(texture, textureView, sampler);
    }
 
+   public void dumpContents(final Identifier identifier, final Path outputDirectory, final TextureResources texture) {
+      texture.dumpContents(identifier, outputDirectory);
+   }
+
    private int clampMipLevel(final int width, final int height) {
       int lowestTextureBit = Math.min(Integer.lowestOneBit(width), Integer.lowestOneBit(height));
       int minSize = Math.min(Math.min(width, height), lowestTextureBit);
       return Math.min(this.maxMipLevel, Mth.log2(minSize));
+   }
+
+   public void releaseTexture(final TextureResources texture) {
+      texture.close();
    }
 }

@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -43,7 +44,7 @@ public class ReloadCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("reload").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((s) -> {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("reload").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((s) -> {
          CommandSourceStack source = (CommandSourceStack)s.getSource();
          MinecraftServer server = source.getServer();
          PackRepository packRepository = server.getPackRepository();

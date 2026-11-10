@@ -9,12 +9,13 @@ import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Objects;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class CubemapTextureProvider implements TextureProvider<TextureContents> {
+public class CubemapTextureProvider implements TextureProvider<TextureContents, TextureResources> {
    private static final String[] SUFFIXES = new String[]{"_1.png", "_3.png", "_5.png", "_4.png", "_0.png", "_2.png"};
 
    public CubemapTextureProvider() {
@@ -65,5 +66,12 @@ public class CubemapTextureProvider implements TextureProvider<TextureContents> 
       }
 
       return new TextureResources(texture, textureView, RenderSystem.getSamplerCache().getRepeat(FilterMode.LINEAR));
+   }
+
+   public void dumpContents(final Identifier identifier, final Path outputDirectory, final TextureResources texture) {
+   }
+
+   public void releaseTexture(final TextureResources texture) {
+      texture.close();
    }
 }

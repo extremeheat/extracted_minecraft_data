@@ -8,9 +8,10 @@ import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCondition {
+public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCondition.ContextUser {
    public static final MapCodec<MatchTool> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchTool::predicate)).apply(i, MatchTool::new));
 
    public MatchTool {
@@ -21,8 +22,11 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return Set.of(LootContextParams.TOOL);
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

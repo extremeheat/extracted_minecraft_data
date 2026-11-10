@@ -12,7 +12,6 @@ import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +21,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.nbt.CollectionTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -32,13 +30,15 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
-public class NbtPathArgument implements ArgumentType<NbtPath> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
-   public static final SimpleCommandExceptionType ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
-   public static final SimpleCommandExceptionType ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
-   public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND = new DynamicCommandExceptionType((path) -> Component.translatableEscape("arguments.nbtpath.nothing_found", path));
-   private static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.expected_list", node));
-   private static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.invalid_index", node));
+public class NbtPathArgument implements SerializableArgument.ContextFree<NbtPath> {
+   public static final NbtPathArgument INSTANCE = new NbtPathArgument();
+   public static final SerializableArgument.Type<NbtPathArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   public static final SimpleCommandExceptionType ERROR_INVALID_NODE;
+   public static final SimpleCommandExceptionType ERROR_DATA_TOO_DEEP;
+   public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND;
+   private static final DynamicCommandExceptionType ERROR_EXPECTED_LIST;
+   private static final DynamicCommandExceptionType ERROR_INVALID_INDEX;
    private static final char INDEX_MATCH_START = '[';
    private static final char INDEX_MATCH_END = ']';
    private static final char KEY_MATCH_START = '{';
@@ -46,15 +46,19 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
    private static final char QUOTED_KEY_START = '"';
    private static final char SINGLE_QUOTED_KEY_START = '\'';
 
-   public NbtPathArgument() {
+   private NbtPathArgument() {
       super();
    }
 
-   public static NbtPathArgument nbtPath() {
-      return new NbtPathArgument();
+   public SerializableArgument.Type<NbtPathArgument> type() {
+      return TYPE;
    }
 
-   public static NbtPath getPath(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<NbtPath> nbtPath() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static NbtPath getPath(final CommandContext<?> context, final String name) {
       return (NbtPath)context.getArgument(name, NbtPath.class);
    }
 
@@ -155,6 +159,16 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       return (tag) -> NbtUtils.compareNbt(pattern, tag, true);
    }
 
+   static {
+      TYPE = SerializableArgument.<NbtPathArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
+      ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
+      ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
+      ERROR_NOTHING_FOUND = new DynamicCommandExceptionType((path) -> Component.translatableEscape("arguments.nbtpath.nothing_found", path));
+      ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.expected_list", node));
+      ERROR_INVALID_INDEX = new DynamicCommandExceptionType((node) -> Component.translatableEscape("commands.data.modify.invalid_index", node));
+   }
+
    public static class NbtPath {
       private final String original;
       private final Object2IntMap<Node> nodeToOriginalPosition;
@@ -162,7 +176,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       public static final Codec<NbtPath> CODEC;
 
       public static NbtPath of(final String string) throws CommandSyntaxException {
-         return (new NbtPathArgument()).parse(new StringReader(string));
+         return NbtPathArgument.INSTANCE.parse(new StringReader(string));
       }
 
       public NbtPath(final String original, final Node[] nodes, final Object2IntMap<Node> nodeToOriginalPosition) {
@@ -346,7 +360,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       static {
          CODEC = Codec.STRING.comapFlatMap((string) -> {
             try {
-               NbtPath parsed = (new NbtPathArgument()).parse(new StringReader(string));
+               NbtPath parsed = NbtPathArgument.INSTANCE.parse(new StringReader(string));
                return DataResult.success(parsed);
             } catch (CommandSyntaxException e) {
                return DataResult.error(() -> "Failed to parse path " + string + ": " + e.getMessage());

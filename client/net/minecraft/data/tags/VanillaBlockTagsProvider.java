@@ -228,6 +228,8 @@ public class VanillaBlockTagsProvider extends TagsProvider<Block> {
       this.tag(BlockTags.TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS).add(BlockItemIds.SAND, BlockItemIds.RED_SAND);
       this.tag(BlockTags.TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS).addTag(BlockTags.TERRACOTTA).add(BlockItemIds.SAND, BlockItemIds.RED_SAND);
       this.tag(BlockTags.TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS).add(BlockItemIds.SOUL_SAND, BlockItemIds.SOUL_SOIL);
+      this.tag(BlockTags.TRIGGERS_AMBIENT_ICE_BLOCK_SOUNDS).add(BlockItemIds.ICE);
+      this.tag(BlockTags.TRIGGERS_AMBIENT_ICE_CRYSTAL_SOUNDS).add(BlockItemIds.PACKED_ICE);
       this.tag(BlockTags.REQUIRED_FOR_POPLAR_LEAF_AMBIENCE).addTag(BlockTags.OVERWORLD_NATURAL_LOGS);
       this.tag(BlockTags.SPELEOTHEMS).add(BlockItemIds.ICICLE, BlockItemIds.POINTED_DRIPSTONE, BlockItemIds.SULFUR_SPIKE);
       this.tag(BlockTags.SULFUR_SPIKE_REPLACEABLE).add(BlockItemIds.SULFUR, BlockItemIds.CINNABAR);

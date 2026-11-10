@@ -28,7 +28,7 @@ import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -51,14 +51,14 @@ public class SectionStorage<R, P> implements AutoCloseable {
    private final Function<R, P> packer;
    private final BiFunction<P, Runnable, R> unpacker;
    private final Function<Runnable, R> factory;
-   private final RegistryAccess registryAccess;
+   private final HolderGetter.Provider registryAccess;
    private final ChunkIOErrorReporter errorReporter;
    protected final LevelHeightAccessor levelHeightAccessor;
    private final LongSet loadedChunks = new LongOpenHashSet();
    private final Long2ObjectMap<CompletableFuture<Optional<PackedChunk<P>>>> pendingLoads = new Long2ObjectOpenHashMap();
    private final Object loadLock = new Object();
 
-   public SectionStorage(final SimpleRegionStorage simpleRegionStorage, final Codec<P> codec, final Function<R, P> packer, final BiFunction<P, Runnable, R> unpacker, final Function<Runnable, R> factory, final RegistryAccess registryAccess, final ChunkIOErrorReporter errorReporter, final LevelHeightAccessor levelHeightAccessor) {
+   public SectionStorage(final SimpleRegionStorage simpleRegionStorage, final Codec<P> codec, final Function<R, P> packer, final BiFunction<P, Runnable, R> unpacker, final Function<Runnable, R> factory, final HolderGetter.Provider registryAccess, final ChunkIOErrorReporter errorReporter, final LevelHeightAccessor levelHeightAccessor) {
       super();
       this.simpleRegionStorage = simpleRegionStorage;
       this.codec = codec;
@@ -180,7 +180,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
    }
 
    private CompletableFuture<Optional<PackedChunk<P>>> tryRead(final ChunkPos chunkPos) {
-      RegistryOps<Tag> registryOps = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
+      RegistryOps<Tag> registryOps = this.registryAccess.<Tag>createSerializationContext(NbtOps.INSTANCE);
       return this.simpleRegionStorage.read(chunkPos).thenApplyAsync((result) -> result.map((tag) -> SectionStorage.PackedChunk.parse(this.codec, registryOps, tag, this.simpleRegionStorage, this.levelHeightAccessor)), Util.backgroundExecutor().forName("parseSection")).exceptionally((throwable) -> {
          if (throwable instanceof CompletionException) {
             throwable = throwable.getCause();
@@ -221,7 +221,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
    }
 
    private void writeChunk(final ChunkPos chunkPos) {
-      RegistryOps<Tag> registryOps = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
+      RegistryOps<Tag> registryOps = this.registryAccess.<Tag>createSerializationContext(NbtOps.INSTANCE);
       Dynamic<Tag> tag = this.<Tag>writeChunk(chunkPos, registryOps);
       Tag value = (Tag)tag.getValue();
       if (value instanceof CompoundTag compoundTag) {

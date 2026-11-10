@@ -153,6 +153,10 @@ public interface RealmsError {
          }
       }
 
+      public static CustomError downloadFailed() {
+         return new CustomError(500, Component.translatable("mco.download.failed"));
+      }
+
       public int errorCode() {
          return this.httpCode;
       }

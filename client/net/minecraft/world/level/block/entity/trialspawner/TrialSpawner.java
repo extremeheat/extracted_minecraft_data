@@ -13,6 +13,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -166,7 +167,7 @@ public final class TrialSpawner {
       SpawnData nextSpawnData = this.data.getOrCreateNextSpawnData(this, level.getRandom());
 
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(() -> "spawner@" + String.valueOf(spawnerPos), LOGGER)) {
-         ValueInput input = TagValueInput.create(reporter, level.registryAccess(), nextSpawnData.entityToSpawn());
+         ValueInput input = TagValueInput.create(reporter, (HolderGetter.Provider)level.registryAccess(), nextSpawnData.entityToSpawn());
          Optional<EntityType<?>> entityType = EntityType.by(input);
          if (entityType.isEmpty()) {
             return Optional.empty();

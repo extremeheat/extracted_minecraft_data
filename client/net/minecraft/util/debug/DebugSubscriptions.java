@@ -33,10 +33,6 @@ public class DebugSubscriptions<T> {
       super();
    }
 
-   public static DebugSubscription<?> bootstrap(final Registry<DebugSubscription<?>> registry) {
-      return DEDICATED_SERVER_TICK_TIME;
-   }
-
    private static DebugSubscription<?> registerSimple(final String id) {
       return (DebugSubscription)Registry.register(BuiltInRegistries.DEBUG_SUBSCRIPTION, (Identifier)Identifier.withDefaultNamespace(id), new DebugSubscription((StreamCodec)null));
    }

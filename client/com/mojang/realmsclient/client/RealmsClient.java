@@ -3,9 +3,11 @@ package com.mojang.realmsclient.client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
+import com.mojang.realmsclient.dto.DownloadSessionResponseDto;
 import com.mojang.realmsclient.dto.GuardedSerializer;
 import com.mojang.realmsclient.dto.InviteCodeList;
 import com.mojang.realmsclient.dto.InviteCodeRequestDto;
@@ -84,6 +86,8 @@ public class RealmsClient {
    private static final String INVITE_CODES_RESOURCE = "api/v1.0/invite/codes";
    private static final String CONTENT_UPLOAD_RESOURCE = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/upload";
    private static final String CONTENT_V2_UPLOAD_FLAG = "v2upload";
+   private static final String CONTENT_DOWNLOAD_RESOURCE = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/download/latest";
+   private static final String CONTENT_V2_DOWNLOAD_FLAG = "download_v2";
    private static final String ACCEPT_HEADER = "Accept";
    private static final String APPLICATION_JSON = "application/json";
    private static final String CLIENT_VERSION_HEADER = "Client-Version";
@@ -169,6 +173,10 @@ public class RealmsClient {
 
    public boolean isContentV2UploadEnabled() {
       return this.getFeatureFlags().contains("v2upload");
+   }
+
+   private boolean isContentV2DownloadEnabled() {
+      return this.getFeatureFlags().contains("download_v2");
    }
 
    private Set<String> fetchFeatureFlags() {
@@ -505,9 +513,40 @@ public class RealmsClient {
    }
 
    public WorldDownload requestDownloadInfo(final long realmId, final int slotId) throws RealmsServiceException {
-      String asciiUrl = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID/download".replace("$WORLD_ID", String.valueOf(realmId)).replace("$SLOT_ID", String.valueOf(slotId)));
-      String json = this.execute(Request.get(asciiUrl));
-      return WorldDownload.parse(json);
+      if (this.isContentV2DownloadEnabled()) {
+         return this.requestContentV2DownloadInfo(realmId, slotId);
+      } else {
+         String asciiUrl = this.url("worlds" + "/$WORLD_ID/slot/$SLOT_ID/download".replace("$WORLD_ID", String.valueOf(realmId)).replace("$SLOT_ID", String.valueOf(slotId)));
+         String json = this.execute(Request.get(asciiUrl));
+         return WorldDownload.parse(json);
+      }
+   }
+
+   private WorldDownload requestContentV2DownloadInfo(final long realmId, final int slotId) throws RealmsServiceException {
+      String resource = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/download/latest".replace("$REALM_ID", String.valueOf(realmId)).replace("$SLOT_ID", String.valueOf(slotId));
+      String json = this.execute(this.contentV2Request(resource, "type=Vanilla", ""), true);
+
+      try {
+         DownloadSessionResponseDto responseDto = (DownloadSessionResponseDto)GSON.fromJson(json, DownloadSessionResponseDto.class);
+         DownloadSessionResponseDto.Result result = responseDto == null ? null : responseDto.result();
+         if (result != null && "Ready".equals(result.status()) && result.downloadUrl() != null) {
+            return new WorldDownload(result.downloadUrl(), "", "");
+         }
+
+         LOGGER.error("Realms download session was not ready: {}", result == null ? null : result.status());
+      } catch (JsonParseException e) {
+         LOGGER.error("Could not parse Realms download session", e);
+      }
+
+      throw new RealmsServiceException(RealmsError.CustomError.downloadFailed());
+   }
+
+   private Request<?> contentV2Request(final String resource, final @Nullable String queryString, final String body) {
+      Request<?> request = frontendV2Request(Request.post(frontendV2Url(resource, queryString), body), this.minecraft.getUser().getAccessToken());
+      request.connection.setRequestProperty("Client-Version", SharedConstants.getCurrentVersion().name());
+      request.connection.setRequestProperty("X-Realms-Platform", "Java");
+      request.connection.setInstanceFollowRedirects(false);
+      return request;
    }
 
    public @Nullable UploadInfo requestUploadInfo(final long realmId) throws RealmsServiceException {
@@ -525,10 +564,7 @@ public class RealmsClient {
       String resource = "api/v1.0/realms/$REALM_ID/slots/$SLOT_ID/upload".replace("$REALM_ID", String.valueOf(realmId)).replace("$SLOT_ID", String.valueOf(slotId));
       JsonObject body = new JsonObject();
       body.addProperty("archiveFormat", archiveFormat);
-      Request<?> request = frontendV2Request(Request.post(frontendV2Url(resource, (String)null), body.toString()), this.minecraft.getUser().getAccessToken());
-      request.connection.setRequestProperty("Client-Version", SharedConstants.getCurrentVersion().name());
-      request.connection.setRequestProperty("X-Realms-Platform", "Java");
-      request.connection.setInstanceFollowRedirects(false);
+      Request<?> request = this.contentV2Request(resource, (String)null, body.toString());
       CompletableFuture<String> response = CompletableFuture.supplyAsync(() -> {
          try {
             return this.execute(request, true);

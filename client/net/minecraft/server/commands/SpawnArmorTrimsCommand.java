@@ -2,16 +2,16 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.ResourceKeyArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -39,22 +39,21 @@ public class SpawnArmorTrimsCommand {
    private static final List<ResourceKey<TrimMaterial>> VANILLA_TRIM_MATERIALS;
    private static final ToIntFunction<ResourceKey<TrimPattern>> TRIM_PATTERN_ORDER;
    private static final ToIntFunction<ResourceKey<TrimMaterial>> TRIM_MATERIAL_ORDER;
-   private static final DynamicCommandExceptionType ERROR_INVALID_PATTERN;
 
    public SpawnArmorTrimsCommand() {
       super();
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("*_lag_my_game").executes((c) -> spawnAllArmorTrims((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceKeyArgument.key(Registries.TRIM_PATTERN)).executes((c) -> spawnArmorTrim((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ResourceKeyArgument.getRegistryKey(c, "pattern", Registries.TRIM_PATTERN, ERROR_INVALID_PATTERN)))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("*_lag_my_game").executes((c) -> spawnAllArmorTrims((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException())))).then(Commands.argument("pattern", ResourceArgument.resource(Registries.TRIM_PATTERN)).executes((c) -> spawnArmorTrim((CommandSourceStack)c.getSource(), ((CommandSourceStack)c.getSource()).getPlayerOrException(), ResourceArgument.getResource(c, "pattern", Registries.TRIM_PATTERN)))));
    }
 
    private static int spawnAllArmorTrims(final CommandSourceStack source, final Player player) {
       return spawnArmorTrims(source, player, source.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).listElements());
    }
 
-   private static int spawnArmorTrim(final CommandSourceStack source, final Player player, final ResourceKey<TrimPattern> pattern) {
-      return spawnArmorTrims(source, player, Stream.of((Holder.Reference)source.getServer().registryAccess().lookupOrThrow(Registries.TRIM_PATTERN).get(pattern).orElseThrow()));
+   private static int spawnArmorTrim(final CommandSourceStack source, final Player player, final Holder.Reference<TrimPattern> pattern) {
+      return spawnArmorTrims(source, player, Stream.of(pattern));
    }
 
    private static int spawnArmorTrims(final CommandSourceStack source, final Player player, final Stream<Holder.Reference<TrimPattern>> patterns) {
@@ -117,6 +116,5 @@ public class SpawnArmorTrimsCommand {
       VANILLA_TRIM_MATERIALS = List.of(TrimMaterials.QUARTZ, TrimMaterials.IRON, TrimMaterials.NETHERITE, TrimMaterials.REDSTONE, TrimMaterials.COPPER, TrimMaterials.GOLD, TrimMaterials.EMERALD, TrimMaterials.DIAMOND, TrimMaterials.LAPIS, TrimMaterials.AMETHYST, TrimMaterials.RESIN);
       TRIM_PATTERN_ORDER = Util.<ResourceKey<TrimPattern>>createIndexLookup(VANILLA_TRIM_PATTERNS);
       TRIM_MATERIAL_ORDER = Util.<ResourceKey<TrimMaterial>>createIndexLookup(VANILLA_TRIM_MATERIALS);
-      ERROR_INVALID_PATTERN = new DynamicCommandExceptionType((value) -> Component.translatableEscape("Invalid pattern", value));
    }
 }

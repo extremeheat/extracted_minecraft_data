@@ -11,6 +11,7 @@ import net.minecraft.world.level.storage.loot.IntRangePredicate;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
+import org.jspecify.annotations.Nullable;
 
 public record TimeCheck(Holder<WorldClock> clock, Optional<Long> period, IntRangePredicate value) implements LootItemCondition {
    public static final MapCodec<TimeCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(WorldClock.CODEC.fieldOf("clock").forGetter(TimeCheck::clock), Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRangePredicate.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(i, TimeCheck::new));
@@ -23,8 +24,11 @@ public record TimeCheck(Holder<WorldClock> clock, Optional<Long> period, IntRang
       return MAP_CODEC;
    }
 
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      return null;
+   }
+
    public void validate(final ValidationContext context) {
-      LootItemCondition.super.validate(context);
       Validatable.validate(context, "value", this.value);
    }
 

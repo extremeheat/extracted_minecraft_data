@@ -7,26 +7,32 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 
-public class ObjectiveArgument implements ArgumentType<String> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.notFound", name));
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.readonly", name));
+public class ObjectiveArgument implements SerializableArgument.ContextFree<String> {
+   private static final ObjectiveArgument INSTANCE = new ObjectiveArgument();
+   public static final SerializableArgument.Type<ObjectiveArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND;
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY;
 
-   public ObjectiveArgument() {
+   private ObjectiveArgument() {
       super();
    }
 
-   public static ObjectiveArgument objective() {
-      return new ObjectiveArgument();
+   public SerializableArgument.Type<ObjectiveArgument> type() {
+      return TYPE;
+   }
+
+   public static ArgumentType<String> objective() {
+      return INSTANCE.toBrigadier();
    }
 
    public static Objective getObjective(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
@@ -53,18 +59,18 @@ public class ObjectiveArgument implements ArgumentType<String> {
       return reader.readUnquotedString();
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-      S rawSource = (S)context.getSource();
-      if (rawSource instanceof CommandSourceStack source) {
-         return SharedSuggestionProvider.suggest(source.getServer().getScoreboard().getObjectiveNames(), builder);
-      } else if (rawSource instanceof SharedSuggestionProvider source) {
-         return source.customSuggestion(context);
-      } else {
-         return Suggestions.empty();
-      }
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return ((SuggestionContext)context.getSource()).suggestObjectiveNames(context, builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<ObjectiveArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("foo", "*", "012");
+      ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.notFound", name));
+      ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((name) -> Component.translatableEscape("arguments.objective.readonly", name));
    }
 }

@@ -7,7 +7,7 @@ import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
 import org.jspecify.annotations.Nullable;
 
-public abstract class GreedyPredicateParseRule implements Rule<StringReader, String> {
+public abstract class GreedyPredicateParseRule<S extends CommandParserState> implements Rule<S, String> {
    private final int minSize;
    private final int maxSize;
    private final DelayedException<CommandSyntaxException> error;
@@ -23,8 +23,8 @@ public abstract class GreedyPredicateParseRule implements Rule<StringReader, Str
       this.error = error;
    }
 
-   public @Nullable String parse(final ParseState<StringReader> state) {
-      StringReader input = state.input();
+   public @Nullable String parse(final ParseState<S> state) {
+      StringReader input = ((CommandParserState)state.input()).reader();
       String fullString = input.getString();
       int start = input.getCursor();
 

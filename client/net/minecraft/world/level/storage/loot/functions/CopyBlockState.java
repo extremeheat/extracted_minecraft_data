@@ -24,7 +24,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class CopyBlockState extends LootItemConditionalFunction {
+public class CopyBlockState extends LootItemConditionalFunction.ContextUser {
    public static final MapCodec<CopyBlockState> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter((f) -> f.block), Codec.STRING.listOf().fieldOf("properties").forGetter((f) -> f.properties.stream().map(Property::getName).toList()))).apply(i, CopyBlockState::new));
    private final Holder<Block> block;
    private final Set<Property<?>> properties;
@@ -46,7 +46,7 @@ public class CopyBlockState extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(LootContextParams.BLOCK_STATE);
    }
 

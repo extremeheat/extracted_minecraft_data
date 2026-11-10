@@ -15,7 +15,7 @@ public record FunctionCallback(Identifier functionId) implements TimerCallback<M
 
    public void handle(final MinecraftServer server, final TimerQueue<MinecraftServer> queue, final long time) {
       ServerFunctionManager functionManager = server.getFunctions();
-      functionManager.get(this.functionId).ifPresent((function) -> functionManager.execute(function, functionManager.getGameLoopSender()));
+      functionManager.get(this.functionId).ifPresent((function) -> ServerFunctionManager.execute(function, functionManager.getGameLoopSender()));
    }
 
    public MapCodec<FunctionCallback> codec() {

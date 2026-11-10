@@ -1,7 +1,7 @@
 package net.minecraft.server.jsonrpc;
 
 import java.util.function.Function;
-import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.server.jsonrpc.api.Schema;
 import net.minecraft.server.jsonrpc.methods.AllowlistService;
 import net.minecraft.server.jsonrpc.methods.BanlistService;
@@ -18,7 +18,7 @@ public class IncomingRpcMethods {
       super();
    }
 
-   public static IncomingRpcMethod<?, ?> bootstrap(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   public static void bootstrap(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       registerAllowListService(methodRegistry);
       registerBanlistService(methodRegistry);
       registerIpBanlistService(methodRegistry);
@@ -27,10 +27,10 @@ public class IncomingRpcMethods {
       registerServerStateService(methodRegistry);
       registerServerSettingsService(methodRegistry);
       registerGameRuleService(methodRegistry);
-      return IncomingRpcMethod.method((Function)((apiService) -> DiscoveryService.discover(Schema.getSchemaRegistry()))).undiscoverable().allowPreServerInit().notOnMainThread().response("result", Schema.DISCOVERY_SCHEMA).register(methodRegistry, "rpc.discover");
+      IncomingRpcMethod.method((Function)((apiService) -> DiscoveryService.discover(Schema.getSchemaRegistry()))).undiscoverable().allowPreServerInit().notOnMainThread().response("result", Schema.DISCOVERY_SCHEMA).register(methodRegistry, "rpc.discover");
    }
 
-   private static void registerAllowListService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerAllowListService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(AllowlistService::get).description("Get the allowlist").response("allowlist", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "allowlist");
       IncomingRpcMethod.method(AllowlistService::set).description("Set the allowlist").param("players", Schema.PLAYER_SCHEMA.asArray()).response("allowlist", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "allowlist/set");
       IncomingRpcMethod.method(AllowlistService::add).description("Add players to allowlist").param("add", Schema.PLAYER_SCHEMA.asArray()).response("allowlist", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "allowlist/add");
@@ -38,7 +38,7 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(AllowlistService::clear).description("Clear all players in allowlist").response("allowlist", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "allowlist/clear");
    }
 
-   private static void registerBanlistService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerBanlistService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(BanlistService::get).description("Get the ban list").response("banlist", Schema.PLAYER_BAN_SCHEMA.asArray()).register(methodRegistry, "bans");
       IncomingRpcMethod.method(BanlistService::set).description("Set the banlist").param("bans", Schema.PLAYER_BAN_SCHEMA.asArray()).response("banlist", Schema.PLAYER_BAN_SCHEMA.asArray()).register(methodRegistry, "bans/set");
       IncomingRpcMethod.method(BanlistService::add).description("Add players to ban list").param("add", Schema.PLAYER_BAN_SCHEMA.asArray()).response("banlist", Schema.PLAYER_BAN_SCHEMA.asArray()).register(methodRegistry, "bans/add");
@@ -46,7 +46,7 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(BanlistService::clear).description("Clear all players in ban list").response("banlist", Schema.PLAYER_BAN_SCHEMA.asArray()).register(methodRegistry, "bans/clear");
    }
 
-   private static void registerIpBanlistService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerIpBanlistService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(IpBanlistService::get).description("Get the ip ban list").response("banlist", Schema.IP_BAN_SCHEMA.asArray()).register(methodRegistry, "ip_bans");
       IncomingRpcMethod.method(IpBanlistService::set).description("Set the ip banlist").param("banlist", Schema.IP_BAN_SCHEMA.asArray()).response("banlist", Schema.IP_BAN_SCHEMA.asArray()).register(methodRegistry, "ip_bans/set");
       IncomingRpcMethod.method(IpBanlistService::add).description("Add ip to ban list").param("add", Schema.INCOMING_IP_BAN_SCHEMA.asArray()).response("banlist", Schema.IP_BAN_SCHEMA.asArray()).register(methodRegistry, "ip_bans/add");
@@ -54,12 +54,12 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(IpBanlistService::clear).description("Clear all ips in ban list").response("banlist", Schema.IP_BAN_SCHEMA.asArray()).register(methodRegistry, "ip_bans/clear");
    }
 
-   private static void registerPlayerService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerPlayerService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(PlayerService::get).description("Get all connected players").response("players", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "players");
       IncomingRpcMethod.method(PlayerService::kick).description("Kick players").param("kick", Schema.KICK_PLAYER_SCHEMA.asArray()).response("kicked", Schema.PLAYER_SCHEMA.asArray()).register(methodRegistry, "players/kick");
    }
 
-   private static void registerOperatorService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerOperatorService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(OperatorService::get).description("Get all oped players").response("operators", Schema.OPERATOR_SCHEMA.asArray()).register(methodRegistry, "operators");
       IncomingRpcMethod.method(OperatorService::set).description("Set all oped players").param("operators", Schema.OPERATOR_SCHEMA.asArray()).response("operators", Schema.OPERATOR_SCHEMA.asArray()).register(methodRegistry, "operators/set");
       IncomingRpcMethod.method(OperatorService::add).description("Op players").param("add", Schema.OPERATOR_SCHEMA.asArray()).response("operators", Schema.OPERATOR_SCHEMA.asArray()).register(methodRegistry, "operators/add");
@@ -67,14 +67,14 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(OperatorService::clear).description("Deop all players").response("operators", Schema.OPERATOR_SCHEMA.asArray()).register(methodRegistry, "operators/clear");
    }
 
-   private static void registerServerStateService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerServerStateService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(ServerStateService::status).description("Get server status").response("status", Schema.SERVER_STATE_SCHEMA.asRef()).register(methodRegistry, "server/status");
       IncomingRpcMethod.method(ServerStateService::save).description("Save server state").param("flush", Schema.BOOL_SCHEMA).response("saving", Schema.BOOL_SCHEMA).register(methodRegistry, "server/save");
       IncomingRpcMethod.method(ServerStateService::stop).description("Stop server").response("stopping", Schema.BOOL_SCHEMA).register(methodRegistry, "server/stop");
       IncomingRpcMethod.method(ServerStateService::systemMessage).description("Send a system message").param("message", Schema.SYSTEM_MESSAGE_SCHEMA.asRef()).response("sent", Schema.BOOL_SCHEMA).register(methodRegistry, "server/system_message");
    }
 
-   private static void registerServerSettingsService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerServerSettingsService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(ServerSettingsService::autosave).description("Get whether automatic world saving is enabled on the server").response("enabled", Schema.BOOL_SCHEMA).register(methodRegistry, "serversettings/autosave");
       IncomingRpcMethod.method(ServerSettingsService::setAutosave).description("Enable or disable automatic world saving on the server").param("enable", Schema.BOOL_SCHEMA).response("enabled", Schema.BOOL_SCHEMA).register(methodRegistry, "serversettings/autosave/set");
       IncomingRpcMethod.method(ServerSettingsService::difficulty).description("Get the current difficulty level of the server").response("difficulty", Schema.DIFFICULTY_SCHEMA.asRef()).register(methodRegistry, "serversettings/difficulty");
@@ -117,7 +117,7 @@ public class IncomingRpcMethods {
       IncomingRpcMethod.method(ServerSettingsService::setEntityBroadcastRangePercentage).description("Set the entity broadcast range as a percentage").param("percentage_points", Schema.INT_SCHEMA).response("percentage_points", Schema.INT_SCHEMA).register(methodRegistry, "serversettings/entity_broadcast_range/set");
    }
 
-   private static void registerGameRuleService(final Registry<IncomingRpcMethod<?, ?>> methodRegistry) {
+   private static void registerGameRuleService(final WritableRegistry<IncomingRpcMethod<?, ?>> methodRegistry) {
       IncomingRpcMethod.method(GameRulesService::get).description("Get the available game rule keys and their current values").response("gamerules", Schema.TYPED_GAME_RULE_SCHEMA.asRef().asArray()).register(methodRegistry, "gamerules");
       IncomingRpcMethod.method(GameRulesService::update).description("Update game rule value").param("gamerule", Schema.UNTYPED_GAME_RULE_SCHEMA.asRef()).response("gamerule", Schema.TYPED_GAME_RULE_SCHEMA.asRef()).register(methodRegistry, "gamerules/update");
    }

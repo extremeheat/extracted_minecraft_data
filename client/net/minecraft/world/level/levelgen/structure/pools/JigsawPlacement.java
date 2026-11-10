@@ -8,8 +8,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.Pools;
@@ -55,14 +54,14 @@ public class JigsawPlacement {
    }
 
    public static Optional<Structure.GenerationStub> addPieces(final Structure.GenerationContext context, final Holder<StructureTemplatePool> startPool, final Optional<Identifier> startJigsaw, final int maxDepth, final BlockPos position, final boolean doExpansionHack, final Optional<Heightmap.Types> projectStartToHeightmap, final JigsawStructure.MaxDistance maxDistanceFromCenter, final PoolAliasLookup poolAliasLookup, final DimensionPadding dimensionPadding, final LiquidSettings liquidSettings) {
-      RegistryAccess registryAccess = context.registryAccess();
+      HolderGetter.Provider registryAccess = context.registryAccess();
       ChunkGenerator chunkGenerator = context.chunkGenerator();
       StructureTemplateManager structureTemplateManager = context.structureTemplateManager();
       LevelHeightAccessor heightAccessor = context.heightAccessor();
       WorldgenRandom random = context.random();
-      Registry<StructureTemplatePool> pools = registryAccess.lookupOrThrow(Registries.TEMPLATE_POOL);
+      HolderGetter<StructureTemplatePool> pools = registryAccess.<StructureTemplatePool>lookupOrThrow(Registries.TEMPLATE_POOL);
       Rotation centerRotation = Rotation.getRandom(random);
-      StructureTemplatePool centerPool = (StructureTemplatePool)startPool.unwrapKey().flatMap((key) -> pools.getOptional(poolAliasLookup.lookup(key))).orElse(startPool.value());
+      StructureTemplatePool centerPool = (StructureTemplatePool)startPool.unwrapKey().flatMap((key) -> pools.get(poolAliasLookup.lookup(key))).map(Holder::value).orElse(startPool.value());
       StructurePoolElement centerElement = centerPool.getRandomTemplate(random);
       if (centerElement == EmptyPoolElement.INSTANCE) {
          return Optional.empty();
@@ -140,7 +139,7 @@ public class JigsawPlacement {
       return Optional.empty();
    }
 
-   private static void addPieces(final RandomState randomState, final int maxDepth, final boolean doExpansionHack, final ChunkGenerator chunkGenerator, final StructureTemplateManager structureTemplateManager, final LevelHeightAccessor heightAccessor, final RandomSource random, final Registry<StructureTemplatePool> pools, final PoolElementStructurePiece centerPiece, final List<PoolElementStructurePiece> pieces, final VoxelShape shape, final PoolAliasLookup poolAliasLookup, final LiquidSettings liquidSettings) {
+   private static void addPieces(final RandomState randomState, final int maxDepth, final boolean doExpansionHack, final ChunkGenerator chunkGenerator, final StructureTemplateManager structureTemplateManager, final LevelHeightAccessor heightAccessor, final RandomSource random, final HolderGetter<StructureTemplatePool> pools, final PoolElementStructurePiece centerPiece, final List<PoolElementStructurePiece> pieces, final VoxelShape shape, final PoolAliasLookup poolAliasLookup, final LiquidSettings liquidSettings) {
       Placer placer = new Placer(pools, maxDepth, chunkGenerator, structureTemplateManager, pieces, random);
       placer.tryPlacingChildren(centerPiece, new MutableObject(shape), 0, doExpansionHack, heightAccessor, randomState, poolAliasLookup, liquidSettings);
 
@@ -185,7 +184,7 @@ public class JigsawPlacement {
    }
 
    private static final class Placer {
-      private final Registry<StructureTemplatePool> pools;
+      private final HolderGetter<StructureTemplatePool> pools;
       private final int maxDepth;
       private final ChunkGenerator chunkGenerator;
       private final StructureTemplateManager structureTemplateManager;
@@ -193,7 +192,7 @@ public class JigsawPlacement {
       private final RandomSource random;
       private final SequencedPriorityIterator<PieceState> placing = new SequencedPriorityIterator<PieceState>();
 
-      private Placer(final Registry<StructureTemplatePool> pools, final int maxDepth, final ChunkGenerator chunkGenerator, final StructureTemplateManager structureTemplateManager, final List<? super PoolElementStructurePiece> pieces, final RandomSource random) {
+      private Placer(final HolderGetter<StructureTemplatePool> pools, final int maxDepth, final ChunkGenerator chunkGenerator, final StructureTemplateManager structureTemplateManager, final List<? super PoolElementStructurePiece> pieces, final RandomSource random) {
          super();
          this.pools = pools;
          this.maxDepth = maxDepth;

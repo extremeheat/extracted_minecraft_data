@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class SpecialModelRenderers {
    public static final Codec<SpecialModelRenderer.Unbaked<?>> CODEC;
@@ -12,7 +13,7 @@ public class SpecialModelRenderers {
       super();
    }
 
-   public static Object bootstrap(final Registry<MapCodec<? extends SpecialModelRenderer.Unbaked<?>>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends SpecialModelRenderer.Unbaked<?>>> registry) {
       Registry.register(registry, (String)"bell", BellSpecialRenderer.Unbaked.MAP_CODEC);
       Registry.register(registry, (String)"banner", BannerSpecialRenderer.Unbaked.MAP_CODEC);
       Registry.register(registry, (String)"book", BookSpecialRenderer.Unbaked.MAP_CODEC);
@@ -25,7 +26,7 @@ public class SpecialModelRenderers {
       Registry.register(registry, (String)"shield", ShieldSpecialRenderer.Unbaked.MAP_CODEC);
       Registry.register(registry, (String)"trident", TridentSpecialRenderer.Unbaked.MAP_CODEC);
       Registry.register(registry, (String)"decorated_pot", DecoratedPotSpecialRenderer.Unbaked.MAP_CODEC);
-      return Registry.register(registry, (String)"end_cube", EndCubeSpecialRenderer.Unbaked.MAP_CODEC);
+      Registry.register(registry, (String)"end_cube", EndCubeSpecialRenderer.Unbaked.MAP_CODEC);
    }
 
    static {

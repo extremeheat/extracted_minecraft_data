@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.Date;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.GameProfileArgument;
@@ -26,7 +27,7 @@ public class BanPlayerCommands {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), MessageArgument.getMessage(c, "reason"))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("targets", GameProfileArgument.gameProfile()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets"), MessageArgument.getMessage(c, "reason"))))));
    }
 
    private static int banPlayers(final CommandSourceStack source, final Collection<NameAndId> players, final @Nullable Component reason) throws CommandSyntaxException {

@@ -6,15 +6,16 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.commands.ParseContext;
+import net.minecraft.commands.arguments.SerializableArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -26,49 +27,52 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
-public class BlockPredicateArgument implements ArgumentType<Result> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "#stone", "#stone[foo=bar]{baz=nbt}");
-   private final HolderLookup<Block> blocks;
+public class BlockPredicateArgument implements SerializableArgument<Result> {
+   private static final BlockPredicateArgument INSTANCE = new BlockPredicateArgument();
+   public static final SerializableArgument.Type<BlockPredicateArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
 
-   public BlockPredicateArgument(final CommandBuildContext context) {
+   private BlockPredicateArgument() {
       super();
-      this.blocks = context.lookupOrThrow(Registries.BLOCK);
    }
 
-   public static BlockPredicateArgument blockPredicate(final CommandBuildContext context) {
-      return new BlockPredicateArgument(context);
+   public SerializableArgument.Type<BlockPredicateArgument> type() {
+      return TYPE;
    }
 
-   public Result parse(final StringReader reader) throws CommandSyntaxException {
-      return parse(this.blocks, reader);
+   public static ArgumentType<Result> blockPredicate() {
+      return INSTANCE.toBrigadier();
    }
 
-   public static Result parse(final HolderLookup<Block> blocks, final StringReader reader) throws CommandSyntaxException {
+   public Result parse(final StringReader reader, final ParseContext context) throws CommandSyntaxException {
+      HolderGetter<Block> blocks = context.holderGetters().<Block>lookupOrThrow(Registries.BLOCK);
+      return parse(blocks, reader);
+   }
+
+   public static Result parse(final HolderGetter<Block> blocks, final StringReader reader) throws CommandSyntaxException {
       return (Result)BlockStateParser.parseForTesting(blocks, reader, true).map((block) -> new BlockPredicate(block.blockState(), block.properties().keySet(), block.nbt()), (tag) -> new TagPredicate(tag.tag(), tag.vagueProperties(), tag.nbt()));
    }
 
-   public static Predicate<BlockInWorld> getBlockPredicate(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+   public static Predicate<BlockInWorld> getBlockPredicate(final CommandContext<?> context, final String name) {
       return (Predicate)context.getArgument(name, Result.class);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-      return BlockStateParser.fillSuggestions(this.blocks, builder, true, true);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) throws CommandSyntaxException {
+      return BlockStateParser.fillSuggestions(context, builder, true, true);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   private static class BlockPredicate implements Result {
-      private final BlockState state;
-      private final Set<Property<?>> properties;
-      private final @Nullable CompoundTag nbt;
+   static {
+      TYPE = SerializableArgument.<BlockPredicateArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("stone", "minecraft:stone", "stone[foo=bar]", "#stone", "#stone[foo=bar]{baz=nbt}");
+   }
 
-      public BlockPredicate(final BlockState state, final Set<Property<?>> properties, final @Nullable CompoundTag nbt) {
+   private static record BlockPredicate(BlockState state, Set<Property<?>> properties, @Nullable CompoundTag nbt) implements Result {
+      private BlockPredicate {
          super();
-         this.state = state;
-         this.properties = properties;
-         this.nbt = nbt;
       }
 
       public boolean test(final BlockInWorld blockInWorld) {
@@ -86,26 +90,15 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
                return true;
             } else {
                BlockEntity entity = blockInWorld.getEntity();
-               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
+               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderGetter.Provider)blockInWorld.getLevel().registryAccess()), true);
             }
          }
       }
-
-      public boolean requiresNbt() {
-         return this.nbt != null;
-      }
    }
 
-   private static class TagPredicate implements Result {
-      private final HolderSet<Block> tag;
-      private final @Nullable CompoundTag nbt;
-      private final Map<String, String> vagueProperties;
-
-      private TagPredicate(final HolderSet<Block> tag, final Map<String, String> vagueProperties, final @Nullable CompoundTag nbt) {
+   private static record TagPredicate(HolderSet<Block> tag, Map<String, String> vagueProperties, @Nullable CompoundTag nbt) implements Result {
+      private TagPredicate {
          super();
-         this.tag = tag;
-         this.vagueProperties = vagueProperties;
-         this.nbt = nbt;
       }
 
       public boolean test(final BlockInWorld blockInWorld) {
@@ -133,17 +126,12 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
                return true;
             } else {
                BlockEntity entity = blockInWorld.getEntity();
-               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
+               return entity != null && NbtUtils.compareNbt(this.nbt, entity.saveWithFullMetadata((HolderGetter.Provider)blockInWorld.getLevel().registryAccess()), true);
             }
          }
-      }
-
-      public boolean requiresNbt() {
-         return this.nbt != null;
       }
    }
 
    public interface Result extends Predicate<BlockInWorld> {
-      boolean requiresNbt();
    }
 }

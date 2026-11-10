@@ -1,13 +1,14 @@
 package net.minecraft.world.item.crafting.display;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class SlotDisplays {
    public SlotDisplays() {
       super();
    }
 
-   public static SlotDisplay.Type<?> bootstrap(final Registry<SlotDisplay.Type<?>> registry) {
+   public static void bootstrap(final WritableRegistry<SlotDisplay.Type<?>> registry) {
       Registry.register(registry, (String)"empty", SlotDisplay.Empty.TYPE);
       Registry.register(registry, (String)"any_fuel", SlotDisplay.AnyFuel.TYPE);
       Registry.register(registry, (String)"with_any_potion", SlotDisplay.WithAnyPotion.TYPE);
@@ -18,6 +19,6 @@ public class SlotDisplays {
       Registry.register(registry, (String)"dyed", SlotDisplay.DyedSlotDemo.TYPE);
       Registry.register(registry, (String)"smithing_trim", SlotDisplay.SmithingTrimDemoSlotDisplay.TYPE);
       Registry.register(registry, (String)"with_remainder", SlotDisplay.WithRemainder.TYPE);
-      return (SlotDisplay.Type)Registry.register(registry, (String)"composite", SlotDisplay.Composite.TYPE);
+      Registry.register(registry, (String)"composite", SlotDisplay.Composite.TYPE);
    }
 }

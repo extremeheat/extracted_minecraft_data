@@ -14,13 +14,14 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -50,12 +51,12 @@ public class CloneCommands {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(beginEndDestinationAndModeSuffix(context, (c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(context, (c) -> DimensionArgument.getDimension(c, "sourceDimension"))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(beginEndDestinationAndModeSuffix((c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix((c) -> DimensionArgument.getDimension(c, "sourceDimension"))))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension) {
-      return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndStrictSuffix(context, fromDimension, (c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndStrictSuffix(context, fromDimension, (c) -> DimensionArgument.getDimension(c, "targetDimension"))))));
+   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension) {
+      return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndStrictSuffix(fromDimension, (c) -> ((CommandSourceStack)c.getSource()).getLevel()))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndStrictSuffix(fromDimension, (c) -> DimensionArgument.getDimension(c, "targetDimension"))))));
    }
 
    private static DimensionAndPosition getLoadedDimensionAndPosition(final CommandContext<CommandSourceStack> context, final ServerLevel level, final String positionArgument) throws CommandSyntaxException {
@@ -63,15 +64,15 @@ public class CloneCommands {
       return new DimensionAndPosition(level, blockPos);
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> toDimension) {
+   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> fromDimension, final InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> toDimension) {
       InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos = (c) -> getLoadedDimensionAndPosition(c, fromDimension.apply(c), "begin");
       InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos = (c) -> getLoadedDimensionAndPosition(c, fromDimension.apply(c), "end");
       InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos = (c) -> getLoadedDimensionAndPosition(c, toDimension.apply(c), "destination");
-      return modeSuffix(context, beginPos, endPos, destinationPos, false, Commands.argument("destination", BlockPosArgument.blockPos())).then(modeSuffix(context, beginPos, endPos, destinationPos, true, Commands.literal("strict")));
+      return modeSuffix(beginPos, endPos, destinationPos, false, Commands.argument("destination", BlockPosArgument.blockPos())).then(modeSuffix(beginPos, endPos, destinationPos, true, Commands.literal("strict")));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(final CommandBuildContext context, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos, final boolean strict, final ArgumentBuilder<CommandSourceStack, ?> builder) {
-      return builder.executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), (b) -> true, CloneCommands.Mode.NORMAL, strict)).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> (b) -> true, strict, Commands.literal("replace"))).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> FILTER_AIR, strict, Commands.literal("masked"))).then(Commands.literal("filtered").then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> BlockPredicateArgument.getBlockPredicate(c, "filter"), strict, Commands.argument("filter", BlockPredicateArgument.blockPredicate(context)))));
+   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos, final boolean strict, final ArgumentBuilder<CommandSourceStack, ?> builder) {
+      return builder.executes((c) -> clone((CommandSourceStack)c.getSource(), beginPos.apply(c), endPos.apply(c), destinationPos.apply(c), (b) -> true, CloneCommands.Mode.NORMAL, strict)).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> (b) -> true, strict, Commands.literal("replace"))).then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> FILTER_AIR, strict, Commands.literal("masked"))).then(Commands.literal("filtered").then(wrapWithCloneMode(beginPos, endPos, destinationPos, (c) -> BlockPredicateArgument.getBlockPredicate(c, "filter"), strict, Commands.argument("filter", BlockPredicateArgument.blockPredicate()))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> beginPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> endPos, final InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> destinationPos, final InCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> filter, final boolean strict, final ArgumentBuilder<CommandSourceStack, ?> builder) {
@@ -115,7 +116,7 @@ public class CloneCommands {
                         if (predicate.test(block)) {
                            BlockEntity blockEntity = fromDimension.getBlockEntity(sourcePos);
                            if (blockEntity != null) {
-                              TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), source.registryAccess());
+                              TagValueOutput output = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), source.holderGetters());
                               blockEntity.saveCustomOnly((ValueOutput)output);
                               CloneBlockEntityInfo blockEntityInfo = new CloneBlockEntityInfo(output.buildResult(), blockEntity.components());
                               blockEntitiesList.add(new CloneBlockInfo(destinationPos, blockState, blockEntityInfo, toDimension.getBlockState(destinationPos)));
@@ -164,7 +165,7 @@ public class CloneCommands {
                for(CloneBlockInfo cloneInfo : blockEntitiesList) {
                   BlockEntity newBlockEntity = toDimension.getBlockEntity(cloneInfo.pos);
                   if (cloneInfo.blockEntityInfo != null && newBlockEntity != null) {
-                     newBlockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(newBlockEntity.problemPath()), toDimension.registryAccess(), cloneInfo.blockEntityInfo.tag));
+                     newBlockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(newBlockEntity.problemPath()), (HolderGetter.Provider)toDimension.registryAccess(), cloneInfo.blockEntityInfo.tag));
                      newBlockEntity.setComponents(cloneInfo.blockEntityInfo.components);
                      newBlockEntity.setChanged();
                   }

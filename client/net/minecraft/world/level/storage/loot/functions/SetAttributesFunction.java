@@ -20,7 +20,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootContextUser;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -42,8 +41,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
       Validatable.validate(context, "modifiers", this.modifiers);
    }
 
@@ -129,7 +127,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
    }
 
-   private static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, Holder<ContextFloatProvider> amount, List<EquipmentSlotGroup> slots) implements LootContextUser {
+   private static record Modifier(Identifier id, Holder<Attribute> attribute, AttributeModifier.Operation operation, Holder<ContextFloatProvider> amount, List<EquipmentSlotGroup> slots) implements Validatable {
       private static final Codec<List<EquipmentSlotGroup>> SLOTS_CODEC;
       public static final Codec<Modifier> CODEC;
 
@@ -138,7 +136,6 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
 
       public void validate(final ValidationContext context) {
-         LootContextUser.super.validate(context);
          Validatable.validateHolder(context, "amount", this.amount);
       }
 

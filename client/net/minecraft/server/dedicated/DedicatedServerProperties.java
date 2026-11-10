@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -189,7 +190,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       return new DedicatedServerProperties(loadFromFile(file));
    }
 
-   protected DedicatedServerProperties reload(final RegistryAccess registryAccess, final Properties properties) {
+   protected DedicatedServerProperties reload(final HolderGetter.Provider registryAccess, final Properties properties) {
       return new DedicatedServerProperties(properties);
    }
 

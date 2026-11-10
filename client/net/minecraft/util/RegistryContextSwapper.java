@@ -2,8 +2,8 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 
 public interface RegistryContextSwapper {
-   <T> DataResult<T> swapTo(Codec<T> codec, T value, HolderLookup.Provider newContext);
+   <T> DataResult<T> swapTo(Codec<T> codec, T value, HolderGetter.Provider newContext);
 }

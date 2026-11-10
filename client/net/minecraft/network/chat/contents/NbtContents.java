@@ -31,7 +31,7 @@ public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boo
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<CompilableString<NbtPathArgument.NbtPath>> NBT_PATH_CODEC = CompilableString.codec(new CompilableString.CommandParserHelper<NbtPathArgument.NbtPath>() {
       protected NbtPathArgument.NbtPath parse(final StringReader reader) throws CommandSyntaxException {
-         return (new NbtPathArgument()).parse(reader);
+         return NbtPathArgument.INSTANCE.parse(reader);
       }
 
       protected String errorMessage(final String original, final CommandSyntaxException exception) {
@@ -61,7 +61,7 @@ public record NbtContents(CompilableString<NbtPathArgument.NbtPath> nbtPath, boo
          });
          Component resolvedSeparator = (Component)DataFixUtils.orElse(ComponentUtils.resolve(context, this.separator, recursionDepth), ComponentUtils.DEFAULT_NO_STYLE_SEPARATOR);
          if (this.interpreting) {
-            RegistryOps<Tag> registryOps = source.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            RegistryOps<Tag> registryOps = source.holderGetters().<Tag>createSerializationContext(NbtOps.INSTANCE);
             return (MutableComponent)elements.flatMap((tag) -> {
                try {
                   Component component = (Component)ComponentSerialization.CODEC.parse(registryOps, tag).getOrThrow();

@@ -71,9 +71,9 @@ public class ShaderManager implements PreparableReloadListener, AutoCloseable {
       PipelineCompilationContext context = preparePipelineCompilationContext();
       PipelineBuilder pipelineBuilder = RenderSystem.getPipelineBuilder();
       CompletableFuture var10000 = CompletableFuture.supplyAsync(() -> loadConfigs(manager), taskExecutor).thenComposeAsync((configs) -> {
-         List<PipelineCache.Key> staticPipelines = RenderPipelines.staticPipelinesToPrecompile();
-         List<PipelineCache.Key> dynamicPipelines = RenderPipelines.dynamicPipelinesToPrecompile(context);
-         List<PipelineCache.Key> requiredPipelines = Streams.concat(new Stream[]{staticPipelines.stream(), dynamicPipelines.stream()}).toList();
+         Stream<PipelineCache.Key> staticPipelines = RenderPipelines.staticPipelinesToPrecompile();
+         Stream<PipelineCache.Key> dynamicPipelines = RenderPipelines.dynamicPipelinesToPrecompile(context);
+         List<PipelineCache.Key> requiredPipelines = Streams.concat(new Stream[]{staticPipelines, dynamicPipelines}).toList();
          return compilePipelines(pipelineBuilder, configs, requiredPipelines, taskExecutor, reloadExecutor).thenApply((compiledRequiredPipelines) -> new PendingResults(configs, requiredPipelines, compiledRequiredPipelines));
       }, reloadExecutor);
       Objects.requireNonNull(preparationBarrier);

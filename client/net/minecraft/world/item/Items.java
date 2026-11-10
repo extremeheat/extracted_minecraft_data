@@ -2143,8 +2143,8 @@ public class Items {
       DETECTOR_RAIL = registerBlock(BlockItemIds.DETECTOR_RAIL, Blocks.DETECTOR_RAIL);
       RAIL = registerBlock(BlockItemIds.RAIL, Blocks.RAIL);
       ACTIVATOR_RAIL = registerBlock(BlockItemIds.ACTIVATOR_RAIL, Blocks.ACTIVATOR_RAIL);
-      SADDLE = registerItem(ItemIds.SADDLE, (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.saddle()));
-      HARNESS = ColorCollection.registerItems(ItemIds.HARNESS, (name, color) -> registerItem(name, (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.harness(color))));
+      SADDLE = registerItem(ItemIds.SADDLE, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, Equippable::saddle));
+      HARNESS = ColorCollection.registerItems(ItemIds.HARNESS, (name, color) -> registerItem(name, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.harness(context, color))));
       MINECART = registerItem((ResourceKey)ItemIds.MINECART, (p) -> new MinecartItem(EntityTypes.MINECART, p), (new Item.Properties()).stacksTo(1));
       CHEST_MINECART = registerItem((ResourceKey)ItemIds.CHEST_MINECART, (p) -> new MinecartItem(EntityTypes.CHEST_MINECART, p), (new Item.Properties()).stacksTo(1));
       FURNACE_MINECART = registerItem((ResourceKey)ItemIds.FURNACE_MINECART, (p) -> new MinecartItem(EntityTypes.FURNACE_MINECART, p), (new Item.Properties()).stacksTo(1));
@@ -2375,7 +2375,7 @@ public class Items {
       DESERT_PYRAMID_MAP = registerItem(ItemIds.DESERT_PYRAMID_MAP, MapItem::new, mapProperties());
       ABANDONED_CAMP_MAP = registerItem(ItemIds.ABANDONED_CAMP_MAP, MapItem::new, mapProperties());
       WARM_OCEAN_RUINS_MAP = registerItem(ItemIds.WARM_OCEAN_RUINS_MAP, MapItem::new, mapProperties());
-      SHEARS = registerItem(ItemIds.SHEARS, ShearsItem::new, (new Item.Properties()).durability(238).component(DataComponents.TOOL, ShearsItem.createToolProperties()));
+      SHEARS = registerItem(ItemIds.SHEARS, ShearsItem::new, (new Item.Properties()).durability(238).delayedComponent(DataComponents.TOOL, ShearsItem::createToolProperties));
       MELON_SLICE = registerItem(ItemIds.MELON_SLICE, (new Item.Properties()).food(Foods.MELON_SLICE).compostable(ContextIntProviders.COMPOSTABLE_LOW_MEDIUM));
       DRIED_KELP = registerItem(ItemIds.DRIED_KELP, (new Item.Properties()).food(Foods.DRIED_KELP, Consumables.DRIED_KELP).compostable(ContextIntProviders.COMPOSTABLE_LOW));
       PUMPKIN_SEEDS = registerItem(BlockItemIds.PUMPKIN_CROP.item(), createBlockItemWithCustomItemName(Blocks.PUMPKIN_STEM), (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW));

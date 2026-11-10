@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentInitializers;
@@ -35,10 +36,11 @@ public class ReloadableServerResources {
       this.fullRegistryHolder = new ReloadableServerRegistries.Holder(loadingContext.layers().compositeAccess());
       this.postponedTags = postponedTags;
       this.newComponents = newComponents;
-      this.recipes = new RecipeManager(loadingContext.lookupWithUpdatedTags());
-      this.commands = new Commands(commandSelection, CommandBuildContext.simple(loadingContext.lookupWithUpdatedTags(), enabledFeatures));
-      this.advancements = new ServerAdvancementManager(loadingContext.lookupWithUpdatedTags());
-      this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, this.commands.getDispatcher());
+      HolderLookup.Provider fullRegistries = loadingContext.lookupWithUpdatedTags();
+      this.recipes = new RecipeManager(fullRegistries);
+      this.commands = Commands.createVanilla(commandSelection, CommandBuildContext.simple(enabledFeatures));
+      this.advancements = new ServerAdvancementManager(fullRegistries);
+      this.functionLibrary = new ServerFunctionLibrary(functionCompilationPermissions, fullRegistries, enabledFeatures, this.commands.parseBox());
    }
 
    public ServerFunctionLibrary getFunctionLibrary() {

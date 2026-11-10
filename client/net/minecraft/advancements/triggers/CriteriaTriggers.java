@@ -73,10 +73,6 @@ public class CriteriaTriggers {
       return (T)(Registry.register(BuiltInRegistries.TRIGGER_TYPES, (String)name, criterion));
    }
 
-   public static CriterionTrigger<?> bootstrap(final Registry<CriterionTrigger<?>> registry) {
-      return IMPOSSIBLE;
-   }
-
    static {
       CODEC = BuiltInRegistries.TRIGGER_TYPES.byNameCodec();
       IMPOSSIBLE = (ImpossibleTrigger)register("impossible", new ImpossibleTrigger());

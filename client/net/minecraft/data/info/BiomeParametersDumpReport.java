@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -27,11 +27,11 @@ import org.slf4j.Logger;
 public class BiomeParametersDumpReport implements DataProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Path topPath;
-   private final CompletableFuture<HolderLookup.Provider> registries;
+   private final CompletableFuture<? extends HolderGetter.Provider> registries;
    private static final MapCodec<ResourceKey<Biome>> ENTRY_CODEC;
    private static final Codec<Climate.ParameterList<ResourceKey<Biome>>> CODEC;
 
-   public BiomeParametersDumpReport(final PackOutput output, final CompletableFuture<HolderLookup.Provider> registries) {
+   public BiomeParametersDumpReport(final PackOutput output, final CompletableFuture<? extends HolderGetter.Provider> registries) {
       super();
       this.topPath = output.getOutputFolder(PackOutput.Target.REPORTS).resolve("biome_parameters");
       this.registries = registries;

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
 import java.util.Objects;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -23,7 +23,7 @@ public final class WorldGenSettings extends SavedData {
       this.dimensions = dimensions;
    }
 
-   public static WorldGenSettings of(final WorldOptions options, final RegistryAccess registryAccess) {
+   public static WorldGenSettings of(final WorldOptions options, final HolderLookup.Provider registryAccess) {
       return new WorldGenSettings(options, new WorldDimensions(registryAccess.lookupOrThrow(Registries.LEVEL_STEM)));
    }
 

@@ -5,6 +5,7 @@ import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.jspecify.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
@@ -48,6 +49,38 @@ public class MeshData implements AutoCloseable {
       }
    }
 
+   public static void decodeQuadCentroidsFromPerFaceData(final ByteBuffer vertexBuffer, final int vertexCount, final ChunkSectionLayer layer, final CompactVectorArray output, final int outputIndex) {
+      int positionOffset = vertexBuffer.position();
+      int faceSize = layer.vertexBufferFaceSize();
+      int bakedFaceSize = layer.vertexBufferBakedFaceSize();
+      int bakedFaceVertexSize = bakedFaceSize / 4;
+      int quadCount = vertexCount / 4;
+      int bakedFaceStartOffset = quadCount * faceSize + positionOffset;
+
+      for(int i = 0; i < quadCount; ++i) {
+         int offset = i * faceSize + positionOffset;
+         int packedFacePos = vertexBuffer.getInt(offset);
+         int packedColor = vertexBuffer.getInt(offset + 4);
+         float fx = (float)((packedFacePos & 255) - 7) / 15.0F;
+         float fy = (float)((packedFacePos >> 8 & 255) - 7) / 15.0F;
+         float fz = (float)((packedFacePos >> 16 & 255) - 7) / 15.0F;
+         int bakedQuadIndex = packedColor << 8 & '\uff00' | packedFacePos >> 24 & 255;
+         int firstPosOffset = bakedFaceStartOffset + bakedQuadIndex * bakedFaceSize;
+         int secondPosOffset = firstPosOffset + bakedFaceVertexSize * 2;
+         float x0 = vertexBuffer.getFloat(firstPosOffset + 0) + fx;
+         float y0 = vertexBuffer.getFloat(firstPosOffset + 4) + fy;
+         float z0 = vertexBuffer.getFloat(firstPosOffset + 8) + fz;
+         float x1 = vertexBuffer.getFloat(secondPosOffset + 0) + fx;
+         float y1 = vertexBuffer.getFloat(secondPosOffset + 4) + fy;
+         float z1 = vertexBuffer.getFloat(secondPosOffset + 8) + fz;
+         float xMid = (x0 + x1) / 2.0F;
+         float yMid = (y0 + y1) / 2.0F;
+         float zMid = (z0 + z1) / 2.0F;
+         output.set(outputIndex + i, xMid, yMid, zMid);
+      }
+
+   }
+
    public ByteBuffer vertexBuffer() {
       return this.vertexBuffer.byteBuffer();
    }
@@ -64,12 +97,12 @@ public class MeshData implements AutoCloseable {
       return this.drawState;
    }
 
-   public @Nullable SortState sortQuads(final ByteBufferBuilder indexBufferTarget, final VertexSorting sorting) {
+   public @Nullable SortState sortQuads(final ByteBufferBuilder indexBufferTarget, final VertexSorting sorting, final ChunkSectionLayer layer) {
       if (this.drawState.primitiveTopology() != PrimitiveTopology.QUADS) {
          return null;
       } else {
          CompactVectorArray centroids = new CompactVectorArray(this.drawState.vertexCount() / 4);
-         decodeQuadCentroids(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), this.drawState.format(), centroids, 0);
+         decodeQuadCentroidsFromPerFaceData(this.vertexBuffer.byteBuffer(), this.drawState.vertexCount(), layer, centroids, 0);
          SortState sortState = new SortState(centroids, this.drawState.indexType());
          this.indexBuffer = sortState.buildSortedIndexBuffer(indexBufferTarget, sorting);
          return sortState;
@@ -84,7 +117,7 @@ public class MeshData implements AutoCloseable {
 
    }
 
-   public static record DrawState(VertexFormat format, int vertexCount, int indexCount, PrimitiveTopology primitiveTopology, IndexType indexType) {
+   public static record DrawState(int vertexCount, int indexCount, PrimitiveTopology primitiveTopology, IndexType indexType) {
       public DrawState {
          super();
       }

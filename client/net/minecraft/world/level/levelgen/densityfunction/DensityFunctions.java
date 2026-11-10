@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.CubicSpline;
 import net.minecraft.util.Interval;
@@ -47,8 +48,8 @@ public final class DensityFunctions {
    public static final Codec<DensityFunction> DIRECT_CODEC;
    private static final ConstantFunction ZERO;
 
-   public static MapCodec<? extends DensityFunction> bootstrap(final Registry<MapCodec<? extends DensityFunction>> registry) {
-      MapCodec<? extends DensityFunction> constant = register(registry, "constant", ConstantFunction.CODEC);
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends DensityFunction>> registry) {
+      register(registry, "constant", ConstantFunction.CODEC);
 
       for(SimpleDensityFunction simple : SimpleDensityFunction.values()) {
          register(registry, simple.id(), simple.codec());
@@ -87,11 +88,10 @@ public final class DensityFunctions {
       register(registry, "find_top_surface", FindTopSurfaceFunction.CODEC);
       register(registry, "domain_warp", DomainWarpFunction.CODEC);
       register(registry, "old_blended_noise", BlendedNoise.CODEC);
-      return constant;
    }
 
-   private static MapCodec<? extends DensityFunction> register(final Registry<MapCodec<? extends DensityFunction>> registry, final String name, final MapCodec<? extends DensityFunction> codec) {
-      return (MapCodec)Registry.register(registry, (String)name, codec);
+   private static void register(final WritableRegistry<MapCodec<? extends DensityFunction>> registry, final String name, final MapCodec<? extends DensityFunction> codec) {
+      Registry.register(registry, (String)name, codec);
    }
 
    private DensityFunctions() {

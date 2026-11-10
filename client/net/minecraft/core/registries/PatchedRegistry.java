@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Cloner;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderOwner;
 import net.minecraft.core.HolderSet;
@@ -67,14 +68,14 @@ public class PatchedRegistry<T> implements HolderLookup.RegistryLookup<T> {
          patchContents.listElements().forEach((elementHolder) -> {
             ResourceKey<T> elementKey = elementHolder.key();
             LazyHolder<T> holder = new LazyHolder<T>(result, elementKey);
-            holder.supplier = () -> cloner.clone(elementHolder.value(), patchProvider, (HolderLookup.Provider)clonedRegistriesProvider.get());
+            holder.supplier = () -> cloner.clone(elementHolder.value(), patchProvider, (HolderGetter.Provider)clonedRegistriesProvider.get());
             result.entries.put(elementKey, holder);
          });
          baseContents.listElements().forEach((elementHolder) -> {
             ResourceKey<T> elementKey = elementHolder.key();
             result.entries.computeIfAbsent(elementKey, (key) -> {
                LazyHolder<T> holder = new LazyHolder<T>(result, elementKey);
-               holder.supplier = () -> cloner.clone(elementHolder.value(), baseProvider, (HolderLookup.Provider)clonedRegistriesProvider.get());
+               holder.supplier = () -> cloner.clone(elementHolder.value(), baseProvider, (HolderGetter.Provider)clonedRegistriesProvider.get());
                return holder;
             });
          });

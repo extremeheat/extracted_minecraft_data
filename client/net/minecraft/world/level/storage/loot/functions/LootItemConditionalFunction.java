@@ -9,6 +9,7 @@ import java.util.function.Function;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootContextUser;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.ConditionUserBuilder;
@@ -34,13 +35,29 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
 
    protected abstract ItemStack run(final ItemStack itemStack, final LootContext context);
 
-   public void validate(final ValidationContext context) {
-      LootItemFunction.super.validate(context);
-      Validatable.validateHolder(context, "condition", this.condition);
+   public final void validate(final ValidationContext context) {
+      if (Validatable.validateIfConditionCanPass(context, "condition", this.condition)) {
+         this.validateCustom(context);
+      }
+
    }
+
+   protected abstract void validateCustom(final ValidationContext context);
 
    protected static Builder<?> simpleBuilder(final Function<Optional<Holder<LootItemCondition>>, LootItemFunction> constructor) {
       return new DummyBuilder(constructor);
+   }
+
+   public abstract static class ContextUser extends LootItemConditionalFunction implements LootContextUser {
+      protected ContextUser(final Optional<Holder<LootItemCondition>> condition) {
+         super(condition);
+      }
+
+      public abstract MapCodec<? extends ContextUser> codec();
+
+      protected void validateCustom(final ValidationContext context) {
+         this.validateContextUsage(context);
+      }
    }
 
    public abstract static class Builder<T extends Builder<T>> implements LootItemFunction.Builder, ConditionUserBuilder<T> {

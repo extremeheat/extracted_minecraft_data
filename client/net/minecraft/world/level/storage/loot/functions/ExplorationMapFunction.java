@@ -25,7 +25,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
 
-public class ExplorationMapFunction extends LootItemConditionalFunction {
+public class ExplorationMapFunction extends LootItemConditionalFunction.ContextUser {
    public static final Holder<MapDecorationType> DEFAULT_DECORATION;
    public static final byte DEFAULT_ZOOM = 2;
    public static final int DEFAULT_SEARCH_RADIUS = 50;
@@ -50,7 +50,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(LootContextParams.ORIGIN);
    }
 

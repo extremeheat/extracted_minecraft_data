@@ -4,27 +4,31 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.Collection;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.PlayerList;
 
 public class OpCommand {
    private static final SimpleCommandExceptionType ERROR_ALREADY_OP = new SimpleCommandExceptionType(Component.translatable("commands.op.failed"));
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_NON_OP_PLAYERS = SuggestionProviders.serverOnly((server, var1, builder) -> {
+      PlayerList list = server.getPlayerList();
+      return SuggestionContext.suggest(list.getPlayers().stream().filter((player) -> !list.isOp(player.nameAndId())).map((pl) -> pl.getGameProfile().name()), builder);
+   });
 
    public OpCommand() {
       super();
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((c, p) -> {
-         PlayerList list = ((CommandSourceStack)c.getSource()).getServer().getPlayerList();
-         return SharedSuggestionProvider.suggest(list.getPlayers().stream().filter((player) -> !list.isOp(player.nameAndId())).map((pl) -> pl.getGameProfile().name()), p);
-      }).executes((c) -> opPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets")))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("op").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_ADMINS))).then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests(SUGGEST_NON_OP_PLAYERS).executes((c) -> opPlayers((CommandSourceStack)c.getSource(), GameProfileArgument.getGameProfiles(c, "targets")))));
    }
 
    private static int opPlayers(final CommandSourceStack source, final Collection<NameAndId> players) throws CommandSyntaxException {

@@ -142,10 +142,10 @@ public class BlockModelLighter {
          float vert3weight23 = this.faceShape[info.vert3Weights[2].index] * this.faceShape[info.vert3Weights[3].index];
          float vert3weight45 = this.faceShape[info.vert3Weights[4].index] * this.faceShape[info.vert3Weights[5].index];
          float vert3weight67 = this.faceShape[info.vert3Weights[6].index] * this.faceShape[info.vert3Weights[7].index];
-         outputInstance.setColor(remap.vert0, ARGB.gray(Math.clamp(tempShade1 * vert0weight01 + tempShade2 * vert0weight23 + tempShade3 * vert0weight45 + tempShade4 * vert0weight67, 0.0F, 1.0F)));
-         outputInstance.setColor(remap.vert1, ARGB.gray(Math.clamp(tempShade1 * vert1weight01 + tempShade2 * vert1weight23 + tempShade3 * vert1weight45 + tempShade4 * vert1weight67, 0.0F, 1.0F)));
-         outputInstance.setColor(remap.vert2, ARGB.gray(Math.clamp(tempShade1 * vert2weight01 + tempShade2 * vert2weight23 + tempShade3 * vert2weight45 + tempShade4 * vert2weight67, 0.0F, 1.0F)));
-         outputInstance.setColor(remap.vert3, ARGB.gray(Math.clamp(tempShade1 * vert3weight01 + tempShade2 * vert3weight23 + tempShade3 * vert3weight45 + tempShade4 * vert3weight67, 0.0F, 1.0F)));
+         outputInstance.setBrightness(remap.vert0, (short)ARGB.as8BitChannel(Math.clamp(tempShade1 * vert0weight01 + tempShade2 * vert0weight23 + tempShade3 * vert0weight45 + tempShade4 * vert0weight67, 0.0F, 1.0F)));
+         outputInstance.setBrightness(remap.vert1, (short)ARGB.as8BitChannel(Math.clamp(tempShade1 * vert1weight01 + tempShade2 * vert1weight23 + tempShade3 * vert1weight45 + tempShade4 * vert1weight67, 0.0F, 1.0F)));
+         outputInstance.setBrightness(remap.vert2, (short)ARGB.as8BitChannel(Math.clamp(tempShade1 * vert2weight01 + tempShade2 * vert2weight23 + tempShade3 * vert2weight45 + tempShade4 * vert2weight67, 0.0F, 1.0F)));
+         outputInstance.setBrightness(remap.vert3, (short)ARGB.as8BitChannel(Math.clamp(tempShade1 * vert3weight01 + tempShade2 * vert3weight23 + tempShade3 * vert3weight45 + tempShade4 * vert3weight67, 0.0F, 1.0F)));
          int _tc1 = LightCoordsUtil.smoothBlend(light3, light0, lightCorner03, lightCenter);
          int _tc2 = LightCoordsUtil.smoothBlend(light2, light0, lightCorner02, lightCenter);
          int _tc3 = LightCoordsUtil.smoothBlend(light2, light1, lightCorner12, lightCenter);
@@ -163,14 +163,14 @@ public class BlockModelLighter {
          outputInstance.setLightCoords(remap.vert1, LightCoordsUtil.smoothBlend(light2, light0, lightCorner02, lightCenter));
          outputInstance.setLightCoords(remap.vert2, LightCoordsUtil.smoothBlend(light2, light1, lightCorner12, lightCenter));
          outputInstance.setLightCoords(remap.vert3, LightCoordsUtil.smoothBlend(light3, light1, lightCorner13, lightCenter));
-         outputInstance.setColor(remap.vert0, ARGB.gray(lightLevel1));
-         outputInstance.setColor(remap.vert1, ARGB.gray(lightLevel2));
-         outputInstance.setColor(remap.vert2, ARGB.gray(lightLevel3));
-         outputInstance.setColor(remap.vert3, ARGB.gray(lightLevel4));
+         outputInstance.setBrightness(remap.vert0, (short)ARGB.as8BitChannel(lightLevel1));
+         outputInstance.setBrightness(remap.vert1, (short)ARGB.as8BitChannel(lightLevel2));
+         outputInstance.setBrightness(remap.vert2, (short)ARGB.as8BitChannel(lightLevel3));
+         outputInstance.setBrightness(remap.vert3, (short)ARGB.as8BitChannel(lightLevel4));
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      outputInstance.scaleColor(getDirectionalBrightness(cardinalLighting, quad, direction));
+      outputInstance.scaleBrightness(getDirectionalBrightness(cardinalLighting, quad, direction));
    }
 
    public void prepareQuadFlat(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final int lightCoords, final BakedQuad quad, final QuadInstance outputInstance) {
@@ -183,7 +183,7 @@ public class BlockModelLighter {
       }
 
       CardinalLighting cardinalLighting = level.cardinalLighting();
-      outputInstance.setColor(ARGB.gray(getDirectionalBrightness(cardinalLighting, quad, quad.direction())));
+      outputInstance.setBrightness((short)ARGB.as8BitChannel(getDirectionalBrightness(cardinalLighting, quad, quad.direction())));
    }
 
    private void prepareQuadShape(final BlockAndTintGetter level, final BlockState state, final BlockPos pos, final BakedQuad quad, final boolean ambientOcclusion) {

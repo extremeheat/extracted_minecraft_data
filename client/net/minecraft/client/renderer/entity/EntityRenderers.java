@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -32,7 +33,7 @@ public class EntityRenderers {
       super();
    }
 
-   public static EntityRendererProvider<?> bootstrap(final Registry<EntityRendererProvider<?>> registry) {
+   public static void bootstrap(final WritableRegistry<EntityRendererProvider<?>> registry) {
       register(registry, EntityTypes.ACACIA_BOAT, (context) -> new BoatRenderer(context, ModelLayers.ACACIA_BOAT));
       register(registry, EntityTypes.ACACIA_CHEST_BOAT, (context) -> new BoatRenderer(context, ModelLayers.ACACIA_CHEST_BOAT));
       register(registry, EntityTypes.ALLAY, AllayRenderer::new);
@@ -193,7 +194,7 @@ public class EntityRenderers {
       register(registry, EntityTypes.ZOMBIE_HORSE, (context) -> new UndeadHorseRenderer(context, EquipmentClientInfo.LayerType.ZOMBIE_HORSE_SADDLE, ModelLayers.ZOMBIE_HORSE_SADDLE, UndeadHorseRenderer.Type.ZOMBIE, UndeadHorseRenderer.Type.ZOMBIE_BABY));
       register(registry, EntityTypes.ZOMBIE_NAUTILUS, ZombieNautilusRenderer::new);
       register(registry, EntityTypes.ZOMBIE_VILLAGER, ZombieVillagerRenderer::new);
-      return register(registry, EntityTypes.ZOMBIFIED_PIGLIN, (context) -> new ZombifiedPiglinRenderer(context, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_ARMOR));
+      register(registry, EntityTypes.ZOMBIFIED_PIGLIN, (context) -> new ZombifiedPiglinRenderer(context, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_ARMOR));
    }
 
    private static <T extends Entity> EntityRendererProvider<T> register(final Registry<EntityRendererProvider<?>> registry, final EntityType<? extends T> type, final EntityRendererProvider<T> renderer) {

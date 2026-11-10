@@ -10,6 +10,7 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
@@ -35,5 +36,8 @@ public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
 
    public MapCodec<SetWritableBookPagesFunction> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 }

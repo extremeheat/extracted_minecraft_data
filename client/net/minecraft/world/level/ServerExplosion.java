@@ -2,14 +2,14 @@ package net.minecraft.world.level;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.ClientboundAddEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
@@ -22,7 +22,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -48,7 +47,6 @@ public class ServerExplosion implements Explosion {
    private final float radius;
    private final DamageSource damageSource;
    private final ExplosionDamageCalculator damageCalculator;
-   private final Map<Player, Vec3> hitPlayers = new HashMap();
 
    public ServerExplosion(final ServerLevel level, final @Nullable Entity source, final @Nullable DamageSource damageSource, final @Nullable ExplosionDamageCalculator damageCalculator, final Vec3 center, final float radius, final boolean fire, final Explosion.BlockInteraction blockInteraction) {
       super();
@@ -179,26 +177,30 @@ public class ServerExplosion implements Explosion {
                      entity.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, entity, exposure));
                   }
 
-                  double var10000;
-                  if (entity instanceof LivingEntity) {
-                     LivingEntity livingEntity = (LivingEntity)entity;
-                     var10000 = livingEntity.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE);
-                  } else {
-                     var10000 = 0.0;
+                  if (entity.isPushedByExplosions()) {
+                     double var10000;
+                     if (entity instanceof LivingEntity) {
+                        LivingEntity livingEntity = (LivingEntity)entity;
+                        var10000 = livingEntity.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE);
+                     } else {
+                        var10000 = 0.0;
+                     }
+
+                     double knockbackResistance = var10000;
+                     double knockbackPower = (1.0 - dist) * (double)exposure * (double)knockbackMultiplier * (1.0 - knockbackResistance);
+                     Vec3 knockback = direction.scale(knockbackPower);
+                     Entity var24 = entity.getControllingPassengerOrSelf();
+                     if (var24 instanceof ServerPlayer) {
+                        ServerPlayer serverPlayer = (ServerPlayer)var24;
+                        serverPlayer.connection.send(new ClientboundAddEntityMotionPacket(entity.getId(), knockback));
+                     } else {
+                        entity.push(knockback);
+                     }
                   }
 
-                  double knockbackResistance = var10000;
-                  double knockbackPower = (1.0 - dist) * (double)exposure * (double)knockbackMultiplier * (1.0 - knockbackResistance);
-                  Vec3 knockback = direction.scale(knockbackPower);
-                  entity.pushFromExplosion(knockback);
                   if (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && entity instanceof Projectile) {
                      Projectile projectile = (Projectile)entity;
                      projectile.setOwner(this.damageSource.getEntity());
-                  } else if (entity instanceof Player) {
-                     Player player = (Player)entity;
-                     if (!player.isSpectator() && (!player.isCreative() || !player.getAbilities().flying)) {
-                        this.hitPlayers.put(player, knockback);
-                     }
                   }
 
                   entity.onExplosionHit(this.source);
@@ -263,10 +265,6 @@ public class ServerExplosion implements Explosion {
 
    private boolean interactsWithBlocks() {
       return this.blockInteraction != Explosion.BlockInteraction.KEEP;
-   }
-
-   public Map<Player, Vec3> getHitPlayers() {
-      return this.hitPlayers;
    }
 
    public ServerLevel level() {

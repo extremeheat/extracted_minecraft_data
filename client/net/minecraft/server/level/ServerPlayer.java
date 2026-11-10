@@ -39,6 +39,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Position;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.UUIDUtil;
@@ -885,7 +886,7 @@ public class ServerPlayer extends Player {
       ServerLevel serverLevel = this.level();
       if (!tag.isEmpty()) {
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
-            EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), serverLevel.registryAccess(), tag), serverLevel, new EntitySpawnRequest(EntitySpawnReason.LOAD, false)).ifPresent((entity) -> {
+            EntityType.create(TagValueInput.create(reporter.forChild(() -> ".shoulder"), (HolderGetter.Provider)serverLevel.registryAccess(), tag), serverLevel, new EntitySpawnRequest(EntitySpawnReason.LOAD, false)).ifPresent((entity) -> {
                if (entity instanceof TamableAnimal tamed) {
                   tamed.setOwner(this);
                }

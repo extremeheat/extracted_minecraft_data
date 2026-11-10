@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -20,10 +21,10 @@ public class NumberFormatTypes {
       super();
    }
 
-   public static NumberFormatType<?> bootstrap(final Registry<NumberFormatType<?>> registry) {
+   public static void bootstrap(final WritableRegistry<NumberFormatType<?>> registry) {
       Registry.register(registry, (String)"blank", BlankFormat.TYPE);
       Registry.register(registry, (String)"styled", StyledFormat.TYPE);
-      return (NumberFormatType)Registry.register(registry, (String)"fixed", FixedFormat.TYPE);
+      Registry.register(registry, (String)"fixed", FixedFormat.TYPE);
    }
 
    static {

@@ -84,7 +84,7 @@ public class SoundEvents {
    public static final Holder<SoundEvent> ARMOR_EQUIP_NETHERITE = registerForHolder("item.armor.equip_netherite");
    public static final Holder<SoundEvent> ARMOR_EQUIP_TURTLE = registerForHolder("item.armor.equip_turtle");
    public static final Holder<SoundEvent> ARMOR_EQUIP_WOLF = registerForHolder("item.armor.equip_wolf");
-   public static final SoundEvent ARMOR_UNEQUIP_WOLF = register("item.armor.unequip_wolf");
+   public static final Holder<SoundEvent> ARMOR_UNEQUIP_WOLF = registerForHolder("item.armor.unequip_wolf");
    public static final Holder<SoundEvent> ARMOR_EQUIP_NAUTILUS = registerForHolder("item.armor.equip_nautilus");
    public static final Holder<SoundEvent> ARMOR_UNEQUIP_NAUTILUS = registerForHolder("item.armor.unequip_nautilus");
    public static final SoundEvent ARMOR_STAND_BREAK = register("entity.armor_stand.break");
@@ -558,7 +558,7 @@ public class SoundEvents {
    public static final SoundEvent TRIAL_SPAWNER_CLOSE_SHUTTER = register("block.trial_spawner.close_shutter");
    public static final SoundEvent TRIAL_SPAWNER_EJECT_ITEM = register("block.trial_spawner.eject_item");
    public static final Holder<SoundEvent> HARNESS_EQUIP = registerForHolder("entity.happy_ghast.equip");
-   public static final SoundEvent HARNESS_UNEQUIP = register("entity.happy_ghast.unequip");
+   public static final Holder<SoundEvent> HARNESS_UNEQUIP = registerForHolder("entity.happy_ghast.unequip");
    public static final SoundEvent HARNESS_GOGGLES_UP = register("entity.happy_ghast.harness_goggles_up");
    public static final SoundEvent HARNESS_GOGGLES_DOWN = register("entity.happy_ghast.harness_goggles_down");
    public static final Holder<SoundEvent> HOE_TILL = registerForHolder("item.hoe.till");
@@ -1324,6 +1324,7 @@ public class SoundEvents {
    public static final SoundEvent FROSTBITE_DEATH = register("entity.frostbite.death");
    public static final SoundEvent FROSTBITE_HURT = register("entity.frostbite.hurt");
    public static final SoundEvent FROSTBITE_STEP = register("entity.frostbite.step");
+   public static final SoundEvent FROSTBITE_THROW = register("entity.frostbite.throw");
    public static final SoundEvent ICE_CRYSTAL_AMBIENT = register("block.ice_crystal.ambient");
    public static final SoundEvent ICICLE_LAND = register("block.icicle.land");
    public static final SoundEvent ICE_BALL_BREAK = register("entity.ice_ball.break");

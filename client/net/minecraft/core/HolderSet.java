@@ -169,7 +169,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       private final TagKey<T> key;
       private @Nullable List<Holder<T>> contents;
 
-      Named(final HolderOwner<T> owner, final TagKey<T> key) {
+      protected Named(final HolderOwner<T> owner, final TagKey<T> key) {
          super();
          this.owner = owner;
          this.key = key;

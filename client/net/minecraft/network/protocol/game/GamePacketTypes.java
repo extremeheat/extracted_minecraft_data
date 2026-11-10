@@ -9,6 +9,7 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundBundlePacket> CLIENTBOUND_BUNDLE = createClientbound("bundle");
    public static final PacketType<ClientboundBundleDelimiterPacket> CLIENTBOUND_BUNDLE_DELIMITER = createClientbound("bundle_delimiter");
    public static final PacketType<ClientboundAddEntityPacket> CLIENTBOUND_ADD_ENTITY = createClientbound("add_entity");
+   public static final PacketType<ClientboundAddEntityMotionPacket> CLIENTBOUND_ADD_ENTITY_MOTION = createClientbound("add_entity_motion");
    public static final PacketType<ClientboundAnimatePacket> CLIENTBOUND_ANIMATE = createClientbound("animate");
    public static final PacketType<ClientboundAwardStatsPacket> CLIENTBOUND_AWARD_STATS = createClientbound("award_stats");
    public static final PacketType<ClientboundBlockChangedAckPacket> CLIENTBOUND_BLOCK_CHANGED_ACK = createClientbound("block_changed_ack");
@@ -23,7 +24,6 @@ public class GamePacketTypes {
    public static final PacketType<ClientboundChunksBiomesPacket> CLIENTBOUND_CHUNKS_BIOMES = createClientbound("chunks_biomes");
    public static final PacketType<ClientboundClearTitlesPacket> CLIENTBOUND_CLEAR_TITLES = createClientbound("clear_titles");
    public static final PacketType<ClientboundCommandSuggestionsPacket> CLIENTBOUND_COMMAND_SUGGESTIONS = createClientbound("command_suggestions");
-   public static final PacketType<ClientboundCommandsPacket> CLIENTBOUND_COMMANDS = createClientbound("commands");
    public static final PacketType<ClientboundContainerClosePacket> CLIENTBOUND_CONTAINER_CLOSE = createClientbound("container_close");
    public static final PacketType<ClientboundContainerSetContentPacket> CLIENTBOUND_CONTAINER_SET_CONTENT = createClientbound("container_set_content");
    public static final PacketType<ClientboundContainerSetDataPacket> CLIENTBOUND_CONTAINER_SET_DATA = createClientbound("container_set_data");

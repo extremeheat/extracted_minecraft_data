@@ -20,6 +20,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.CrashReportUtil;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
@@ -427,7 +428,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
    public @Nullable CompoundTag getBlockEntityNbtForSaving(final BlockPos blockPos, final HolderLookup.Provider registryAccess) {
       BlockEntity blockEntity = this.getBlockEntity(blockPos);
       if (blockEntity != null && !blockEntity.isRemoved()) {
-         CompoundTag result = blockEntity.saveWithFullMetadata((HolderLookup.Provider)this.level.registryAccess());
+         CompoundTag result = blockEntity.saveWithFullMetadata((HolderGetter.Provider)this.level.registryAccess());
          result.putBoolean("keepPacked", false);
          return result;
       } else {
@@ -512,7 +513,7 @@ public class LevelChunk extends ChunkAccess implements DebugValueSource {
          chunkData.forEachBlockEntityTag(chunkX, chunkZ, (pos, type, tag) -> {
             BlockEntity blockEntity = this.getBlockEntity(pos, LevelChunk.EntityCreationType.IMMEDIATE);
             if (blockEntity != null && tag != null && blockEntity.getType() == type) {
-               blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), this.level.registryAccess(), tag));
+               blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), (HolderGetter.Provider)this.level.registryAccess(), tag));
             }
 
          });

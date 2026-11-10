@@ -28,6 +28,10 @@ public class Dictionary<S> {
       return this.put(name, Rule.fromTerm(term, action));
    }
 
+   public <T> NamedRule<S, T> putStateful(final Atom<T> name, final Term<S> term, final Rule.SimpleRuleActionWithContext<S, T> action) {
+      return this.put(name, Rule.fromTerm(term, action));
+   }
+
    public <T> NamedRule<S, T> put(final Atom<T> name, final Term<S> term, final Rule.SimpleRuleAction<S, T> action) {
       return this.put(name, Rule.fromTerm(term, action));
    }

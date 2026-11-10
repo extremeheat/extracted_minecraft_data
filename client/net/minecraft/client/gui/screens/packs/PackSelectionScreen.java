@@ -39,6 +39,7 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.texture.ExternalTextureProvider;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.network.chat.CommonComponents;
@@ -67,7 +68,7 @@ public class PackSelectionScreen extends Screen {
    private static final Component DRAG_AND_DROP;
    private static final Component DIRECTORY_BUTTON_TOOLTIP;
    private static final int RELOAD_COOLDOWN = 20;
-   private static final Identifier DEFAULT_ICON;
+   private static final PackIcon DEFAULT_ICON;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final PackSelectionModel model;
    private @Nullable Watcher watcher;
@@ -77,7 +78,7 @@ public class PackSelectionScreen extends Screen {
    private @Nullable EditBox search;
    private final Path packDir;
    private @Nullable Button doneButton;
-   private final Map<String, Identifier> packIcons = new HashMap();
+   private final Map<String, PackIcon> packIcons = new HashMap();
 
    public PackSelectionScreen(final PackRepository repository, final Consumer<PackRepository> output, final Path packDir, final Component title) {
       super(title);
@@ -87,6 +88,7 @@ public class PackSelectionScreen extends Screen {
    }
 
    public void onClose() {
+      this.closePackIcons();
       this.model.commit();
       this.closeWatcher();
    }
@@ -112,7 +114,7 @@ public class PackSelectionScreen extends Screen {
       header.defaultCellSetting().alignHorizontallyCenter();
       header.addChild(new StringWidget(this.getTitle(), this.font));
       header.addChild(new StringWidget(DRAG_AND_DROP, this.font));
-      this.search = (EditBox)header.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
+      this.search = (EditBox)header.addChild(new EditBox(this.font, 0, 0, 200, 15, SEARCH));
       this.search.setHint(SEARCH);
       this.search.setResponder(this::updateFilteredEntries);
       this.availablePackList = (TransferableSelectionList)this.layout.addToContents(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
@@ -204,6 +206,11 @@ public class PackSelectionScreen extends Screen {
       this.model.findNewPacks();
       this.populateLists((PackSelectionModel.EntryBase)null);
       this.ticksToReload = 0L;
+      this.closePackIcons();
+   }
+
+   private void closePackIcons() {
+      this.packIcons.values().forEach((icon) -> icon.close(this.minecraft.getTextureManager()));
       this.packIcons.clear();
    }
 
@@ -307,13 +314,13 @@ public class PackSelectionScreen extends Screen {
       return files.stream().map(Path::getFileName).map(Path::toString);
    }
 
-   private Identifier loadPackIcon(final TextureManager textureManager, final Pack pack) {
+   private PackIcon loadPackIcon(final TextureManager textureManager, final Pack pack) {
       try {
-         Identifier var19;
+         PackIcon var10;
          try (PackMetadataResources packResources = pack.openMetadata()) {
             IoSupplier<InputStream> resource = packResources.getRootResource("pack.png");
             if (resource == null) {
-               Identifier var18 = DEFAULT_ICON;
+               PackIcon var18 = DEFAULT_ICON;
                return var18;
             }
 
@@ -322,13 +329,11 @@ public class PackSelectionScreen extends Screen {
             Identifier location = Identifier.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(id)) + "/icon");
             InputStream stream = resource.get();
 
-            try {
-               try (NativeImage iconImage = NativeImage.read(stream)) {
-                  Objects.requireNonNull(location);
-                  textureManager.register(location, TextureResources.from2dImage(location::toString, iconImage));
-               }
-
-               var19 = location;
+            try (NativeImage iconImage = NativeImage.read(stream)) {
+               Objects.requireNonNull(location);
+               TextureResources texture = TextureResources.from2dImage(location::toString, iconImage);
+               textureManager.registerProvider(location, new ExternalTextureProvider(texture));
+               var10 = new PackIcon(texture, location);
             } catch (Throwable var15) {
                if (stream != null) {
                   try {
@@ -346,7 +351,7 @@ public class PackSelectionScreen extends Screen {
             }
          }
 
-         return var19;
+         return var10;
       } catch (Exception e) {
          LOGGER.warn("Failed to load icon from pack {}", pack.getId(), e);
          return DEFAULT_ICON;
@@ -354,14 +359,28 @@ public class PackSelectionScreen extends Screen {
    }
 
    private Identifier getPackIcon(final Pack pack) {
-      return (Identifier)this.packIcons.computeIfAbsent(pack.getId(), (s) -> this.loadPackIcon(this.minecraft.getTextureManager(), pack));
+      return ((PackIcon)this.packIcons.computeIfAbsent(pack.getId(), (s) -> this.loadPackIcon(this.minecraft.getTextureManager(), pack))).location;
    }
 
    static {
       SEARCH = Component.translatable("gui.packSelection.search").withStyle(EditBox.SEARCH_HINT_STYLE);
       DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
       DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
-      DEFAULT_ICON = Identifier.withDefaultNamespace("textures/misc/unknown_pack.png");
+      DEFAULT_ICON = new PackIcon((TextureResources)null, Identifier.withDefaultNamespace("textures/misc/unknown_pack.png"));
+   }
+
+   private static record PackIcon(@Nullable TextureResources texture, Identifier location) {
+      private PackIcon {
+         super();
+      }
+
+      private void close(final TextureManager textureManager) {
+         if (this.texture != null) {
+            textureManager.release(this.location);
+            this.texture.close();
+         }
+
+      }
    }
 
    private static class Watcher implements AutoCloseable {

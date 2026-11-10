@@ -22,7 +22,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.CommonComponents;
@@ -101,7 +101,7 @@ public class RealmsCreateWorldFlow {
       });
    }
 
-   private static Path createTemporaryWorldFolder(final RegistryAccess registryAccess, final LevelDataAndDimensions.WorldDataAndGenSettings worldDataAndGenSettings, final Optional<GameRules> gameRulesOpt, final @Nullable Path tempDataPackDir) throws IOException {
+   private static Path createTemporaryWorldFolder(final HolderGetter.Provider registryAccess, final LevelDataAndDimensions.WorldDataAndGenSettings worldDataAndGenSettings, final Optional<GameRules> gameRulesOpt, final @Nullable Path tempDataPackDir) throws IOException {
       Path worldFolder = Files.createTempDirectory("minecraft_realms_world_upload");
       if (tempDataPackDir != null) {
          Files.move(tempDataPackDir, worldFolder.resolve("datapacks"));

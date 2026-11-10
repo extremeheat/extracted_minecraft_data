@@ -24,8 +24,7 @@ public class LimitCount extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
       Validatable.validate(context, "limit", this.limit);
    }
 

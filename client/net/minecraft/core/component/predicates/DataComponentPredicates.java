@@ -29,10 +29,6 @@ public class DataComponentPredicates {
       return (DataComponentPredicate.Type)Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, (String)id, new DataComponentPredicate.ConcreteType(codec));
    }
 
-   public static DataComponentPredicate.Type<?> bootstrap(final Registry<DataComponentPredicate.Type<?>> registry) {
-      return DAMAGE;
-   }
-
    static {
       DAMAGE = register("damage", DamagePredicate.CODEC);
       ENCHANTMENTS = register("enchantments", EnchantmentsPredicate.Enchantments.CODEC);

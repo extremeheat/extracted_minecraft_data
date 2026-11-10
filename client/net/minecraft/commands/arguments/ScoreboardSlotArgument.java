@@ -9,25 +9,31 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.scores.DisplaySlot;
 
-public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", value));
+public class ScoreboardSlotArgument implements SerializableArgument.ContextFree<DisplaySlot> {
+   private static final ScoreboardSlotArgument INSTANCE = new ScoreboardSlotArgument();
+   public static final SerializableArgument.Type<ScoreboardSlotArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE;
 
    private ScoreboardSlotArgument() {
       super();
    }
 
-   public static ScoreboardSlotArgument displaySlot() {
-      return new ScoreboardSlotArgument();
+   public SerializableArgument.Type<ScoreboardSlotArgument> type() {
+      return TYPE;
    }
 
-   public static DisplaySlot getDisplaySlot(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<DisplaySlot> displaySlot() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static DisplaySlot getDisplaySlot(final CommandContext<?> context, final String name) {
       return (DisplaySlot)context.getArgument(name, DisplaySlot.class);
    }
 
@@ -41,11 +47,17 @@ public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(Arrays.stream(DisplaySlot.values()).map(DisplaySlot::getSerializedName), builder);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(Arrays.stream(DisplaySlot.values()).map(DisplaySlot::getSerializedName), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<ScoreboardSlotArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("sidebar", "foo.bar");
+      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.scoreboardDisplaySlot.invalid", value));
    }
 }

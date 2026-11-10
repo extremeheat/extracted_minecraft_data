@@ -1,12 +1,7 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
-import com.mojang.renderpearl.api.textures.FilterMode;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
@@ -15,10 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.texture.TextureResources;
+import net.minecraft.client.renderer.texture.VanillaTextureProvider2d;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ReloadInstance;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Util;
@@ -55,32 +49,7 @@ public class LoadingOverlay extends Overlay {
    }
 
    public static void registerTextures(final TextureManager textureManager) {
-      ResourceProvider vanillaProvider = Minecraft.getInstance().getVanillaPackResources().asResourceManager();
-
-      try {
-         InputStream resource = vanillaProvider.open(MOJANG_STUDIOS_LOGO_LOCATION);
-
-         try (NativeImage image = NativeImage.read(resource)) {
-            textureManager.register(MOJANG_STUDIOS_LOGO_LOCATION, TextureResources.from2dImage(() -> "Logo", image, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST)));
-         } catch (Throwable var9) {
-            if (resource != null) {
-               try {
-                  resource.close();
-               } catch (Throwable var6) {
-                  var9.addSuppressed(var6);
-               }
-            }
-
-            throw var9;
-         }
-
-         if (resource != null) {
-            resource.close();
-         }
-      } catch (IOException exception) {
-         LOGGER.error("Failed to load logo", exception);
-      }
-
+      textureManager.registerProvider(MOJANG_STUDIOS_LOGO_LOCATION, new VanillaTextureProvider2d());
    }
 
    private static int replaceAlpha(final int color, final int alpha) {

@@ -51,7 +51,7 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
          if (decoded.result().isEmpty()) {
             return !this.allowInline ? DataResult.error(() -> "Inline definitions not allowed here") : this.elementCodec.decode(ops, input).map((p) -> p.mapFirst(Holder::direct));
          } else {
-            Optional<HolderGetter<E>> maybeLookup = registryOps.getter(this.registryKey);
+            Optional<? extends HolderGetter<E>> maybeLookup = registryOps.getter(this.registryKey);
             if (maybeLookup.isEmpty()) {
                return DataResult.error(() -> "Registry does not exist: " + String.valueOf(this.registryKey.identifier()));
             } else {

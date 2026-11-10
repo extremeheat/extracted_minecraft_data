@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -30,7 +31,7 @@ public class SetSpawnCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawnpoint").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), Collections.singleton(((CommandSourceStack)c.getSource()).getPlayerOrException()), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPosArgument.getSpawnablePos(c, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPosArgument.getSpawnablePos(c, "pos"), RotationArgument.getRotation(c, "rotation")))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawnpoint").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), Collections.singleton(((CommandSourceStack)c.getSource()).getPlayerOrException()), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPosArgument.getSpawnablePos(c, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), BlockPosArgument.getSpawnablePos(c, "pos"), RotationArgument.getRotation(c, "rotation")))))));
    }
 
    private static int setSpawn(final CommandSourceStack source, final Collection<ServerPlayer> targets, final BlockPos pos, final Coordinates rotation) throws CommandSyntaxException {

@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworksFunction extends LootItemConditionalFunction {
@@ -39,5 +40,8 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
 
    public MapCodec<SetFireworksFunction> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 }

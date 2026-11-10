@@ -9,19 +9,25 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.server.permissions.Permissions;
 import net.minecraft.util.CompilableString;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -100,9 +106,61 @@ public class EntitySelector {
       return this.usesSelector;
    }
 
-   private void checkPermissions(final CommandSourceStack sender) throws CommandSyntaxException {
+   private void checkPermissions(final PermissionSetSupplier sender) throws CommandSyntaxException {
       if (this.usesSelector && !sender.permissions().hasPermission(Permissions.COMMANDS_ENTITY_SELECTORS)) {
          throw EntityArgument.ERROR_SELECTORS_NOT_ALLOWED.create();
+      }
+   }
+
+   public Stream<? extends Entity> findSuggestions(final MinecraftServer server, final SuggestionContext sender) throws CommandSyntaxException {
+      Stream<? extends Entity> entities = this.findEntitySuggestions(server, sender);
+      return this.includesEntities ? entities : entities.filter((e) -> e instanceof Player);
+   }
+
+   private Stream<? extends Entity> findEntitySuggestions(final MinecraftServer server, final SuggestionContext sender) throws CommandSyntaxException {
+      this.checkPermissions(sender);
+      if (this.playerName != null) {
+         ServerPlayer result = server.getPlayerList().getPlayerByName(this.playerName);
+         return result == null ? Stream.of() : Stream.of(result);
+      } else if (this.entityUUID != null) {
+         for(ServerLevel level : server.getAllLevels()) {
+            Entity entity = level.getEntity(this.entityUUID);
+            if (entity != null) {
+               if (entity.getType().isEnabled(sender.enabledFeatures())) {
+                  return Stream.of(entity);
+               }
+               break;
+            }
+         }
+
+         return Stream.of();
+      } else {
+         Vec3 pos = (Vec3)this.position.apply(sender.position());
+         AABB absoluteAabb = this.getAbsoluteAabb(pos);
+         if (this.currentEntity) {
+            Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, (FeatureFlagSet)null);
+            Entity currentEntity = sender.entity();
+            return currentEntity != null && predicate.test(currentEntity) ? Stream.of(currentEntity) : Stream.of();
+         } else {
+            Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, sender.enabledFeatures());
+            List<Entity> result = new ObjectArrayList();
+            if (this.isWorldLimited()) {
+               Level var8 = sender.level();
+               if (!(var8 instanceof ServerLevel)) {
+                  return Stream.of();
+               }
+
+               ServerLevel serverLevel = (ServerLevel)var8;
+               this.addEntities(result, serverLevel, absoluteAabb, predicate);
+            } else {
+               for(ServerLevel level : server.getAllLevels()) {
+                  this.addEntities(result, level, absoluteAabb, predicate);
+               }
+            }
+
+            List<Entity> entities = this.<Entity>sortAndLimit(pos, result);
+            return entities.stream();
+         }
       }
    }
 
@@ -114,7 +172,7 @@ public class EntitySelector {
       } else if (entities.size() > 1) {
          throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
       } else {
-         return (Entity)entities.get(0);
+         return (Entity)entities.getFirst();
       }
    }
 
@@ -122,39 +180,42 @@ public class EntitySelector {
       this.checkPermissions(sender);
       if (!this.includesEntities) {
          return this.findPlayers(sender);
-      } else if (this.playerName != null) {
-         ServerPlayer result = sender.getServer().getPlayerList().getPlayerByName(this.playerName);
-         return result == null ? List.of() : List.of(result);
-      } else if (this.entityUUID != null) {
-         for(ServerLevel level : sender.getServer().getAllLevels()) {
-            Entity entity = level.getEntity(this.entityUUID);
-            if (entity != null) {
-               if (entity.getType().isEnabled(sender.enabledFeatures())) {
-                  return List.of(entity);
-               }
-               break;
-            }
-         }
-
-         return List.of();
       } else {
-         Vec3 pos = (Vec3)this.position.apply(sender.getPosition());
-         AABB absoluteAabb = this.getAbsoluteAabb(pos);
-         if (this.currentEntity) {
-            Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, (FeatureFlagSet)null);
-            return sender.getEntity() != null && predicate.test(sender.getEntity()) ? List.of(sender.getEntity()) : List.of();
-         } else {
-            Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, sender.enabledFeatures());
-            List<Entity> result = new ObjectArrayList();
-            if (this.isWorldLimited()) {
-               this.addEntities(result, sender.getLevel(), absoluteAabb, predicate);
-            } else {
-               for(ServerLevel level : sender.getServer().getAllLevels()) {
-                  this.addEntities(result, level, absoluteAabb, predicate);
+         MinecraftServer server = sender.getServer();
+         if (this.playerName != null) {
+            ServerPlayer result = server.getPlayerList().getPlayerByName(this.playerName);
+            return result == null ? List.of() : List.of(result);
+         } else if (this.entityUUID != null) {
+            for(ServerLevel level : server.getAllLevels()) {
+               Entity entity = level.getEntity(this.entityUUID);
+               if (entity != null) {
+                  if (entity.getType().isEnabled(sender.enabledFeatures())) {
+                     return List.of(entity);
+                  }
+                  break;
                }
             }
 
-            return this.<Entity>sortAndLimit(pos, result);
+            return List.of();
+         } else {
+            Vec3 pos = (Vec3)this.position.apply(sender.getPosition());
+            AABB absoluteAabb = this.getAbsoluteAabb(pos);
+            if (this.currentEntity) {
+               Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, (FeatureFlagSet)null);
+               return sender.getEntity() != null && predicate.test(sender.getEntity()) ? List.of(sender.getEntity()) : List.of();
+            } else {
+               Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, sender.enabledFeatures());
+               List<Entity> result = new ObjectArrayList();
+               if (this.isWorldLimited()) {
+                  this.addEntities(result, sender.getLevel(), absoluteAabb, predicate);
+               } else {
+                  for(ServerLevel level : server.getAllLevels()) {
+                     this.addEntities(result, level, absoluteAabb, predicate);
+                  }
+               }
+
+               return this.<Entity>sortAndLimit(pos, result);
+            }
          }
       }
    }
@@ -181,26 +242,27 @@ public class EntitySelector {
       if (players.size() != 1) {
          throw EntityArgument.NO_PLAYERS_FOUND.create();
       } else {
-         return (ServerPlayer)players.get(0);
+         return (ServerPlayer)players.getFirst();
       }
    }
 
    public List<ServerPlayer> findPlayers(final CommandSourceStack sender) throws CommandSyntaxException {
       this.checkPermissions(sender);
+      MinecraftServer server = sender.getServer();
       if (this.playerName != null) {
-         ServerPlayer result = sender.getServer().getPlayerList().getPlayerByName(this.playerName);
+         ServerPlayer result = server.getPlayerList().getPlayerByName(this.playerName);
          return result == null ? List.of() : List.of(result);
       } else if (this.entityUUID != null) {
-         ServerPlayer result = sender.getServer().getPlayerList().getPlayer(this.entityUUID);
+         ServerPlayer result = server.getPlayerList().getPlayer(this.entityUUID);
          return result == null ? List.of() : List.of(result);
       } else {
          Vec3 pos = (Vec3)this.position.apply(sender.getPosition());
          AABB absoluteAabb = this.getAbsoluteAabb(pos);
          Predicate<Entity> predicate = this.getPredicate(pos, absoluteAabb, (FeatureFlagSet)null);
          if (this.currentEntity) {
-            Entity var12 = sender.getEntity();
-            if (var12 instanceof ServerPlayer) {
-               ServerPlayer player = (ServerPlayer)var12;
+            Entity var13 = sender.getEntity();
+            if (var13 instanceof ServerPlayer) {
+               ServerPlayer player = (ServerPlayer)var13;
                if (predicate.test(player)) {
                   return List.of(player);
                }
@@ -215,7 +277,7 @@ public class EntitySelector {
             } else {
                result = new ObjectArrayList();
 
-               for(ServerPlayer player : sender.getServer().getPlayerList().getPlayers()) {
+               for(ServerPlayer player : server.getPlayerList().getPlayers()) {
                   if (predicate.test(player)) {
                      result.add(player);
                      if (result.size() >= limit) {

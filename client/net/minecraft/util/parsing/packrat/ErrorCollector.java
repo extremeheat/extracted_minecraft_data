@@ -5,29 +5,25 @@ import java.util.List;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
 
-public interface ErrorCollector<S> {
-   void store(int cursor, SuggestionSupplier<S> suggestions, Object reason);
-
-   default void store(final int cursor, final Object reason) {
-      this.store(cursor, SuggestionSupplier.empty(), reason);
-   }
-
-   void finish(int finalCursor);
-
-   public static class Nop<S> implements ErrorCollector<S> {
-      public Nop() {
-         super();
-      }
-
-      public void store(final int cursor, final SuggestionSupplier<S> suggestions, final Object reason) {
+public interface ErrorCollector {
+   ErrorCollector NOP = new ErrorCollector() {
+      public void store(final int cursor, final Suggestion suggestion, final Object reason) {
       }
 
       public void finish(final int finalCursor) {
       }
+   };
+
+   void store(int cursor, Suggestion suggestion, Object reason);
+
+   default void store(final int cursor, final Object reason) {
+      this.store(cursor, Suggestion.EMPTY, reason);
    }
 
-   public static class LongestOnly<S> implements ErrorCollector<S> {
-      private @Nullable ErrorCollector.MutableErrorEntry<S>[] entries = new MutableErrorEntry[16];
+   void finish(int finalCursor);
+
+   public static class LongestOnly implements ErrorCollector {
+      private @Nullable ErrorCollector.MutableErrorEntry[] entries = new MutableErrorEntry[16];
       private int nextErrorEntry;
       private int lastCursor = -1;
 
@@ -47,7 +43,7 @@ public interface ErrorCollector<S> {
          this.discardErrorsFromShorterParse(finalCursor);
       }
 
-      public void store(final int cursor, final SuggestionSupplier<S> suggestions, final Object reason) {
+      public void store(final int cursor, final Suggestion suggestions, final Object reason) {
          this.discardErrorsFromShorterParse(cursor);
          if (cursor == this.lastCursor) {
             this.addErrorEntry(suggestions, reason);
@@ -55,19 +51,19 @@ public interface ErrorCollector<S> {
 
       }
 
-      private void addErrorEntry(final SuggestionSupplier<S> suggestions, final Object reason) {
+      private void addErrorEntry(final Suggestion suggestions, final Object reason) {
          int currentSize = this.entries.length;
          if (this.nextErrorEntry >= currentSize) {
             int newSize = Util.growByHalf(currentSize, this.nextErrorEntry + 1);
-            MutableErrorEntry<S>[] newEntries = new MutableErrorEntry[newSize];
+            MutableErrorEntry[] newEntries = new MutableErrorEntry[newSize];
             System.arraycopy(this.entries, 0, newEntries, 0, currentSize);
             this.entries = newEntries;
          }
 
          int entryIndex = this.nextErrorEntry++;
-         MutableErrorEntry<S> entry = this.entries[entryIndex];
+         MutableErrorEntry entry = this.entries[entryIndex];
          if (entry == null) {
-            entry = new MutableErrorEntry<S>();
+            entry = new MutableErrorEntry();
             this.entries[entryIndex] = entry;
          }
 
@@ -75,15 +71,15 @@ public interface ErrorCollector<S> {
          entry.reason = reason;
       }
 
-      public List<ErrorEntry<S>> entries() {
+      public List<ErrorEntry> entries() {
          int errorCount = this.nextErrorEntry;
          if (errorCount == 0) {
             return List.of();
          } else {
-            List<ErrorEntry<S>> result = new ArrayList(errorCount);
+            List<ErrorEntry> result = new ArrayList(errorCount);
 
             for(int i = 0; i < errorCount; ++i) {
-               MutableErrorEntry<S> entry = this.entries[i];
+               MutableErrorEntry entry = this.entries[i];
                result.add(new ErrorEntry(this.lastCursor, entry.suggestions, entry.reason));
             }
 
@@ -95,12 +91,14 @@ public interface ErrorCollector<S> {
          return this.lastCursor;
       }
 
-      private static class MutableErrorEntry<S> {
-         private SuggestionSupplier<S> suggestions = SuggestionSupplier.<S>empty();
-         private Object reason = "empty";
+      private static class MutableErrorEntry {
+         private Suggestion suggestions;
+         private Object reason;
 
          private MutableErrorEntry() {
             super();
+            this.suggestions = Suggestion.EMPTY;
+            this.reason = "empty";
          }
       }
    }

@@ -1,5 +1,6 @@
 package net.minecraft.advancements;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -12,6 +13,10 @@ public record AdvancementHolder(Identifier id, Advancement value) {
 
    public AdvancementHolder {
       super();
+   }
+
+   public static AdvancementHolder wrap(final Holder.Reference<Advancement> holder) {
+      return new AdvancementHolder(holder.key().identifier(), holder.value());
    }
 
    public void register(final BootstrapContext<Advancement> output) {

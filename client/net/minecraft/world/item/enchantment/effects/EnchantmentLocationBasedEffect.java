@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.function.Function;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -13,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 public interface EnchantmentLocationBasedEffect {
    Codec<EnchantmentLocationBasedEffect> CODEC = BuiltInRegistries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE.byNameCodec().dispatch(EnchantmentLocationBasedEffect::codec, Function.identity());
 
-   static MapCodec<? extends EnchantmentLocationBasedEffect> bootstrap(final Registry<MapCodec<? extends EnchantmentLocationBasedEffect>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends EnchantmentLocationBasedEffect>> registry) {
       Registry.register(registry, (String)"all_of", AllOf.LocationBasedEffects.CODEC);
       Registry.register(registry, (String)"apply_mob_effect", ApplyMobEffect.CODEC);
       Registry.register(registry, (String)"attribute", EnchantmentAttributeEffect.MAP_CODEC);
@@ -29,7 +30,7 @@ public interface EnchantmentLocationBasedEffect {
       Registry.register(registry, (String)"run_function", RunFunction.CODEC);
       Registry.register(registry, (String)"set_block_properties", SetBlockProperties.CODEC);
       Registry.register(registry, (String)"spawn_particles", SpawnParticlesEffect.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"summon_entity", SummonEntityEffect.CODEC);
+      Registry.register(registry, (String)"summon_entity", SummonEntityEffect.CODEC);
    }
 
    void onChangedBlock(ServerLevel serverLevel, int enchantmentLevel, EnchantedItemInUse item, Entity entity, Vec3 position, boolean becameActive);

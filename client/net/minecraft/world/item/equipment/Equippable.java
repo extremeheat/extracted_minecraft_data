@@ -6,7 +6,6 @@ import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -44,14 +43,12 @@ public record Equippable(EquipmentSlot slot, Optional<Holder<SoundEvent>> equipS
       return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.LLAMA_SWAG).setAsset((ResourceKey)EquipmentAssets.CARPETS.get(color)).setAllowedEntities(EntityTypes.LLAMA, EntityTypes.TRADER_LLAMA).setCanBeSheared(true).setShearingSound(SoundEvents.LLAMA_CARPET_UNEQUIP).build();
    }
 
-   public static Equippable saddle() {
-      HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-      return builder(EquipmentSlot.SADDLE).setEquipSound(Saddleable.DEFAULT_EQUIP_SOUND).setAsset(EquipmentAssets.SADDLE).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_EQUIP_SADDLE)).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.SADDLE_UNEQUIP).build();
+   public static Equippable saddle(final HolderGetter.Provider context) {
+      return builder(EquipmentSlot.SADDLE).setEquipSound(Saddleable.DEFAULT_EQUIP_SOUND).setAsset(EquipmentAssets.SADDLE).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_EQUIP_SADDLE)).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.SADDLE_UNEQUIP).build();
    }
 
-   public static Equippable harness(final DyeColor color) {
-      HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HARNESS_EQUIP).setAsset((ResourceKey)EquipmentAssets.HARNESSES.get(color)).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_EQUIP_HARNESS)).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.HARNESS_UNEQUIP)).build();
+   public static Equippable harness(final HolderGetter.Provider context, final DyeColor color) {
+      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HARNESS_EQUIP).setAsset((ResourceKey)EquipmentAssets.HARNESSES.get(color)).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_EQUIP_HARNESS)).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.HARNESS_UNEQUIP).build();
    }
 
    public static Builder builder(final EquipmentSlot slot) {

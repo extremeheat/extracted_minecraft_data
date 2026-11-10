@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public class NbtProviders {
@@ -14,9 +15,9 @@ public class NbtProviders {
       super();
    }
 
-   public static MapCodec<? extends NbtProvider> bootstrap(final Registry<MapCodec<? extends NbtProvider>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends NbtProvider>> registry) {
       Registry.register(registry, (String)"storage", StorageNbtProvider.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"context", ContextNbtProvider.MAP_CODEC);
+      Registry.register(registry, (String)"context", ContextNbtProvider.MAP_CODEC);
    }
 
    static {

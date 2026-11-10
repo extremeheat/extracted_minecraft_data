@@ -2,10 +2,12 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
+import net.minecraft.client.renderer.texture.ExternalTextureProvider;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 public class FaviconTexture implements AutoCloseable {
    private static final Identifier MISSING_LOCATION = Identifier.withDefaultNamespace("textures/misc/unknown_server.png");
@@ -13,6 +15,7 @@ public class FaviconTexture implements AutoCloseable {
    private static final int HEIGHT = 64;
    private final TextureManager textureManager;
    private final Identifier textureLocation;
+   private @Nullable TextureResources texture;
    private boolean uploaded;
    private boolean closed;
 
@@ -43,7 +46,12 @@ public class FaviconTexture implements AutoCloseable {
             }
 
             this.checkOpen();
-            this.textureManager.register(this.textureLocation, TextureResources.from2dImage(() -> "Favicon " + String.valueOf(this.textureLocation), image));
+            if (this.texture != null) {
+               this.texture.close();
+            }
+
+            this.texture = TextureResources.from2dImage(() -> "Favicon " + String.valueOf(this.textureLocation), image);
+            this.textureManager.registerProvider(this.textureLocation, new ExternalTextureProvider(this.texture));
             this.uploaded = true;
          } catch (Throwable var6) {
             if (image != null) {
@@ -69,7 +77,12 @@ public class FaviconTexture implements AutoCloseable {
 
    public void clear() {
       this.checkOpen();
-      this.textureManager.release(this.textureLocation);
+      if (this.texture != null) {
+         this.textureManager.release(this.textureLocation);
+         this.texture.close();
+         this.texture = null;
+      }
+
    }
 
    public Identifier textureLocation() {

@@ -44,7 +44,7 @@ public class ClientItemInfoLoader {
                   PendingLoad var8;
                   try {
                      PlaceholderLookupProvider lookup = new PlaceholderLookupProvider(staticRegistries);
-                     DynamicOps<JsonElement> ops = lookup.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
+                     DynamicOps<JsonElement> ops = lookup.createSerializationContext(JsonOps.INSTANCE);
                      ClientItem parsedInfo = (ClientItem)ClientItem.CODEC.parse(ops, StrictJsonParser.parse(reader)).ifError((error) -> LOGGER.error("Couldn't parse item model '{}' from pack '{}': {}", new Object[]{modelId, resource.sourcePackId(), error.message()})).result().map((clientItem) -> lookup.hasRegisteredPlaceholders() ? clientItem.withRegistrySwapper(lookup.createSwapper()) : clientItem).orElse((Object)null);
                      var8 = new PendingLoad(modelId, parsedInfo);
                   } catch (Throwable var10) {

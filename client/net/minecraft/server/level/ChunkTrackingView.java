@@ -63,8 +63,12 @@ public interface ChunkTrackingView {
    }
 
    default boolean containsChunkAround(final int chunkX, final int chunkZ, final int radius) {
-      for(int dx = -radius; dx <= radius; ++dx) {
-         for(int dz = -radius; dz <= radius; ++dz) {
+      return this.containsChunkAround(chunkX, chunkZ, radius, radius, radius, radius);
+   }
+
+   default boolean containsChunkAround(final int chunkX, final int chunkZ, final int negativeXOffset, final int xOffset, final int negativeZOffset, final int zOffset) {
+      for(int dx = -negativeXOffset; dx <= xOffset; ++dx) {
+         for(int dz = -negativeZOffset; dz <= zOffset; ++dz) {
             if (this.contains(chunkX + dx, chunkZ + dz)) {
                return true;
             }

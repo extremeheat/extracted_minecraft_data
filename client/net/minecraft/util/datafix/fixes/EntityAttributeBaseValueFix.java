@@ -23,8 +23,7 @@ public class EntityAttributeBaseValueFix extends NamedEntityFix {
 
    private Dynamic<?> fixValue(final Dynamic<?> tag) {
       return tag.update("attributes", (attributes) -> tag.createList(attributes.asStream().map((attribute) -> {
-            String attributeId = NamespacedSchema.ensureNamespaced(attribute.get("id").asString(""));
-            if (!attributeId.equals(this.attributeId)) {
+            if (!NamespacedSchema.namespacedIdMatches(attribute.get("id"), this.attributeId)) {
                return attribute;
             } else {
                double base = attribute.get("base").asDouble(0.0);

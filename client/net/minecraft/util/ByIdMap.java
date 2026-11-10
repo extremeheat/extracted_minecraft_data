@@ -1,6 +1,5 @@
 package net.minecraft.util;
 
-import [Ljava.lang.Object;;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ public class ByIdMap {
       if (length == 0) {
          throw new IllegalArgumentException("Empty value list");
       } else {
-         T[] result = (T[])((Object[])((Object;)values).clone());
+         T[] result = (T[])((Object[])values.clone());
          Arrays.fill(result, (Object)null);
 
          for(T value : values) {

@@ -11,6 +11,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
@@ -56,6 +57,9 @@ public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
 
    public MapCodec<SetFireworkExplosionFunction> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 
    static {

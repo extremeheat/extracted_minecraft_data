@@ -148,7 +148,7 @@ public class ServerEntity {
             this.sendDirtyEntityData();
             this.wasRiding = true;
          } else {
-            label144: {
+            label150: {
                Entity position = this.entity;
                if (position instanceof AbstractMinecart) {
                   AbstractMinecart minecart = (AbstractMinecart)position;
@@ -156,7 +156,7 @@ public class ServerEntity {
                   if (var25 instanceof NewMinecartBehavior) {
                      NewMinecartBehavior newMinecartBehavior = (NewMinecartBehavior)var25;
                      this.handleMinecartPosRot(newMinecartBehavior, yRotn, xRotn, shouldSendRotation);
-                     break label144;
+                     break label150;
                   }
                }
 
@@ -172,16 +172,16 @@ public class ServerEntity {
                   packet = this.createMovePacket(position, yRotn, xRotn, shouldSendPosition, shouldSendRotation);
                }
 
-               label141: {
+               label146: {
                   if (!this.entity.needsSync && !this.trackDelta) {
                      Entity movement = this.entity;
                      if (!(movement instanceof LivingEntity)) {
-                        break label141;
+                        break label146;
                      }
 
                      LivingEntity livingEntity = (LivingEntity)movement;
                      if (!livingEntity.isFallFlying()) {
-                        break label141;
+                        break label146;
                      }
                   }
 
@@ -209,6 +209,11 @@ public class ServerEntity {
                   if (packet.hasRotation()) {
                      this.lastSentYRot = yRotn;
                      this.lastSentXRot = xRotn;
+                  }
+
+                  if (packet instanceof ClientboundEntityPositionSyncPacket) {
+                     ClientboundEntityPositionSyncPacket positionSyncPacket = (ClientboundEntityPositionSyncPacket)packet;
+                     this.lastSentYHeadRot = Mth.packDegrees(positionSyncPacket.yHeadRot());
                   }
                } else {
                   this.sendDirtyEntityData();

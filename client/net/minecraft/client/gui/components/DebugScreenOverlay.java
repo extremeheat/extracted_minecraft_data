@@ -175,9 +175,17 @@ public class DebugScreenOverlay implements Renderable {
                DebugGroup var10001 = DebugGroups.HELP;
                String var10002 = formatChart(keyDebugModifier, options.keyDebugPofilingChart, "Profiler", this.renderProfilerChart);
                var10002 = "Debug charts: " + var10002 + "; " + formatChart(keyDebugModifier, options.keyDebugFpsCharts, hasServer ? "fps + tps" : "fps", this.renderFpsCharts) + ";";
-               String var10003 = formatChart(keyDebugModifier, options.keyDebugNetworkCharts, !this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping", this.renderNetworkCharts) + "; " + formatChart(keyDebugModifier, options.keyDebugLightmapTexture, "Lightmap", this.showLightmapTexture());
-               String var10004 = formatKeybind(keyDebugModifier, options.keyDebugDebugOptions);
-               displayer.addToGroup(var10001, List.of(var10002, var10003, "To edit: press " + var10004));
+               String var10003 = formatChart(keyDebugModifier, options.keyDebugNetworkCharts, !this.minecraft.isLocalServer() ? "Bandwidth + Ping" : "Ping", this.renderNetworkCharts);
+               displayer.addToGroup(var10001, List.of(var10002, var10003 + "; " + formatChart(keyDebugModifier, options.keyDebugLightmapTexture, "Lightmap", this.showLightmapTexture())));
+               if (this.minecraft.canUseRestrictedDebugFeatures() && !this.minecraft.showOnlyReducedInfo()) {
+                  var10001 = DebugGroups.HELP;
+                  var10002 = formatKeybind(keyDebugModifier, options.keyDebugEnvironmentAttributeOptions);
+                  displayer.addToGroup(var10001, var10002 + " Environment attributes");
+               }
+
+               var10001 = DebugGroups.HELP;
+               var10002 = formatKeybind(keyDebugModifier, options.keyDebugDebugOptions);
+               displayer.addToGroup(var10001, "To edit: press " + var10002);
             }
 
             Window window = this.minecraft.getWindow();

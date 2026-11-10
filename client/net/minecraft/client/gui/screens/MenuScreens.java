@@ -28,6 +28,7 @@ import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.client.gui.screens.inventory.SmokerScreen;
 import net.minecraft.client.gui.screens.inventory.StonecutterScreen;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -58,15 +59,15 @@ public class MenuScreens {
       return (ScreenConstructor)BuiltInClientRegistries.MENU_SCREEN.getValue(menuTypeKey(type));
    }
 
-   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> ScreenConstructor<?, ?> register(final Registry<ScreenConstructor<?, ?>> registry, final MenuType<? extends M> type, final ScreenConstructor<M, U> factory) {
-      return (ScreenConstructor)Registry.register(registry, (ResourceKey)menuTypeKey(type), factory);
+   private static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void register(final WritableRegistry<ScreenConstructor<?, ?>> registry, final MenuType<? extends M> type, final ScreenConstructor<M, U> factory) {
+      Registry.register(registry, (ResourceKey)menuTypeKey(type), factory);
    }
 
    private static ResourceKey<ScreenConstructor<?, ?>> menuTypeKey(final MenuType<?> type) {
       return ResourceKey.create(ClientRegistries.MENU_SCREEN, (Identifier)Objects.requireNonNull(BuiltInRegistries.MENU.getKey(type), () -> "Unregistered menu type: " + String.valueOf(type)));
    }
 
-   public static ScreenConstructor<?, ?> bootstrap(final Registry<ScreenConstructor<?, ?>> registry) {
+   public static void bootstrap(final WritableRegistry<ScreenConstructor<?, ?>> registry) {
       register(registry, MenuType.GENERIC_9x1, ContainerScreen::new);
       register(registry, MenuType.GENERIC_9x2, ContainerScreen::new);
       register(registry, MenuType.GENERIC_9x3, ContainerScreen::new);
@@ -92,7 +93,7 @@ public class MenuScreens {
       register(registry, MenuType.SMITHING, SmithingScreen::new);
       register(registry, MenuType.SMOKER, SmokerScreen::new);
       register(registry, MenuType.CARTOGRAPHY_TABLE, CartographyTableScreen::new);
-      return register(registry, MenuType.STONECUTTER, StonecutterScreen::new);
+      register(registry, MenuType.STONECUTTER, StonecutterScreen::new);
    }
 
    public static boolean selfTest() {

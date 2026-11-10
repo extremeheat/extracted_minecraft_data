@@ -12,6 +12,7 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
@@ -36,7 +37,7 @@ public class TagValueInput implements ValueInput {
       this.input = input;
    }
 
-   public static ValueInput create(final ProblemReporter problemReporter, final HolderLookup.Provider holders, final CompoundTag tag) {
+   public static ValueInput create(final ProblemReporter problemReporter, final HolderGetter.Provider holders, final CompoundTag tag) {
       return new TagValueInput(problemReporter, new ValueInputContextHelper(holders, NbtOps.INSTANCE), tag);
    }
 
@@ -220,7 +221,7 @@ public class TagValueInput implements ValueInput {
       return tag != null ? Optional.of(tag.getAsIntArray()) : Optional.empty();
    }
 
-   public HolderLookup.Provider lookup() {
+   public HolderGetter.Provider lookup() {
       return this.context.lookup();
    }
 
@@ -442,7 +443,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record DecodeFromFieldFailedProblem(String name, Tag tag, DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record DecodeFromFieldFailedProblem(String name, Tag tag, DataResult.Error<?> error) implements ProblemReporter.Warning {
       public DecodeFromFieldFailedProblem {
          super();
       }
@@ -453,7 +454,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record DecodeFromListFailedProblem(String name, int index, Tag tag, DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record DecodeFromListFailedProblem(String name, int index, Tag tag, DataResult.Error<?> error) implements ProblemReporter.Warning {
       public DecodeFromListFailedProblem {
          super();
       }
@@ -464,7 +465,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record DecodeFromMapFailedProblem(DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record DecodeFromMapFailedProblem(DataResult.Error<?> error) implements ProblemReporter.Warning {
       public DecodeFromMapFailedProblem {
          super();
       }
@@ -474,7 +475,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record UnexpectedTypeProblem(String name, TagType<?> expected, TagType<?> actual) implements ProblemReporter.Problem {
+   public static record UnexpectedTypeProblem(String name, TagType<?> expected, TagType<?> actual) implements ProblemReporter.Warning {
       public UnexpectedTypeProblem {
          super();
       }
@@ -485,7 +486,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record UnexpectedNonNumberProblem(String name, TagType<?> actual) implements ProblemReporter.Problem {
+   public static record UnexpectedNonNumberProblem(String name, TagType<?> actual) implements ProblemReporter.Warning {
       public UnexpectedNonNumberProblem {
          super();
       }
@@ -496,7 +497,7 @@ public class TagValueInput implements ValueInput {
       }
    }
 
-   public static record UnexpectedListElementTypeProblem(String name, int index, TagType<?> expected, TagType<?> actual) implements ProblemReporter.Problem {
+   public static record UnexpectedListElementTypeProblem(String name, int index, TagType<?> expected, TagType<?> actual) implements ProblemReporter.Warning {
       public UnexpectedListElementTypeProblem {
          super();
       }

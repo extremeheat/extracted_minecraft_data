@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.QuartPos;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
@@ -186,7 +187,7 @@ public class ChunkStatusTasks {
          } else {
             levelChunk = new LevelChunk(level, protoChunk, (lc) -> {
                try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(chunk.problemPath(), LOGGER)) {
-                  postLoadProtoChunk(level, TagValueInput.create(reporter, level.registryAccess(), (List)protoChunk.getEntities()));
+                  postLoadProtoChunk(level, TagValueInput.create(reporter, (HolderLookup.Provider)level.registryAccess(), (List)protoChunk.getEntities()));
                }
 
             });

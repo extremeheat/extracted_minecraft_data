@@ -20,7 +20,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -172,7 +172,7 @@ public class PresetFlatWorldScreen extends Screen {
       this.export = new EditBox(this.font, 50, 40, this.width - 100, 20, this.shareText);
       this.export.setMaxLength(1230);
       WorldCreationContext worldCreatingContext = this.parent.parent.getUiState().getSettings();
-      RegistryAccess registryAccess = worldCreatingContext.worldgenLoadContext();
+      HolderLookup.Provider registryAccess = worldCreatingContext.worldgenLoadContext();
       FeatureFlagSet enabledFeatures = worldCreatingContext.dataConfiguration().enabledFeatures();
       HolderGetter<Biome> biomes = registryAccess.lookupOrThrow(Registries.BIOME);
       HolderGetter<StructureSet> structureSets = registryAccess.lookupOrThrow(Registries.STRUCTURE_SET);
@@ -223,7 +223,7 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    private class PresetsList extends ObjectSelectionList<Entry> {
-      public PresetsList(final RegistryAccess access, final FeatureFlagSet enabledFeatures) {
+      public PresetsList(final HolderGetter.Provider access, final FeatureFlagSet enabledFeatures) {
          Objects.requireNonNull(PresetFlatWorldScreen.this);
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
 

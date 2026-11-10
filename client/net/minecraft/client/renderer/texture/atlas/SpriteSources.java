@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.texture.atlas.sources.SingleFile;
 import net.minecraft.client.renderer.texture.atlas.sources.SourceFilter;
 import net.minecraft.client.renderer.texture.atlas.sources.Unstitcher;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class SpriteSources {
    public static final Codec<SpriteSource> CODEC;
@@ -19,12 +20,12 @@ public class SpriteSources {
       super();
    }
 
-   public static Object bootstrap(final Registry<MapCodec<? extends SpriteSource>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends SpriteSource>> registry) {
       Registry.register(registry, (String)"single", SingleFile.MAP_CODEC);
       Registry.register(registry, (String)"directory", DirectoryLister.MAP_CODEC);
       Registry.register(registry, (String)"filter", SourceFilter.MAP_CODEC);
       Registry.register(registry, (String)"unstitch", Unstitcher.MAP_CODEC);
-      return Registry.register(registry, (String)"paletted_permutations", PalettedPermutations.MAP_CODEC);
+      Registry.register(registry, (String)"paletted_permutations", PalettedPermutations.MAP_CODEC);
    }
 
    static {

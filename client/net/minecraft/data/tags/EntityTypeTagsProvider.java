@@ -25,7 +25,7 @@ public class EntityTypeTagsProvider extends TagsProvider<EntityType<?>> {
       this.tag(EntityTypeTags.POWDER_SNOW_WALKABLE_MOBS).add(EntityTypeIds.RABBIT, EntityTypeIds.ENDERMITE, EntityTypeIds.SILVERFISH, EntityTypeIds.FOX, EntityTypeIds.FROSTBITE);
       this.tag(EntityTypeTags.AXOLOTL_HUNT_TARGETS).add(EntityTypeIds.TROPICAL_FISH, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.COD, EntityTypeIds.SQUID, EntityTypeIds.GLOW_SQUID, EntityTypeIds.TADPOLE);
       this.tag(EntityTypeTags.AXOLOTL_ALWAYS_HOSTILES).add(EntityTypeIds.DROWNED, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN);
-      this.tag(EntityTypeTags.IMMUNE_TO_FREEZING).add(EntityTypeIds.STRAY, EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM, EntityTypeIds.WITHER, EntityTypeIds.FROSTBITE, EntityTypeIds.ZOMBIE, EntityTypeIds.DROWNED, EntityTypeIds.HUSK);
+      this.tag(EntityTypeTags.IMMUNE_TO_FREEZING).add(EntityTypeIds.POLAR_BEAR, EntityTypeIds.SNOW_GOLEM).addTag(EntityTypeTags.UNDEAD);
       this.tag(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES).add(EntityTypeIds.STRIDER, EntityTypeIds.BLAZE, EntityTypeIds.MAGMA_CUBE);
       this.tag(EntityTypeTags.CAN_BREATHE_UNDER_WATER).addTag(EntityTypeTags.UNDEAD).add(EntityTypeIds.AXOLOTL, EntityTypeIds.FROG, EntityTypeIds.GUARDIAN, EntityTypeIds.ELDER_GUARDIAN, EntityTypeIds.TURTLE, EntityTypeIds.GLOW_SQUID, EntityTypeIds.COD, EntityTypeIds.PUFFERFISH, EntityTypeIds.SALMON, EntityTypeIds.SQUID, EntityTypeIds.TROPICAL_FISH, EntityTypeIds.TADPOLE, EntityTypeIds.ARMOR_STAND, EntityTypeIds.COPPER_GOLEM, EntityTypeIds.NAUTILUS);
       this.tag(EntityTypeTags.FROG_FOOD).add(EntityTypeIds.SLIME, EntityTypeIds.MAGMA_CUBE);

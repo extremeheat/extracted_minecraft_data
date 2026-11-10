@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.resources.ResourceKey;
@@ -46,7 +46,7 @@ public record StructureSet(List<StructureSelectionEntry> structures, StructurePl
       return new StructureSelectionEntry(structure, 1);
    }
 
-   public @Nullable StructureStart tryGenerateStartInChunk(final ChunkGenerator generator, final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final Climate.Sampler climateSampler) {
+   public @Nullable StructureStart tryGenerateStartInChunk(final ChunkGenerator generator, final HolderGetter.Provider registryAccess, final ChunkGeneratorStructureState state, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final Climate.Sampler climateSampler) {
       if (this.structures.size() == 1) {
          return tryGenerateStructure(((StructureSelectionEntry)this.structures.getFirst()).structure(), generator, registryAccess, state.randomState(), structureTemplateManager, state.getLevelSeed(), chunkPos, heightAccessor, dimension, climateSampler);
       } else {
@@ -87,7 +87,7 @@ public record StructureSet(List<StructureSelectionEntry> structures, StructurePl
       }
    }
 
-   private static @Nullable StructureStart tryGenerateStructure(final Holder<Structure> structure, final ChunkGenerator generator, final RegistryAccess registryAccess, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final ResourceKey<Level> dimension, final Climate.Sampler climateSampler) {
+   private static @Nullable StructureStart tryGenerateStructure(final Holder<Structure> structure, final ChunkGenerator generator, final HolderGetter.Provider registryAccess, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final ResourceKey<Level> dimension, final Climate.Sampler climateSampler) {
       Structure var10000 = structure.value();
       BiomeSource var10005 = generator.getBiomeSource();
       HolderSet var10012 = (structure.value()).biomes();

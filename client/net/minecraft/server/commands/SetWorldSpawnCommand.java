@@ -3,6 +3,7 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -21,7 +22,7 @@ public class SetWorldSpawnCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), RotationArgument.getRotation(c, "rotation"))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setworldspawn").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPos.containing(((CommandSourceStack)c.getSource()).getPosition()), WorldCoordinates.ZERO_ROTATION))).then(((RequiredArgumentBuilder)Commands.argument("pos", BlockPosArgument.blockPos()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), WorldCoordinates.ZERO_ROTATION))).then(Commands.argument("rotation", RotationArgument.rotation()).executes((c) -> setSpawn((CommandSourceStack)c.getSource(), BlockPosArgument.getSpawnablePos(c, "pos"), RotationArgument.getRotation(c, "rotation"))))));
    }
 
    private static int setSpawn(final CommandSourceStack source, final BlockPos pos, final Coordinates rotation) {

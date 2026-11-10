@@ -8,8 +8,7 @@ import com.mojang.serialization.DynamicOps;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
@@ -35,12 +34,12 @@ public class Hotbar {
       this(Collections.nCopies(SIZE, EMPTY_STACK));
    }
 
-   public List<ItemStack> load(final HolderLookup.Provider registries) {
+   public List<ItemStack> load(final HolderGetter.Provider registries) {
       return this.items.stream().map((dynamic) -> (ItemStack)ItemStack.OPTIONAL_CODEC.parse(RegistryOps.injectRegistryContext(dynamic, registries)).resultOrPartial((error) -> LOGGER.warn("Could not parse hotbar item: {}", error)).orElse(ItemStack.EMPTY)).toList();
    }
 
-   public void storeFrom(final Inventory inventory, final RegistryAccess lookupProvider) {
-      RegistryOps<Tag> registryOps = lookupProvider.createSerializationContext(DEFAULT_OPS);
+   public void storeFrom(final Inventory inventory, final HolderGetter.Provider lookupProvider) {
+      RegistryOps<Tag> registryOps = lookupProvider.<Tag>createSerializationContext(DEFAULT_OPS);
       ImmutableList.Builder<Dynamic<?>> newItems = ImmutableList.builderWithExpectedSize(SIZE);
 
       for(int i = 0; i < SIZE; ++i) {

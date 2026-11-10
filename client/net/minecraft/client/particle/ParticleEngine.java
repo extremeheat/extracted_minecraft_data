@@ -1,8 +1,8 @@
 package net.minecraft.client.particle;
 
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class ParticleEngine {
    private final Map<ParticleRenderType, ParticleGroup<?>> particles = new IdentityHashMap();
    private final Queue<TrackingEmitter> trackingEmitters = new ArrayDeque();
    private final Queue<Particle> particlesToAdd = new ArrayDeque();
-   private final int[] trackedParticleCounts = new int[ParticleLimit.values().length];
+   private final Reference2IntOpenHashMap<ParticleLimit> trackedParticleCounts = new Reference2IntOpenHashMap();
    private final ParticleResources resourceManager;
    private final RandomSource random = RandomSource.create();
 
@@ -112,9 +112,7 @@ public class ParticleEngine {
    }
 
    protected void updateCount(final ParticleLimit limit, final int change) {
-      int[] var10000 = this.trackedParticleCounts;
-      int var10001 = limit.ordinal();
-      var10000[var10001] += change;
+      this.trackedParticleCounts.addTo(limit, change);
    }
 
    public void extract(final ParticlesRenderState particlesRenderState, final Frustum frustum, final Camera camera, final float partialTickTime) {
@@ -150,14 +148,14 @@ public class ParticleEngine {
    }
 
    private boolean hasSpaceInParticleLimit(final ParticleLimit limit) {
-      return this.trackedParticleCounts[limit.ordinal()] < limit.limit();
+      return this.trackedParticleCounts.getInt(limit) < limit.limit();
    }
 
    public void clearParticles() {
       this.particles.clear();
       this.particlesToAdd.clear();
       this.trackingEmitters.clear();
-      Arrays.fill(this.trackedParticleCounts, 0);
+      this.trackedParticleCounts.clear();
    }
 
    public RandomSource getRandom() {

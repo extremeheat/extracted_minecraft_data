@@ -77,10 +77,6 @@ public class PoiTypes {
       return TYPE_BY_STATE.containsKey(state);
    }
 
-   public static Holder<PoiType> bootstrap(final Registry<PoiType> registry) {
-      return LIGHTNING_ROD;
-   }
-
    static {
       BEDS = (Set)Blocks.BED.asList().stream().flatMap((block) -> block.getStateDefinition().getPossibleStates().stream()).filter((state) -> state.getValue(BedBlock.PART) == BedPart.HEAD).collect(ImmutableSet.toImmutableSet());
       CAULDRONS = (Set)ImmutableList.of(Blocks.CAULDRON, Blocks.LAVA_CAULDRON, Blocks.WATER_CAULDRON, Blocks.POWDER_SNOW_CAULDRON).stream().flatMap((block) -> block.getStateDefinition().getPossibleStates().stream()).collect(ImmutableSet.toImmutableSet());

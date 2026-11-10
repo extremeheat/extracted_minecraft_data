@@ -115,7 +115,9 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       if (slotIndex == 0) {
          this.name.setValue(itemStack.isEmpty() ? "" : itemStack.getHoverName().getString());
          this.name.setEditable(!itemStack.isEmpty());
-         this.setFocused(this.name);
+         if (!itemStack.isEmpty() && this.minecraft.getLastInputType().isMouse()) {
+            this.setFocused(this.name);
+         }
       }
 
    }

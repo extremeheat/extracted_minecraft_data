@@ -9,16 +9,21 @@ public interface Rule<S, T> {
       return new WrappedTerm<S, T>(action, child);
    }
 
-   static <S, T> Rule<S, T> fromTerm(final Term<S> child, final SimpleRuleAction<S, T> action) {
-      return new WrappedTerm<S, T>(action, child);
-   }
-
    @FunctionalInterface
    public interface SimpleRuleAction<S, T> extends RuleAction<S, T> {
       T run(Scope ruleScope);
 
       default T run(final ParseState<S> state) {
          return (T)this.run(state.scope());
+      }
+   }
+
+   @FunctionalInterface
+   public interface SimpleRuleActionWithContext<S, T> extends RuleAction<S, T> {
+      T run(Scope ruleScope, S context);
+
+      default T run(final ParseState<S> state) {
+         return (T)this.run(state.scope(), state.input());
       }
    }
 

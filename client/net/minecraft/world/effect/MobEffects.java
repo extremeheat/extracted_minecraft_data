@@ -63,10 +63,6 @@ public class MobEffects {
       return Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, key, mobEffect);
    }
 
-   public static Holder<MobEffect> bootstrap(final Registry<MobEffect> registry) {
-      return SPEED;
-   }
-
    static {
       SPEED = register(MobEffectIds.SPEED, (new MobEffect(MobEffectCategory.BENEFICIAL, 3402751)).addAttributeModifier(Attributes.MOVEMENT_SPEED, Identifier.withDefaultNamespace("effect.speed"), 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
       SLOWNESS = register(MobEffectIds.SLOWNESS, (new MobEffect(MobEffectCategory.HARMFUL, 9154528)).addAttributeModifier(Attributes.MOVEMENT_SPEED, Identifier.withDefaultNamespace("effect.slowness"), -0.15000000596046448, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));

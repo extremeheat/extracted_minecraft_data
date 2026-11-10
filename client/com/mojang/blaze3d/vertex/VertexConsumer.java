@@ -2,6 +2,7 @@ package com.mojang.blaze3d.vertex;
 
 import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix3f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
@@ -50,22 +51,6 @@ public interface VertexConsumer {
       return this.setUv1(packedOverlayCoords & '\uffff', packedOverlayCoords >> 16 & '\uffff');
    }
 
-   default void putBlockBakedQuad(final float x, final float y, final float z, final BakedQuad quad, final QuadInstance instance) {
-      Vector3fc normal = quad.direction().getUnitVec3f();
-      int lightEmission = quad.materialInfo().lightEmission();
-
-      for(int vertex = 0; vertex < 4; ++vertex) {
-         Vector3fc pos = quad.position(vertex);
-         long packedUv = quad.packedUV(vertex);
-         int vertexColor = instance.getColor(vertex);
-         int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
-         float u = UVPair.unpackU(packedUv);
-         float v = UVPair.unpackV(packedUv);
-         this.addVertex(pos.x() + x, pos.y() + y, pos.z() + z, vertexColor, u, v, instance.overlayCoords(), light, normal.x(), normal.y(), normal.z());
-      }
-
-   }
-
    default void putBakedQuad(final PoseStack.Pose pose, final BakedQuad quad, final QuadInstance instance) {
       Vector3fc normalVec = quad.direction().getUnitVec3f();
       Matrix4f matrix = pose.pose();
@@ -75,7 +60,9 @@ public interface VertexConsumer {
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc position = quad.position(vertex);
          long packedUv = quad.packedUV(vertex);
-         int vertexColor = instance.getColor(vertex);
+         short brightness = instance.getBrightness(vertex);
+         int tint = instance.getColor();
+         int vertexColor = ARGB.scaleRGB(tint, brightness);
          int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
          Vector3f pos = matrix.transformPosition(position, new Vector3f());
          float u = UVPair.unpackU(packedUv);
@@ -96,7 +83,9 @@ public interface VertexConsumer {
       for(int vertex = 0; vertex < 4; ++vertex) {
          Vector3fc position = quad.position(vertex);
          long packedUv = quad.packedUV(vertex);
-         int vertexColor = instance.getColor(vertex);
+         short brightness = instance.getBrightness(vertex);
+         int tint = instance.getColor();
+         int vertexColor = ARGB.scaleRGB(tint, brightness);
          int light = instance.getLightCoordsWithEmission(vertex, lightEmission);
          Vector3f pos = matrix.transformPosition(position, new Vector3f());
          float u = UVPair.unpackU(packedUv);

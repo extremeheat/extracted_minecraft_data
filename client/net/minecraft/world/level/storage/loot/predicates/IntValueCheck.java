@@ -9,6 +9,7 @@ import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+import org.jspecify.annotations.Nullable;
 
 public record IntValueCheck(Holder<ContextIntProvider> value, IntRangePredicate range) implements LootItemCondition {
    public static final MapCodec<IntValueCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(ContextIntProviders.CODEC.fieldOf("value").forGetter(IntValueCheck::value), IntRangePredicate.CODEC.fieldOf("test").forGetter(IntValueCheck::range)).apply(i, IntValueCheck::new));
@@ -22,9 +23,12 @@ public record IntValueCheck(Holder<ContextIntProvider> value, IntRangePredicate 
    }
 
    public void validate(final ValidationContext context) {
-      LootItemCondition.super.validate(context);
       Validatable.validateHolder(context, "value", this.value);
       Validatable.validate(context, "range", this.range);
+   }
+
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      return null;
    }
 
    public boolean test(final LootContext context) {

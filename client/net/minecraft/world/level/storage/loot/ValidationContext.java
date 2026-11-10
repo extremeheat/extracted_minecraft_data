@@ -1,10 +1,7 @@
 package net.minecraft.world.level.storage.loot;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import java.util.Optional;
 import java.util.Set;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
@@ -14,27 +11,21 @@ import net.minecraft.util.context.ContextKeySet;
 public class ValidationContext {
    private final ProblemReporter reporter;
    private final ContextKeySet contextKeySet;
-   private final Optional<HolderGetter.Provider> resolver;
    private final Set<Object> visitedObjects;
 
-   public ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet, final HolderGetter.Provider resolver) {
-      this(reporter, contextKeySet, Optional.of(resolver), Set.of());
-   }
-
    public ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet) {
-      this(reporter, contextKeySet, Optional.empty(), Set.of());
+      this(reporter, contextKeySet, Set.of());
    }
 
-   private ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet, final Optional<HolderGetter.Provider> resolver, final Set<Object> visitedObjects) {
+   private ValidationContext(final ProblemReporter reporter, final ContextKeySet contextKeySet, final Set<Object> visitedObjects) {
       super();
       this.reporter = reporter;
       this.contextKeySet = contextKeySet;
-      this.resolver = resolver;
       this.visitedObjects = visitedObjects;
    }
 
    public ValidationContext forChild(final ProblemReporter.PathElement subContext) {
-      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, this.resolver, this.visitedObjects);
+      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, this.visitedObjects);
    }
 
    public ValidationContext forField(final String name) {
@@ -51,7 +42,7 @@ public class ValidationContext {
 
    private ValidationContext enterObject(final ProblemReporter.PathElement subContext, final Object object) {
       Set<Object> newVisitedElements = ImmutableSet.builder().addAll(this.visitedObjects).add(object).build();
-      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, this.resolver, newVisitedElements);
+      return new ValidationContext(this.reporter.forChild(subContext), this.contextKeySet, newVisitedElements);
    }
 
    public ValidationContext enterElement(final ProblemReporter.PathElement subContext, final ResourceKey<?> element) {
@@ -74,24 +65,15 @@ public class ValidationContext {
       this.reporter.report(description);
    }
 
-   public void validateContextUsage(final LootContextUser lootContextUser) {
-      Set<ContextKey<?>> allReferenced = lootContextUser.getReferencedContextParams();
-      Set<ContextKey<?>> notProvided = Sets.difference(allReferenced, this.contextKeySet.allowed());
-      if (!notProvided.isEmpty()) {
-         this.reporter.report(new ParametersNotProvidedProblem(notProvided));
-      }
-
-   }
-
-   public HolderGetter.Provider resolver() {
-      return (HolderGetter.Provider)this.resolver.orElseThrow(() -> new UnsupportedOperationException("References not allowed"));
+   public ContextKeySet contextKeySet() {
+      return this.contextKeySet;
    }
 
    public ProblemReporter reporter() {
       return this.reporter;
    }
 
-   public static record ParametersNotProvidedProblem(Set<ContextKey<?>> notProvided) implements ProblemReporter.Problem {
+   public static record ParametersNotProvidedProblem(Set<ContextKey<?>> notProvided) implements ProblemReporter.Error {
       public ParametersNotProvidedProblem {
          super();
       }
@@ -101,7 +83,7 @@ public class ValidationContext {
       }
    }
 
-   public static record RecursiveElementReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Problem {
+   public static record RecursiveElementReferenceProblem(ResourceKey<?> referenced) implements ProblemReporter.Error {
       public RecursiveElementReferenceProblem {
          super();
       }
@@ -110,13 +92,9 @@ public class ValidationContext {
          String var10000 = String.valueOf(this.referenced.identifier());
          return var10000 + " of type " + String.valueOf(this.referenced.registry()) + " is recursively called";
       }
-
-      public boolean isFatal() {
-         return true;
-      }
    }
 
-   public static record RecursiveTagReferenceProblem(TagKey<?> referenced) implements ProblemReporter.Problem {
+   public static record RecursiveTagReferenceProblem(TagKey<?> referenced) implements ProblemReporter.Error {
       public RecursiveTagReferenceProblem {
          super();
       }
@@ -125,13 +103,9 @@ public class ValidationContext {
          String var10000 = String.valueOf(this.referenced.location());
          return "#" + var10000 + " of type " + String.valueOf(this.referenced.registry()) + " is recursively called";
       }
-
-      public boolean isFatal() {
-         return true;
-      }
    }
 
-   public static record MinBoundsProblem(int minBounds) implements ProblemReporter.Problem {
+   public static record MinBoundsProblem(int minBounds) implements ProblemReporter.Warning {
       public MinBoundsProblem {
          super();
       }

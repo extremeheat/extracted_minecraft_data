@@ -2,8 +2,6 @@ package net.minecraft.server.network;
 
 import com.google.common.primitives.Floats;
 import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.ParseResults;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
@@ -33,11 +31,13 @@ import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.ParseBox;
+import net.minecraft.commands.ParseContext;
 import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
@@ -1069,7 +1069,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(packet, this, (ServerLevel)this.player.level());
       if (this.player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
          BlockEntity blockEntity = this.player.level().getBlockEntity(packet.getPos());
-         CompoundTag tag = blockEntity != null ? blockEntity.saveWithoutMetadata((HolderLookup.Provider)this.player.registryAccess()) : null;
+         CompoundTag tag = blockEntity != null ? blockEntity.saveWithoutMetadata((HolderGetter.Provider)this.player.registryAccess()) : null;
          this.send(new ClientboundTagQueryPacket(packet.getTransactionId(), tag));
       }
    }
@@ -1563,12 +1563,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private void performUnsignedChatCommand(final String command) {
-      ParseResults<CommandSourceStack> parsed = this.parseCommand(command);
-      if (this.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(parsed)) {
+      ParseBox.Result parsed = this.parseCommand(command);
+      if (this.server.enforceSecureProfile() && parsed.signables().requiresSignature()) {
          LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", this.player.getGameProfile().name(), command);
          this.player.sendSystemMessage(INVALID_COMMAND_SIGNATURE);
       } else {
-         this.server.getCommands().performCommand(parsed, command);
+         Commands.performCommand(this.player.createCommandSourceStack(), parsed, command);
       }
    }
 
@@ -1583,19 +1583,19 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    }
 
    private void performSignedChatCommand(final ServerboundChatCommandSignedPacket packet, final LastSeenMessages lastSeenMessages) {
-      ParseResults<CommandSourceStack> command = this.parseCommand(packet.command());
+      ParseBox.Result command = this.parseCommand(packet.command());
 
       Map<String, PlayerChatMessage> signedArguments;
       try {
-         signedArguments = this.collectSignedArguments(packet, SignableCommand.of(command), lastSeenMessages);
+         signedArguments = this.collectSignedArguments(packet, command.signables(), lastSeenMessages);
       } catch (SignedMessageChain.DecodeException e) {
          this.handleMessageDecodeFailure(e);
          return;
       }
 
       CommandSigningContext signingContext = new CommandSigningContext.SignedArguments(signedArguments);
-      command = Commands.<CommandSourceStack>mapSource(command, (source) -> source.withSigningContext(signingContext, this.chatMessageChain));
-      this.server.getCommands().performCommand(command, packet.command());
+      CommandSourceStack executionContext = this.player.createCommandSourceStack().withSigningContext(signingContext, this.chatMessageChain);
+      Commands.performCommand(executionContext, command, packet.command());
    }
 
    private void handleMessageDecodeFailure(final SignedMessageChain.DecodeException e) {
@@ -1603,16 +1603,16 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.player.sendSystemMessage(e.getComponent().copy().withStyle(ChatFormatting.RED));
    }
 
-   private <S> Map<String, PlayerChatMessage> collectSignedArguments(final ServerboundChatCommandSignedPacket packet, final SignableCommand<S> command, final LastSeenMessages lastSeenMessages) throws SignedMessageChain.DecodeException {
+   private Map<String, PlayerChatMessage> collectSignedArguments(final ServerboundChatCommandSignedPacket packet, final SignableCommand<?> command, final LastSeenMessages lastSeenMessages) throws SignedMessageChain.DecodeException {
       List<ArgumentSignatures.Entry> argumentSignatures = packet.argumentSignatures().entries();
-      List<SignableCommand.Argument<S>> parsedArguments = command.arguments();
+      List<? extends SignableCommand.Argument<?>> parsedArguments = command.arguments();
       if (argumentSignatures.isEmpty()) {
          return this.collectUnsignedArguments(parsedArguments);
       } else {
          Map<String, PlayerChatMessage> signedArguments = new Object2ObjectOpenHashMap();
 
          for(ArgumentSignatures.Entry clientArgument : argumentSignatures) {
-            SignableCommand.Argument<S> expectedArgument = command.getArgument(clientArgument.name());
+            SignableCommand.Argument<?> expectedArgument = command.getArgument(clientArgument.name());
             if (expectedArgument == null) {
                this.signedMessageDecoder.setChainBroken();
                throw createSignedArgumentMismatchException(packet.command(), argumentSignatures, parsedArguments);
@@ -1622,7 +1622,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             signedArguments.put(expectedArgument.name(), this.signedMessageDecoder.unpack(clientArgument.signature(), body));
          }
 
-         for(SignableCommand.Argument<S> expectedArgument : parsedArguments) {
+         for(SignableCommand.Argument<?> expectedArgument : parsedArguments) {
             if (!signedArguments.containsKey(expectedArgument.name())) {
                throw createSignedArgumentMismatchException(packet.command(), argumentSignatures, parsedArguments);
             }
@@ -1632,10 +1632,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   private <S> Map<String, PlayerChatMessage> collectUnsignedArguments(final List<SignableCommand.Argument<S>> parsedArguments) throws SignedMessageChain.DecodeException {
+   private Map<String, PlayerChatMessage> collectUnsignedArguments(final List<? extends SignableCommand.Argument<?>> parsedArguments) throws SignedMessageChain.DecodeException {
       Map<String, PlayerChatMessage> arguments = new HashMap();
 
-      for(SignableCommand.Argument<S> parsedArgument : parsedArguments) {
+      for(SignableCommand.Argument<?> parsedArgument : parsedArguments) {
          SignedMessageBody body = SignedMessageBody.unsigned(parsedArgument.value());
          arguments.put(parsedArgument.name(), this.signedMessageDecoder.unpack((MessageSignature)null, body));
       }
@@ -1643,16 +1643,15 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       return arguments;
    }
 
-   private static <S> SignedMessageChain.DecodeException createSignedArgumentMismatchException(final String command, final List<ArgumentSignatures.Entry> clientArguments, final List<SignableCommand.Argument<S>> expectedArguments) {
+   private static SignedMessageChain.DecodeException createSignedArgumentMismatchException(final String command, final List<ArgumentSignatures.Entry> clientArguments, final List<? extends SignableCommand.Argument<?>> expectedArguments) {
       String clientNames = (String)clientArguments.stream().map(ArgumentSignatures.Entry::name).collect(Collectors.joining(", "));
       String expectedNames = (String)expectedArguments.stream().map(SignableCommand.Argument::name).collect(Collectors.joining(", "));
       LOGGER.error("Signed command mismatch between server and client ('{}'): got [{}] from client, but expected [{}]", new Object[]{command, clientNames, expectedNames});
       return new SignedMessageChain.DecodeException(INVALID_COMMAND_SIGNATURE);
    }
 
-   private ParseResults<CommandSourceStack> parseCommand(final String command) {
-      CommandDispatcher<CommandSourceStack> commands = this.server.getCommands().getDispatcher();
-      return commands.parse(command, this.player.createCommandSourceStack());
+   private ParseBox.Result parseCommand(final String command) {
+      return this.server.getCommands().parseBox().parse(command, ParseContext.of(this.player));
    }
 
    private void tryHandleChat(final String message, final boolean isCommand, final Runnable chatHandler) {

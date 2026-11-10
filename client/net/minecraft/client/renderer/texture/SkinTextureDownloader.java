@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -22,7 +24,7 @@ import net.minecraft.util.FileUtil;
 import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
-public class SkinTextureDownloader {
+public class SkinTextureDownloader implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int SKIN_WIDTH = 64;
    private static final int SKIN_HEIGHT = 64;
@@ -30,12 +32,20 @@ public class SkinTextureDownloader {
    private final Proxy proxy;
    private final TextureManager textureManager;
    private final Executor mainThreadExecutor;
+   private final Map<Identifier, TextureResources> textures = new HashMap();
 
    public SkinTextureDownloader(final Proxy proxy, final TextureManager textureManager, final Executor mainThreadExecutor) {
       super();
       this.proxy = proxy;
       this.textureManager = textureManager;
       this.mainThreadExecutor = mainThreadExecutor;
+   }
+
+   public void close() {
+      this.textures.forEach((location, resources) -> {
+         this.textureManager.release(location);
+         resources.close();
+      });
    }
 
    public CompletableFuture<ClientAsset.Texture> downloadAndRegisterSkin(final Identifier textureId, final Path localCopy, final String url, final boolean processLegacySkin) {
@@ -120,11 +130,14 @@ public class SkinTextureDownloader {
          NativeImage twrVar0$ = contents;
 
          try {
-            TextureManager var10000 = this.textureManager;
-            Identifier var10001 = textureId.texturePath();
-            Identifier var10002 = textureId.texturePath();
-            Objects.requireNonNull(var10002);
-            var10000.register(var10001, TextureResources.from2dImage(var10002::toString, contents));
+            Identifier var10000 = textureId.texturePath();
+            Objects.requireNonNull(var10000);
+            TextureResources texture = TextureResources.from2dImage(var10000::toString, contents);
+            this.textureManager.registerProvider(textureId.texturePath(), new ExternalTextureProvider(texture));
+            TextureResources old = (TextureResources)this.textures.put(textureId.texturePath(), texture);
+            if (old != null) {
+               old.close();
+            }
          } catch (Throwable var7) {
             if (contents != null) {
                try {

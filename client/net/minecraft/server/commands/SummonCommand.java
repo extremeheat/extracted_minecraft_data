@@ -5,13 +5,13 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.CompoundTagArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.commands.suggestions.SuggestSummonableEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -38,8 +38,8 @@ public class SummonCommand {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("entity", ResourceArgument.resource(context, Registries.ENTITY_TYPE)).suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES)).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), ((CommandSourceStack)c.getSource()).getPosition(), new CompoundTag(), true))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), Vec3Argument.getVec3(c, "pos"), new CompoundTag(), true))).then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), Vec3Argument.getVec3(c, "pos"), CompoundTagArgument.getCompoundTag(c, "nbt"), false))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("summon").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(((RequiredArgumentBuilder)Commands.argument("entity", ResourceArgument.resource(Registries.ENTITY_TYPE)).suggests(SuggestSummonableEntities.suggestSummonableEntities()).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), ((CommandSourceStack)c.getSource()).getPosition(), new CompoundTag(), true))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), Vec3Argument.getVec3(c, "pos"), new CompoundTag(), true))).then(Commands.argument("nbt", CompoundTagArgument.compoundTag()).executes((c) -> spawnEntity((CommandSourceStack)c.getSource(), ResourceArgument.getSummonableEntityType(c, "entity"), Vec3Argument.getVec3(c, "pos"), CompoundTagArgument.getCompoundTag(c, "nbt"), false))))));
    }
 
    public static Entity createEntity(final CommandSourceStack source, final Holder.Reference<EntityType<?>> type, final Vec3 pos, final CompoundTag nbt, final boolean finalize) throws CommandSyntaxException {

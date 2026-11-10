@@ -1,9 +1,6 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -12,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
@@ -30,18 +28,22 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.BooleanArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.ResourceSelectorArgument;
+import net.minecraft.commands.arguments.StringArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
@@ -88,6 +90,7 @@ public class TestCommand {
    private static final SimpleCommandExceptionType NO_TEST_INSTANCES = new SimpleCommandExceptionType(Component.translatable("commands.test.error.no_test_instances"));
    private static final Dynamic3CommandExceptionType NO_TEST_CONTAINING = new Dynamic3CommandExceptionType((x, y, z) -> Component.translatableEscape("commands.test.error.no_test_containing_pos", x, y, z));
    private static final DynamicCommandExceptionType TOO_LARGE = new DynamicCommandExceptionType((size) -> Component.translatableEscape("commands.test.error.too_large", size));
+   public static final SuggestionProvider<CommandSourceStack> SUGGEST_TEST_INSTANCE_IDS = SuggestionProviders.serverOnly((var0, context, builder) -> suggestTestInstanceIds(context, builder));
 
    public TestCommand() {
       super();
@@ -265,7 +268,7 @@ public class TestCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptions(final ArgumentBuilder<CommandSourceStack, ?> runArgument, final InCommandFunction<CommandContext<CommandSourceStack>, TestFinder> finder, final Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> then) {
-      return runArgument.executes((c) -> run(finder.apply(c), RetryOptions.noRetries(), 0, 8)).then(((RequiredArgumentBuilder)Commands.argument("numberOfTimes", IntegerArgumentType.integer(0)).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), false), 0, 8))).then((ArgumentBuilder)then.apply(Commands.argument("untilFailed", BoolArgumentType.bool()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), 0, 8)))));
+      return runArgument.executes((c) -> run(finder.apply(c), RetryOptions.noRetries(), 0, 8)).then(((RequiredArgumentBuilder)Commands.argument("numberOfTimes", IntegerArgument.integer(0)).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgument.getInteger(c, "numberOfTimes"), false), 0, 8))).then((ArgumentBuilder)then.apply(Commands.argument("untilFailed", BooleanArgument.bool()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgument.getInteger(c, "numberOfTimes"), BooleanArgument.getBool(c, "untilFailed")), 0, 8)))));
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptions(final ArgumentBuilder<CommandSourceStack, ?> runArgument, final InCommandFunction<CommandContext<CommandSourceStack>, TestFinder> finder) {
@@ -273,12 +276,12 @@ public class TestCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptionsAndBuildInfo(final ArgumentBuilder<CommandSourceStack, ?> runArgument, final InCommandFunction<CommandContext<CommandSourceStack>, TestFinder> finder) {
-      return runWithRetryOptions(runArgument, finder, (then) -> then.then(((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer(0, 3)).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), 8))).then(Commands.argument("testsPerRow", IntegerArgumentType.integer()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgumentType.getInteger(c, "numberOfTimes"), BoolArgumentType.getBool(c, "untilFailed")), IntegerArgumentType.getInteger(c, "rotationSteps"), IntegerArgumentType.getInteger(c, "testsPerRow"))))));
+      return runWithRetryOptions(runArgument, finder, (then) -> then.then(((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgument.integer(0, 3)).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgument.getInteger(c, "numberOfTimes"), BooleanArgument.getBool(c, "untilFailed")), IntegerArgument.getInteger(c, "rotationSteps"), 8))).then(Commands.argument("testsPerRow", IntegerArgument.integer()).executes((c) -> run(finder.apply(c), new RetryOptions(IntegerArgument.getInteger(c, "numberOfTimes"), BooleanArgument.getBool(c, "untilFailed")), IntegerArgument.getInteger(c, "rotationSteps"), IntegerArgument.getInteger(c, "testsPerRow"))))));
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      ArgumentBuilder<CommandSourceStack, ?> runFailedWithRequiredTestsFlag = runWithRetryOptionsAndBuildInfo(Commands.argument("onlyRequiredTests", BoolArgumentType.bool()), (c) -> TestFinder.builder().failedTests(c, BoolArgumentType.getBool(c, "onlyRequiredTests")));
-      LiteralArgumentBuilder var10000 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("test").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("run").then(runWithRetryOptionsAndBuildInfo(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds), (c) -> TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")))))).then(Commands.literal("runmultiple").then(((RequiredArgumentBuilder)Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> run(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8))).then(Commands.argument("amount", IntegerArgumentType.integer()).executes((c) -> run(TestFinder.builder().createMultipleCopies(IntegerArgumentType.getInteger(c, "amount")).byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8)))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      ArgumentBuilder<CommandSourceStack, ?> runFailedWithRequiredTestsFlag = runWithRetryOptionsAndBuildInfo(Commands.argument("onlyRequiredTests", BooleanArgument.bool()), (c) -> TestFinder.builder().failedTests(c, BooleanArgument.getBool(c, "onlyRequiredTests")));
+      LiteralArgumentBuilder var10000 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("test").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("run").then(runWithRetryOptionsAndBuildInfo(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(Registries.TEST_INSTANCE)).suggests(SUGGEST_TEST_INSTANCE_IDS), (c) -> TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getAndLookupSelectedResources(c, "tests")))))).then(Commands.literal("runmultiple").then(((RequiredArgumentBuilder)Commands.argument("tests", ResourceSelectorArgument.resourceSelector(Registries.TEST_INSTANCE)).suggests(SUGGEST_TEST_INSTANCE_IDS).executes((c) -> run(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getAndLookupSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8))).then(Commands.argument("amount", IntegerArgument.integer()).executes((c) -> run(TestFinder.builder().createMultipleCopies(IntegerArgument.getInteger(c, "amount")).byResourceSelection(c, ResourceSelectorArgument.getAndLookupSelectedResources(c, "tests")), RetryOptions.noRetries(), 0, 8)))));
       LiteralArgumentBuilder var10001 = Commands.literal("runthese");
       TestFinder.Builder var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
@@ -291,29 +294,24 @@ public class TestCommand {
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
       var10000 = (LiteralArgumentBuilder)var10000.then(runWithRetryOptions(var10001, var10002::lookedAt));
-      ArgumentBuilder var9 = Commands.literal("runfailed").then(runFailedWithRequiredTestsFlag);
+      ArgumentBuilder var8 = Commands.literal("runfailed").then(runFailedWithRequiredTestsFlag);
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
-      LiteralArgumentBuilder<CommandSourceStack> testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> verify(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> locate(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getSelectedResources(c, "tests"))))))).then(Commands.literal("resetclosest").executes((c) -> reset(TestFinder.builder().nearest(c))))).then(Commands.literal("resetthese").executes((c) -> reset(TestFinder.builder().allNearby(c))))).then(Commands.literal("resetthat").executes((c) -> reset(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthat").executes((c) -> clear(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthese").executes((c) -> clear(TestFinder.builder().allNearby(c))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((c) -> clear(TestFinder.builder().radius(c, 250)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((c) -> clear(TestFinder.builder().radius(c, Math.clamp((long)IntegerArgumentType.getInteger(c, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((c) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((c) -> showPos((CommandSourceStack)c.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((c) -> showPos((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgumentType.getInteger(c, "width"), IntegerArgumentType.getInteger(c, "height"), IntegerArgumentType.getInteger(c, "depth"))))))));
+      LiteralArgumentBuilder<CommandSourceStack> testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var8, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(Registries.TEST_INSTANCE)).suggests(SUGGEST_TEST_INSTANCE_IDS).executes((c) -> verify(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getAndLookupSelectedResources(c, "tests"))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(Registries.TEST_INSTANCE)).suggests(SUGGEST_TEST_INSTANCE_IDS).executes((c) -> locate(TestFinder.builder().byResourceSelection(c, ResourceSelectorArgument.getAndLookupSelectedResources(c, "tests"))))))).then(Commands.literal("resetclosest").executes((c) -> reset(TestFinder.builder().nearest(c))))).then(Commands.literal("resetthese").executes((c) -> reset(TestFinder.builder().allNearby(c))))).then(Commands.literal("resetthat").executes((c) -> reset(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthat").executes((c) -> clear(TestFinder.builder().lookedAt(c))))).then(Commands.literal("clearthese").executes((c) -> clear(TestFinder.builder().allNearby(c))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((c) -> clear(TestFinder.builder().radius(c, 250)))).then(Commands.argument("radius", IntegerArgument.integer()).executes((c) -> clear(TestFinder.builder().radius(c, Math.clamp((long)IntegerArgument.getInteger(c, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((var0) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((c) -> showPos((CommandSourceStack)c.getSource(), "pos"))).then(Commands.argument("var", StringArgument.word()).executes((c) -> showPos((CommandSourceStack)c.getSource(), StringArgument.getString(c, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", IdentifierArgument.id()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgument.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgument.getInteger(c, "width"), IntegerArgument.getInteger(c, "width"), IntegerArgument.getInteger(c, "width")))).then(Commands.argument("height", IntegerArgument.integer()).then(Commands.argument("depth", IntegerArgument.integer()).executes((c) -> createNewStructure((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "id"), IntegerArgument.getInteger(c, "width"), IntegerArgument.getInteger(c, "height"), IntegerArgument.getInteger(c, "depth"))))))));
       if (DevUtil.IS_RUNNING_IN_IDE) {
-         testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)testCommand.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(context, Registries.TEST_INSTANCE)).suggests(TestCommand::suggestTestInstanceIds).executes((c) -> exportTestStructure((CommandSourceStack)c.getSource(), ResourceArgument.getResource(c, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((c) -> export(TestFinder.builder().nearest(c))))).then(Commands.literal("exportthese").executes((c) -> export(TestFinder.builder().allNearby(c))))).then(Commands.literal("exportthat").executes((c) -> export(TestFinder.builder().lookedAt(c))));
+         testCommand = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)testCommand.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(Registries.TEST_INSTANCE)).suggests(SUGGEST_TEST_INSTANCE_IDS).executes((c) -> exportTestStructure((CommandSourceStack)c.getSource(), ResourceArgument.getResource(c, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((c) -> export(TestFinder.builder().nearest(c))))).then(Commands.literal("exportthese").executes((c) -> export(TestFinder.builder().allNearby(c))))).then(Commands.literal("exportthat").executes((c) -> export(TestFinder.builder().lookedAt(c))));
       }
 
       dispatcher.register(testCommand);
-   }
-
-   public static CompletableFuture<Suggestions> suggestTestFunction(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
-      Stream<String> testNamesStream = ((CommandSourceStack)context.getSource()).registryAccess().lookupOrThrow(Registries.TEST_FUNCTION).listElements().map(Holder::getRegisteredName);
-      return SharedSuggestionProvider.suggest(testNamesStream, builder);
    }
 
    private static String displayTestId(final Identifier id) {
       return "minecraft".equals(id.getNamespace()) ? id.getPath() : id.toString();
    }
 
-   private static CompletableFuture<Suggestions> suggestTestInstanceIds(final CommandContext<CommandSourceStack> context, final SuggestionsBuilder builder) {
-      List<Identifier> testIds = ((CommandSourceStack)context.getSource()).registryAccess().lookupOrThrow(Registries.TEST_INSTANCE).listElementIds().map(ResourceKey::identifier).toList();
-      SharedSuggestionProvider.filterResources(testIds, builder.getRemaining().toLowerCase(Locale.ROOT), (id) -> id, (id) -> builder.suggest(displayTestId(id)));
+   private static CompletableFuture<Suggestions> suggestTestInstanceIds(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      List<Identifier> testIds = ((SuggestionContext)context.getSource()).holderLookups().lookupOrThrow(Registries.TEST_INSTANCE).listElementIds().map(ResourceKey::identifier).toList();
+      SuggestionContext.filterResources(testIds, builder.getRemaining().toLowerCase(Locale.ROOT), (id) -> id, (id) -> builder.suggest(displayTestId(id)));
       return builder.buildFuture();
    }
 
@@ -346,7 +344,7 @@ public class TestCommand {
       BlockEntity var5 = level.getBlockEntity(testBlockPos.pos());
       if (var5 instanceof TestInstanceBlockEntity blockEntity) {
          Optional var10000 = blockEntity.test();
-         Registry var10001 = source.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
+         HolderGetter var10001 = source.holderGetters().lookupOrThrow(Registries.TEST_INSTANCE);
          Objects.requireNonNull(var10001);
          Optional<Holder.Reference<GameTestInstance>> maybeTest = var10000.flatMap(var10001::get);
          if (maybeTest.isEmpty()) {

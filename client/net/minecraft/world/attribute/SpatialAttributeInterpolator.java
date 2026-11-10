@@ -5,6 +5,11 @@ import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMaps;
 import java.util.Objects;
+import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.BiomeResolver;
+import net.minecraft.world.phys.Vec3;
 
 public class SpatialAttributeInterpolator {
    private final Reference2DoubleArrayMap<EnvironmentAttributeMap> weightsBySource = new Reference2DoubleArrayMap();
@@ -15,6 +20,15 @@ public class SpatialAttributeInterpolator {
 
    public void clear() {
       this.weightsBySource.clear();
+   }
+
+   public SpatialAttributeInterpolator sampleBiomes(final BiomeResolver biomeResolver, final Vec3 position) {
+      this.clear();
+      GaussianSampler.sample(position.scale(0.25), (quartX, quartY, quartZ, weight) -> {
+         Holder<Biome> biome = biomeResolver.getBiome(QuartPos.toBlock(quartX) + 2, QuartPos.toBlock(quartY) + 2, QuartPos.toBlock(quartZ) + 2);
+         this.accumulate(weight, ((Biome)biome.value()).getAttributes());
+      });
+      return this;
    }
 
    public SpatialAttributeInterpolator accumulate(final double weight, final EnvironmentAttributeMap attributes) {

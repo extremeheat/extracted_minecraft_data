@@ -41,9 +41,9 @@ import java.util.zip.ZipOutputStream;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtException;
@@ -181,7 +181,7 @@ public class LevelStorageSource {
       }
    }
 
-   public static <T extends SavedData> DataResult<T> readExistingSavedData(final LevelStorageAccess access, final HolderLookup.Provider registryAccess, final SavedDataType<T> savedDataType) {
+   public static <T extends SavedData> DataResult<T> readExistingSavedData(final LevelStorageAccess access, final HolderGetter.Provider registryAccess, final SavedDataType<T> savedDataType) {
       Path dataLocation = savedDataType.id().withSuffix(".dat").resolveAgainst(access.getLevelPath(LevelResource.DATA));
 
       CompoundTag fileContents;
@@ -192,7 +192,7 @@ public class LevelStorageSource {
          return DataResult.error(e::getMessage);
       }
 
-      return savedDataType.codec().parse(RegistryOps.create(NbtOps.INSTANCE, (HolderLookup.Provider)registryAccess), fileContents.getCompoundOrEmpty("data"));
+      return savedDataType.codec().parse(registryAccess.createSerializationContext(NbtOps.INSTANCE), fileContents.getCompoundOrEmpty("data"));
    }
 
    public static void writeGameRules(final WorldData worldData, final Path worldFolder, final GameRules gameRules) throws IOException {
@@ -200,8 +200,8 @@ public class LevelStorageSource {
       writeSavedData(worldFolder, NbtOps.INSTANCE, GameRuleMap.TYPE, codec, gameRules);
    }
 
-   public static void writeWorldGenSettings(final RegistryAccess registryAccess, final Path worldFolder, final WorldGenSettings worldGenSettings) throws IOException {
-      RegistryOps<Tag> ops = RegistryOps.create(NbtOps.INSTANCE, (HolderLookup.Provider)registryAccess);
+   public static void writeWorldGenSettings(final HolderGetter.Provider registryAccess, final Path worldFolder, final WorldGenSettings worldGenSettings) throws IOException {
+      RegistryOps<Tag> ops = registryAccess.<Tag>createSerializationContext(NbtOps.INSTANCE);
       writeSavedData(worldFolder, ops, WorldGenSettings.TYPE, WorldGenSettings.CODEC, worldGenSettings);
    }
 

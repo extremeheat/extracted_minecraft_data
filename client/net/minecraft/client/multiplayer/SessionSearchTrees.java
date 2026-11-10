@@ -12,9 +12,6 @@ import net.minecraft.client.searchtree.FullTextSearchTree;
 import net.minecraft.client.searchtree.IdSearchTree;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
@@ -58,13 +55,12 @@ public class SessionSearchTrees {
    public void updateRecipes(final ClientRecipeBook recipeBook, final Level level) {
       this.register(RECIPE_COLLECTIONS, () -> {
          List<RecipeCollection> recipes = recipeBook.getCollections();
-         RegistryAccess registryAccess = level.registryAccess();
-         Registry<Item> itemRegistries = registryAccess.lookupOrThrow(Registries.ITEM);
-         Item.TooltipContext tooltipContext = Item.TooltipContext.of((HolderLookup.Provider)registryAccess);
+         HolderLookup.Provider registryAccess = level.registryAccess();
+         Item.TooltipContext tooltipContext = Item.TooltipContext.of(registryAccess);
          ContextMap recipeContext = SlotDisplayContext.fromLevel(level);
          TooltipFlag tooltipFlag = TooltipFlag.Default.NORMAL;
          CompletableFuture<?> previous = this.recipeSearch;
-         this.recipeSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((collection) -> getTooltipLines(collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()), tooltipContext, tooltipFlag), (collection) -> collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()).map((stack) -> itemRegistries.getKey(stack.getItem())), recipes), Util.backgroundExecutor());
+         this.recipeSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((collection) -> getTooltipLines(collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()), tooltipContext, tooltipFlag), (collection) -> collection.getRecipes().stream().flatMap((e) -> e.resultItems(recipeContext).stream()).flatMap((stack) -> stack.typeHolder().unwrapKey().stream()).map(ResourceKey::identifier), recipes), Util.backgroundExecutor());
          previous.cancel(true);
       });
    }

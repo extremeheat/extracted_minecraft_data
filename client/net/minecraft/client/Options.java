@@ -68,6 +68,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.DevUtil;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
@@ -289,6 +290,7 @@ public class Options {
    public final KeyMapping keyDebugNetworkCharts;
    public final KeyMapping keyDebugLightmapTexture;
    public final KeyMapping keyDebugSwitchTranslucencyMode;
+   public final KeyMapping keyDebugEnvironmentAttributeOptions;
    public final KeyMapping[] debugKeys;
    public final KeyMapping[] keyMappings;
    protected Minecraft minecraft;
@@ -1113,7 +1115,8 @@ public class Options {
       this.keyDebugNetworkCharts = new KeyMapping("key.debug.networkCharts", InputConstants.Type.KEYBOARD, 32, KeyMapping.Category.DEBUG, 3);
       this.keyDebugLightmapTexture = new KeyMapping("key.debug.lightmapTexture", InputConstants.Type.KEYBOARD, 33, KeyMapping.Category.DEBUG, 4);
       this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYBOARD, 27, KeyMapping.Category.DEBUG);
-      this.debugKeys = new KeyMapping[]{this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode};
+      this.keyDebugEnvironmentAttributeOptions = new KeyMapping("key.debug.environmentAttributeOptions", InputConstants.Type.KEYBOARD, 34, KeyMapping.Category.DEBUG, 5);
+      this.debugKeys = (KeyMapping[])Stream.of(this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode, this.keyDebugEnvironmentAttributeOptions).filter((key) -> key != this.keyDebugEnvironmentAttributeOptions || SharedConstants.DEBUG_ENABLED || DevUtil.IS_RUNNING_IN_IDE).toArray((x$0) -> new KeyMapping[x$0]);
       this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keyOtherPlayers, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";

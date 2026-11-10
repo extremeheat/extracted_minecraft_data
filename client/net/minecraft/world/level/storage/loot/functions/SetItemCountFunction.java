@@ -28,8 +28,7 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
       Validatable.validateHolder(context, "count", this.count);
    }
 

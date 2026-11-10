@@ -352,7 +352,7 @@ public class Gui {
    public void addSocialInteractionsToast() {
       Component title = Component.translatable("tutorial.other_players.title");
       Component message = Component.translatable("tutorial.other_players.description", Tutorial.key("otherPlayers"));
-      this.socialInteractionsToast = new TutorialToast(this.minecraft.font, TutorialToast.Icons.SOCIAL_INTERACTIONS, title, message, true, 8000);
+      this.socialInteractionsToast = new TutorialToast(this.minecraft.font, TutorialToast.Icons.SOCIAL_INTERACTIONS, title, message, true, (int)(8000.0 * this.toastManager().getNotificationDisplayTimeMultiplier()));
       this.toastManager.addToast(this.socialInteractionsToast);
    }
 

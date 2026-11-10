@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -20,9 +19,9 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.predicates.MinMaxBounds;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -149,7 +148,7 @@ public class EntitySelectorOptions {
          register("sort", (parser) -> {
             int start = parser.getReader().getCursor();
             String name = parser.getReader().readUnquotedString();
-            parser.setSuggestions((b, n) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), b));
+            parser.setSuggestions((b, n) -> SuggestionContext.suggest(List.of("nearest", "furthest", "random", "arbitrary"), b));
             BiConsumer var10001;
             switch (name) {
                case "nearest" -> var10001 = EntitySelectorParser.ORDER_NEAREST;
@@ -234,11 +233,11 @@ public class EntitySelectorOptions {
             InvertableSetOptionState state = parser.typeOption();
             parser.setSuggestions((b, m) -> {
                if (state.canParseNegativeElement()) {
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
+                  SuggestionContext.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b, String.valueOf('!'));
                }
 
                if (state.canParsePositiveElement()) {
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b);
+                  SuggestionContext.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), b);
                }
 
                if (state.canParseAnyTag()) {
@@ -246,8 +245,8 @@ public class EntitySelectorOptions {
                   Objects.requireNonNull(state);
                   List<Identifier> allowedTags = var10000.filter(state::canParseTag).toList();
                   if (!allowedTags.isEmpty()) {
-                     SharedSuggestionProvider.suggestResource(allowedTags, b, String.valueOf('#'));
-                     SharedSuggestionProvider.suggestResource(allowedTags, b, "!#");
+                     SuggestionContext.suggestResource(allowedTags, b, String.valueOf('#'));
+                     SuggestionContext.suggestResource(allowedTags, b, "!#");
                   }
                }
 

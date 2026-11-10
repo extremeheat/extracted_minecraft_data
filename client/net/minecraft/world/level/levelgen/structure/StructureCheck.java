@@ -14,8 +14,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -38,7 +38,7 @@ public class StructureCheck {
    private static final int NO_STRUCTURE = -1;
    private static final int MAX_CHUNKS_WITHOUT_STORED_STARTS = 131072;
    private final ChunkStructureScanner storageScanner;
-   private final RegistryAccess registryAccess;
+   private final HolderGetter.Provider registryAccess;
    private final StructureTemplateManager structureTemplateManager;
    private final ChunkGenerator chunkGenerator;
    private final RandomState randomState;
@@ -50,7 +50,7 @@ public class StructureCheck {
    private final Map<Structure, Long2BooleanMap> featureChecks = new HashMap();
    private final LongSet chunksWithoutStartsInStorage = new LongOpenHashSet();
 
-   public StructureCheck(final ChunkScanAccess storageAccess, final RegistryAccess registryAccess, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final ChunkGenerator chunkGenerator, final RandomState randomState, final LevelHeightAccessor heightAccessor, final BiomeSource biomeSource, final long seed, final DataFixer fixerUpper) {
+   public StructureCheck(final ChunkScanAccess storageAccess, final HolderGetter.Provider registryAccess, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> dimension, final ChunkGenerator chunkGenerator, final RandomState randomState, final LevelHeightAccessor heightAccessor, final BiomeSource biomeSource, final long seed, final DataFixer fixerUpper) {
       super();
       this.storageScanner = new ChunkStructureScanner(storageAccess, registryAccess, seed, fixerUpper, dimension, chunkGenerator.getTypeNameForDataFixer());
       this.registryAccess = registryAccess;
@@ -92,7 +92,7 @@ public class StructureCheck {
    }
 
    private boolean canCreateStructure(final ChunkPos pos, final Structure structure) {
-      RegistryAccess var10003 = this.registryAccess;
+      HolderGetter.Provider var10003 = this.registryAccess;
       ChunkGenerator var10004 = this.chunkGenerator;
       BiomeSource var10005 = this.biomeSource;
       Climate.Sampler var10006 = this.climateSampler;

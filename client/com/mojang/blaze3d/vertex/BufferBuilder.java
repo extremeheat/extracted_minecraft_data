@@ -98,7 +98,7 @@ public class BufferBuilder implements VertexConsumer {
          } else {
             int indices = this.primitiveTopology.indexCount(this.vertices);
             IndexType indexType = IndexType.least(this.vertices);
-            return new MeshData(vertexBuffer, new MeshData.DrawState(this.format, this.vertices, indices, this.primitiveTopology, indexType));
+            return new MeshData(vertexBuffer, new MeshData.DrawState(this.vertices, indices, this.primitiveTopology, indexType));
          }
       }
    }

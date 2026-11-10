@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.List;
@@ -38,10 +37,6 @@ public class ServerFunctionManager {
       this.postReload(library);
    }
 
-   public CommandDispatcher<CommandSourceStack> getDispatcher() {
-      return this.server.getCommands().getDispatcher();
-   }
-
    public void tick() {
       if (this.server.tickRateManager().runsNormally()) {
          if (this.postReload) {
@@ -60,20 +55,20 @@ public class ServerFunctionManager {
       var10000.push(loadFunctionTag::toString);
 
       for(CommandFunction<CommandSourceStack> function : functions) {
-         this.execute(function, this.getGameLoopSender());
+         execute(function, this.getGameLoopSender());
       }
 
       Profiler.get().pop();
    }
 
-   public void execute(final CommandFunction<CommandSourceStack> functionIn, final CommandSourceStack sender) {
+   public static void execute(final CommandFunction<CommandSourceStack> functionIn, final CommandSourceStack sender) {
       ProfilerFiller profiler = Profiler.get();
       profiler.push((Supplier)(() -> "function " + String.valueOf(functionIn.id())));
 
       try {
-         InstantiatedFunction<CommandSourceStack> function = functionIn.instantiate((CompoundTag)null, this.getDispatcher());
+         InstantiatedFunction<CommandSourceStack> function = functionIn.instantiate((CompoundTag)null);
          Commands.executeCommandInContext(sender, (context) -> ExecutionContext.queueInitialFunctionCall(context, function, sender, CommandResultCallback.EMPTY));
-      } catch (FunctionInstantiationException var9) {
+      } catch (FunctionInstantiationException var8) {
       } catch (Exception e) {
          LOGGER.warn("Failed to execute function {}", functionIn.id(), e);
       } finally {

@@ -24,8 +24,9 @@ import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 public class SlotWidget extends AbstractWidget {
-   private static final int WIDTH = 16;
-   private static final int HEIGHT = 16;
+   private static final int BORDER = 1;
+   private static final int WIDTH = 18;
+   private static final int HEIGHT = 18;
    private static final int QUICK_CRAFT_TINT_COLOR = -2130706433;
    protected static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
    protected static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
@@ -48,7 +49,7 @@ public class SlotWidget extends AbstractWidget {
    }
 
    public SlotWidget(final Slot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos, final Function<Slot, Tooltip> tooltipSupplier, final Supplier<@Nullable Tooltip> emptySlotTooltip) {
-      super(slot.x + leftPos, slot.y + topPos, 16, 16, CommonComponents.EMPTY);
+      super(slot.x + leftPos - 1, slot.y + topPos - 1, 18, 18, CommonComponents.EMPTY);
       this.slot = slot;
       this.minecraft = minecraft;
       this.font = minecraft.font;
@@ -67,7 +68,7 @@ public class SlotWidget extends AbstractWidget {
    }
 
    public void updateX(final int leftPos) {
-      this.setX(this.slot.x + leftPos);
+      this.setX(this.slot.x + leftPos - 1);
    }
 
    public void overrideItemToRender(final @Nullable ItemStack overrideItemStack, final @Nullable String overrideItemCount) {
@@ -77,31 +78,31 @@ public class SlotWidget extends AbstractWidget {
 
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       if (this.slot.isActive()) {
-         int x = this.getX();
-         int y = this.getY();
+         int itemX = this.getX() + 1;
+         int itemY = this.getY() + 1;
          this.extractSlotHighlight(graphics, SLOT_HIGHLIGHT_BACK_SPRITE);
          ItemStack itemStackToRender = this.overrideItemStack != null ? this.overrideItemStack : this.slot.getItem();
          if (itemStackToRender.isEmpty()) {
             Identifier icon = this.slot.getNoItemIcon();
             if (icon != null) {
-               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)icon, x, y, 16, 16);
+               graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)icon, itemX, itemY, 16, 16);
                this.extractSlotHighlight(graphics, SLOT_HIGHLIGHT_FRONT_SPRITE);
                return;
             }
          }
 
          if (this.overrideItemStack != null) {
-            graphics.fill(x, y, x + 16, y + 16, -2130706433);
+            graphics.fill(itemX, itemY, itemX + 16, itemY + 16, -2130706433);
          }
 
          int seed = this.slot.x + this.slot.y * this.containerWidth;
          if (this.slot.isFake()) {
-            graphics.fakeItem(itemStackToRender, x, y, seed);
+            graphics.fakeItem(itemStackToRender, itemX, itemY, seed);
          } else {
-            graphics.item(itemStackToRender, x, y, seed);
+            graphics.item(itemStackToRender, itemX, itemY, seed);
          }
 
-         graphics.itemDecorations(this.font, itemStackToRender, x, y, this.overrideItemCount);
+         graphics.itemDecorations(this.font, itemStackToRender, itemX, itemY, this.overrideItemCount);
          this.extractSlotHighlight(graphics, SLOT_HIGHLIGHT_FRONT_SPRITE);
       }
    }
@@ -109,7 +110,7 @@ public class SlotWidget extends AbstractWidget {
    protected void extractSlotHighlight(final GuiGraphicsExtractor graphics, final Identifier highlightSprite) {
       boolean keyboardFocused = this.isFocused() && this.minecraft.getLastInputType().isKeyboard();
       if (keyboardFocused || this.isHovered() && this.slot.isHighlightable()) {
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)highlightSprite, this.getX() - 4, this.getY() - 4, 24, 24);
+         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)highlightSprite, this.getX() - 3, this.getY() - 3, 24, 24);
       }
 
    }

@@ -5,11 +5,14 @@ import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Objects;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class TextureProvider2d implements TextureProvider<TextureContents> {
+public class TextureProvider2d implements TextureProvider<TextureContents, TextureResources> {
+   public static final TextureProvider2d INSTANCE = new TextureProvider2d();
+
    public TextureProvider2d() {
       super();
    }
@@ -28,5 +31,13 @@ public class TextureProvider2d implements TextureProvider<TextureContents> {
       GpuSampler sampler = RenderSystem.getSamplerCache().getSampler(addressMode, addressMode, minMag, minMag, false);
       Objects.requireNonNull(identifier);
       return TextureResources.from2dImage(identifier::toString, state.image(), sampler);
+   }
+
+   public void dumpContents(final Identifier identifier, final Path outputDirectory, final TextureResources texture) {
+      texture.dumpContents(identifier, outputDirectory);
+   }
+
+   public void releaseTexture(final TextureResources texture) {
+      texture.close();
    }
 }

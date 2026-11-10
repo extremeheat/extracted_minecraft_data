@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public sealed interface Group<T> permits WeatheringCopperCollection, ColorCollection {
+public interface Group<T> {
    List<T> asList();
 
    void forEach(final Consumer<T> consumer);

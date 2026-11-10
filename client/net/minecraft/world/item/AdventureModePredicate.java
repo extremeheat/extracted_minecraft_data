@@ -7,8 +7,8 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.predicates.BlockPredicate;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -49,7 +49,7 @@ public class AdventureModePredicate {
             return true;
          } else if (blockInWorld.getEntity() != null && cachedBlock.getEntity() != null) {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-               RegistryAccess registryAccess = blockInWorld.getLevel().registryAccess();
+               HolderGetter.Provider registryAccess = blockInWorld.getLevel().registryAccess();
                CompoundTag inWorldTag = saveBlockEntity(blockInWorld.getEntity(), registryAccess, reporter);
                CompoundTag cachedTag = saveBlockEntity(cachedBlock.getEntity(), registryAccess, reporter);
                return Objects.equals(inWorldTag, cachedTag);
@@ -62,7 +62,7 @@ public class AdventureModePredicate {
       }
    }
 
-   private static CompoundTag saveBlockEntity(final BlockEntity blockEntity, final RegistryAccess registryAccess, final ProblemReporter reporter) {
+   private static CompoundTag saveBlockEntity(final BlockEntity blockEntity, final HolderGetter.Provider registryAccess, final ProblemReporter reporter) {
       TagValueOutput inWorldOutput = TagValueOutput.createWithContext(reporter.forChild(blockEntity.problemPath()), registryAccess);
       blockEntity.saveWithId(inWorldOutput);
       return inWorldOutput.buildResult();

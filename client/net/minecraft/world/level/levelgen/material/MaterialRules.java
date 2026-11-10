@@ -6,6 +6,7 @@ import java.util.Objects;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -148,16 +149,15 @@ public class MaterialRules {
       return BandlandsRule.INSTANCE;
    }
 
-   public static MapCodec<? extends MaterialRule> bootstrapRules(final Registry<MapCodec<? extends MaterialRule>> registry) {
-      MapCodec<? extends MaterialRule> block = register(registry, "block", BlockRule.CODEC);
+   public static void bootstrapRules(final WritableRegistry<MapCodec<? extends MaterialRule>> registry) {
+      register(registry, "block", BlockRule.CODEC);
       register(registry, "bandlands", BandlandsRule.CODEC);
       register(registry, "sequence", SequenceRule.CODEC);
       register(registry, "condition", ConditionRule.CODEC);
       register(registry, "ore_vein", OreVeinRule.CODEC);
-      return block;
    }
 
-   public static MapCodec<? extends MaterialCondition> bootstrapConditions(final Registry<MapCodec<? extends MaterialCondition>> registry) {
+   public static void bootstrapConditions(final WritableRegistry<MapCodec<? extends MaterialCondition>> registry) {
       register(registry, "biome", BiomeCondition.CODEC);
       register(registry, "noise_threshold", NoiseThresholdCondition.CODEC);
       register(registry, "vertical_gradient", VerticalGradientCondition.CODEC);
@@ -168,11 +168,11 @@ public class MaterialRules {
       register(registry, "not", NotCondition.CODEC);
       register(registry, "hole", HoleCondition.CODEC);
       register(registry, "above_preliminary_surface", AbovePreliminarySurfaceCondition.CODEC);
-      return register(registry, "stone_depth", StoneDepthCondition.CODEC);
+      register(registry, "stone_depth", StoneDepthCondition.CODEC);
    }
 
-   private static <A> MapCodec<? extends A> register(final Registry<MapCodec<? extends A>> registry, final String name, final MapCodec<? extends A> codec) {
-      return (MapCodec)Registry.register(registry, (String)name, codec);
+   private static <A> void register(final Registry<MapCodec<? extends A>> registry, final String name, final MapCodec<? extends A> codec) {
+      Registry.register(registry, (String)name, codec);
    }
 
    @FunctionalInterface

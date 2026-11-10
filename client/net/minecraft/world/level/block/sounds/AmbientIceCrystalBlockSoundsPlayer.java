@@ -3,9 +3,9 @@ package net.minecraft.world.level.block.sounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 
 public class AmbientIceCrystalBlockSoundsPlayer {
    private static final int IDLE_SOUND_CHANCE = 250;
@@ -22,6 +22,6 @@ public class AmbientIceCrystalBlockSoundsPlayer {
    }
 
    private static boolean shouldPlayAmbientIceCrystalSound(final Level level, final BlockPos pos) {
-      return level.getBlockState(pos.below()).is(Blocks.PACKED_ICE);
+      return level.getBlockState(pos.below()).is(BlockTags.TRIGGERS_AMBIENT_ICE_CRYSTAL_SOUNDS);
    }
 }

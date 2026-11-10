@@ -2,7 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.DevUtil;
@@ -51,7 +51,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements TrialSpawner
       return ClientboundBlockEntityDataPacket.create(this);
    }
 
-   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+   public CompoundTag getUpdateTag(final HolderGetter.Provider registries) {
       return this.trialSpawner.getStateData().getUpdateTag((TrialSpawnerState)this.getBlockState().getValue(TrialSpawnerBlock.STATE));
    }
 

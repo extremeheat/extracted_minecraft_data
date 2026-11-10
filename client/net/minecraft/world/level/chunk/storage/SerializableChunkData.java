@@ -24,8 +24,9 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.Optionull;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -42,6 +43,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
@@ -330,7 +332,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
 
          for(Map.Entry<Heightmap.Types, Heightmap> entry : chunk.getHeightmaps()) {
             long[] data = ((Heightmap)entry.getValue()).getRawData();
-            heightmaps.put((Heightmap.Types)entry.getKey(), (long[])(([J)data).clone());
+            heightmaps.put((Heightmap.Types)entry.getKey(), (long[])data.clone());
          }
 
          ChunkAccess.PackedTicks ticksForSerialization = chunk.getTicksForSerialization(level.getGameTime());
@@ -433,7 +435,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       return entities.isEmpty() && blockEntities.isEmpty() ? null : (levelChunk) -> {
          if (!entities.isEmpty()) {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(levelChunk.problemPath(), LOGGER)) {
-               level.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(TagValueInput.create(reporter, level.registryAccess(), (List)entities), level, EntitySpawnReason.LOAD));
+               level.addLegacyChunkEntities(EntityType.loadEntitiesRecursive(TagValueInput.create(reporter, (HolderLookup.Provider)level.registryAccess(), (List)entities), level, EntitySpawnReason.LOAD));
             }
          }
 
@@ -498,27 +500,31 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       return starts.build();
    }
 
-   private static Map<Structure, LongSet> unpackStructureReferences(final RegistryAccess registryAccess, final ChunkPos pos, final CompoundTag tag) {
+   private static Map<Structure, LongSet> unpackStructureReferences(final HolderGetter.Provider registryAccess, final ChunkPos pos, final CompoundTag tag) {
       Map<Structure, LongSet> outmap = new HashMap();
-      Registry<Structure> structuresRegistry = registryAccess.lookupOrThrow(Registries.STRUCTURE);
+      HolderGetter<Structure> structuresRegistry = registryAccess.<Structure>lookupOrThrow(Registries.STRUCTURE);
       CompoundTag referencesTag = tag.getCompoundOrEmpty("References");
       referencesTag.forEach((key, entry) -> {
          Identifier structureId = Identifier.tryParse(key);
-         Structure structureType = (Structure)structuresRegistry.getValue(structureId);
-         if (structureType == null) {
-            LOGGER.warn("Found reference to unknown structure '{}' in chunk {}, discarding", structureId, pos);
+         if (structureId == null) {
+            LOGGER.warn("Found reference to a structure with invalid id '{}' in chunk {}, discarding", key, pos);
          } else {
-            Optional<long[]> longArray = entry.asLongArray();
-            if (!longArray.isEmpty()) {
-               outmap.put(structureType, new LongOpenHashSet(Arrays.stream((long[])longArray.get()).filter((chunkLongPos) -> {
-                  ChunkPos refPos = ChunkPos.unpack(chunkLongPos);
-                  if (refPos.getChessboardDistance(pos) > 8) {
-                     LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{structureId, refPos, pos});
-                     return false;
-                  } else {
-                     return true;
-                  }
-               }).toArray()));
+            Optional<? extends Holder<Structure>> structureType = structuresRegistry.get(ResourceKey.create(Registries.STRUCTURE, structureId));
+            if (structureType.isEmpty()) {
+               LOGGER.warn("Found reference to an unknown structure '{}' in chunk {}, discarding", structureId, pos);
+            } else {
+               Optional<long[]> longArray = entry.asLongArray();
+               if (!longArray.isEmpty()) {
+                  outmap.put((Structure)((Holder)structureType.get()).value(), new LongOpenHashSet(Arrays.stream((long[])longArray.get()).filter((chunkLongPos) -> {
+                     ChunkPos refPos = ChunkPos.unpack(chunkLongPos);
+                     if (refPos.getChessboardDistance(pos) > 8) {
+                        LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{structureId, refPos, pos});
+                        return false;
+                     } else {
+                        return true;
+                     }
+                  }).toArray()));
+               }
             }
          }
       });
@@ -571,7 +577,7 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
       }
    }
 
-   public static record StructureData(RegistryAccess registryAccess, CompoundTag structuresTag) {
+   public static record StructureData(HolderGetter.Provider registryAccess, CompoundTag structuresTag) {
       public StructureData {
          super();
       }
@@ -586,15 +592,15 @@ public record SerializableChunkData(PalettedContainerFactory containerFactory, C
                return Object2IntMaps.emptyMap();
             } else {
                Object2IntMap<Structure> knownStarts = new Object2IntOpenHashMap();
-               Registry<Structure> structuresRegistry = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
+               HolderGetter<Structure> structuresRegistry = this.registryAccess.<Structure>lookupOrThrow(Registries.STRUCTURE);
                startsTag.forEach((key, tag) -> {
                   Identifier id = Identifier.tryParse(key);
                   if (id != null) {
-                     Structure foundFeature = (Structure)structuresRegistry.getValue(id);
+                     Holder<Structure> foundFeature = (Holder)structuresRegistry.get(ResourceKey.create(Registries.STRUCTURE, id)).orElse((Object)null);
                      if (foundFeature != null) {
                         tag.asCompound().ifPresent((structureData) -> {
                            int referenceCount = structureData.getIntOr("references", 0);
-                           knownStarts.put(foundFeature, referenceCount);
+                           knownStarts.put(foundFeature.value(), referenceCount);
                         });
                      }
                   }

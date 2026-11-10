@@ -7,7 +7,7 @@ import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
 import org.jspecify.annotations.Nullable;
 
-public abstract class NumberRunParseRule implements Rule<StringReader, String> {
+public abstract class NumberRunParseRule<S extends CommandParserState> implements Rule<S, String> {
    private final DelayedException<CommandSyntaxException> noValueError;
    private final DelayedException<CommandSyntaxException> underscoreNotAllowedError;
 
@@ -17,8 +17,8 @@ public abstract class NumberRunParseRule implements Rule<StringReader, String> {
       this.underscoreNotAllowedError = underscoreNotAllowedError;
    }
 
-   public @Nullable String parse(final ParseState<StringReader> state) {
-      StringReader input = state.input();
+   public @Nullable String parse(final ParseState<S> state) {
+      StringReader input = ((CommandParserState)state.input()).reader();
       input.skipWhitespace();
       String fullString = input.getString();
       int start = input.getCursor();

@@ -2,9 +2,10 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public interface FeatureTypes {
-   static MapCodec<? extends Feature> bootstrap(final Registry<MapCodec<? extends Feature>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends Feature>> registry) {
       Registry.register(registry, (String)"bamboo", BambooFeature.CODEC);
       Registry.register(registry, (String)"block_blob", BlockBlobFeature.CODEC);
       Registry.register(registry, (String)"block_column", BlockColumnFeature.CODEC);
@@ -63,6 +64,6 @@ public interface FeatureTypes {
       Registry.register(registry, (String)"vines", VinesFeature.CODEC);
       Registry.register(registry, (String)"void_start_platform", VoidStartPlatformFeature.CODEC);
       Registry.register(registry, (String)"waterlogged_vegetation_patch", WaterloggedVegetationPatchFeature.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"weighted_random_selector", WeightedRandomSelectorFeature.CODEC);
+      Registry.register(registry, (String)"weighted_random_selector", WeightedRandomSelectorFeature.CODEC);
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.commands.arguments;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -7,27 +8,33 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 
-public class HexColorArgument implements ArgumentType<Integer> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("F00", "FF0000");
-   public static final DynamicCommandExceptionType ERROR_INVALID_HEX = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.hexcolor.invalid", value));
+public class HexColorArgument implements SerializableArgument.ContextFree<Integer> {
+   @VisibleForTesting
+   public static final HexColorArgument INSTANCE = new HexColorArgument();
+   public static final SerializableArgument.Type<HexColorArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   public static final DynamicCommandExceptionType ERROR_INVALID_HEX;
 
    private HexColorArgument() {
       super();
    }
 
-   public static HexColorArgument hexColor() {
-      return new HexColorArgument();
+   public SerializableArgument.Type<HexColorArgument> type() {
+      return TYPE;
    }
 
-   public static Integer getHexColor(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<Integer> hexColor() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static Integer getHexColor(final CommandContext<?> context, final String name) {
       return (Integer)context.getArgument(name, Integer.class);
    }
 
@@ -47,11 +54,17 @@ public class HexColorArgument implements ArgumentType<Integer> {
       return digit * 17;
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(EXAMPLES, builder);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(EXAMPLES, builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<HexColorArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("F00", "FF0000");
+      ERROR_INVALID_HEX = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.hexcolor.invalid", value));
    }
 }

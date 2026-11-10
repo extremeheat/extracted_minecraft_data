@@ -1,11 +1,11 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Set;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import org.jspecify.annotations.Nullable;
 
 public class ExplosionCondition implements LootItemCondition {
    private static final ExplosionCondition INSTANCE = new ExplosionCondition();
@@ -19,8 +19,11 @@ public class ExplosionCondition implements LootItemCondition {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(LootContextParams.EXPLOSION_RADIUS);
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      return !context.contextKeySet().allowed().contains(LootContextParams.EXPLOSION_RADIUS) ? true : null;
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

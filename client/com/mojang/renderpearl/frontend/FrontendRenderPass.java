@@ -334,59 +334,16 @@ public class FrontendRenderPass implements RenderPass, RenderPass.UniformUploade
       }
    }
 
-   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final Collection<String> dynamicUniforms, final T uniformArgument) {
+   public <T> void drawMultipleIndexed(final Collection<RenderPass.Draw<T>> draws, final Collection<String> dynamicUniforms, final T uniformArgument) {
       if (this.isClosed) {
          throw new IllegalStateException("Can't use a closed render pass");
       } else {
-         this.validateDraw(dynamicUniforms, true, false);
-         GpuBuffer lastIndexBuffer = null;
-         IndexType lastIndexType = null;
+         this.validateDraw(dynamicUniforms, true, true);
 
          for(RenderPass.Draw<T> draw : draws) {
             BiConsumer<T, RenderPass.UniformUploader> uniformUploaderConsumer = draw.uniformUploaderConsumer();
             if (uniformUploaderConsumer != null) {
                uniformUploaderConsumer.accept(uniformArgument, this);
-            }
-
-            IndexType indexType = draw.indexType() == null ? defaultIndexType : draw.indexType();
-            GpuBuffer indexBuffer = draw.indexBuffer() == null ? defaultIndexBuffer : draw.indexBuffer();
-
-            assert indexBuffer != null;
-
-            assert indexType != null;
-
-            this.setVertexBuffer(draw.slot(), draw.vertexBuffer().slice());
-            if (this.device.strictValidation) {
-               if (indexBuffer == null) {
-                  throw new IllegalStateException("Missing index buffer");
-               }
-
-               ((BaseGpuBuffer)indexBuffer).checkCanBeUsed();
-               if (indexBuffer.isClosed()) {
-                  throw new IllegalStateException("Index buffer has been closed!");
-               }
-
-               if (draw.slot() < 0 || draw.slot() >= CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS) {
-                  throw new IllegalStateException("Vertex buffer slot must be between 0 and " + CompiledRenderPipeline.CreateInfo.MAX_VERTEX_BUFFERS);
-               }
-
-               if (this.vertexBuffers[draw.slot()] != null) {
-                  ((BaseGpuBuffer)this.vertexBuffers[draw.slot()].buffer()).checkCanBeUsed();
-               }
-
-               if (this.vertexBuffers[draw.slot()] == null) {
-                  throw new IllegalStateException("Missing vertex buffer at slot " + draw.slot());
-               }
-
-               if (this.vertexBuffers[draw.slot()].buffer().isClosed()) {
-                  throw new IllegalStateException("Vertex buffer at slot " + draw.slot() + " has been closed!");
-               }
-            }
-
-            if (indexBuffer != lastIndexBuffer || indexType != lastIndexType) {
-               this.setIndexBuffer(indexBuffer, indexType);
-               lastIndexBuffer = indexBuffer;
-               lastIndexType = indexType;
             }
 
             assert this.boundPipeline != null;

@@ -49,7 +49,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityTypeIds;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
@@ -484,8 +484,7 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties repairable(final TagKey<Item> repairItems) {
-         HolderGetter<Item> registrationLookup = BuiltInRegistries.<Item>acquireBootstrapRegistrationLookup(BuiltInRegistries.ITEM);
-         return this.component(DataComponents.REPAIRABLE, new Repairable(registrationLookup.getOrThrow(repairItems)));
+         return this.delayedComponent(DataComponents.REPAIRABLE, (context) -> new Repairable(context.getOrThrow(repairItems)));
       }
 
       public Properties equippable(final EquipmentSlot slot) {
@@ -533,17 +532,15 @@ public class Item implements ItemLike, FeatureElement {
       }
 
       public Properties wolfArmor(final ArmorMaterial material) {
-         return this.durability(ArmorType.BODY.getDurability(material.durability())).attributes(material.createAttributes(ArmorType.BODY)).repairable(material.repairIngredient()).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(material.equipSound()).setAsset(material.assetId()).setAllowedEntities(HolderSet.direct(EntityTypes.WOLF.builtInRegistryHolder())).setCanBeSheared(true).setShearingSound(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.ARMOR_UNEQUIP_WOLF)).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
+         return this.durability(ArmorType.BODY.getDurability(material.durability())).attributes(material.createAttributes(ArmorType.BODY)).repairable(material.repairIngredient()).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(material.equipSound()).setAsset(material.assetId()).setAllowedEntities(HolderSet.direct(context.getOrThrow(EntityTypeIds.WOLF))).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_WOLF).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
       }
 
       public Properties horseArmor(final ArmorMaterial material) {
-         HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(material.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(material.assetId()).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
       }
 
       public Properties nautilusArmor(final ArmorMaterial material) {
-         HolderGetter<EntityType<?>> entityGetter = BuiltInRegistries.<EntityType<?>>acquireBootstrapRegistrationLookup(BuiltInRegistries.ENTITY_TYPE);
-         return this.attributes(material.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(material.assetId()).setAllowedEntities(entityGetter.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
       }
 
       public Properties trimMaterial(final ResourceKey<TrimMaterial> material) {

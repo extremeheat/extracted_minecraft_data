@@ -5,16 +5,17 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import net.minecraft.advancements.predicates.NbtPredicate;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextArg;
+import net.minecraft.world.level.storage.loot.LootContextUser;
 import org.jspecify.annotations.Nullable;
 
-public class ContextNbtProvider implements NbtProvider {
+public class ContextNbtProvider implements NbtProvider, LootContextUser {
    private static final Codec<LootContextArg<Tag>> GETTER_CODEC = LootContextArg.createArgCodec((builder) -> builder.anyBlockEntity(BlockEntitySource::new).anyEntity(EntitySource::new));
    public static final MapCodec<ContextNbtProvider> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(GETTER_CODEC.fieldOf("target").forGetter((p) -> p.source)).apply(i, ContextNbtProvider::new));
    public static final Codec<ContextNbtProvider> INLINE_CODEC;
@@ -33,7 +34,7 @@ public class ContextNbtProvider implements NbtProvider {
       return this.source.get(context);
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(this.source.contextParam());
    }
 
@@ -51,7 +52,7 @@ public class ContextNbtProvider implements NbtProvider {
       }
 
       public Tag get(final BlockEntity blockEntity) {
-         return blockEntity.saveWithFullMetadata((HolderLookup.Provider)blockEntity.getLevel().registryAccess());
+         return blockEntity.saveWithFullMetadata((HolderGetter.Provider)blockEntity.getLevel().registryAccess());
       }
    }
 

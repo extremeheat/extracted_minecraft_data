@@ -1,8 +1,6 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -10,17 +8,19 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.concurrent.CompletableFuture;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.FloatArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.TimeArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -29,6 +29,7 @@ import net.minecraft.world.clock.ClockTimeMarker;
 import net.minecraft.world.clock.ClockTimeMarkers;
 import net.minecraft.world.clock.ServerClockManager;
 import net.minecraft.world.clock.WorldClock;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.timeline.Timeline;
 
@@ -47,23 +48,29 @@ public class TimeCommand {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      LiteralArgumentBuilder<CommandSourceStack> baseCommand = (LiteralArgumentBuilder)Commands.literal("time").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
-      dispatcher.register((LiteralArgumentBuilder)addClockNodes(context, baseCommand, (c) -> getDefaultClock((CommandSourceStack)c.getSource())));
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)baseCommand.then(Commands.literal("query").then(Commands.literal("gametime").executes((c) -> queryGameTime((CommandSourceStack)c.getSource()))))).then(Commands.literal("of").then(addClockNodes(context, Commands.argument("clock", ResourceArgument.resource(context, Registries.WORLD_CLOCK)), (c) -> ResourceArgument.getClock(c, "clock")))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      LiteralArgumentBuilder<CommandSourceStack> baseCommand = (LiteralArgumentBuilder)Commands.literal("time").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS));
+      dispatcher.register((LiteralArgumentBuilder)addClockNodes(baseCommand, TimeCommand.ClockGetter.FOR_LEVEL_DEFAULT));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)baseCommand.then(Commands.literal("query").then(Commands.literal("gametime").executes((c) -> queryGameTime((CommandSourceStack)c.getSource()))))).then(Commands.literal("of").then(addClockNodes(Commands.argument("clock", ResourceArgument.resource(Registries.WORLD_CLOCK)), TimeCommand.ClockGetter.fromContext("clock")))));
    }
 
-   private static <A extends ArgumentBuilder<CommandSourceStack, A>> A addClockNodes(final CommandBuildContext context, final A node, final ClockGetter clockGetter) {
-      return (A)node.then(((LiteralArgumentBuilder)Commands.literal("set").then(Commands.argument("time", TimeArgument.time()).executes((c) -> setTotalTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.argument("timemarker", IdentifierArgument.id()).suggests((c, p) -> suggestTimeMarkers((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> setTimeToTimeMarker((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceKey.create(ClockTimeMarkers.ROOT_ID, IdentifierArgument.getId(c, "timemarker")))))).then(Commands.literal("add").then(Commands.argument("time", TimeArgument.time(-2147483648)).executes((c) -> addTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgumentType.getInteger(c, "time"))))).then(Commands.literal("pause").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), true))).then(Commands.literal("resume").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), false))).then(Commands.literal("rate").then(Commands.argument("rate", FloatArgumentType.floatArg(1.0E-5F, 1000.0F)).executes((c) -> setRate((CommandSourceStack)c.getSource(), clockGetter.getClock(c), FloatArgumentType.getFloat(c, "rate"))))).then(((LiteralArgumentBuilder)Commands.literal("query").then(Commands.literal("time").executes((c) -> queryTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c))))).then(((RequiredArgumentBuilder)Commands.argument("timeline", ResourceArgument.resource(context, Registries.TIMELINE)).suggests((c, p) -> suggestTimelines((CommandSourceStack)c.getSource(), p, clockGetter.getClock(c))).executes((c) -> queryTimelineTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline")))).then(Commands.literal("repetition").executes((c) -> queryTimelineRepetitions((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline"))))));
+   private static <A extends ArgumentBuilder<CommandSourceStack, A>> A addClockNodes(final A node, final ClockGetter clockGetter) {
+      return (A)node.then(((LiteralArgumentBuilder)Commands.literal("set").then(Commands.argument("time", TimeArgument.time()).executes((c) -> setTotalTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgument.getInteger(c, "time"))))).then(Commands.argument("timemarker", IdentifierArgument.id()).suggests(suggestTimeMarker(clockGetter)).executes((c) -> setTimeToTimeMarker((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceKey.create(ClockTimeMarkers.ROOT_ID, IdentifierArgument.getId(c, "timemarker")))))).then(Commands.literal("add").then(Commands.argument("time", TimeArgument.time(-2147483648)).executes((c) -> addTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c), IntegerArgument.getInteger(c, "time"))))).then(Commands.literal("pause").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), true))).then(Commands.literal("resume").executes((c) -> setPaused((CommandSourceStack)c.getSource(), clockGetter.getClock(c), false))).then(Commands.literal("rate").then(Commands.argument("rate", FloatArgument.floatArg(1.0E-5F, 1000.0F)).executes((c) -> setRate((CommandSourceStack)c.getSource(), clockGetter.getClock(c), FloatArgument.getFloat(c, "rate"))))).then(((LiteralArgumentBuilder)Commands.literal("query").then(Commands.literal("time").executes((c) -> queryTime((CommandSourceStack)c.getSource(), clockGetter.getClock(c))))).then(((RequiredArgumentBuilder)Commands.argument("timeline", ResourceArgument.resource(Registries.TIMELINE)).suggests(suggestTimelines(clockGetter)).executes((c) -> queryTimelineTicks((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline")))).then(Commands.literal("repetition").executes((c) -> queryTimelineRepetitions((CommandSourceStack)c.getSource(), clockGetter.getClock(c), ResourceArgument.getTimeline(c, "timeline"))))));
    }
 
-   private static CompletableFuture<Suggestions> suggestTimeMarkers(final CommandSourceStack source, final SuggestionsBuilder builder, final Holder<WorldClock> clock) {
-      return SharedSuggestionProvider.suggestResource(source.getServer().clockManager().commandTimeMarkersForClock(clock).map(ResourceKey::identifier), builder);
+   private static SuggestionProvider<CommandSourceStack> suggestTimeMarker(final ClockGetter clockGetter) {
+      return SuggestionProviders.serverOnly((server, context, builder) -> {
+         Holder<WorldClock> clock = clockGetter.getClockForSuggestions(context);
+         return SuggestionContext.suggestResource(server.clockManager().commandTimeMarkersForClock(clock).map(ResourceKey::identifier), builder);
+      });
    }
 
-   private static CompletableFuture<Suggestions> suggestTimelines(final CommandSourceStack source, final SuggestionsBuilder builder, final Holder<WorldClock> clock) {
-      Stream<ResourceKey<Timeline>> timelines = source.registryAccess().lookupOrThrow(Registries.TIMELINE).listElements().filter((timeline) -> ((Timeline)timeline.value()).clock().equals(clock)).map(Holder.Reference::key);
-      return SharedSuggestionProvider.suggestResource(timelines.map(ResourceKey::identifier), builder);
+   private static SuggestionProvider<CommandSourceStack> suggestTimelines(final ClockGetter clockGetter) {
+      return SuggestionProviders.serverOnly((server, context, builder) -> {
+         Holder<WorldClock> clock = clockGetter.getClockForSuggestions(context);
+         Stream<ResourceKey<Timeline>> timelines = server.registryAccess().lookupOrThrow(Registries.TIMELINE).listElements().filter((timeline) -> ((Timeline)timeline.value()).clock().equals(clock)).map(Holder.Reference::key);
+         return SuggestionContext.suggestResource(timelines.map(ResourceKey::identifier), builder);
+      });
    }
 
    private static int queryGameTime(final CommandSourceStack source) {
@@ -168,12 +175,40 @@ public class TimeCommand {
       return Math.toIntExact(ticks % 2147483647L);
    }
 
-   private static Holder<WorldClock> getDefaultClock(final CommandSourceStack source) throws CommandSyntaxException {
-      Holder<DimensionType> dimensionType = source.getLevel().dimensionTypeRegistration();
-      return (Holder)((DimensionType)dimensionType.value()).defaultClock().orElseThrow(() -> ERROR_NO_DEFAULT_CLOCK.create(dimensionType.getRegisteredName()));
-   }
-
    private interface ClockGetter {
-      Holder<WorldClock> getClock(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
+      ClockGetter FOR_LEVEL_DEFAULT = new ClockGetter() {
+         private static Holder<WorldClock> getDefaultClock(final Optional<? extends Level> serverLevel) throws CommandSyntaxException {
+            Optional<Holder<DimensionType>> dimension = serverLevel.map(Level::dimensionTypeRegistration);
+            return (Holder)dimension.flatMap((dim) -> ((DimensionType)dim.value()).defaultClock()).orElseThrow(() -> TimeCommand.ERROR_NO_DEFAULT_CLOCK.create(dimension.map(Holder::getRegisteredName).orElse("<null>")));
+         }
+
+         public Holder<WorldClock> getClockForSuggestions(final CommandContext<? extends SuggestionContext> context) throws CommandSyntaxException {
+            return getDefaultClock(Optional.ofNullable(((SuggestionContext)context.getSource()).level()));
+         }
+
+         public Holder<WorldClock> getClock(final CommandContext<? extends CommandSourceStack> context) throws CommandSyntaxException {
+            return getDefaultClock(Optional.of(((CommandSourceStack)context.getSource()).getLevel()));
+         }
+      };
+
+      static ClockGetter fromContext(final String name) {
+         return new ClockGetter() {
+            private Holder.Reference<WorldClock> getClockFromContext(final CommandContext<?> context) throws CommandSyntaxException {
+               return ResourceArgument.getClock(context, name);
+            }
+
+            public Holder<WorldClock> getClockForSuggestions(final CommandContext<? extends SuggestionContext> context) throws CommandSyntaxException {
+               return this.getClockFromContext(context);
+            }
+
+            public Holder<WorldClock> getClock(final CommandContext<? extends CommandSourceStack> context) throws CommandSyntaxException {
+               return this.getClockFromContext(context);
+            }
+         };
+      }
+
+      Holder<WorldClock> getClockForSuggestions(CommandContext<? extends SuggestionContext> context) throws CommandSyntaxException;
+
+      Holder<WorldClock> getClock(CommandContext<? extends CommandSourceStack> context) throws CommandSyntaxException;
    }
 }

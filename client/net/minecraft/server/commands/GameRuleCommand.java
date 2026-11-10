@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -21,7 +22,7 @@ public class GameRuleCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      final LiteralArgumentBuilder<CommandSourceStack> base = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
+      final LiteralArgumentBuilder<CommandSourceStack> base = (LiteralArgumentBuilder)Commands.literal("gamerule").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS));
       (new GameRules(context.enabledFeatures())).visitGameRuleTypes(new GameRuleTypeVisitor() {
          public <T> void visit(final GameRule<T> gameRule) {
             LiteralArgumentBuilder<CommandSourceStack> unqualified = Commands.literal(gameRule.id());

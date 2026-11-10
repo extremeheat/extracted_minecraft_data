@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.GsonHelper;
@@ -57,7 +57,7 @@ public interface DataProvider {
       }).toArray((x$0) -> new CompletableFuture[x$0]));
    }
 
-   static <T> CompletableFuture<?> saveStable(final CachedOutput cache, final HolderLookup.Provider registries, final Codec<T> codec, final T value, final Path path) {
+   static <T> CompletableFuture<?> saveStable(final CachedOutput cache, final HolderGetter.Provider registries, final Codec<T> codec, final T value, final Path path) {
       RegistryOps<JsonElement> ops = registries.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
       return saveStable(cache, (DynamicOps)ops, codec, value, path);
    }

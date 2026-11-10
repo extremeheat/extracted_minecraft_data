@@ -6,7 +6,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapCodec;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -26,7 +26,7 @@ public class TagValueOutput implements ValueOutput {
       this.output = output;
    }
 
-   public static TagValueOutput createWithContext(final ProblemReporter problemReporter, final HolderLookup.Provider provider) {
+   public static TagValueOutput createWithContext(final ProblemReporter problemReporter, final HolderGetter.Provider provider) {
       return new TagValueOutput(problemReporter, provider.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
    }
 
@@ -237,7 +237,7 @@ public class TagValueOutput implements ValueOutput {
       }
    }
 
-   public static record EncodeToFieldFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record EncodeToFieldFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Warning {
       public EncodeToFieldFailedProblem {
          super();
       }
@@ -248,7 +248,7 @@ public class TagValueOutput implements ValueOutput {
       }
    }
 
-   public static record EncodeToListFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record EncodeToListFailedProblem(String name, Object value, DataResult.Error<?> error) implements ProblemReporter.Warning {
       public EncodeToListFailedProblem {
          super();
       }
@@ -259,7 +259,7 @@ public class TagValueOutput implements ValueOutput {
       }
    }
 
-   public static record EncodeToMapFailedProblem(Object value, DataResult.Error<?> error) implements ProblemReporter.Problem {
+   public static record EncodeToMapFailedProblem(Object value, DataResult.Error<?> error) implements ProblemReporter.Warning {
       public EncodeToMapFailedProblem {
          super();
       }

@@ -7,11 +7,12 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.commands.suggestions.SuggestPostEffects;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,7 +30,7 @@ public class PostEffectCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("posteffect").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("posteffect", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.POST_EFFECTS)).executes((c) -> addPostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "posteffect"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((c) -> clearPostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets")))))).then(Commands.literal("list").then(Commands.argument("target", EntityArgument.player()).executes((c) -> listPostEffects((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target")))))).then(Commands.literal("remove").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("posteffect", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.POST_EFFECTS)).executes((c) -> removePostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "posteffect")))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("posteffect").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("add").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("posteffect", IdentifierArgument.id()).suggests(SuggestPostEffects.suggestPostEffects()).executes((c) -> addPostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "posteffect"))))))).then(Commands.literal("clear").then(Commands.argument("targets", EntityArgument.players()).executes((c) -> clearPostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets")))))).then(Commands.literal("list").then(Commands.argument("target", EntityArgument.player()).executes((c) -> listPostEffects((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target")))))).then(Commands.literal("remove").then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("posteffect", IdentifierArgument.id()).suggests(SuggestPostEffects.suggestPostEffects()).executes((c) -> removePostEffect((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "posteffect")))))));
    }
 
    private static int addPostEffect(final CommandSourceStack source, final Collection<ServerPlayer> players, final Identifier posteffect) throws CommandSyntaxException {

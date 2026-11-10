@@ -27,10 +27,10 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ResourceSelectorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gizmos.GizmoCollector;
 import net.minecraft.gizmos.Gizmos;
@@ -182,7 +182,7 @@ public class GameTestServer extends MinecraftServer {
       return builder.build();
    }
 
-   public static Stream<Holder.Reference<GameTestInstance>> getTestsForSelection(final RegistryAccess registries, final String selection) {
+   public static Stream<Holder.Reference<GameTestInstance>> getTestsForSelection(final HolderLookup.Provider registries, final String selection) {
       return ResourceSelectorArgument.parse(new StringReader(selection), registries.lookupOrThrow(Registries.TEST_INSTANCE)).stream();
    }
 

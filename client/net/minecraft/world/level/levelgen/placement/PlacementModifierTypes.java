@@ -2,10 +2,11 @@ package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.world.level.levelgen.feature.CuboidPlacement;
 
 public interface PlacementModifierTypes {
-   static MapCodec<? extends PlacementModifier> bootstrap(final Registry<MapCodec<? extends PlacementModifier>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends PlacementModifier>> registry) {
       Registry.register(registry, (String)"block_predicate_filter", BlockPredicateFilter.CODEC);
       Registry.register(registry, (String)"rarity_filter", RarityFilter.CODEC);
       Registry.register(registry, (String)"random_chance", RandomChancePlacement.CODEC);
@@ -23,6 +24,6 @@ public interface PlacementModifierTypes {
       Registry.register(registry, (String)"in_square", InSquarePlacement.CODEC);
       Registry.register(registry, (String)"offset", OffsetPlacement.CODEC);
       Registry.register(registry, (String)"randomly_selected", RandomlySelectedPlacement.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"fixed_placement", FixedPlacement.CODEC);
+      Registry.register(registry, (String)"fixed_placement", FixedPlacement.CODEC);
    }
 }

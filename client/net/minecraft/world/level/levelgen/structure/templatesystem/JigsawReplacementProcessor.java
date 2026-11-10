@@ -34,7 +34,7 @@ public class JigsawReplacementProcessor implements StructureProcessor {
 
             BlockState blockState;
             try {
-               BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(level.holderLookup(Registries.BLOCK), stateString, true);
+               BlockStateParser.BlockResult result = BlockStateParser.parseForBlock(level.holderLookup(Registries.BLOCK), (String)stateString, true);
                blockState = result.blockState();
             } catch (CommandSyntaxException e) {
                LOGGER.error("Failed to parse jigsaw replacement state '{}' at {}: {}", new Object[]{stateString, targetPosition, e.getMessage()});

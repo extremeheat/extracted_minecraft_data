@@ -45,6 +45,7 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.PositionAndRotation;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
@@ -1593,7 +1594,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
    }
 
-   private void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
+   protected void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
       if (movementY < 0.0) {
          this.fallDistance -= movementY;
       }
@@ -1949,10 +1950,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.push(impulse.x, impulse.y, impulse.z);
       }
 
-   }
-
-   public void pushFromExplosion(final Vec3 impulse) {
-      this.push(impulse);
    }
 
    public void push(final double xa, final double ya, final double za) {
@@ -2671,7 +2668,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       return this.interpolationHandler;
    }
 
-   public void lerpHeadTo(final float yRot, final int steps) {
+   public void lerpHeadTo(final float yRot) {
       this.setYHeadRot(yRot);
    }
 
@@ -3162,7 +3159,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput entityData = TagValueOutput.createWithContext(reporter, oldEntity.registryAccess());
          oldEntity.saveWithoutId(entityData);
-         this.load(TagValueInput.create(reporter, this.registryAccess(), entityData.buildResult()));
+         this.load(TagValueInput.create(reporter, (HolderGetter.Provider)this.registryAccess(), entityData.buildResult()));
       }
 
       this.portalCooldown = oldEntity.portalCooldown;
@@ -3408,6 +3405,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public boolean isPushedByFluid() {
       return true;
+   }
+
+   public boolean isPushedByExplosions() {
+      return !this.isPassenger();
    }
 
    public static double getViewScale() {
@@ -3722,6 +3723,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public boolean isClientAuthoritative() {
       LivingEntity passenger = this.getControllingPassenger();
       return passenger != null && passenger.isClientAuthoritative();
+   }
+
+   public Entity getControllingPassengerOrSelf() {
+      LivingEntity passenger = this.getControllingPassenger();
+      return (Entity)(passenger != null ? passenger : this);
    }
 
    public MoveSimulationType getMoveSimulationType() {

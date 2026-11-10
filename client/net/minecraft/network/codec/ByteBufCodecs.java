@@ -26,15 +26,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.IdMapProvider;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -271,6 +274,13 @@ public interface ByteBufCodecs {
          throw new DecoderException("Malformed public key bytes", e);
       }
    }, Key::getEncoded);
+   StreamCodec<ByteBuf, Pattern> PATTERN = STRING_UTF8.map((pattern) -> {
+      try {
+         return Pattern.compile(pattern);
+      } catch (PatternSyntaxException e) {
+         throw new DecoderException("Invalid regex pattern '" + pattern + "': " + e.getMessage());
+      }
+   }, Pattern::pattern);
 
    static StreamCodec<ByteBuf, byte[]> byteArray(final int maxSize) {
       return new StreamCodec<ByteBuf, byte[]>() {
@@ -394,12 +404,12 @@ public interface ByteBufCodecs {
       return new StreamCodec<RegistryFriendlyByteBuf, T>() {
          public T decode(final RegistryFriendlyByteBuf input) {
             Tag tag = (Tag)tagCodec.decode(input);
-            RegistryOps<Tag> ops = input.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            RegistryOps<Tag> ops = input.registries().<Tag>createSerializationContext(NbtOps.INSTANCE);
             return (T)codec.parse(ops, tag).getOrThrow((msg) -> new DecoderException("Failed to decode: " + msg + " " + String.valueOf(tag)));
          }
 
          public void encode(final RegistryFriendlyByteBuf output, final T value) {
-            RegistryOps<Tag> ops = output.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+            RegistryOps<Tag> ops = output.registries().<Tag>createSerializationContext(NbtOps.INSTANCE);
             Tag tag = (Tag)codec.encodeStart(ops, value).getOrThrow((msg) -> new EncoderException("Failed to encode: " + msg + " " + String.valueOf(value)));
             tagCodec.encode(output, tag);
          }
@@ -607,7 +617,7 @@ public interface ByteBufCodecs {
    }
 
    static <V> StreamCodec.CodecOperation<RegistryFriendlyByteBuf, V, V> registryFriendlyLengthPrefixed(final int maxSize) {
-      return lengthPrefixed(maxSize, (parent, child) -> new RegistryFriendlyByteBuf(child, parent.registryAccess()));
+      return lengthPrefixed(maxSize, (parent, child) -> new RegistryFriendlyByteBuf(child, parent.registries(), parent.ids()));
    }
 
    static <T> StreamCodec<ByteBuf, T> idMapper(final IntFunction<T> byId, final ToIntFunction<T> toId) {
@@ -636,30 +646,20 @@ public interface ByteBufCodecs {
       return EnumStreamCodec.<T>sparse(enumClass, toId, defaultEntry);
    }
 
-   private static <T, R> StreamCodec<RegistryFriendlyByteBuf, R> registry(final ResourceKey<? extends Registry<T>> registryKey, final Function<Registry<T>, IdMap<R>> mapExtractor) {
-      return new StreamCodec<RegistryFriendlyByteBuf, R>() {
-         private IdMap<R> getRegistryOrThrow(final RegistryFriendlyByteBuf input) {
-            return (IdMap)mapExtractor.apply(input.registryAccess().lookupOrThrow(registryKey));
-         }
-
-         public R decode(final RegistryFriendlyByteBuf input) {
-            int id = VarInt.read(input);
-            return (R)this.getRegistryOrThrow(input).byIdOrThrow(id);
-         }
-
-         public void encode(final RegistryFriendlyByteBuf output, final R value) {
-            int id = this.getRegistryOrThrow(output).getIdOrThrow(value);
-            VarInt.write(output, id);
+   static <T> StreamCodec<RegistryFriendlyByteBuf, T> registry(final ResourceKey<? extends Registry<T>> registryKey) {
+      return new RegistryEntryStreamCodec<Object, T>() {
+         protected IdMap<T> getRegistryOrThrow(final IdMapProvider input) {
+            return input.<T>idMapOrThrow(registryKey);
          }
       };
    }
 
-   static <T> StreamCodec<RegistryFriendlyByteBuf, T> registry(final ResourceKey<? extends Registry<T>> registryKey) {
-      return registry(registryKey, (r) -> r);
-   }
-
    static <T> StreamCodec<RegistryFriendlyByteBuf, Holder<T>> holderRegistry(final ResourceKey<? extends Registry<T>> registryKey) {
-      return registry(registryKey, Registry::asHolderIdMap);
+      return new RegistryEntryStreamCodec<Object, Holder<T>>() {
+         protected IdMap<Holder<T>> getRegistryOrThrow(final IdMapProvider input) {
+            return input.idHolderMapOrThrow(registryKey);
+         }
+      };
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, Holder<T>> holder(final ResourceKey<? extends Registry<T>> registryKey, final StreamCodec<? super RegistryFriendlyByteBuf, T> directCodec) {
@@ -667,7 +667,7 @@ public interface ByteBufCodecs {
          private static final int DIRECT_HOLDER_ID = 0;
 
          private IdMap<Holder<T>> getRegistryOrThrow(final RegistryFriendlyByteBuf input) {
-            return input.registryAccess().lookupOrThrow(registryKey).asHolderIdMap();
+            return input.ids().idHolderMapOrThrow(registryKey);
          }
 
          public Holder<T> decode(final RegistryFriendlyByteBuf input) {
@@ -698,7 +698,7 @@ public interface ByteBufCodecs {
          public HolderSet<T> decode(final RegistryFriendlyByteBuf input) {
             int count = VarInt.read(input) - 1;
             if (count == -1) {
-               Registry<T> registry = input.registryAccess().lookupOrThrow(registryKey);
+               HolderGetter<T> registry = input.registries().<T>lookupOrThrow(registryKey);
                return (HolderSet)registry.get(TagKey.create(registryKey, (Identifier)Identifier.STREAM_CODEC.decode(input))).orElseThrow();
             } else {
                List<Holder<T>> holders = new ArrayList(Math.min(count, 65536));
@@ -747,5 +747,23 @@ public interface ByteBufCodecs {
             Utf8String.write(output, payload, maxStringLength);
          }
       };
+   }
+
+   public abstract static class RegistryEntryStreamCodec<T, R> implements StreamCodec<RegistryFriendlyByteBuf, R> {
+      public RegistryEntryStreamCodec() {
+         super();
+      }
+
+      protected abstract IdMap<R> getRegistryOrThrow(final IdMapProvider input);
+
+      public R decode(final RegistryFriendlyByteBuf input) {
+         int id = VarInt.read(input);
+         return (R)this.getRegistryOrThrow(input.ids()).byIdOrThrow(id);
+      }
+
+      public void encode(final RegistryFriendlyByteBuf output, final R value) {
+         int id = this.getRegistryOrThrow(output.ids()).getIdOrThrow(value);
+         VarInt.write(output, id);
+      }
    }
 }

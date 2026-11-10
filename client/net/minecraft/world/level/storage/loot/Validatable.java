@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.context.ContextKeySet;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public interface Validatable {
    void validate(ValidationContext context);
@@ -45,6 +46,24 @@ public interface Validatable {
 
    static void validateHolder(final ValidationContext context, final String name, final Optional<? extends Holder<? extends Validatable>> optional) {
       optional.ifPresent((v) -> validateHolder(context, name, v));
+   }
+
+   static void validateConditionHolder(final ValidationContext context, final String name, final Holder<? extends LootItemCondition> holder) {
+      validateHolder(context.forField(name), holder);
+      ((LootItemCondition)holder.value()).validateConstantConditions(context);
+   }
+
+   static boolean validateIfConditionCanPass(final ValidationContext context, final String name, final Holder<? extends LootItemCondition> holder) {
+      validateHolder(context.forField(name), holder);
+      return ((LootItemCondition)holder.value()).canPass(context);
+   }
+
+   static boolean validateIfConditionCanPass(final ValidationContext context, final String name, final Optional<? extends Holder<? extends LootItemCondition>> optional) {
+      return optional.isEmpty() ? true : validateIfConditionCanPass(context, name, (Holder)optional.get());
+   }
+
+   static void validateConditionHolder(final ValidationContext context, final String name, final Optional<? extends Holder<? extends LootItemCondition>> optional) {
+      optional.ifPresent((v) -> validateConditionHolder(context, name, v));
    }
 
    static void validateHolder(final ValidationContext context, final String name, final List<? extends Holder<? extends Validatable>> list) {
@@ -106,19 +125,19 @@ public interface Validatable {
 
    static <T extends Validatable> Function<T, DataResult<T>> validatorForContext(final ContextKeySet params) {
       return (v) -> {
-         ProblemReporter.Collector problemCollector = new ProblemReporter.Collector();
+         ProblemReporter.Collector problemCollector = new ProblemReporter.Collector(true);
          ValidationContext validationContext = new ValidationContext(problemCollector, params);
          v.validate(validationContext);
-         return !problemCollector.isEmpty() ? DataResult.error(() -> "Validation error: " + problemCollector.getReport()) : DataResult.success(v);
+         return problemCollector.hasErrors() ? DataResult.error(() -> "Validation error: " + problemCollector.getReport()) : DataResult.success(v);
       };
    }
 
    static <T extends Validatable> Function<List<T>, DataResult<List<T>>> listValidatorForContext(final ContextKeySet params) {
       return (v) -> {
-         ProblemReporter.Collector problemCollector = new ProblemReporter.Collector();
+         ProblemReporter.Collector problemCollector = new ProblemReporter.Collector(true);
          ValidationContext validationContext = new ValidationContext(problemCollector, params);
          validate(validationContext, v);
-         return !problemCollector.isEmpty() ? DataResult.error(() -> "Validation error: " + problemCollector.getReport()) : DataResult.success(v);
+         return problemCollector.hasErrors() ? DataResult.error(() -> "Validation error: " + problemCollector.getReport()) : DataResult.success(v);
       };
    }
 }

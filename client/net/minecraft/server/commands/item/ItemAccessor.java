@@ -2,6 +2,7 @@ package net.minecraft.server.commands.item;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.ValidationWrapper;
 import net.minecraft.server.commands.CommandResponseTracker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.slot.SlotCollection;
@@ -9,9 +10,9 @@ import net.minecraft.world.item.slot.SlotSource;
 import org.jspecify.annotations.Nullable;
 
 public interface ItemAccessor<Target> {
-   void setItems(CommandSourceStack source, SlotSource slotSource, SetterFunction<Target> function) throws CommandSyntaxException;
+   void setItems(CommandSourceStack source, ValidationWrapper<SlotSource> slotSource, SetterFunction<Target> function) throws CommandSyntaxException;
 
-   SlotCollection getSlots(CommandSourceStack source, SlotSource slotSource) throws CommandSyntaxException;
+   SlotCollection getSlots(CommandSourceStack source, ValidationWrapper<SlotSource> slotSource) throws CommandSyntaxException;
 
    int getReplaceSuccess(CommandSourceStack source, CommandResponseTracker<Target> tracker, @Nullable ItemStack knownItem) throws CommandSyntaxException;
 

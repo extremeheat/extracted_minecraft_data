@@ -9,6 +9,7 @@ import net.minecraft.advancements.predicates.NbtPredicate;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -38,7 +39,7 @@ public class EntityDataAccessor implements DataAccessor {
          UUID uuid = this.entity.getUUID();
 
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
-            this.entity.load(TagValueInput.create(reporter, this.entity.registryAccess(), tag));
+            this.entity.load(TagValueInput.create(reporter, (HolderGetter.Provider)this.entity.registryAccess(), tag));
             this.entity.setUUID(uuid);
             this.entity.postDataManipulated();
          }

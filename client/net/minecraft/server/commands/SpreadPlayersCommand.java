@@ -1,9 +1,6 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.BoolArgumentType;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -15,9 +12,13 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.BooleanArgument;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.FloatArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.arguments.coordinates.Vec2Argument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,7 +45,7 @@ public class SpreadPlayersCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spreadplayers").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.argument("center", Vec2Argument.vec2()).then(Commands.argument("spreadDistance", FloatArgumentType.floatArg(0.0F)).then(((RequiredArgumentBuilder)Commands.argument("maxRange", FloatArgumentType.floatArg(1.0F)).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> spreadPlayers((CommandSourceStack)c.getSource(), Vec2Argument.getVec2(c, "center"), FloatArgumentType.getFloat(c, "spreadDistance"), FloatArgumentType.getFloat(c, "maxRange"), ((CommandSourceStack)c.getSource()).getLevel().getMaxY() + 1, BoolArgumentType.getBool(c, "respectTeams"), EntityArgument.getEntities(c, "targets")))))).then(Commands.literal("under").then(Commands.argument("maxHeight", IntegerArgumentType.integer()).then(Commands.argument("respectTeams", BoolArgumentType.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> spreadPlayers((CommandSourceStack)c.getSource(), Vec2Argument.getVec2(c, "center"), FloatArgumentType.getFloat(c, "spreadDistance"), FloatArgumentType.getFloat(c, "maxRange"), IntegerArgumentType.getInteger(c, "maxHeight"), BoolArgumentType.getBool(c, "respectTeams"), EntityArgument.getEntities(c, "targets")))))))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spreadplayers").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.argument("center", Vec2Argument.vec2()).then(Commands.argument("spreadDistance", FloatArgument.floatArg(0.0F)).then(((RequiredArgumentBuilder)Commands.argument("maxRange", FloatArgument.floatArg(1.0F)).then(Commands.argument("respectTeams", BooleanArgument.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> spreadPlayers((CommandSourceStack)c.getSource(), Vec2Argument.getVec2(c, "center"), FloatArgument.getFloat(c, "spreadDistance"), FloatArgument.getFloat(c, "maxRange"), ((CommandSourceStack)c.getSource()).getLevel().getMaxY() + 1, BooleanArgument.getBool(c, "respectTeams"), EntityArgument.getEntities(c, "targets")))))).then(Commands.literal("under").then(Commands.argument("maxHeight", IntegerArgument.integer()).then(Commands.argument("respectTeams", BooleanArgument.bool()).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> spreadPlayers((CommandSourceStack)c.getSource(), Vec2Argument.getVec2(c, "center"), FloatArgument.getFloat(c, "spreadDistance"), FloatArgument.getFloat(c, "maxRange"), IntegerArgument.getInteger(c, "maxHeight"), BooleanArgument.getBool(c, "respectTeams"), EntityArgument.getEntities(c, "targets")))))))))));
    }
 
    private static int spreadPlayers(final CommandSourceStack source, final Vec2 center, final float spreadDistance, final float maxRange, final int maxHeight, final boolean respectTeams, final Collection<? extends Entity> entities) throws CommandSyntaxException {

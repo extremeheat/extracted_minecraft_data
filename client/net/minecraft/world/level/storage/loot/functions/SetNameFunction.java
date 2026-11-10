@@ -27,7 +27,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class SetNameFunction extends LootItemConditionalFunction {
+public class SetNameFunction extends LootItemConditionalFunction.ContextUser {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<SetNameFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ComponentSerialization.CODEC.optionalFieldOf("name").forGetter((f) -> f.name), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((f) -> f.resolutionContext), SetNameFunction.Target.CODEC.optionalFieldOf("target", SetNameFunction.Target.CUSTOM_NAME).forGetter((f) -> f.target))).apply(i, SetNameFunction::new));
    private final Optional<Component> name;
@@ -45,7 +45,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return (Set)DataFixUtils.orElse(this.resolutionContext.map((target) -> Set.of(target.contextParam())), Set.of());
    }
 

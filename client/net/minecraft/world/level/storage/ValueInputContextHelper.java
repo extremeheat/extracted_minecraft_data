@@ -8,11 +8,11 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.Tag;
 
 public class ValueInputContextHelper {
-   private final HolderLookup.Provider lookup;
+   private final HolderGetter.Provider lookup;
    private final DynamicOps<Tag> ops;
    private final ValueInput.ValueInputList emptyChildList = new ValueInput.ValueInputList() {
       {
@@ -129,7 +129,7 @@ public class ValueInputContextHelper {
          return defaultValue;
       }
 
-      public HolderLookup.Provider lookup() {
+      public HolderGetter.Provider lookup() {
          return ValueInputContextHelper.this.lookup;
       }
 
@@ -138,7 +138,7 @@ public class ValueInputContextHelper {
       }
    };
 
-   public ValueInputContextHelper(final HolderLookup.Provider lookup, final DynamicOps<Tag> ops) {
+   public ValueInputContextHelper(final HolderGetter.Provider lookup, final DynamicOps<Tag> ops) {
       super();
       this.lookup = lookup;
       this.ops = lookup.<Tag>createSerializationContext(ops);
@@ -148,7 +148,7 @@ public class ValueInputContextHelper {
       return this.ops;
    }
 
-   public HolderLookup.Provider lookup() {
+   public HolderGetter.Provider lookup() {
       return this.lookup;
    }
 

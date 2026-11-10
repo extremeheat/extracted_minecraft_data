@@ -65,10 +65,6 @@ public class Potions {
       return Registry.registerForHolder(BuiltInRegistries.POTION, key, potion);
    }
 
-   public static Holder<Potion> bootstrap(final Registry<Potion> registry) {
-      return WATER;
-   }
-
    static {
       WATER = register(PotionIds.WATER, new Potion("water", new MobEffectInstance[0]));
       MUNDANE = register(PotionIds.MUNDANE, new Potion("mundane", new MobEffectInstance[0]));

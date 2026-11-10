@@ -19,7 +19,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jspecify.annotations.Nullable;
 
-public class SetLoreFunction extends LootItemConditionalFunction {
+public class SetLoreFunction extends LootItemConditionalFunction.ContextUser {
    public static final MapCodec<SetLoreFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(ComponentSerialization.CODEC.sizeLimitedListOf(256).fieldOf("lore").forGetter((f) -> f.lore), ListOperation.codec(256).forGetter((f) -> f.mode), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((f) -> f.resolutionContext))).apply(i, SetLoreFunction::new));
    private final List<Component> lore;
    private final ListOperation mode;
@@ -36,7 +36,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return (Set)DataFixUtils.orElse(this.resolutionContext.map((target) -> Set.of(target.contextParam())), Set.of());
    }
 

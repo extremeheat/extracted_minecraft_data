@@ -15,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
@@ -54,7 +55,7 @@ public abstract class RegistryLoadTask<T> {
       }
    }
 
-   public abstract CompletableFuture<?> load(RegistryOps.RegistryInfoLookup context, Executor executor);
+   public abstract CompletableFuture<?> load(HolderGetter.Provider context, Executor executor);
 
    protected void registerElements(final Stream<PendingRegistration<T>> elements) {
       synchronized(this.registryWriteLock) {

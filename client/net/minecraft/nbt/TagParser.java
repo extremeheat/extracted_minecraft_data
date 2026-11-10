@@ -9,6 +9,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.Objects;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.parsing.packrat.commands.CommandParserState;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 
 public class TagParser<T> {
@@ -18,9 +19,9 @@ public class TagParser<T> {
    public static final Codec<CompoundTag> FLATTENED_CODEC;
    public static final Codec<CompoundTag> LENIENT_CODEC;
    private final DynamicOps<T> ops;
-   private final Grammar<T> grammar;
+   private final Grammar<CommandParserState, T> grammar;
 
-   private TagParser(final DynamicOps<T> ops, final Grammar<T> grammar) {
+   private TagParser(final DynamicOps<T> ops, final Grammar<CommandParserState, T> grammar) {
       super();
       this.ops = ops;
       this.grammar = grammar;
@@ -34,25 +35,26 @@ public class TagParser<T> {
       return new TagParser<T>(ops, SnbtGrammar.createParser(ops));
    }
 
-   private static CompoundTag castToCompoundOrThrow(final StringReader reader, final Tag result) throws CommandSyntaxException {
+   private static CompoundTag castToCompoundOrThrow(final CommandParserState reader, final Tag result) throws CommandSyntaxException {
       if (result instanceof CompoundTag compoundTag) {
          return compoundTag;
       } else {
-         throw ERROR_EXPECTED_COMPOUND.createWithContext(reader);
+         throw ERROR_EXPECTED_COMPOUND.createWithContext(reader.reader());
       }
    }
 
    public static CompoundTag parseCompoundFully(final String input) throws CommandSyntaxException {
-      StringReader reader = new StringReader(input);
+      CommandParserState reader = CommandParserState.simple(input);
       return castToCompoundOrThrow(reader, (Tag)NBT_OPS_PARSER.parseFully(reader));
    }
 
    public T parseFully(final String input) throws CommandSyntaxException {
-      return (T)this.parseFully(new StringReader(input));
+      return (T)this.parseFully(CommandParserState.simple(input));
    }
 
-   public T parseFully(final StringReader reader) throws CommandSyntaxException {
-      T result = this.grammar.parseForCommands(reader);
+   public T parseFully(final CommandParserState state) throws CommandSyntaxException {
+      T result = this.grammar.parseForCommands(state);
+      StringReader reader = state.reader();
       reader.skipWhitespace();
       if (reader.canRead()) {
          throw ERROR_TRAILING_DATA.createWithContext(reader);
@@ -62,12 +64,13 @@ public class TagParser<T> {
    }
 
    public T parseAsArgument(final StringReader reader) throws CommandSyntaxException {
-      return this.grammar.parseForCommands(reader);
+      return this.grammar.parseForCommands(CommandParserState.simple(reader));
    }
 
    public static CompoundTag parseCompoundAsArgument(final StringReader reader) throws CommandSyntaxException {
-      Tag result = NBT_OPS_PARSER.parseAsArgument(reader);
-      return castToCompoundOrThrow(reader, result);
+      CommandParserState state = CommandParserState.simple(reader);
+      Tag result = (Tag)NBT_OPS_PARSER.grammar.parseForCommands(state);
+      return castToCompoundOrThrow(state, result);
    }
 
    static {

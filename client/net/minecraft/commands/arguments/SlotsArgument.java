@@ -9,23 +9,28 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
 
-public class SlotsArgument implements ArgumentType<SlotRange> {
-   static final Collection<String> EXAMPLES = List.of("container.*", "container.5", "weapon");
+public class SlotsArgument implements SerializableArgument.ContextFree<SlotRange> {
+   private static final SlotsArgument INSTANCE = new SlotsArgument();
+   public static final SerializableArgument.Type<SlotsArgument> TYPE;
+   static final Collection<String> EXAMPLES;
 
-   public SlotsArgument() {
+   private SlotsArgument() {
       super();
    }
 
-   public static SlotsArgument slots() {
-      return new SlotsArgument();
+   public SerializableArgument.Type<SlotsArgument> type() {
+      return TYPE;
    }
 
-   public static SlotRange getSlots(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<SlotRange> slots() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static SlotRange getSlots(final CommandContext<?> context, final String name) {
       return (SlotRange)context.getArgument(name, SlotRange.class);
    }
 
@@ -33,11 +38,16 @@ public class SlotsArgument implements ArgumentType<SlotRange> {
       return SlotRanges.read(reader);
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(SlotRanges.allNames(), builder);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(SlotRanges.allNames(), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<SlotsArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("container.*", "container.5", "weapon");
    }
 }

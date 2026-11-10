@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.resources.ResourceKey;
 
 public interface TestFunctionLoader {
@@ -14,7 +15,7 @@ public interface TestFunctionLoader {
       ALL_LOADERS.add(loader);
    }
 
-   static void runLoaders(final Registry<Consumer<GameTestHelper>> registry) {
+   static void runLoaders(final WritableRegistry<Consumer<GameTestHelper>> registry) {
       for(TestFunctionLoader loader : ALL_LOADERS) {
          loader.load((key, function) -> Registry.register(registry, (ResourceKey)key, function));
       }

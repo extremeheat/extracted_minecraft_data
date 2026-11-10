@@ -13,6 +13,7 @@ public class DefaultVertexFormat {
    public static final String LINE_WIDTH_SEMANTIC_NAME = "LineWidth";
    public static final String CHUNK_POSITION_SEMANTIC_NAME = "ChunkPosition";
    public static final String CHUNK_VISIBILITY_SEMANTIC_NAME = "ChunkVisibility";
+   public static final String CHUNK_BUFFER_OFFSETS_SEMANTIC_NAME = "BufferStartOffsets";
    private static final GpuFormat POSITION_FORMAT;
    private static final GpuFormat COLOR_FORMAT;
    private static final GpuFormat UV0_FORMAT;
@@ -23,6 +24,7 @@ public class DefaultVertexFormat {
    private static final GpuFormat LINE_WIDTH_FORMAT;
    private static final GpuFormat CHUNK_POSITION_FORMAT;
    private static final GpuFormat CHUNK_VISIBILITY_FORMAT;
+   private static final GpuFormat CHUNK_BUFFER_OFFSETS_FORMAT;
    public static final VertexFormat BLOCK;
    public static final VertexFormat CHUNK_DATA_INSTANCED;
    public static final VertexFormat ENTITY;
@@ -55,8 +57,9 @@ public class DefaultVertexFormat {
       LINE_WIDTH_FORMAT = GpuFormat.R32_FLOAT;
       CHUNK_POSITION_FORMAT = GpuFormat.RGB32_SINT;
       CHUNK_VISIBILITY_FORMAT = GpuFormat.R32_FLOAT;
+      CHUNK_BUFFER_OFFSETS_FORMAT = GpuFormat.RG32_SINT;
       BLOCK = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV2", UV2_FORMAT).build();
-      CHUNK_DATA_INSTANCED = VertexFormat.builder(1).addAttribute("ChunkPosition", CHUNK_POSITION_FORMAT).addAttribute("ChunkVisibility", CHUNK_VISIBILITY_FORMAT).build();
+      CHUNK_DATA_INSTANCED = VertexFormat.builder(1).addAttribute("ChunkPosition", CHUNK_POSITION_FORMAT).addAttribute("ChunkVisibility", CHUNK_VISIBILITY_FORMAT).addAttribute("BufferStartOffsets", CHUNK_BUFFER_OFFSETS_FORMAT).build();
       ENTITY = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV1", UV1_FORMAT).addAttribute("UV2", UV2_FORMAT).addAttribute("Normal", NORMAL_FORMAT).build();
       ENTITY_GLINT_SPECIAL = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("UV1", UV1_FORMAT).addAttribute("UV2", UV2_FORMAT).addAttribute("UV3", UV3_FORMAT).addAttribute("Normal", NORMAL_FORMAT).build();
       PARTICLE = VertexFormat.builder(0).addAttribute("Position", POSITION_FORMAT).addAttribute("UV0", UV0_FORMAT).addAttribute("Color", COLOR_FORMAT).addAttribute("UV2", UV2_FORMAT).build();

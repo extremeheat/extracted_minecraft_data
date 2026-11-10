@@ -1068,7 +1068,8 @@ public abstract class Player extends Avatar implements ContainerUser {
          this.setSprinting(false);
       }
 
-      if (entity instanceof ServerPlayer serverPlayer) {
+      Entity var8 = entity.getControllingPassengerOrSelf();
+      if (var8 instanceof ServerPlayer serverPlayer) {
          if (entity.syncVelocity) {
             serverPlayer.connection.send(new ClientboundSetEntityMotionPacket(entity));
             entity.syncVelocity = false;
@@ -1577,6 +1578,10 @@ public abstract class Player extends Avatar implements ContainerUser {
 
    public boolean isPushedByFluid() {
       return !this.abilities.flying;
+   }
+
+   public boolean isPushedByExplosions() {
+      return !this.isSpectator() && (!this.isCreative() || !this.abilities.flying) && super.isPushedByExplosions();
    }
 
    public Component getDisplayName() {

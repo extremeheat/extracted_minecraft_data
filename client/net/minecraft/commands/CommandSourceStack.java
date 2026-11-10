@@ -1,42 +1,29 @@
 package net.minecraft.commands;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandExceptionType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.suggestion.Suggestions;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BinaryOperator;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.commands.execution.TraceCallbacks;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.OutgoingChatMessage;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionSet;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.permissions.PermissionSetSupplier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TaskChainer;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +35,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCommandSource<CommandSourceStack> {
+public class CommandSourceStack implements ExecutionCommandSource<CommandSourceStack>, PermissionSetSupplier {
    public static final SimpleCommandExceptionType ERROR_NOT_PLAYER = new SimpleCommandExceptionType(Component.translatable("permissions.requires.player"));
    public static final SimpleCommandExceptionType ERROR_NOT_ENTITY = new SimpleCommandExceptionType(Component.translatable("permissions.requires.entity"));
    private final CommandSource source;
@@ -318,52 +305,20 @@ public class CommandSourceStack implements SharedSuggestionProvider, ExecutionCo
       return this.resultCallback;
    }
 
-   public Collection<String> getOnlinePlayerNames() {
-      return List.of(this.server.getPlayerNames());
-   }
-
-   public Collection<String> getAllTeams() {
-      return this.server.getScoreboard().getTeamNames();
-   }
-
-   public Stream<Identifier> getAvailableSounds() {
-      return BuiltInRegistries.SOUND_EVENT.stream().map(SoundEvent::location);
-   }
-
-   public Stream<Identifier> getAvailablePostEffects() {
-      return Stream.empty();
-   }
-
-   public CompletableFuture<Suggestions> customSuggestion(final CommandContext<?> context) {
-      return Suggestions.empty();
-   }
-
-   public <E> CompletableFuture<Suggestions> suggestRegistryElements(final ResourceKey<? extends Registry<E>> key, final SharedSuggestionProvider.ElementSuggestionType elements, final SuggestionsBuilder builder, final CommandContext<?> context, final Predicate<E> filter) {
-      return (CompletableFuture)this.getLookup(key).map((registry) -> {
-         this.suggestRegistryElements(registry, elements, builder, filter);
-         return builder.buildFuture();
-      }).orElseGet(Suggestions::empty);
-   }
-
-   private <E> Optional<? extends HolderLookup<E>> getLookup(final ResourceKey<? extends Registry<E>> key) {
-      Optional<? extends Registry<E>> lookup = this.registryAccess().lookup(key);
-      return lookup.isPresent() ? lookup : this.server.reloadableRegistries().lookup().lookup(key);
-   }
-
    public Set<ResourceKey<Level>> levels() {
       return this.server.levelKeys();
    }
 
-   public RegistryAccess registryAccess() {
-      return this.server.registryAccess();
+   public HolderGetter.Provider holderGetters() {
+      return this.holderLookups();
+   }
+
+   public HolderLookup.Provider holderLookups() {
+      return this.server.reloadableRegistries().lookup();
    }
 
    public FeatureFlagSet enabledFeatures() {
       return this.level.enabledFeatures();
-   }
-
-   public CommandDispatcher<CommandSourceStack> dispatcher() {
-      return this.getServer().getFunctions().getDispatcher();
    }
 
    public void handleError(final CommandExceptionType type, final Message message, final boolean forked, final @Nullable TraceCallbacks tracer) {

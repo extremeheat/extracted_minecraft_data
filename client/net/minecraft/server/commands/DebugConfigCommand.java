@@ -3,16 +3,18 @@ package net.minecraft.server.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.DialogArgument;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.UuidArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.core.Holder;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketListener;
@@ -25,12 +27,14 @@ import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 import org.jspecify.annotations.Nullable;
 
 public class DebugConfigCommand {
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_PLAYERS_IN_CONFIG_PHASE = SuggestionProviders.serverOnly((server, var1, builder) -> SuggestionContext.suggest(getUuidsInConfig(server), builder));
+
    public DebugConfigCommand() {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((c) -> config((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests((c, p) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)c.getSource()).getServer()), p)).executes((c) -> unconfig((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target")))))).then(Commands.literal("dialog").then(Commands.argument("target", UuidArgument.uuid()).suggests((c, p) -> SharedSuggestionProvider.suggest(getUuidsInConfig(((CommandSourceStack)c.getSource()).getServer()), p)).then(Commands.argument("dialog", ResourceOrIdArgument.dialog(context)).executes((c) -> showDialog((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target"), ResourceOrIdArgument.getDialog(c, "dialog")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugconfig").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_ADMINS))).then(Commands.literal("config").then(Commands.argument("target", EntityArgument.player()).executes((c) -> config((CommandSourceStack)c.getSource(), EntityArgument.getPlayer(c, "target")))))).then(Commands.literal("unconfig").then(Commands.argument("target", UuidArgument.uuid()).suggests(SUGGEST_PLAYERS_IN_CONFIG_PHASE).executes((c) -> unconfig((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target")))))).then(Commands.literal("dialog").then(Commands.argument("target", UuidArgument.uuid()).suggests(SUGGEST_PLAYERS_IN_CONFIG_PHASE).then(Commands.argument("dialog", DialogArgument.dialog()).executes((c) -> showDialog((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "target"), DialogArgument.getDialog(c, "dialog")))))));
    }
 
    private static Iterable<String> getUuidsInConfig(final MinecraftServer server) {

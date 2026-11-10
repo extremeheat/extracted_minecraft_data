@@ -14,7 +14,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import org.jspecify.annotations.Nullable;
 
 public class IceBall extends ThrowableBallProjectile {
-   private static final float BASE_DAMAGE = 1.395F;
+   private static final float BASE_DAMAGE = 1.3F;
 
    public IceBall(final EntityType<? extends IceBall> type, final Level level) {
       super(type, level);
@@ -34,7 +34,7 @@ public class IceBall extends ThrowableBallProjectile {
 
    protected int getDamage(final EntityHitResult hitResult) {
       float pow = (float)this.getDeltaMovement().length();
-      return Mth.ceil(Math.clamp(pow * 1.395F, 0.0F, 2.1474836E9F));
+      return Mth.ceil(Math.clamp(pow * 1.3F, 0.0F, 2.1474836E9F));
    }
 
    protected @Nullable SoundEvent getHitSound() {

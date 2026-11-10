@@ -47,7 +47,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
       }
    }
 
-   public WorldDimensions(final Registry<LevelStem> registry) {
+   public WorldDimensions(final HolderLookup<LevelStem> registry) {
       this((Map)registry.listElements().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
    }
 

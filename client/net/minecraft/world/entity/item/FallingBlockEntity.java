@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -200,12 +200,12 @@ public class FallingBlockEntity extends Entity {
                                  BlockEntity blockEntity = this.level().getBlockEntity(pos);
                                  if (blockEntity != null) {
                                     try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(blockEntity.problemPath(), LOGGER)) {
-                                       RegistryAccess registryAccess = this.level().registryAccess();
+                                       HolderGetter.Provider registryAccess = this.level().registryAccess();
                                        TagValueOutput output = TagValueOutput.createWithContext(reporter, registryAccess);
                                        blockEntity.saveWithoutMetadata((ValueOutput)output);
                                        CompoundTag merged = output.buildResult();
                                        this.blockData.forEach((name, tag) -> merged.put(name, tag.copy()));
-                                       blockEntity.loadWithComponents(TagValueInput.create(reporter, registryAccess, merged));
+                                       blockEntity.loadWithComponents(TagValueInput.create(reporter, (HolderGetter.Provider)registryAccess, merged));
                                     } catch (Exception e) {
                                        LOGGER.error("Failed to load block entity from falling block", e);
                                     }

@@ -171,7 +171,6 @@ public class FeatureRenderDispatcher implements AutoCloseable {
             SubmitNodeCollection collection = (SubmitNodeCollection)var4.next();
             this.executePhase(collection.translucentBlocksAndItems, context, renderPass);
             this.executePhase(collection.breakingOverlay, context, renderPass);
-            this.executePhase(collection.waterMask, context, renderPass);
          }
 
       }

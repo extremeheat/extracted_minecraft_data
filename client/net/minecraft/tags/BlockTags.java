@@ -268,6 +268,8 @@ public final class BlockTags {
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS;
    public static final TagKey<Block> TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS;
+   public static final TagKey<Block> TRIGGERS_AMBIENT_ICE_BLOCK_SOUNDS;
+   public static final TagKey<Block> TRIGGERS_AMBIENT_ICE_CRYSTAL_SOUNDS;
    public static final TagKey<Block> REQUIRED_FOR_POPLAR_LEAF_AMBIENCE;
    public static final TagKey<Block> SPELEOTHEMS;
    public static final TagKey<Block> DANGEROUS_FOR_TELEPORTATION;
@@ -578,6 +580,8 @@ public final class BlockTags {
       TRIGGERS_AMBIENT_DESERT_SAND_BLOCK_SOUNDS = create("triggers_ambient_desert_sand_block_sounds");
       TRIGGERS_AMBIENT_DESERT_DRY_VEGETATION_BLOCK_SOUNDS = create("triggers_ambient_desert_dry_vegetation_block_sounds");
       TRIGGERS_AMBIENT_DRIED_GHAST_BLOCK_SOUNDS = create("triggers_ambient_dried_ghast_block_sounds");
+      TRIGGERS_AMBIENT_ICE_BLOCK_SOUNDS = create("triggers_ambient_ice_block_sounds");
+      TRIGGERS_AMBIENT_ICE_CRYSTAL_SOUNDS = create("triggers_ambient_ice_crystal_sounds");
       REQUIRED_FOR_POPLAR_LEAF_AMBIENCE = create("required_for_poplar_leaf_ambience");
       SPELEOTHEMS = create("speleothems");
       DANGEROUS_FOR_TELEPORTATION = create("dangerous_for_teleportation");

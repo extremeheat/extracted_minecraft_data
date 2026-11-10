@@ -4,23 +4,28 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Arrays;
 import java.util.Collection;
-import net.minecraft.commands.CommandSourceStack;
+import java.util.List;
 import net.minecraft.resources.Identifier;
 
-public class IdentifierArgument implements ArgumentType<Identifier> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
+public class IdentifierArgument implements SerializableArgument.ContextFree<Identifier> {
+   private static final IdentifierArgument INSTANCE = new IdentifierArgument();
+   public static final SerializableArgument.Type<IdentifierArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
 
-   public IdentifierArgument() {
+   private IdentifierArgument() {
       super();
    }
 
-   public static IdentifierArgument id() {
-      return new IdentifierArgument();
+   public SerializableArgument.Type<IdentifierArgument> type() {
+      return TYPE;
    }
 
-   public static Identifier getId(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<Identifier> id() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static Identifier getId(final CommandContext<?> context, final String name) {
       return (Identifier)context.getArgument(name, Identifier.class);
    }
 
@@ -30,5 +35,10 @@ public class IdentifierArgument implements ArgumentType<Identifier> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<IdentifierArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("foo", "foo:bar", "012");
    }
 }

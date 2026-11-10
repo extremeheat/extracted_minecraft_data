@@ -2,7 +2,6 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JavaOps;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +12,6 @@ import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 
@@ -29,20 +27,8 @@ public class PlaceholderLookupProvider implements HolderGetter.Provider {
    }
 
    public <T> Optional<? extends HolderGetter<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
-      return Optional.of(this.lookup.castAsLookup());
-   }
-
-   public <V> RegistryOps<V> createSerializationContext(final DynamicOps<V> parent) {
-      return RegistryOps.create(parent, new RegistryOps.RegistryInfoLookup() {
-         {
-            Objects.requireNonNull(PlaceholderLookupProvider.this);
-         }
-
-         public <T> Optional<HolderGetter<T>> lookup(final ResourceKey<? extends Registry<? extends T>> registryKey) {
-            Optional<HolderGetter<T>> result = PlaceholderLookupProvider.this.context.lookup(registryKey).map((e) -> e);
-            return result.or(() -> Optional.of(PlaceholderLookupProvider.this.lookup.castAsLookup()));
-         }
-      });
+      Optional<HolderGetter<T>> result = this.context.lookup(key).map((e) -> e);
+      return result.or(() -> Optional.of(this.lookup.castAsLookup()));
    }
 
    public RegistryContextSwapper createSwapper() {
@@ -51,7 +37,7 @@ public class PlaceholderLookupProvider implements HolderGetter.Provider {
             Objects.requireNonNull(PlaceholderLookupProvider.this);
          }
 
-         public <T> DataResult<T> swapTo(final Codec<T> codec, final T value, final HolderLookup.Provider newContext) {
+         public <T> DataResult<T> swapTo(final Codec<T> codec, final T value, final HolderGetter.Provider newContext) {
             return codec.encodeStart(PlaceholderLookupProvider.this.createSerializationContext(JavaOps.INSTANCE), value).flatMap((v) -> codec.parse(newContext.createSerializationContext(JavaOps.INSTANCE), v));
          }
       };

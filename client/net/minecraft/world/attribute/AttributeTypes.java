@@ -35,10 +35,6 @@ public interface AttributeTypes {
    AttributeType<MobSpawnSettings> MOB_SPAWN_SETTINGS = register("mob_spawn_settings", AttributeType.ofNotInterpolated(MobSpawnSettings.CODEC, AttributeModifier.MOB_SPAWN_SETTINGS_LIBRARY));
    Codec<AttributeType<?>> CODEC = BuiltInRegistries.ATTRIBUTE_TYPE.byNameCodec();
 
-   static AttributeType<?> bootstrap(final Registry<AttributeType<?>> registry) {
-      return BOOLEAN;
-   }
-
    static <Value> AttributeType<Value> register(final String name, final AttributeType<Value> type) {
       Registry.register(BuiltInRegistries.ATTRIBUTE_TYPE, (Identifier)Identifier.withDefaultNamespace(name), type);
       return type;

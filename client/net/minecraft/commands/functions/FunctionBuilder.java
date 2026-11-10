@@ -9,16 +9,16 @@ import net.minecraft.commands.execution.UnboundEntryAction;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-class FunctionBuilder<T extends ExecutionCommandSource<T>> {
-   private @Nullable List<UnboundEntryAction<T>> plainEntries = new ArrayList();
-   private @Nullable List<MacroFunction.Entry<T>> macroEntries;
+class FunctionBuilder<Runtime extends ExecutionCommandSource<Runtime>> {
+   private @Nullable List<UnboundEntryAction<Runtime>> plainEntries = new ArrayList();
+   private @Nullable List<MacroFunction.Entry<Runtime>> macroEntries;
    private final List<String> macroArguments = new ArrayList();
 
    FunctionBuilder() {
       super();
    }
 
-   public void addCommand(final UnboundEntryAction<T> command) {
+   public void addCommand(final UnboundEntryAction<Runtime> command) {
       if (this.macroEntries != null) {
          this.macroEntries.add(new MacroFunction.PlainTextEntry(command));
       } else {
@@ -47,7 +47,7 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       return result;
    }
 
-   public void addMacro(final String command, final int line, final T compilationContext) {
+   public void addMacro(final String command, final int line) {
       StringTemplate parseResults;
       try {
          parseResults = StringTemplate.fromString(command);
@@ -58,17 +58,17 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList(this.plainEntries.size() + 1);
 
-         for(UnboundEntryAction<T> plainEntry : this.plainEntries) {
+         for(UnboundEntryAction<Runtime> plainEntry : this.plainEntries) {
             this.macroEntries.add(new MacroFunction.PlainTextEntry(plainEntry));
          }
 
          this.plainEntries = null;
       }
 
-      this.macroEntries.add(new MacroFunction.MacroEntry(parseResults, this.convertToIndices(parseResults.variables()), compilationContext));
+      this.macroEntries.add(new MacroFunction.MacroEntry(parseResults, this.convertToIndices(parseResults.variables())));
    }
 
-   public CommandFunction<T> build(final Identifier id) {
-      return (CommandFunction<T>)(this.macroEntries != null ? new MacroFunction(id, this.macroEntries, this.macroArguments) : new PlainTextFunction(id, this.plainEntries));
+   public CommandFunction<Runtime> build(final Identifier id, final CommandParser.Provider<Runtime> parserProvider) {
+      return (CommandFunction<Runtime>)(this.macroEntries != null ? new MacroFunction(parserProvider, id, this.macroEntries, this.macroArguments) : new PlainTextFunction(id, this.plainEntries));
    }
 }

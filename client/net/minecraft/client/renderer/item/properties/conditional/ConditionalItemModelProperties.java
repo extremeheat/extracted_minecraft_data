@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.item.properties.conditional;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class ConditionalItemModelProperties {
    public static final MapCodec<ConditionalItemModelProperty> MAP_CODEC;
@@ -11,7 +12,7 @@ public class ConditionalItemModelProperties {
       super();
    }
 
-   public static Object bootstrap(final Registry<MapCodec<? extends ConditionalItemModelProperty>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends ConditionalItemModelProperty>> registry) {
       Registry.register(registry, (String)"custom_model_data", CustomModelDataProperty.MAP_CODEC);
       Registry.register(registry, (String)"using_item", IsUsingItem.MAP_CODEC);
       Registry.register(registry, (String)"broken", Broken.MAP_CODEC);
@@ -24,7 +25,7 @@ public class ConditionalItemModelProperties {
       Registry.register(registry, (String)"extended_view", ExtendedView.MAP_CODEC);
       Registry.register(registry, (String)"keybind_down", IsKeybindDown.MAP_CODEC);
       Registry.register(registry, (String)"view_entity", IsViewEntity.MAP_CODEC);
-      return Registry.register(registry, (String)"component", ComponentMatches.MAP_CODEC);
+      Registry.register(registry, (String)"component", ComponentMatches.MAP_CODEC);
    }
 
    static {

@@ -6,7 +6,7 @@ import org.jspecify.annotations.Nullable;
 public interface ParseState<S> {
    Scope scope();
 
-   ErrorCollector<S> errorCollector();
+   ErrorCollector errorCollector();
 
    default <T> Optional<T> parseTopRule(final NamedRule<S, T> rule) {
       T result = (T)this.parse(rule);

@@ -2,9 +2,10 @@ package net.minecraft.world.level.levelgen.feature.stateproviders;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public interface BlockStateProviderTypes {
-   static MapCodec<? extends BlockStateProvider> bootstrap(final Registry<MapCodec<? extends BlockStateProvider>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends BlockStateProvider>> registry) {
       Registry.register(registry, (String)"copy_properties", CopyPropertiesProvider.CODEC);
       Registry.register(registry, (String)"dual_noise", DualNoiseProvider.CODEC);
       Registry.register(registry, (String)"noise", NoiseProvider.CODEC);
@@ -14,6 +15,6 @@ public interface BlockStateProviderTypes {
       Registry.register(registry, (String)"rotated", RotatedBlockProvider.CODEC);
       Registry.register(registry, (String)"rule_based", RuleBasedStateProvider.CODEC);
       Registry.register(registry, (String)"simple", SimpleStateProvider.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"weighted", WeightedStateProvider.CODEC);
+      Registry.register(registry, (String)"weighted", WeightedStateProvider.CODEC);
    }
 }

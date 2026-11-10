@@ -2,13 +2,14 @@ package net.minecraft.world.level.storage.loot.providers.number.ints;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class ContextIntProviderTypes {
    public ContextIntProviderTypes() {
       super();
    }
 
-   public static MapCodec<? extends ContextIntProvider> bootstrap(final Registry<MapCodec<? extends ContextIntProvider>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends ContextIntProvider>> registry) {
       Registry.register(registry, (String)"abs", Absolute.MAP_CODEC);
       Registry.register(registry, (String)"avg", Average.MAP_CODEC);
       Registry.register(registry, (String)"binomial", BinomialDistributionGenerator.MAP_CODEC);
@@ -31,6 +32,6 @@ public class ContextIntProviderTypes {
       Registry.register(registry, (String)"storage", StorageValue.MAP_CODEC);
       Registry.register(registry, (String)"add", Sum.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformGenerator.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"weighted_list", WeightedListValue.MAP_CODEC);
+      Registry.register(registry, (String)"weighted_list", WeightedListValue.MAP_CODEC);
    }
 }

@@ -81,10 +81,6 @@ public record GameEvent(int notificationRadius) {
       super();
    }
 
-   public static Holder<GameEvent> bootstrap(final Registry<GameEvent> registry) {
-      return BLOCK_ACTIVATE;
-   }
-
    private static Holder.Reference<GameEvent> register(final String name) {
       return register(name, 16);
    }

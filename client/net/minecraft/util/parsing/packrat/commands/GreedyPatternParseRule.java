@@ -7,8 +7,9 @@ import java.util.regex.Pattern;
 import net.minecraft.util.parsing.packrat.DelayedException;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
+import org.jspecify.annotations.Nullable;
 
-public final class GreedyPatternParseRule implements Rule<StringReader, String> {
+public final class GreedyPatternParseRule<S extends CommandParserState> implements Rule<S, String> {
    private final Pattern pattern;
    private final DelayedException<CommandSyntaxException> error;
 
@@ -18,8 +19,8 @@ public final class GreedyPatternParseRule implements Rule<StringReader, String> 
       this.error = error;
    }
 
-   public String parse(final ParseState<StringReader> state) {
-      StringReader input = state.input();
+   public @Nullable String parse(final ParseState<S> state) {
+      StringReader input = ((CommandParserState)state.input()).reader();
       String fullString = input.getString();
       Matcher matcher = this.pattern.matcher(fullString).region(input.getCursor(), fullString.length());
       if (!matcher.lookingAt()) {

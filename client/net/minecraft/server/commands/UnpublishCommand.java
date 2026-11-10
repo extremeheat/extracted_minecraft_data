@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -16,7 +17,7 @@ public class UnpublishCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("unpublish").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).executes((c) -> unpublish((CommandSourceStack)c.getSource())));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("unpublish").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_OWNERS))).executes((c) -> unpublish((CommandSourceStack)c.getSource())));
    }
 
    private static int unpublish(final CommandSourceStack source) throws CommandSyntaxException {

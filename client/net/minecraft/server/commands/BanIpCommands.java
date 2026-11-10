@@ -2,16 +2,17 @@ package net.minecraft.server.commands;
 
 import com.google.common.net.InetAddresses;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Date;
 import java.util.List;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.commands.arguments.StringArgument;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,7 +29,7 @@ public class BanIpCommands {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgumentType.word()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "target"), MessageArgument.getMessage(c, "reason"))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("ban-ip").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_ADMINS))).then(((RequiredArgumentBuilder)Commands.argument("target", StringArgument.word()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgument.getString(c, "target"), (Component)null))).then(Commands.argument("reason", MessageArgument.message()).executes((c) -> banIpOrName((CommandSourceStack)c.getSource(), StringArgument.getString(c, "target"), MessageArgument.getMessage(c, "reason"))))));
    }
 
    private static int banIpOrName(final CommandSourceStack source, final String target, final @Nullable Component reason) throws CommandSyntaxException {

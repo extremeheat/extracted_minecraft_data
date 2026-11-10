@@ -23,7 +23,7 @@ public class CrafterSlotWidget extends SlotWidget {
    protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
       if (this.slot.isDisabled()) {
          this.extractSlotHighlight(graphics, SLOT_HIGHLIGHT_BACK_SPRITE);
-         graphics.blitSprite(GuiPipeline.TEXTURED, (Identifier)SLOT_DISABLED_SPRITE, this.getX() - 1, this.getY() - 1, 18, 18);
+         graphics.blitSprite(GuiPipeline.TEXTURED, SLOT_DISABLED_SPRITE, this.getX(), this.getY(), this.getWidth(), this.getHeight());
          this.extractSlotHighlight(graphics, SLOT_HIGHLIGHT_FRONT_SPRITE);
       } else {
          super.extractWidgetRenderState(graphics);

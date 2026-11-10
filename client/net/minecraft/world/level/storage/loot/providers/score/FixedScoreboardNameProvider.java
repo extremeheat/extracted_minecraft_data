@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.scores.ScoreHolder;
 
 public record FixedScoreboardNameProvider(String name) implements ScoreboardNameProvider {
@@ -23,5 +24,8 @@ public record FixedScoreboardNameProvider(String name) implements ScoreboardName
 
    public ScoreHolder getScoreHolder(final LootContext context) {
       return ScoreHolder.forNameOnly(this.name);
+   }
+
+   public void validate(final ValidationContext context) {
    }
 }

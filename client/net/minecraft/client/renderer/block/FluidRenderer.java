@@ -1,12 +1,13 @@
 package net.minecraft.client.renderer.block;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.model.geom.builders.UVPair;
 import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.ARGB;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.CardinalLighting;
@@ -19,6 +20,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class FluidRenderer {
    private static final float MAX_FLUID_HEIGHT = 0.8888889F;
@@ -79,7 +82,7 @@ public class FluidRenderer {
       boolean renderEast = shouldRenderFace(fluidState, blockState, Direction.EAST, fluidStateEast);
       if (renderUp || renderDown || renderEast || renderWest || renderNorth || renderSouth) {
          FluidModel model = this.fluidModels.get(fluidState);
-         VertexConsumer builder = output.getBuilder(model.layer());
+         ChunkSectionLayer layer = model.layer();
          int tintColor = model.tintSource() != null ? model.tintSource().colorInWorld(blockState, level, pos) : -1;
          CardinalLighting cardinalLighting = level.cardinalLighting();
          Fluid type = fluidState.getType();
@@ -149,9 +152,13 @@ public class FluidRenderer {
                v11 = flowingSprite.getV(0.5F + (-c - s));
             }
 
+            int brightness = Math.round(cardinalLighting.up() * 255.0F) & 255;
             int topLightCoords = this.getLightCoords(level, pos);
-            int topColor = ARGB.scaleRGB(tintColor, cardinalLighting.up());
-            this.addFace(builder, x + 0.0F, y + heightNorthWest, z + 0.0F, u00, v00, x + 0.0F, y + heightSouthWest, z + 1.0F, u01, v01, x + 1.0F, y + heightSouthEast, z + 1.0F, u10, v10, x + 1.0F, y + heightNorthEast, z + 0.0F, u11, v11, topColor, topLightCoords, fluidState.shouldRenderBackwardUpFace(level, pos.above()));
+            Vector3fc bakedPos0 = new Vector3f(0.0F, heightNorthWest, 0.0F);
+            Vector3fc bakedPos1 = new Vector3f(0.0F, heightSouthWest, 1.0F);
+            Vector3fc bakedPos2 = new Vector3f(1.0F, heightSouthEast, 1.0F);
+            Vector3fc bakedPos3 = new Vector3f(1.0F, heightNorthEast, 0.0F);
+            this.addFace(layer, output, x, y, z, bakedPos0, u00, v00, bakedPos1, u01, v01, bakedPos2, u10, v10, bakedPos3, u11, v11, tintColor, brightness, topLightCoords, Direction.UP, fluidState.shouldRenderBackwardUpFace(level, pos.above()));
          }
 
          if (renderDown) {
@@ -160,9 +167,13 @@ public class FluidRenderer {
             float u1 = stillSprite.getU1();
             float v0 = stillSprite.getV0();
             float v1 = stillSprite.getV1();
+            int brightness = Math.round(cardinalLighting.down() * 255.0F) & 255;
             int belowLightCoords = this.getLightCoords(level, pos.below());
-            int belowColor = ARGB.scaleRGB(tintColor, cardinalLighting.down());
-            this.addFace(builder, x, y + bottomOffs, z, u0, v0, x + 1.0F, y + bottomOffs, z, u1, v0, x + 1.0F, y + bottomOffs, z + 1.0F, u1, v1, x, y + bottomOffs, z + 1.0F, u0, v1, belowColor, belowLightCoords, false);
+            Vector3fc bakedPos0 = new Vector3f(0.0F, bottomOffs, 0.0F);
+            Vector3fc bakedPos1 = new Vector3f(1.0F, bottomOffs, 0.0F);
+            Vector3fc bakedPos2 = new Vector3f(1.0F, bottomOffs, 1.0F);
+            Vector3fc bakedPos3 = new Vector3f(0.0F, bottomOffs, 1.0F);
+            this.addFace(layer, output, x, y, z, bakedPos0, u0, v0, bakedPos1, u1, v0, bakedPos2, u1, v1, bakedPos3, u0, v1, tintColor, brightness, belowLightCoords, Direction.DOWN, false);
          }
 
          int sideLightCoords = this.getLightCoords(level, pos);
@@ -238,24 +249,28 @@ public class FluidRenderer {
                float v02 = sprite.getV((1.0F - hh1) * 0.5F);
                float v1 = sprite.getV(0.5F);
                float shadeSide = faceDir.getAxis() == Direction.Axis.Z ? cardinalLighting.north() : cardinalLighting.west();
-               int faceColor = ARGB.scaleRGB(tintColor, cardinalLighting.up() * shadeSide);
-               this.addFace(builder, x0, y + hh0, z0, u0, v01, x1, y + hh1, z1, u1, v02, x1, y + bottomOffs, z1, u1, v1, x0, y + bottomOffs, z0, u0, v1, faceColor, sideLightCoords, !isOverlay);
+               int brightness = Math.round(cardinalLighting.up() * shadeSide * 255.0F) & 255;
+               Vector3fc bakedPos0 = new Vector3f(x0 - x, hh0, z0 - z);
+               Vector3fc bakedPos1 = new Vector3f(x1 - x, hh1, z1 - z);
+               Vector3fc bakedPos2 = new Vector3f(x1 - x, bottomOffs, z1 - z);
+               Vector3fc bakedPos3 = new Vector3f(x0 - x, bottomOffs, z0 - z);
+               this.addFace(layer, output, x, y, z, bakedPos0, u0, v01, bakedPos1, u1, v02, bakedPos2, u1, v1, bakedPos3, u0, v1, tintColor, brightness, sideLightCoords, faceDir, !isOverlay);
             }
          }
 
       }
    }
 
-   private void addFace(final VertexConsumer builder, final float x0, final float y0, final float z0, final float u0, final float v0, final float x1, final float y1, final float z1, final float u1, final float v1, final float x2, final float y2, final float z2, final float u2, final float v2, final float x3, final float y3, final float z3, final float u3, final float v3, final int color, final int lightCoords, final boolean addBackFace) {
-      this.vertex(builder, x0, y0, z0, color, u0, v0, lightCoords);
-      this.vertex(builder, x1, y1, z1, color, u1, v1, lightCoords);
-      this.vertex(builder, x2, y2, z2, color, u2, v2, lightCoords);
-      this.vertex(builder, x3, y3, z3, color, u3, v3, lightCoords);
+   private void addFace(final ChunkSectionLayer layer, final Output output, final float fx, final float fy, final float fz, final Vector3fc x0, final float u0, final float v0, final Vector3fc x1, final float u1, final float v1, final Vector3fc x2, final float u2, final float v2, final Vector3fc x3, final float u3, final float v3, final int color, final int brightness, final int lightCoords, final Direction faceDir, final boolean addBackFace) {
+      long packedUV0 = UVPair.pack(u0, v0);
+      long packedUV1 = UVPair.pack(u1, v1);
+      long packedUV2 = UVPair.pack(u2, v2);
+      long packedUV3 = UVPair.pack(u3, v3);
+      BakedQuad bakedQuad = new BakedQuad(x0, x1, x2, x3, packedUV0, packedUV1, packedUV2, packedUV3, faceDir, (BakedQuad.MaterialInfo)null);
+      output.put(layer, fx, fy, fz, bakedQuad, color, brightness, lightCoords);
       if (addBackFace) {
-         this.vertex(builder, x0, y0, z0, color, u0, v0, lightCoords);
-         this.vertex(builder, x3, y3, z3, color, u3, v3, lightCoords);
-         this.vertex(builder, x2, y2, z2, color, u2, v2, lightCoords);
-         this.vertex(builder, x1, y1, z1, color, u1, v1, lightCoords);
+         BakedQuad backFaceBakedQuad = new BakedQuad(x0, x3, x2, x1, packedUV0, packedUV3, packedUV2, packedUV1, faceDir.getOpposite(), (BakedQuad.MaterialInfo)null);
+         output.put(layer, fx, fy, fz, backFaceBakedQuad, color, brightness, lightCoords);
       }
 
    }
@@ -316,6 +331,6 @@ public class FluidRenderer {
 
    @FunctionalInterface
    public interface Output {
-      VertexConsumer getBuilder(ChunkSectionLayer layer);
+      void put(ChunkSectionLayer layer, float x, float y, float z, BakedQuad quad, int tintColor, int brightness, int lightCoords);
    }
 }

@@ -8,31 +8,35 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
-public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar.baz", "minecraft:foo");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.criteria.invalid", value));
+public class ObjectiveCriteriaArgument implements SerializableArgument.ContextFree<ObjectiveCriteria> {
+   private static final ObjectiveCriteriaArgument INSTANCE = new ObjectiveCriteriaArgument();
+   public static final SerializableArgument.Type<ObjectiveCriteriaArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE;
 
    private ObjectiveCriteriaArgument() {
       super();
    }
 
-   public static ObjectiveCriteriaArgument criteria() {
-      return new ObjectiveCriteriaArgument();
+   public SerializableArgument.Type<ObjectiveCriteriaArgument> type() {
+      return TYPE;
    }
 
-   public static ObjectiveCriteria getCriteria(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<ObjectiveCriteria> criteria() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static ObjectiveCriteria getCriteria(final CommandContext<?> context, final String name) {
       return (ObjectiveCriteria)context.getArgument(name, ObjectiveCriteria.class);
    }
 
@@ -50,7 +54,7 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
       });
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
       List<String> ids = new ArrayList(ObjectiveCriteria.getCustomCriteriaNames());
 
       for(StatType<?> type : BuiltInRegistries.STAT_TYPE) {
@@ -60,7 +64,7 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
          }
       }
 
-      return SharedSuggestionProvider.suggest(ids, builder);
+      return SuggestionContext.suggest(ids, builder);
    }
 
    public <T> String getName(final StatType<T> type, final Object value) {
@@ -69,5 +73,11 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<ObjectiveCriteriaArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("foo", "foo.bar.baz", "minecraft:foo");
+      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.criteria.invalid", value));
    }
 }

@@ -7,28 +7,33 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
 
-public class SlotArgument implements ArgumentType<Integer> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("container.5", "weapon");
-   private static final DynamicCommandExceptionType ERROR_ONLY_SINGLE_SLOT_ALLOWED = new DynamicCommandExceptionType((id) -> Component.translatableEscape("slot.only_single_allowed", id));
+public class SlotArgument implements SerializableArgument.ContextFree<Integer> {
+   private static final SlotArgument INSTANCE = new SlotArgument();
+   public static final SerializableArgument.Type<SlotArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   private static final DynamicCommandExceptionType ERROR_ONLY_SINGLE_SLOT_ALLOWED;
 
-   public SlotArgument() {
+   private SlotArgument() {
       super();
    }
 
-   public static SlotArgument slot() {
-      return new SlotArgument();
+   public SerializableArgument.Type<SlotArgument> type() {
+      return TYPE;
    }
 
-   public static int getSlot(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<Integer> slot() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static int getSlot(final CommandContext<?> context, final String name) {
       return (Integer)context.getArgument(name, Integer.class);
    }
 
@@ -41,11 +46,17 @@ public class SlotArgument implements ArgumentType<Integer> {
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> contextBuilder, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(SlotRanges.singleSlotNames(), builder);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(SlotRanges.singleSlotNames(), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<SlotArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("container.5", "weapon");
+      ERROR_ONLY_SINGLE_SLOT_ALLOWED = new DynamicCommandExceptionType((id) -> Component.translatableEscape("slot.only_single_allowed", id));
    }
 }

@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.friends.FriendEntry;
 import net.minecraft.client.gui.screens.friends.FriendsListActions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.PlayerSkin;
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -42,6 +43,10 @@ public class PlayerEntry extends FriendEntry {
 
    public boolean isRemoved() {
       return this.isRemoved;
+   }
+
+   protected Component getEntryNarration() {
+      return Component.translatable("gui.player_interactions.narration.entry", this.playerName);
    }
 
    public void setHasRecentMessages(final boolean hasRecentMessages) {

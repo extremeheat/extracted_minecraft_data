@@ -348,6 +348,10 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
    }
 
+   protected void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
+      super.updateFallDistanceAndCheckFallDamage(this.position().y - this.oldPosition().y, onGround, state, pos);
+   }
+
    public boolean isOnRails() {
       return this.onRails;
    }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
@@ -46,7 +47,7 @@ public class PrepareSpawnTask implements ConfigurationTask {
 
    public void start(final Consumer<Packet<?>> connection) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-         Optional<ValueInput> loadedData = this.server.getPlayerList().loadPlayerData(this.nameAndId).map((tag) -> TagValueInput.create(reporter, this.server.registryAccess(), tag));
+         Optional<ValueInput> loadedData = this.server.getPlayerList().loadPlayerData(this.nameAndId).map((tag) -> TagValueInput.create(reporter, (HolderGetter.Provider)this.server.registryAccess(), tag));
          ServerPlayer.SavedPosition loadedPosition = (ServerPlayer.SavedPosition)loadedData.flatMap((tag) -> tag.read(ServerPlayer.SavedPosition.MAP_CODEC)).orElse(ServerPlayer.SavedPosition.EMPTY);
          LevelData.RespawnData respawnData = this.server.getWorldData().overworldData().getRespawnData();
          Optional var10000 = loadedPosition.dimension();
@@ -191,7 +192,7 @@ public class PrepareSpawnTask implements ConfigurationTask {
          ServerPlayer player = new ServerPlayer(PrepareSpawnTask.this.server, this.spawnLevel, cookie.gameProfile(), cookie.clientInformation());
 
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(player.problemPath(), PrepareSpawnTask.LOGGER)) {
-            Optional<ValueInput> input = PrepareSpawnTask.this.server.getPlayerList().loadPlayerData(PrepareSpawnTask.this.nameAndId).map((tag) -> TagValueInput.create(reporter, PrepareSpawnTask.this.server.registryAccess(), tag));
+            Optional<ValueInput> input = PrepareSpawnTask.this.server.getPlayerList().loadPlayerData(PrepareSpawnTask.this.nameAndId).map((tag) -> TagValueInput.create(reporter, (HolderGetter.Provider)PrepareSpawnTask.this.server.registryAccess(), tag));
             Objects.requireNonNull(player);
             input.ifPresent(player::load);
             player.snapTo(this.spawnPosition, this.spawnAngle.x, this.spawnAngle.y);

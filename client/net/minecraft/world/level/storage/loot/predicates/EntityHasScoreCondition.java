@@ -15,7 +15,7 @@ import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 
-public record EntityHasScoreCondition(Map<String, IntRangePredicate> scores, LootContext.EntityTarget entityTarget) implements LootItemCondition {
+public record EntityHasScoreCondition(Map<String, IntRangePredicate> scores, LootContext.EntityTarget entityTarget) implements LootItemCondition.ContextUser {
    public static final MapCodec<EntityHasScoreCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.unboundedMap(Codec.STRING, IntRangePredicate.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)).apply(i, EntityHasScoreCondition::new));
 
    public EntityHasScoreCondition {
@@ -26,12 +26,11 @@ public record EntityHasScoreCondition(Map<String, IntRangePredicate> scores, Loo
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return Set.of(this.entityTarget.contextParam());
    }
 
    public void validate(final ValidationContext context) {
-      LootItemCondition.super.validate(context);
       this.scores.forEach((score, value) -> value.validate(context.forMapField("scores", score)));
    }
 

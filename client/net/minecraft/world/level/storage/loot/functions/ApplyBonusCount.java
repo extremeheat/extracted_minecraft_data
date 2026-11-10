@@ -23,7 +23,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class ApplyBonusCount extends LootItemConditionalFunction {
+public class ApplyBonusCount extends LootItemConditionalFunction.ContextUser {
    private static final Map<Identifier, FormulaType> FORMULAS;
    private static final Codec<FormulaType> FORMULA_TYPE_CODEC;
    private static final MapCodec<Formula> FORMULA_CODEC;
@@ -41,7 +41,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(LootContextParams.TOOL);
    }
 

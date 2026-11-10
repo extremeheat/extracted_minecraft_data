@@ -19,7 +19,7 @@ public record FunctionTagCallback(Identifier tagId) implements TimerCallback<Min
       ServerFunctionManager functionManager = server.getFunctions();
 
       for(CommandFunction<CommandSourceStack> function : functionManager.getTag(this.tagId)) {
-         functionManager.execute(function, functionManager.getGameLoopSender());
+         ServerFunctionManager.execute(function, functionManager.getGameLoopSender());
       }
 
    }

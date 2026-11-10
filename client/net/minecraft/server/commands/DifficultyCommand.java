@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -24,7 +25,7 @@ public class DifficultyCommand {
          command.then(Commands.literal(difficulty.getSerializedName()).executes((c) -> setDifficulty((CommandSourceStack)c.getSource(), difficulty)));
       }
 
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)command.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)command.requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((c) -> {
          Difficulty difficulty = ((CommandSourceStack)c.getSource()).getLevel().getDifficulty();
          ((CommandSourceStack)c.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", difficulty.getDisplayName()), false);
          return difficulty.getId();

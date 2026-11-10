@@ -8,6 +8,7 @@ public class BindGroupLayouts {
    public static final BindGroupLayout DYNAMIC_TRANSFORMS;
    public static final BindGroupLayout PROJECTION;
    public static final BindGroupLayout CHUNK_SECTION;
+   public static final GpuFormat TERRAIN_VERTEX_TEXEL_FORMAT;
    public static final BindGroupLayout TERRAIN_INFO;
    public static final BindGroupLayout FOG;
    public static final BindGroupLayout GLOBALS;
@@ -31,9 +32,9 @@ public class BindGroupLayouts {
    public static final BindGroupLayout CURRENT_SPRITE_NEXT_SPRITE;
    public static final BindGroupLayout GLINT_SAMPLER;
    public static final BindGroupLayout DEPTH_BOUNDS_SAMPLER;
+   public static final BindGroupLayout WATER_MASK_SAMPLER;
    public static final BindGroupLayout OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
-   public static final BindGroupLayout SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
-   public static final BindGroupLayout SAMPLER0_SAMPLER2_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
+   public static final BindGroupLayout ACCUMULATE_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER;
 
    private BindGroupLayouts() {
       super();
@@ -43,7 +44,8 @@ public class BindGroupLayouts {
       DYNAMIC_TRANSFORMS = BindGroupLayout.builder().withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER).build();
       PROJECTION = BindGroupLayout.builder().withUniform("Projection", UniformType.UNIFORM_BUFFER).build();
       CHUNK_SECTION = BindGroupLayout.builder().withUniform("ChunkSection", UniformType.UNIFORM_BUFFER).build();
-      TERRAIN_INFO = BindGroupLayout.builder().withUniform("TerrainUniform", UniformType.UNIFORM_BUFFER).build();
+      TERRAIN_VERTEX_TEXEL_FORMAT = GpuFormat.RGBA32_UINT;
+      TERRAIN_INFO = BindGroupLayout.builder().withUniform("TerrainUniform", UniformType.UNIFORM_BUFFER).withUniform("TerrainVertexBuffer", UniformType.TEXEL_BUFFER, TERRAIN_VERTEX_TEXEL_FORMAT).build();
       FOG = BindGroupLayout.builder().withUniform("Fog", UniformType.UNIFORM_BUFFER).build();
       GLOBALS = BindGroupLayout.builder().withUniform("Globals", UniformType.UNIFORM_BUFFER).build();
       LIGHTING = BindGroupLayout.builder().withUniform("Lighting", UniformType.UNIFORM_BUFFER).build();
@@ -65,27 +67,21 @@ public class BindGroupLayouts {
       SPRITE = BindGroupLayout.builder().withUniform("Sprite", UniformType.COMBINED_IMAGE_SAMPLER).build();
       CURRENT_SPRITE_NEXT_SPRITE = BindGroupLayout.builder().withUniform("CurrentSprite", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("NextSprite", UniformType.COMBINED_IMAGE_SAMPLER).build();
       GLINT_SAMPLER = BindGroupLayout.builder().withUniform("GlintSampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
-      DEPTH_BOUNDS_SAMPLER = BindGroupLayout.builder().withUniform("DepthBoundsSampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
-      BindGroupLayout.Builder builder = BindGroupLayout.builder().withUniform("DepthBoundsSampler", UniformType.COMBINED_IMAGE_SAMPLER);
+      DEPTH_BOUNDS_SAMPLER = BindGroupLayout.builder().withUniform("DepthBoundsSampler", UniformType.INPUT_ATTACHMENT).build();
+      WATER_MASK_SAMPLER = BindGroupLayout.builder().withUniform("WaterMaskSampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
+      BindGroupLayout.Builder builder = BindGroupLayout.builder().withUniform("DepthBoundsSampler", UniformType.INPUT_ATTACHMENT);
 
       for(int i = 0; i < 2; ++i) {
-         builder.withUniform("Bins" + i, UniformType.COMBINED_IMAGE_SAMPLER);
+         builder.withUniform("Bins" + i, UniformType.INPUT_ATTACHMENT);
       }
 
       OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
-      builder = BindGroupLayout.builder().withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("DepthBoundsSampler", UniformType.COMBINED_IMAGE_SAMPLER);
+      builder = BindGroupLayout.builder().withUniform("AccumulateSampler", UniformType.INPUT_ATTACHMENT).withUniform("DepthBoundsSampler", UniformType.INPUT_ATTACHMENT);
 
       for(int i = 0; i < 2; ++i) {
-         builder.withUniform("Bins" + i, UniformType.COMBINED_IMAGE_SAMPLER);
+         builder.withUniform("Bins" + i, UniformType.INPUT_ATTACHMENT);
       }
 
-      SAMPLER0_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
-      builder = BindGroupLayout.builder().withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("DepthBoundsSampler", UniformType.COMBINED_IMAGE_SAMPLER);
-
-      for(int i = 0; i < 2; ++i) {
-         builder.withUniform("Bins" + i, UniformType.COMBINED_IMAGE_SAMPLER);
-      }
-
-      SAMPLER0_SAMPLER2_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
+      ACCUMULATE_OIT_COEFFS_DEPTH_BOUNDS_SAMPLER = builder.build();
    }
 }

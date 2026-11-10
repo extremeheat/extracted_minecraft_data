@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
@@ -28,10 +27,10 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 public interface PresetEditor {
    Map<Optional<ResourceKey<WorldPreset>>, PresetEditor> EDITORS = Map.of(Optional.of(WorldPresets.FLAT), (PresetEditor)(parent, settings) -> {
       ChunkGenerator overworld = settings.selectedDimensions().overworld();
-      RegistryAccess registryAccess = settings.worldgenLoadContext();
-      HolderGetter<Biome> biomes = registryAccess.lookupOrThrow(Registries.BIOME);
-      HolderGetter<StructureSet> structureSets = registryAccess.lookupOrThrow(Registries.STRUCTURE_SET);
-      HolderGetter<PlacedFeature> placedFeatures = registryAccess.lookupOrThrow(Registries.PLACED_FEATURE);
+      HolderGetter.Provider registryAccess = settings.worldgenLoadContext();
+      HolderGetter<Biome> biomes = registryAccess.<Biome>lookupOrThrow(Registries.BIOME);
+      HolderGetter<StructureSet> structureSets = registryAccess.<StructureSet>lookupOrThrow(Registries.STRUCTURE_SET);
+      HolderGetter<PlacedFeature> placedFeatures = registryAccess.<PlacedFeature>lookupOrThrow(Registries.PLACED_FEATURE);
       CreateFlatWorldScreen var10000 = new CreateFlatWorldScreen;
       Consumer var10003 = (flatWorldSettings) -> parent.getUiState().updateDimensions(flatWorldConfigurator(flatWorldSettings));
       FlatLevelGeneratorSettings var10004;

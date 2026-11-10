@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.item.properties.select;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class SelectItemModelProperties {
    public static final Codec<SelectItemModelProperty.Type<?, ?>> CODEC;
@@ -11,7 +12,7 @@ public class SelectItemModelProperties {
       super();
    }
 
-   public static Object bootstrap(final Registry<SelectItemModelProperty.Type<?, ?>> registry) {
+   public static void bootstrap(final WritableRegistry<SelectItemModelProperty.Type<?, ?>> registry) {
       Registry.register(registry, (String)"custom_model_data", CustomModelDataProperty.TYPE);
       Registry.register(registry, (String)"main_hand", MainHand.TYPE);
       Registry.register(registry, (String)"charge_type", Charge.TYPE);
@@ -21,7 +22,7 @@ public class SelectItemModelProperties {
       Registry.register(registry, (String)"local_time", LocalTime.TYPE);
       Registry.register(registry, (String)"context_entity_type", ContextEntityType.TYPE);
       Registry.register(registry, (String)"context_dimension", ContextDimension.TYPE);
-      return Registry.register(registry, (String)"component", ComponentContents.castType());
+      Registry.register(registry, (String)"component", ComponentContents.castType());
    }
 
    static {

@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -18,13 +19,13 @@ public abstract class GameTestInstance {
    public static final Codec<GameTestInstance> DIRECT_CODEC;
    private final TestData<Holder<TestEnvironmentDefinition<?>>> info;
 
-   public static MapCodec<? extends GameTestInstance> bootstrap(final Registry<MapCodec<? extends GameTestInstance>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends GameTestInstance>> registry) {
       register(registry, "block_based", BlockBasedTestInstance.CODEC);
-      return register(registry, "function", FunctionGameTestInstance.CODEC);
+      register(registry, "function", FunctionGameTestInstance.CODEC);
    }
 
-   private static MapCodec<? extends GameTestInstance> register(final Registry<MapCodec<? extends GameTestInstance>> registry, final String name, final MapCodec<? extends GameTestInstance> codec) {
-      return (MapCodec)Registry.register(registry, (ResourceKey)ResourceKey.create(Registries.TEST_INSTANCE_TYPE, Identifier.withDefaultNamespace(name)), codec);
+   private static void register(final WritableRegistry<MapCodec<? extends GameTestInstance>> registry, final String name, final MapCodec<? extends GameTestInstance> codec) {
+      Registry.register(registry, (ResourceKey)ResourceKey.create(Registries.TEST_INSTANCE_TYPE, Identifier.withDefaultNamespace(name)), codec);
    }
 
    protected GameTestInstance(final TestData<Holder<TestEnvironmentDefinition<?>>> info) {

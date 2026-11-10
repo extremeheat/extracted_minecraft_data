@@ -14,7 +14,7 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class FillPlayerHead extends LootItemConditionalFunction {
+public class FillPlayerHead extends LootItemConditionalFunction.ContextUser {
    public static final MapCodec<FillPlayerHead> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter((f) -> f.entityTarget)).apply(i, FillPlayerHead::new));
    private final LootContext.EntityTarget entityTarget;
 
@@ -27,7 +27,7 @@ public class FillPlayerHead extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(this.entityTarget.contextParam());
    }
 

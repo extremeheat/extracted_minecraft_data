@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 
 public interface ValueInput {
    <T> Optional<T> read(String name, Codec<T> codec);
@@ -51,7 +51,7 @@ public interface ValueInput {
 
    /** @deprecated */
    @Deprecated
-   HolderLookup.Provider lookup();
+   HolderGetter.Provider lookup();
 
    public interface TypedInputList<T> extends Iterable<T> {
       boolean isEmpty();

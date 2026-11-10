@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -11,9 +10,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.StringArgument;
 import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.ClickEvent;
@@ -38,7 +39,7 @@ public class FetchProfileCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgumentType.greedyString()).executes((c) -> resolveName((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((c) -> resolveId((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "id")))))).then(Commands.literal("entity").then(Commands.argument("entity", EntityArgument.entity()).executes((c) -> printForEntity((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "entity"))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("fetchprofile").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("name").then(Commands.argument("name", StringArgument.greedyString()).executes((c) -> resolveName((CommandSourceStack)c.getSource(), StringArgument.getString(c, "name")))))).then(Commands.literal("id").then(Commands.argument("id", UuidArgument.uuid()).executes((c) -> resolveId((CommandSourceStack)c.getSource(), UuidArgument.getUuid(c, "id")))))).then(Commands.literal("entity").then(Commands.argument("entity", EntityArgument.entity()).executes((c) -> printForEntity((CommandSourceStack)c.getSource(), EntityArgument.getEntity(c, "entity"))))));
    }
 
    private static void reportResolvedProfile(final CommandSourceStack sender, final GameProfile gameProfile, final String messageId, final Component argument) {

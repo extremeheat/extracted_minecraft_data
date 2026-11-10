@@ -24,6 +24,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
@@ -71,7 +72,7 @@ public class ParticleResources implements PreparableReloadListener {
       this.onReload = onReload;
    }
 
-   public static ParticleProvider<?> bootstrap(final Registry<ParticleProvider<?>> registry) {
+   public static void bootstrap(final WritableRegistry<ParticleProvider<?>> registry) {
       register(registry, ParticleTypes.ANGRY_VILLAGER, HeartParticle.AngryVillagerProvider::new);
       register(registry, ParticleTypes.BLOCK_MARKER, new BlockMarker.Provider());
       register(registry, ParticleTypes.BLOCK, new TerrainParticle.Provider());
@@ -199,18 +200,18 @@ public class ParticleResources implements PreparableReloadListener {
       register(registry, ParticleTypes.OMINOUS_SPAWNING, FlyStraightTowardsParticle.OminousSpawnProvider::new);
       register(registry, ParticleTypes.BLOCK_CRUMBLE, new TerrainParticle.CrumblingProvider());
       register(registry, ParticleTypes.FIREFLY, FireflyParticle.FireflyProvider::new);
-      return register(registry, ParticleTypes.SULFUR_CUBE_GOO, BreakingItemParticle.SulfurCubeProvider::new);
+      register(registry, ParticleTypes.SULFUR_CUBE_GOO, BreakingItemParticle.SulfurCubeProvider::new);
    }
 
-   private static <T extends ParticleOptions> ParticleProvider<?> register(final Registry<ParticleProvider<?>> registry, final ParticleType<T> type, final ParticleProvider<T> provider) {
-      return (ParticleProvider)Registry.register(registry, (ResourceKey)particleTypeKey(type), provider);
+   private static <T extends ParticleOptions> void register(final WritableRegistry<ParticleProvider<?>> registry, final ParticleType<T> type, final ParticleProvider<T> provider) {
+      Registry.register(registry, (ResourceKey)particleTypeKey(type), provider);
    }
 
-   private static <T extends ParticleOptions> ParticleProvider<?> register(final Registry<ParticleProvider<?>> registry, final ParticleType<T> type, final SpriteParticleRegistration<T> provider) {
+   private static <T extends ParticleOptions> void register(final WritableRegistry<ParticleProvider<?>> registry, final ParticleType<T> type, final SpriteParticleRegistration<T> provider) {
       MutableSpriteSet spriteSet = new MutableSpriteSet();
       ResourceKey<ParticleProvider<?>> key = particleTypeKey(type);
       SPRITE_SETS.put(key, spriteSet);
-      return (ParticleProvider)Registry.register(registry, (ResourceKey)key, provider.create(spriteSet));
+      Registry.register(registry, (ResourceKey)key, provider.create(spriteSet));
    }
 
    private static ResourceKey<ParticleProvider<?>> particleTypeKey(final ResourceKey<ParticleType<?>> key) {

@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -36,7 +37,7 @@ public class PerfCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.literal("start").executes((c) -> startProfilingDedicatedServer((CommandSourceStack)c.getSource())))).then(Commands.literal("stop").executes((c) -> stopProfilingDedicatedServer((CommandSourceStack)c.getSource()))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_OWNERS))).then(Commands.literal("start").executes((c) -> startProfilingDedicatedServer((CommandSourceStack)c.getSource())))).then(Commands.literal("stop").executes((c) -> stopProfilingDedicatedServer((CommandSourceStack)c.getSource()))));
    }
 
    private static int startProfilingDedicatedServer(final CommandSourceStack source) throws CommandSyntaxException {

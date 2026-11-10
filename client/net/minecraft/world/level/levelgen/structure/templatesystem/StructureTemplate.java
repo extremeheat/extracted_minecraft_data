@@ -278,7 +278,7 @@ public class StructureTemplate {
                                  blockInfo.nbt.putLong("LootTableSeed", random.nextLong());
                               }
 
-                              blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), level.registryAccess(), blockInfo.nbt));
+                              blockEntity.loadWithComponents(TagValueInput.create(reporter.forChild(blockEntity.problemPath()), (HolderGetter.Provider)level.registryAccess(), blockInfo.nbt));
                            }
                         }
 
@@ -473,7 +473,7 @@ public class StructureTemplate {
 
    private static Optional<Entity> createEntityIgnoreException(final ProblemReporter reporter, final ServerLevelAccessor level, final CompoundTag tag) {
       try {
-         return EntityType.create(TagValueInput.create(reporter, level.registryAccess(), tag), level.getLevel(), new EntitySpawnRequest(EntitySpawnReason.STRUCTURE, false));
+         return EntityType.create(TagValueInput.create(reporter, (HolderGetter.Provider)level.registryAccess(), tag), level.getLevel(), new EntitySpawnRequest(EntitySpawnReason.STRUCTURE, false));
       } catch (Exception var4) {
          return Optional.empty();
       }

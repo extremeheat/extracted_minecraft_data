@@ -6,9 +6,9 @@ import java.util.Optional;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -198,7 +198,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       }
    }
 
-   private List<EnchantmentInstance> getEnchantmentList(final RegistryAccess access, final ItemStack itemStack, final int slot, final int enchantmentCost) {
+   private List<EnchantmentInstance> getEnchantmentList(final HolderGetter.Provider access, final ItemStack itemStack, final int slot, final int enchantmentCost) {
       this.random.setSeed((long)(this.enchantmentSeed.get() + slot));
       Optional<HolderSet.Named<Enchantment>> tag = access.lookupOrThrow(Registries.ENCHANTMENT).get(EnchantmentTags.IN_ENCHANTING_TABLE);
       if (tag.isEmpty()) {

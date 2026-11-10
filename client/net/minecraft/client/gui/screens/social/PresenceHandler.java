@@ -27,11 +27,12 @@ public class PresenceHandler {
    private final Minecraft minecraft;
    private final FriendsService friendsService;
    private PresenceResponse latestPresence = new PresenceResponse(new ArrayList());
-   private Instant lastPresencePost = Instant.now();
+   private Instant lastPresencePost;
    private boolean updatePresence;
 
    public PresenceHandler(final Minecraft minecraft, final FriendsService friendsService) {
       super();
+      this.lastPresencePost = Instant.EPOCH;
       this.minecraft = minecraft;
       this.friendsService = friendsService;
       this.updatePresence = true;

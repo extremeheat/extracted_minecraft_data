@@ -11,8 +11,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -33,7 +33,7 @@ public class WorldUpgrader implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final ThreadFactory THREAD_FACTORY = (new ThreadFactoryBuilder()).setNameFormat("World Upgrader #%d").setDaemon(true).build();
    private final UpgradeStatusTranslator statusTranslator = new UpgradeStatusTranslator();
-   private final Registry<LevelStem> dimensions;
+   private final HolderLookup<LevelStem> dimensions;
    private final Set<ResourceKey<Level>> levels;
    private final boolean eraseCache;
    private final boolean recreateRegionFiles;
@@ -43,10 +43,10 @@ public class WorldUpgrader implements AutoCloseable {
    private final UpgradeProgress upgradeProgress = new UpgradeProgress();
    private final SavedDataStorage overworldSavedDataStorage;
 
-   public WorldUpgrader(final LevelStorageSource.LevelStorageAccess levelSource, final DataFixer dataFixer, final RegistryAccess registryAccess, final boolean eraseCache, final boolean recreateRegionFiles) {
+   public WorldUpgrader(final LevelStorageSource.LevelStorageAccess levelSource, final DataFixer dataFixer, final HolderLookup.Provider registryAccess, final boolean eraseCache, final boolean recreateRegionFiles) {
       super();
       this.dimensions = registryAccess.lookupOrThrow(Registries.LEVEL_STEM);
-      this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
+      this.levels = (Set)this.dimensions.listElementIds().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
       this.eraseCache = eraseCache;
       this.dataFixer = dataFixer;
       this.levelStorage = levelSource;
@@ -61,8 +61,8 @@ public class WorldUpgrader implements AutoCloseable {
       this.thread.start();
    }
 
-   public static CompoundTag getDataFixContextTag(final Registry<LevelStem> dimensions, final ResourceKey<Level> dimension) {
-      ChunkGenerator generator = ((LevelStem)dimensions.getValueOrThrow(Registries.levelToLevelStem(dimension))).generator();
+   public static CompoundTag getDataFixContextTag(final HolderGetter<LevelStem> dimensions, final ResourceKey<Level> dimension) {
+      ChunkGenerator generator = ((LevelStem)dimensions.getOrThrow(Registries.levelToLevelStem(dimension)).value()).generator();
       return ChunkMap.getChunkDataFixContextTag(dimension, generator.getTypeNameForDataFixer());
    }
 

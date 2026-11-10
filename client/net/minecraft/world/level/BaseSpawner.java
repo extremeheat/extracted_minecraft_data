@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -113,7 +114,7 @@ public abstract class BaseSpawner {
 
             for(int c = 0; c < this.spawnCount; ++c) {
                try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this::toString, LOGGER)) {
-                  ValueInput input = TagValueInput.create(reporter, level.registryAccess(), nextSpawnData.getEntityToSpawn());
+                  ValueInput input = TagValueInput.create(reporter, (HolderGetter.Provider)level.registryAccess(), nextSpawnData.getEntityToSpawn());
                   Optional<EntityType<?>> entityType = EntityType.by(input);
                   if (entityType.isEmpty()) {
                      this.delay(level, pos);

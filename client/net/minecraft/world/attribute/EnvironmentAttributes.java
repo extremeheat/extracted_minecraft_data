@@ -70,10 +70,6 @@ public interface EnvironmentAttributes {
    EnvironmentAttribute<Activity> BABY_VILLAGER_ACTIVITY = register("gameplay/baby_villager_activity", EnvironmentAttribute.builder(AttributeTypes.ACTIVITY).defaultValue(Activity.IDLE));
    Codec<EnvironmentAttribute<?>> CODEC = BuiltInRegistries.ENVIRONMENT_ATTRIBUTE.byNameCodec();
 
-   static EnvironmentAttribute<?> bootstrap(final Registry<EnvironmentAttribute<?>> registry) {
-      return RESPAWN_ANCHOR_WORKS;
-   }
-
    private static <Value> EnvironmentAttribute<Value> register(final String id, final EnvironmentAttribute.Builder<Value> attributeBuilder) {
       EnvironmentAttribute<Value> attribute = attributeBuilder.build();
       Registry.register(BuiltInRegistries.ENVIRONMENT_ATTRIBUTE, (Identifier)Identifier.withDefaultNamespace(id), attribute);

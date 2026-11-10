@@ -12,6 +12,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
 
@@ -27,6 +28,9 @@ public class SmeltItemFunction extends LootItemConditionalFunction {
 
    public MapCodec<SmeltItemFunction> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {

@@ -7,6 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -19,6 +20,9 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
 
    public MapCodec<ApplyExplosionDecay> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {

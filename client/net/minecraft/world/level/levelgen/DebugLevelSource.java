@@ -139,7 +139,7 @@ public class DebugLevelSource extends ChunkGenerator {
       if (worldX > 0 && worldZ > 0 && worldX % 8 == 0 && worldZ % 8 == 0) {
          worldX = (worldX - 1) / 8;
          worldZ = (worldZ - 1) / 8;
-         if (worldX <= this.entityGridWidth && worldZ <= this.entityGridHeight) {
+         if (worldX < this.entityGridWidth && worldZ < this.entityGridHeight) {
             int index = Mth.abs(worldX * this.entityGridWidth + worldZ);
             if (index < this.allEntities.size()) {
                entityTypeRef = Optional.of((EntityType)this.allEntities.get(index));

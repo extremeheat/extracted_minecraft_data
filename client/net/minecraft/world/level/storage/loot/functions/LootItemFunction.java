@@ -7,9 +7,9 @@ import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootContextUser;
+import net.minecraft.world.level.storage.loot.Validatable;
 
-public interface LootItemFunction extends LootContextUser, BiFunction<ItemStack, LootContext, ItemStack> {
+public interface LootItemFunction extends Validatable, BiFunction<ItemStack, LootContext, ItemStack> {
    MapCodec<? extends LootItemFunction> codec();
 
    static Consumer<ItemStack> decorate(final Optional<Holder<LootItemFunction>> maybeFunction, final Consumer<ItemStack> output, final LootContext context) {

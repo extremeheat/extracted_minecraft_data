@@ -14,14 +14,12 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.tags.PaintingVariantTags;
@@ -74,7 +72,7 @@ public class CreativeModeTabs {
       return ResourceKey.create(Registries.CREATIVE_MODE_TAB, Identifier.withDefaultNamespace(id));
    }
 
-   public static CreativeModeTab bootstrap(final Registry<CreativeModeTab> registry) {
+   public static void bootstrap(final WritableRegistry<CreativeModeTab> registry) {
       Registry.register(registry, (ResourceKey)BUILDING_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0).title(Component.translatable("itemGroup.buildingBlocks")).icon(() -> new ItemStack(Blocks.BRICKS)).displayItems((parameters, buildingBlocks) -> {
          buildingBlocks.accept((ItemLike)Items.OAK_LOG);
          buildingBlocks.accept((ItemLike)Items.OAK_WOOD);
@@ -393,6 +391,8 @@ public class CreativeModeTabs {
          buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_SLAB);
          buildingBlocks.accept((ItemLike)Items.PACKED_ICE_BRICK_WALL);
          buildingBlocks.accept((ItemLike)Items.CHISELED_PACKED_ICE);
+         buildingBlocks.accept((ItemLike)Items.SNOW);
+         buildingBlocks.accept((ItemLike)Items.SNOW_BLOCK);
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICKS);
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_STAIRS);
          buildingBlocks.accept((ItemLike)Items.SNOW_BRICK_SLAB);
@@ -851,7 +851,7 @@ public class CreativeModeTabs {
          functionalBlocks.accept((ItemLike)Items.ITEM_FRAME);
          functionalBlocks.accept((ItemLike)Items.GLOW_ITEM_FRAME);
          functionalBlocks.accept((ItemLike)Items.PAINTING);
-         parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((paintings) -> generatePresetPaintings(functionalBlocks, parameters.holders(), paintings, (variant) -> variant.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+         parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((paintings) -> generatePresetPaintings(functionalBlocks, paintings, (variant) -> variant.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          functionalBlocks.accept((ItemLike)Items.BOOKSHELF);
          functionalBlocks.accept((ItemLike)Items.CHISELED_BOOKSHELF);
          functionalBlocks.accept((ItemLike)Items.OAK_SHELF);
@@ -1530,11 +1530,11 @@ public class CreativeModeTabs {
                opBlocks.accept(LightBlock.setLightOnStack(new ItemStack(Items.LIGHT), lightLevel));
             }
 
-            parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((paintings) -> generatePresetPaintings(opBlocks, parameters.holders(), paintings, (variant) -> !variant.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+            parameters.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((paintings) -> generatePresetPaintings(opBlocks, paintings, (variant) -> !variant.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          }
 
       }).build());
-      return (CreativeModeTab)Registry.register(registry, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> new ItemStack(Blocks.CHEST)).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
+      Registry.register(registry, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> new ItemStack(Blocks.CHEST)).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
    }
 
    private static void registerColoredItems(final CreativeModeTab.Output coloredBlocks, final List<DyeColor> gameplayColorOrder, final ColorCollection<Item> items) {
@@ -1606,8 +1606,7 @@ public class CreativeModeTabs {
 
    }
 
-   private static void generatePresetPaintings(final CreativeModeTab.Output output, final HolderLookup.Provider context, final HolderLookup.RegistryLookup<PaintingVariant> paintings, final Predicate<Holder<PaintingVariant>> filter, final CreativeModeTab.TabVisibility tabVisibility) {
-      RegistryOps<Tag> ops = context.<Tag>createSerializationContext(NbtOps.INSTANCE);
+   private static void generatePresetPaintings(final CreativeModeTab.Output output, final HolderLookup.RegistryLookup<PaintingVariant> paintings, final Predicate<Holder<PaintingVariant>> filter, final CreativeModeTab.TabVisibility tabVisibility) {
       paintings.listElements().filter(filter).sorted(PAINTING_COMPARATOR).forEach((painting) -> {
          ItemStack stack = new ItemStack(Items.PAINTING);
          stack.set(DataComponents.PAINTING_VARIANT, painting);

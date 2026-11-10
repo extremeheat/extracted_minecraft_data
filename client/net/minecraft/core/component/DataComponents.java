@@ -241,10 +241,6 @@ public class DataComponents {
       super();
    }
 
-   public static DataComponentType<?> bootstrap(final Registry<DataComponentType<?>> registry) {
-      return CUSTOM_DATA;
-   }
-
    private static <T> DataComponentType<T> register(final String id, final UnaryOperator<DataComponentType.Builder<T>> builder) {
       return (DataComponentType)Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, (String)id, ((DataComponentType.Builder)builder.apply(DataComponentType.builder())).build());
    }

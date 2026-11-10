@@ -25,8 +25,4 @@ public class RecipeBookCategories {
    private static RecipeBookCategory register(final String id) {
       return (RecipeBookCategory)Registry.register(BuiltInRegistries.RECIPE_BOOK_CATEGORY, (String)id, new RecipeBookCategory());
    }
-
-   public static RecipeBookCategory bootstrap(final Registry<RecipeBookCategory> registry) {
-      return CAMPFIRE;
-   }
 }

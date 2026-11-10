@@ -417,7 +417,11 @@ public class AABB {
    }
 
    public static AABB ofRadius(final Vec3 center, final double xAdd, final double yAdd, final double zAdd) {
-      return new AABB(center.x - xAdd, center.y - yAdd, center.z - zAdd, center.x + xAdd, center.y + yAdd, center.z + zAdd);
+      return sizedAround(center, xAdd, yAdd, zAdd, xAdd, yAdd, zAdd);
+   }
+
+   public static AABB sizedAround(final Vec3 center, final double negativeSizeX, final double negativeSizeY, final double negativeSizeZ, final double positiveSizeX, final double positiveSizeY, final double positiveSizeZ) {
+      return new AABB(center.x - negativeSizeX, center.y - negativeSizeY, center.z - negativeSizeZ, center.x + positiveSizeX, center.y + positiveSizeY, center.z + positiveSizeZ);
    }
 
    public AABB nextDeflated() {

@@ -7,7 +7,7 @@ import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
 import org.jspecify.annotations.Nullable;
 
-public class UnquotedStringParseRule implements Rule<StringReader, String> {
+public class UnquotedStringParseRule<S extends CommandParserState> implements Rule<S, String> {
    private final int minSize;
    private final DelayedException<CommandSyntaxException> error;
 
@@ -17,10 +17,11 @@ public class UnquotedStringParseRule implements Rule<StringReader, String> {
       this.error = error;
    }
 
-   public @Nullable String parse(final ParseState<StringReader> state) {
-      ((StringReader)state.input()).skipWhitespace();
+   public @Nullable String parse(final ParseState<S> state) {
+      StringReader reader = ((CommandParserState)state.input()).reader();
+      reader.skipWhitespace();
       int cursor = state.mark();
-      String value = ((StringReader)state.input()).readUnquotedString();
+      String value = reader.readUnquotedString();
       if (value.length() < this.minSize) {
          state.errorCollector().store(cursor, this.error);
          return null;

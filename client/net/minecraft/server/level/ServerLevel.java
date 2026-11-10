@@ -1165,8 +1165,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
 
       for(ServerPlayer player : this.players) {
          if (player.distanceToSqr(center) < 4096.0) {
-            Optional<Vec3> playerKnockback = Optional.ofNullable((Vec3)explosion.getHitPlayers().get(player));
-            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, playerKnockback, explosionParticle, effectiveExplosionSound, blockParticles));
+            player.connection.send(new ClientboundExplodePacket(center, r, blockCount, explosionParticle, effectiveExplosionSound, blockParticles));
          }
       }
 

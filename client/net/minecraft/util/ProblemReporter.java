@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,11 +32,36 @@ public interface ProblemReporter {
 
    void report(Problem problem);
 
+   default void reportWarning(final Warning warning) {
+      this.report(warning);
+   }
+
+   default void reportError(final Error error) {
+      this.report(error);
+   }
+
    public interface Problem {
+      Comparator<Problem> ERROR_FIRST = Comparator.comparingInt((p) -> p.isError() ? 0 : 1);
+
       String description();
 
-      default boolean isFatal() {
+      boolean isError();
+
+      default String descriptionWithLevel() {
+         String var10000 = this.isError() ? "[Error] " : "[Warning] ";
+         return var10000 + this.description();
+      }
+   }
+
+   public interface Warning extends Problem {
+      default boolean isError() {
          return false;
+      }
+   }
+
+   public interface Error extends Problem {
+      default boolean isError() {
+         return true;
       }
    }
 
@@ -126,46 +152,64 @@ public interface ProblemReporter {
       public static final PathElement EMPTY_ROOT = () -> "";
       private final @Nullable Collector parent;
       private final PathElement element;
+      private final boolean onlyErrors;
       private final Set<Entry> problems;
 
       public Collector() {
-         this(EMPTY_ROOT);
+         this(EMPTY_ROOT, false);
+      }
+
+      public Collector(final boolean onlyErrors) {
+         this(EMPTY_ROOT, onlyErrors);
       }
 
       public Collector(final PathElement root) {
+         this(root, false);
+      }
+
+      public Collector(final PathElement root, final boolean onlyErrors) {
          super();
          this.parent = null;
          this.problems = new LinkedHashSet();
          this.element = root;
+         this.onlyErrors = onlyErrors;
       }
 
-      private Collector(final Collector parent, final PathElement path) {
+      private Collector(final Collector parent, final PathElement path, final boolean onlyErrors) {
          super();
          this.problems = parent.problems;
          this.parent = parent;
          this.element = path;
+         this.onlyErrors = onlyErrors;
       }
 
       public ProblemReporter forChild(final PathElement path) {
-         return new Collector(this, path);
+         return new Collector(this, path, this.onlyErrors);
       }
 
       public void report(final Problem problem) {
-         this.problems.add(new Entry(this, problem));
-      }
-
-      public boolean isEmpty() {
-         return this.problems.isEmpty();
-      }
-
-      public boolean hasFatalProblems() {
-         for(Entry entry : this.problems) {
-            if (entry.problem.isFatal()) {
-               return true;
-            }
+         if (!this.onlyErrors || problem.isError()) {
+            this.problems.add(new Entry(this, problem));
          }
 
-         return false;
+      }
+
+      public boolean hasAnyProblems() {
+         return !this.problems.isEmpty();
+      }
+
+      public boolean hasErrors() {
+         if (this.onlyErrors) {
+            return this.hasAnyProblems();
+         } else {
+            for(Entry entry : this.problems) {
+               if (entry.problem.isError()) {
+                  return true;
+               }
+            }
+
+            return false;
+         }
       }
 
       public void forEach(final BiConsumer<String, Problem> output) {
@@ -194,7 +238,7 @@ public interface ProblemReporter {
          this.forEach(groupedProblems::put);
          return (String)groupedProblems.asMap().entrySet().stream().map((entry) -> {
             String var10000 = (String)entry.getKey();
-            return " at " + var10000 + ": " + (String)((Collection)entry.getValue()).stream().map(Problem::description).collect(Collectors.joining("; "));
+            return " at " + var10000 + ": " + (String)((Collection)entry.getValue()).stream().sorted(ProblemReporter.Problem.ERROR_FIRST).map(Problem::descriptionWithLevel).collect(Collectors.joining("; "));
          }).collect(Collectors.joining("\n"));
       }
 
@@ -248,18 +292,26 @@ public interface ProblemReporter {
                List<String> lines = new ArrayList();
                this.children.forEach((element, child) -> lines.addAll(child.getLines()));
                String var10002 = this.element.get();
-               lines.set(0, var10002 + (String)lines.get(0));
+               lines.set(0, var10002 + (String)lines.getFirst());
                return lines;
             } else if (problemCount == 1 && childrenCount == 0) {
                String var10000 = this.element.get();
-               return List.of(var10000 + ": " + ((Problem)this.problems.getFirst()).description());
+               return List.of(var10000 + ": " + ((Problem)this.problems.getFirst()).descriptionWithLevel());
             } else {
                List<String> lines = new ArrayList();
-               this.children.forEach((element, child) -> lines.addAll(child.getLines()));
+               this.children.forEach((var1, child) -> lines.addAll(child.getLines()));
                lines.replaceAll((s) -> "  " + s);
 
                for(Problem problem : this.problems) {
-                  lines.add("  " + problem.description());
+                  if (problem.isError()) {
+                     lines.add("  " + problem.descriptionWithLevel());
+                  }
+               }
+
+               for(Problem problem : this.problems) {
+                  if (!problem.isError()) {
+                     lines.add("  " + problem.descriptionWithLevel());
+                  }
                }
 
                lines.addFirst(this.element.get() + ":");
@@ -283,7 +335,7 @@ public interface ProblemReporter {
       }
 
       public void close() {
-         if (!this.isEmpty()) {
+         if (this.hasAnyProblems()) {
             this.logger.warn("[{}] Serialization errors:\n{}", this.logger.getName(), this.getTreeReport());
          }
 

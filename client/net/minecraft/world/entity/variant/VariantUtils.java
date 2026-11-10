@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.Identifier;
@@ -37,7 +37,7 @@ public class VariantUtils {
 
    public static <T> Optional<Holder<T>> readVariant(final ValueInput input, final ResourceKey<? extends Registry<T>> registryId) {
       Optional var10000 = input.read("variant", Identifier.CODEC).map((id) -> ResourceKey.create(registryId, id));
-      HolderLookup.Provider var10001 = input.lookup();
+      HolderGetter.Provider var10001 = input.lookup();
       Objects.requireNonNull(var10001);
       return var10000.flatMap(var10001::get);
    }

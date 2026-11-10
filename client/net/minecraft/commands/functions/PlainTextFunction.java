@@ -1,6 +1,5 @@
 package net.minecraft.commands.functions;
 
-import com.mojang.brigadier.CommandDispatcher;
 import java.util.List;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.execution.UnboundEntryAction;
@@ -8,12 +7,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
 
-public record PlainTextFunction<T>(Identifier id, List<UnboundEntryAction<T>> entries) implements CommandFunction<T>, InstantiatedFunction<T> {
+public record PlainTextFunction<Runtime>(Identifier id, List<UnboundEntryAction<Runtime>> entries) implements CommandFunction<Runtime>, InstantiatedFunction<Runtime> {
    public PlainTextFunction {
       super();
    }
 
-   public InstantiatedFunction<T> instantiate(final @Nullable CompoundTag arguments, final CommandDispatcher<T> dispatcher) throws FunctionInstantiationException {
+   public InstantiatedFunction<Runtime> instantiate(final @Nullable CompoundTag arguments) throws FunctionInstantiationException {
       return this;
    }
 }

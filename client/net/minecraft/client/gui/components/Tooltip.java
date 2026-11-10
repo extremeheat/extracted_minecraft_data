@@ -26,18 +26,20 @@ public class Tooltip implements NarrationSupplier {
    private final @Nullable Component narration;
    private final Optional<TooltipComponent> component;
    private final boolean extraSpaceAfterFirstLine;
+   private final boolean besideCursor;
 
    private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style) {
-      this(message, narration, component, style, false);
+      this(message, narration, component, style, false, false);
    }
 
-   private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style, final boolean extraSpaceAfterFirstLine) {
+   private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style, final boolean extraSpaceAfterFirstLine, final boolean besideCursor) {
       super();
       this.message = message;
       this.narration = narration;
       this.component = component;
       this.style = style;
       this.extraSpaceAfterFirstLine = extraSpaceAfterFirstLine;
+      this.besideCursor = besideCursor;
    }
 
    public static Tooltip create(final Component message) {
@@ -55,7 +57,7 @@ public class Tooltip implements NarrationSupplier {
    public static Tooltip createForItem(final List<Component> lines, final ItemStack item) {
       Component message = CommonComponents.joinLines((Collection)lines);
       Component narration = lines.size() > 1 ? CommonComponents.joinLines((Collection)lines.subList(1, lines.size())) : null;
-      return new Tooltip(message, narration, item.getTooltipImage(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), true);
+      return new Tooltip(message, narration, item.getTooltipImage(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), false, true);
    }
 
    public Optional<TooltipComponent> component() {
@@ -68,6 +70,10 @@ public class Tooltip implements NarrationSupplier {
 
    public boolean extraSpaceAfterFirstLine() {
       return this.extraSpaceAfterFirstLine;
+   }
+
+   public boolean besideCursor() {
+      return this.besideCursor;
    }
 
    public void updateNarration(final NarrationElementOutput output) {

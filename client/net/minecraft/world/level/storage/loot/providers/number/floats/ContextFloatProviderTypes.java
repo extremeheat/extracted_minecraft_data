@@ -2,13 +2,14 @@ package net.minecraft.world.level.storage.loot.providers.number.floats;
 
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class ContextFloatProviderTypes {
    public ContextFloatProviderTypes() {
       super();
    }
 
-   public static MapCodec<? extends ContextFloatProvider> bootstrap(final Registry<MapCodec<? extends ContextFloatProvider>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends ContextFloatProvider>> registry) {
       Registry.register(registry, (String)"abs", Absolute.MAP_CODEC);
       Registry.register(registry, (String)"avg", Average.MAP_CODEC);
       Registry.register(registry, (String)"ceil", Ceiling.MAP_CODEC);
@@ -36,6 +37,6 @@ public class ContextFloatProviderTypes {
       Registry.register(registry, (String)"add", Sum.MAP_CODEC);
       Registry.register(registry, (String)"truncate", Truncate.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformGenerator.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"weighted_list", WeightedListValue.MAP_CODEC);
+      Registry.register(registry, (String)"weighted_list", WeightedListValue.MAP_CODEC);
    }
 }

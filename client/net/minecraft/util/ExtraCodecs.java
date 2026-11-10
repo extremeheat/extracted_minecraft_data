@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Range;
 import com.google.common.primitives.UnsignedBytes;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
@@ -314,6 +315,13 @@ public class ExtraCodecs {
 
    public static Codec<Float> floatRange(final float minInclusive, final float maxInclusive) {
       return floatRangeMinInclusiveWithMessage(minInclusive, maxInclusive, (n) -> "Value must be within range [" + minInclusive + ";" + maxInclusive + "]: " + n);
+   }
+
+   public static <T extends Comparable<T>> Codec<T> inRange(final Codec<T> raw, final Range<T> bounds) {
+      return raw.validate((value) -> bounds.contains(value) ? DataResult.success(value) : DataResult.error(() -> {
+            String var10000 = String.valueOf(bounds);
+            return "Value must be within range " + var10000 + ": " + String.valueOf(value);
+         }));
    }
 
    public static <T> Codec<List<T>> nonEmptyList(final Codec<List<T>> listCodec) {
@@ -642,7 +650,7 @@ public class ExtraCodecs {
 
          });
          return new PropertyMap(result.build());
-      }, (propertyMap) -> Either.right(propertyMap.values().stream().toList()));
+      }, (propertyMap) -> Either.right(List.copyOf(propertyMap.values())));
       PLAYER_NAME = Codec.string(0, 16).validate((name) -> StringUtil.isValidPlayerName(name) ? DataResult.success(name) : DataResult.error(() -> "Player name contained disallowed characters: '" + name + "'"));
       AUTHLIB_GAME_PROFILE = gameProfileCodec(UUIDUtil.AUTHLIB_CODEC).codec();
       STORED_GAME_PROFILE = gameProfileCodec(UUIDUtil.CODEC);

@@ -114,12 +114,15 @@ public class VanillaRegistries {
 
    public static void validateLootData(final HolderLookup.Provider newRegistries) {
       ProblemReporter.Collector problems = new ProblemReporter.Collector();
-      ValidationContextSource validationContext = new ValidationContextSource(problems, newRegistries);
+      ValidationContextSource validationContext = new ValidationContextSource(problems);
       LootDataType.values().forEach((lootDataType) -> lootDataType.runValidationIfPresent(validationContext, newRegistries));
-      if (!problems.isEmpty()) {
-         problems.forEach((id, problem) -> LOGGER.warn("Found validation problem in {}: {}", id, problem.description()));
-         throw new IllegalStateException("Failed to validate loot data, see logs");
+      if (problems.hasAnyProblems()) {
+         LOGGER.warn("Found validation problems in loot data: {}", problems.getTreeReport());
+         if (problems.hasErrors()) {
+            throw new IllegalStateException("Failed to validate loot data, see logs");
+         }
       }
+
    }
 
    public static HolderLookup.Provider createWorldLookup() {

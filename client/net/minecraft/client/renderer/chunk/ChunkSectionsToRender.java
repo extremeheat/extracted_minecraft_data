@@ -59,21 +59,32 @@ public abstract class ChunkSectionsToRender {
 
    }
 
+   public static record DrawSeparateDrawGroup(GpuBufferSlice vertexBuffer, @Nullable GpuBufferSlice indexBuffer, @Nullable IndexType indexType, List<RenderPass.Draw<GpuBufferSlice[]>> draws) {
+      public DrawSeparateDrawGroup {
+         super();
+      }
+   }
+
    public static final class DrawSeparate extends ChunkSectionsToRender {
-      private final Map<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> drawsPerLayer;
+      private final Map<ChunkSectionLayer, List<DrawSeparateDrawGroup>> drawGroupsPerLayer;
       private final GpuBufferSlice[] chunkSectionInfos;
 
-      public DrawSeparate(final GpuBufferSlice terrainTransformUBO, final Map<ChunkSectionLayer, List<RenderPass.Draw<GpuBufferSlice[]>>> drawsPerLayer, final int maxIndicesRequired, final GpuBufferSlice[] chunkSectionInfos) {
+      public DrawSeparate(final GpuBufferSlice terrainTransformUBO, final Map<ChunkSectionLayer, List<DrawSeparateDrawGroup>> drawGroupsPerLayer, final int maxIndicesRequired, final GpuBufferSlice[] chunkSectionInfos) {
          super(terrainTransformUBO, maxIndicesRequired);
-         this.drawsPerLayer = drawsPerLayer;
+         this.drawGroupsPerLayer = drawGroupsPerLayer;
          this.chunkSectionInfos = chunkSectionInfos;
       }
 
       protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
          renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, wireframe, oitStage), renderPass.activeSubpass()));
-         List<RenderPass.Draw<GpuBufferSlice[]>> draws = (List)this.drawsPerLayer.get(layer);
-         if (!draws.isEmpty()) {
-            renderPass.drawMultipleIndexed(draws, defaultIndexBuffer, defaultIndexType, List.of("ChunkSection"), this.chunkSectionInfos);
+
+         for(DrawSeparateDrawGroup drawGroup : (List)this.drawGroupsPerLayer.get(layer)) {
+            if (!drawGroup.draws.isEmpty()) {
+               renderPass.setUniform("TerrainVertexBuffer", drawGroup.vertexBuffer);
+               IndexType indexType = drawGroup.indexType() == null ? defaultIndexType : drawGroup.indexType();
+               renderPass.setIndexBuffer(drawGroup.indexBuffer() == null ? defaultIndexBuffer : drawGroup.indexBuffer().buffer(), indexType);
+               renderPass.drawMultipleIndexed(drawGroup.draws, List.of("ChunkSection"), this.chunkSectionInfos);
+            }
          }
 
       }
@@ -101,12 +112,12 @@ public abstract class ChunkSectionsToRender {
          int maxDrawIndirectDrawCount = deviceLimits.maxDrawIndirectDrawCount();
          List<GpuMultiDrawIndexedIndirect> drawGroups = (List)this.drawGroupsPerLayer.get(layer);
          if (!drawGroups.isEmpty()) {
-            renderPass.setVertexBuffer(1, this.chunkSectionInfos);
+            renderPass.setVertexBuffer(0, this.chunkSectionInfos);
          }
 
          for(GpuMultiDrawIndexedIndirect indirectDraw : drawGroups) {
             if (indirectDraw.drawCount() > 0) {
-               renderPass.setVertexBuffer(0, indirectDraw.vertexBuffer);
+               renderPass.setUniform("TerrainVertexBuffer", indirectDraw.vertexBuffer);
                IndexType indexType = indirectDraw.indexType() == null ? defaultIndexType : indirectDraw.indexType();
                renderPass.setIndexBuffer(indirectDraw.indexBuffer() == null ? defaultIndexBuffer : indirectDraw.indexBuffer().buffer(), indexType);
                GpuBuffer buffer = indirectDraw.indirectCommandBuffer.buffer();

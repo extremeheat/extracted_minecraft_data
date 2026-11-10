@@ -19,7 +19,7 @@ public class DynamicGpuData implements AutoCloseable {
    private static final Matrix4fc IDENTITY_TEXTURE_TRANSFORM = new Matrix4f();
    public static final int TRANSFORM_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putMat4f().putVec4().putVec3().get();
    public static final int TERRAIN_TRANSFORM_UBO_SIZE = (new Std140SizeCalculator()).putMat4f().putIVec2().get();
-   public static final int CHUNK_SECTION_UBO_SIZE = (new Std140SizeCalculator()).putIVec3().putFloat().get();
+   public static final int CHUNK_SECTION_UBO_SIZE = (new Std140SizeCalculator()).putIVec3().putFloat().putIVec2().get();
    private static final int INITIAL_CAPACITY = 2;
    private final DynamicGpuDataStorageMapped<Transform> transforms;
    private final DynamicGpuDataStorageMapped<TerrainTransform> terrain;
@@ -140,13 +140,13 @@ public class DynamicGpuData implements AutoCloseable {
       }
    }
 
-   public static record ChunkSectionInfo(int x, int y, int z, float visibility) implements DynamicGpuDataStorage.DynamicGpuData {
+   public static record ChunkSectionInfo(int x, int y, int z, float visibility, int bufferStartOffset, int bakedBufferOffset) implements DynamicGpuDataStorage.DynamicGpuData {
       public ChunkSectionInfo {
          super();
       }
 
       public void write(final ByteBuffer buffer) {
-         Std140Builder.intoBuffer(buffer).putIVec3(this.x, this.y, this.z).putFloat(this.visibility);
+         Std140Builder.intoBuffer(buffer).putIVec3(this.x, this.y, this.z).putFloat(this.visibility).putIVec2(this.bufferStartOffset, this.bakedBufferOffset);
       }
    }
 

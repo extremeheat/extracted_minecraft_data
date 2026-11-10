@@ -2,13 +2,21 @@ package net.minecraft.client.renderer.texture;
 
 import com.mojang.renderpearl.util.UncheckedAutoCloseable;
 import java.io.IOException;
+import java.nio.file.Path;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public interface TextureProvider<T extends UncheckedAutoCloseable> {
-   T prepareState(ResourceManager resourceManager, Identifier identifier) throws IOException;
+public interface TextureProvider<ResourcesType extends TextureProvider.IntermediaryResources, HandleType extends TextureHandle> {
+   ResourcesType prepareState(ResourceManager resourceManager, Identifier identifier) throws IOException;
 
-   T missingState();
+   ResourcesType missingState();
 
-   TextureResources createTexture(T state, Identifier identifier);
+   HandleType createTexture(ResourcesType state, Identifier identifier);
+
+   void dumpContents(Identifier identifier, Path outputDirectory, HandleType texture);
+
+   void releaseTexture(HandleType texture);
+
+   public interface IntermediaryResources extends UncheckedAutoCloseable {
+   }
 }

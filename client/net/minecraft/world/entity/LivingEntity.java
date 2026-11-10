@@ -191,6 +191,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
    public static final float DEFAULT_BABY_SCALE = 0.5F;
    protected static final float SWIMMING_VERTICAL_SPEED = 0.04F;
+   private static final int HEAD_LERP_STEPS = 3;
    private static final int CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME_TICKS = 40;
    private static final int DEFAULT_CURRENT_IMPULSE_CONTEXT_RESET_GRACE_TIME = 0;
    public static final float BASE_HORIZONTAL_AIR_DRAG = 0.91F;
@@ -3228,9 +3229,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       return SteppedInterpolationHandler.create(this);
    }
 
-   public void lerpHeadTo(final float yRot, final int steps) {
+   public void lerpHeadTo(final float yRot) {
       this.lerpYHeadRot = (double)yRot;
-      this.lerpHeadSteps = steps;
+      this.lerpHeadSteps = 3;
    }
 
    public void setJumping(final boolean jump) {

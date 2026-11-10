@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -38,18 +39,18 @@ public final class VillagerType {
       return ResourceKey.create(Registries.VILLAGER_TYPE, Identifier.withDefaultNamespace(name));
    }
 
-   private static VillagerType register(final Registry<VillagerType> registry, final ResourceKey<VillagerType> name) {
-      return (VillagerType)Registry.register(registry, (ResourceKey)name, new VillagerType());
+   private static void register(final WritableRegistry<VillagerType> registry, final ResourceKey<VillagerType> name) {
+      Registry.register(registry, (ResourceKey)name, new VillagerType());
    }
 
-   public static VillagerType bootstrap(final Registry<VillagerType> registry) {
+   public static void bootstrap(final WritableRegistry<VillagerType> registry) {
       register(registry, DESERT);
       register(registry, JUNGLE);
       register(registry, PLAINS);
       register(registry, SAVANNA);
       register(registry, SNOW);
       register(registry, SWAMP);
-      return register(registry, TAIGA);
+      register(registry, TAIGA);
    }
 
    public static ResourceKey<VillagerType> byBiome(final Holder<Biome> biome) {

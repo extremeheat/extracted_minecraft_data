@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.nbt.CompoundTag;
@@ -124,7 +125,7 @@ public final class TypedEntityData<IdType> implements TooltipProvider {
          CompoundTag entityData = output.buildResult();
          UUID uuid = entity.getUUID();
          entityData.merge(this.getUnsafe());
-         entity.load(TagValueInput.create(reporter, entity.registryAccess(), entityData));
+         entity.load(TagValueInput.create(reporter, (HolderGetter.Provider)entity.registryAccess(), entityData));
          entity.setUUID(uuid);
       }
 
@@ -147,14 +148,14 @@ public final class TypedEntityData<IdType> implements TooltipProvider {
          entityTag.merge(this.getUnsafe());
          if (!entityTag.equals(oldTag)) {
             try {
-               blockEntity.loadCustomOnly(TagValueInput.create(reporter, registries, entityTag));
+               blockEntity.loadCustomOnly(TagValueInput.create(reporter, (HolderGetter.Provider)registries, entityTag));
                blockEntity.setChanged();
                return true;
             } catch (Exception e) {
                LOGGER.warn("Failed to apply custom data to block entity at {}", blockEntity.getBlockPos(), e);
 
                try {
-                  blockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(() -> "(rollback)"), registries, oldTag));
+                  blockEntity.loadCustomOnly(TagValueInput.create(reporter.forChild(() -> "(rollback)"), (HolderGetter.Provider)registries, oldTag));
                } catch (Exception e2) {
                   LOGGER.warn("Failed to rollback block entity at {} after failure", blockEntity.getBlockPos(), e2);
                }

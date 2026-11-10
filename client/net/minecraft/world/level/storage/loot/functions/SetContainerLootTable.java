@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetContainerLootTable extends LootItemConditionalFunction {
@@ -27,6 +28,9 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
 
    public MapCodec<SetContainerLootTable> codec() {
       return MAP_CODEC;
+   }
+
+   protected void validateCustom(final ValidationContext context) {
    }
 
    public ItemStack run(final ItemStack itemStack, final LootContext context) {

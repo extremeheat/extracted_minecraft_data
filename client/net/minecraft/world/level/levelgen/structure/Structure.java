@@ -12,9 +12,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
@@ -83,7 +83,7 @@ public abstract class Structure {
       return this.terrainAdaptation() != TerrainAdjustment.NONE ? boundingBox.inflatedBy(12) : boundingBox;
    }
 
-   public @Nullable StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
+   public @Nullable StructureStart generate(final Holder<Structure> selected, final ResourceKey<Level> dimension, final HolderGetter.Provider registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos sourceChunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
       ProfiledDuration profiled = JvmProfiler.INSTANCE.onStructureGenerate(sourceChunkPos, dimension, selected);
       GenerationContext context = new GenerationContext(registryAccess, chunkGenerator, biomeSource, climateSampler, randomState, structureTemplateManager, seed, sourceChunkPos, heightAccessor, validBiome);
       Optional<GenerationStub> generation = this.findValidGenerationPoint(context);
@@ -230,8 +230,8 @@ public abstract class Structure {
       }
    }
 
-   public static record GenerationContext(RegistryAccess registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, Climate.Sampler climateSampler, NoiseBiomeResolver noiseBiomeResolver, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
-      public GenerationContext(final RegistryAccess registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
+   public static record GenerationContext(HolderGetter.Provider registryAccess, ChunkGenerator chunkGenerator, BiomeSource biomeSource, Climate.Sampler climateSampler, NoiseBiomeResolver noiseBiomeResolver, RandomState randomState, StructureTemplateManager structureTemplateManager, WorldgenRandom random, long seed, ChunkPos chunkPos, LevelHeightAccessor heightAccessor, Predicate<Holder<Biome>> validBiome) {
+      public GenerationContext(final HolderGetter.Provider registryAccess, final ChunkGenerator chunkGenerator, final BiomeSource biomeSource, final Climate.Sampler climateSampler, final RandomState randomState, final StructureTemplateManager structureTemplateManager, final long seed, final ChunkPos chunkPos, final LevelHeightAccessor heightAccessor, final Predicate<Holder<Biome>> validBiome) {
          this(registryAccess, chunkGenerator, biomeSource, climateSampler, biomeSource.createResolver(climateSampler), randomState, structureTemplateManager, makeRandom(seed, chunkPos), seed, chunkPos, heightAccessor, validBiome);
       }
 

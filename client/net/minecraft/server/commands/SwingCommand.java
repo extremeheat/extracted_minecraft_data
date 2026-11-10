@@ -1,16 +1,17 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.arguments.SwingAnimationArgument;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.network.chat.Component;
@@ -29,11 +30,11 @@ public class SwingCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("swing").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> swing((CommandSourceStack)c.getSource(), List.of(((CommandSourceStack)c.getSource()).getEntityOrException()), InteractionHand.MAIN_HAND))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), InteractionHand.MAIN_HAND))).then(handSwing("mainhand", InteractionHand.MAIN_HAND))).then(handSwing("offhand", InteractionHand.OFF_HAND))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("swing").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((c) -> swing((CommandSourceStack)c.getSource(), List.of(((CommandSourceStack)c.getSource()).getEntityOrException()), InteractionHand.MAIN_HAND))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.entities()).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), InteractionHand.MAIN_HAND))).then(handSwing("mainhand", InteractionHand.MAIN_HAND))).then(handSwing("offhand", InteractionHand.OFF_HAND))));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> handSwing(final String name, final InteractionHand hand) {
-      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(name).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand))).then(((RequiredArgumentBuilder)Commands.argument("animation", SwingAnimationArgument.swingAnimationType()).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand, SwingAnimationArgument.getSwingAnimationType(c, "animation"), SwingAnimation.DEFAULT.duration()))).then(Commands.argument("duration", TimeArgument.time(1)).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand, SwingAnimationArgument.getSwingAnimationType(c, "animation"), IntegerArgumentType.getInteger(c, "duration")))));
+      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(name).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand))).then(((RequiredArgumentBuilder)Commands.argument("animation", SwingAnimationArgument.swingAnimationType()).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand, SwingAnimationArgument.getSwingAnimationType(c, "animation"), SwingAnimation.DEFAULT.duration()))).then(Commands.argument("duration", TimeArgument.time(1)).executes((c) -> swing((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets"), hand, SwingAnimationArgument.getSwingAnimationType(c, "animation"), IntegerArgument.getInteger(c, "duration")))));
    }
 
    private static int swing(final CommandSourceStack source, final Collection<? extends Entity> targets, final InteractionHand hand) throws CommandSyntaxException {

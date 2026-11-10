@@ -4,38 +4,19 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
-import com.mojang.brigadier.tree.CommandNode;
-import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
+import net.minecraft.commands.arguments.ValidationWrapper;
 import net.minecraft.commands.execution.ExecutionContext;
-import net.minecraft.commands.synchronization.ArgumentTypeInfos;
-import net.minecraft.commands.synchronization.ArgumentUtils;
-import net.minecraft.commands.synchronization.SuggestionProviders;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
-import net.minecraft.data.registries.VanillaRegistries;
 import net.minecraft.gametest.framework.TestCommand;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -43,10 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
-import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -70,6 +48,7 @@ import net.minecraft.server.commands.DifficultyCommand;
 import net.minecraft.server.commands.EffectCommands;
 import net.minecraft.server.commands.EmoteCommands;
 import net.minecraft.server.commands.EnchantCommand;
+import net.minecraft.server.commands.EnvironmentAttributeCommand;
 import net.minecraft.server.commands.ExecuteCommand;
 import net.minecraft.server.commands.ExperienceCommand;
 import net.minecraft.server.commands.FetchProfileCommand;
@@ -143,23 +122,17 @@ import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
 import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.commands.item.ItemCommands;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.PermissionCheck;
 import net.minecraft.server.permissions.PermissionProviderCheck;
 import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.permissions.PermissionSetSupplier;
-import net.minecraft.server.permissions.Permissions;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.DevUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.gamerules.GameRules;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -167,172 +140,175 @@ public class Commands {
    public static final String COMMAND_PREFIX = "/";
    private static final ThreadLocal<@Nullable ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal();
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final PermissionCheck LEVEL_ALL;
-   public static final PermissionCheck LEVEL_MODERATORS;
-   public static final PermissionCheck LEVEL_GAMEMASTERS;
-   public static final PermissionCheck LEVEL_ADMINS;
-   public static final PermissionCheck LEVEL_OWNERS;
-   private static final ClientboundCommandsPacket.NodeInspector<CommandSourceStack> COMMAND_NODE_INSPECTOR;
-   private final CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher();
+   private final SuggestionBox suggestionBox;
+   private final ParseBox parseBox;
 
-   public Commands(final CommandSelection commandSelection, final CommandBuildContext context) {
+   public Commands(final Consumer<CommandDispatcher<CommandSourceStack>> commandRegistration) {
       super();
-      AdvancementCommands.register(this.dispatcher);
-      AttributeCommand.register(this.dispatcher, context);
-      ExecuteCommand.register(this.dispatcher, context);
-      BossBarCommands.register(this.dispatcher, context);
-      ClearInventoryCommands.register(this.dispatcher, context);
-      CloneCommands.register(this.dispatcher, context);
-      ComputeCommand.register(this.dispatcher, context);
-      DamageCommand.register(this.dispatcher, context);
-      DataCommands.register(this.dispatcher, context);
-      DataPackCommand.register(this.dispatcher, context);
-      DebugCommand.register(this.dispatcher);
-      DefaultGameModeCommands.register(this.dispatcher);
-      DialogCommand.register(this.dispatcher, context);
-      DifficultyCommand.register(this.dispatcher);
-      EffectCommands.register(this.dispatcher, context);
-      EmoteCommands.register(this.dispatcher);
-      EnchantCommand.register(this.dispatcher, context);
-      ExperienceCommand.register(this.dispatcher);
-      FillCommand.register(this.dispatcher, context);
-      FillBiomeCommand.register(this.dispatcher, context);
-      ForceLoadCommand.register(this.dispatcher);
-      FunctionCommand.register(this.dispatcher);
-      GameModeCommand.register(this.dispatcher);
-      GameRuleCommand.register(this.dispatcher, context);
-      GiveCommand.register(this.dispatcher, context);
-      HelpCommand.register(this.dispatcher);
-      ItemCommands.register(this.dispatcher, context);
-      KickCommand.register(this.dispatcher);
-      KillCommand.register(this.dispatcher);
-      ListPlayersCommand.register(this.dispatcher);
-      LocateCommand.register(this.dispatcher, context);
-      LootCommand.register(this.dispatcher, context);
-      MsgCommand.register(this.dispatcher);
-      SwingCommand.register(this.dispatcher);
-      ParticleCommand.register(this.dispatcher, context);
-      PlaceCommand.register(this.dispatcher, context);
-      PlaySoundCommand.register(this.dispatcher);
-      PostEffectCommand.register(this.dispatcher);
-      RandomCommand.register(this.dispatcher);
-      ReloadCommand.register(this.dispatcher);
-      RecipeCommand.register(this.dispatcher);
-      FetchProfileCommand.register(this.dispatcher);
-      ReturnCommand.register(this.dispatcher);
-      RideCommand.register(this.dispatcher);
-      RotateCommand.register(this.dispatcher);
-      SayCommand.register(this.dispatcher);
-      ScheduleCommand.register(this.dispatcher);
-      ScoreboardCommand.register(this.dispatcher, context);
-      SeedCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
-      VersionCommand.register(this.dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
-      SetBlockCommand.register(this.dispatcher, context);
-      SetSpawnCommand.register(this.dispatcher);
-      SetWorldSpawnCommand.register(this.dispatcher);
-      SpectateCommand.register(this.dispatcher);
-      SpreadPlayersCommand.register(this.dispatcher);
-      StopSoundCommand.register(this.dispatcher);
-      StopwatchCommand.register(this.dispatcher);
-      SummonCommand.register(this.dispatcher, context);
-      TagCommand.register(this.dispatcher);
-      TeamCommand.register(this.dispatcher, context);
-      TeamMsgCommand.register(this.dispatcher);
-      TeleportCommand.register(this.dispatcher);
-      TellRawCommand.register(this.dispatcher, context);
-      TestCommand.register(this.dispatcher, context);
-      TickCommand.register(this.dispatcher);
-      TimeCommand.register(this.dispatcher, context);
-      TitleCommand.register(this.dispatcher, context);
-      TriggerCommand.register(this.dispatcher);
-      WaypointCommand.register(this.dispatcher, context);
-      WeatherCommand.register(this.dispatcher);
-      WorldBorderCommand.register(this.dispatcher);
+      CommandDispatcher<CommandSourceStack> dispatcher = new CommandDispatcher();
+      commandRegistration.accept(dispatcher);
+      dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
+      this.suggestionBox = SuggestionBox.fromFullTree(dispatcher);
+      this.parseBox = ParseBox.fromFullTree(dispatcher);
+   }
+
+   public static Commands createVanilla(final CommandSelection commandSelection, final CommandBuildContext context) {
+      return new Commands((dispatcher) -> registerVanillaCommands(dispatcher, commandSelection, context));
+   }
+
+   public static void registerVanillaCommands(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandSelection commandSelection, final CommandBuildContext context) {
+      AdvancementCommands.register(dispatcher);
+      AttributeCommand.register(dispatcher);
+      ExecuteCommand.register(dispatcher);
+      BossBarCommands.register(dispatcher);
+      ClearInventoryCommands.register(dispatcher);
+      CloneCommands.register(dispatcher);
+      ComputeCommand.register(dispatcher);
+      DamageCommand.register(dispatcher);
+      DataCommands.register(dispatcher);
+      DataPackCommand.register(dispatcher);
+      DebugCommand.register(dispatcher);
+      DefaultGameModeCommands.register(dispatcher);
+      DialogCommand.register(dispatcher);
+      DifficultyCommand.register(dispatcher);
+      EffectCommands.register(dispatcher);
+      EmoteCommands.register(dispatcher);
+      EnchantCommand.register(dispatcher);
+      if (SharedConstants.DEBUG_ENABLED || DevUtil.IS_RUNNING_IN_IDE) {
+         EnvironmentAttributeCommand.register(dispatcher);
+      }
+
+      ExperienceCommand.register(dispatcher);
+      FillCommand.register(dispatcher);
+      FillBiomeCommand.register(dispatcher);
+      ForceLoadCommand.register(dispatcher);
+      FunctionCommand.register(dispatcher);
+      GameModeCommand.register(dispatcher);
+      GameRuleCommand.register(dispatcher, context);
+      GiveCommand.register(dispatcher);
+      HelpCommand.register(dispatcher);
+      ItemCommands.register(dispatcher);
+      KickCommand.register(dispatcher);
+      KillCommand.register(dispatcher);
+      ListPlayersCommand.register(dispatcher);
+      LocateCommand.register(dispatcher);
+      LootCommand.register(dispatcher);
+      MsgCommand.register(dispatcher);
+      SwingCommand.register(dispatcher);
+      ParticleCommand.register(dispatcher);
+      PlaceCommand.register(dispatcher);
+      PlaySoundCommand.register(dispatcher);
+      PostEffectCommand.register(dispatcher);
+      RandomCommand.register(dispatcher);
+      ReloadCommand.register(dispatcher);
+      RecipeCommand.register(dispatcher);
+      FetchProfileCommand.register(dispatcher);
+      ReturnCommand.register(dispatcher);
+      RideCommand.register(dispatcher);
+      RotateCommand.register(dispatcher);
+      SayCommand.register(dispatcher);
+      ScheduleCommand.register(dispatcher);
+      ScoreboardCommand.register(dispatcher);
+      SeedCommand.register(dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+      VersionCommand.register(dispatcher, commandSelection != Commands.CommandSelection.INTEGRATED);
+      SetBlockCommand.register(dispatcher);
+      SetSpawnCommand.register(dispatcher);
+      SetWorldSpawnCommand.register(dispatcher);
+      SpectateCommand.register(dispatcher);
+      SpreadPlayersCommand.register(dispatcher);
+      StopSoundCommand.register(dispatcher);
+      StopwatchCommand.register(dispatcher);
+      SummonCommand.register(dispatcher);
+      TagCommand.register(dispatcher);
+      TeamCommand.register(dispatcher);
+      TeamMsgCommand.register(dispatcher);
+      TeleportCommand.register(dispatcher);
+      TellRawCommand.register(dispatcher);
+      TestCommand.register(dispatcher);
+      TickCommand.register(dispatcher);
+      TimeCommand.register(dispatcher);
+      TitleCommand.register(dispatcher);
+      TriggerCommand.register(dispatcher);
+      WaypointCommand.register(dispatcher);
+      WeatherCommand.register(dispatcher);
+      WorldBorderCommand.register(dispatcher);
       if (JvmProfiler.INSTANCE.isAvailable()) {
-         JfrCommand.register(this.dispatcher);
+         JfrCommand.register(dispatcher);
       }
 
       if (SharedConstants.DEBUG_CHASE_COMMAND) {
-         ChaseCommand.register(this.dispatcher);
+         ChaseCommand.register(dispatcher);
       }
 
       if (SharedConstants.DEBUG_DEV_COMMANDS || DevUtil.IS_RUNNING_IN_IDE) {
-         RaidCommand.register(this.dispatcher, context);
-         DebugPathCommand.register(this.dispatcher);
-         DebugMobSpawningCommand.register(this.dispatcher);
-         WardenSpawnTrackerCommand.register(this.dispatcher);
-         SpawnArmorTrimsCommand.register(this.dispatcher);
-         ServerPackCommand.register(this.dispatcher);
+         RaidCommand.register(dispatcher);
+         DebugPathCommand.register(dispatcher);
+         DebugMobSpawningCommand.register(dispatcher);
+         WardenSpawnTrackerCommand.register(dispatcher);
+         SpawnArmorTrimsCommand.register(dispatcher);
+         ServerPackCommand.register(dispatcher);
          if (commandSelection.includeDedicated) {
-            DebugConfigCommand.register(this.dispatcher, context);
+            DebugConfigCommand.register(dispatcher);
          }
       }
 
       if (commandSelection.includeDedicated) {
-         BanIpCommands.register(this.dispatcher);
-         BanListCommands.register(this.dispatcher);
-         BanPlayerCommands.register(this.dispatcher);
-         DeOpCommands.register(this.dispatcher);
-         OpCommand.register(this.dispatcher);
-         PardonCommand.register(this.dispatcher);
-         PardonIpCommand.register(this.dispatcher);
-         PerfCommand.register(this.dispatcher);
-         SaveAllCommand.register(this.dispatcher);
-         SaveOffCommand.register(this.dispatcher);
-         SaveOnCommand.register(this.dispatcher);
-         SetPlayerIdleTimeoutCommand.register(this.dispatcher);
-         StopCommand.register(this.dispatcher);
-         TransferCommand.register(this.dispatcher);
-         WhitelistCommand.register(this.dispatcher);
+         BanIpCommands.register(dispatcher);
+         BanListCommands.register(dispatcher);
+         BanPlayerCommands.register(dispatcher);
+         DeOpCommands.register(dispatcher);
+         OpCommand.register(dispatcher);
+         PardonCommand.register(dispatcher);
+         PardonIpCommand.register(dispatcher);
+         PerfCommand.register(dispatcher);
+         SaveAllCommand.register(dispatcher);
+         SaveOffCommand.register(dispatcher);
+         SaveOnCommand.register(dispatcher);
+         SetPlayerIdleTimeoutCommand.register(dispatcher);
+         StopCommand.register(dispatcher);
+         TransferCommand.register(dispatcher);
+         WhitelistCommand.register(dispatcher);
       }
 
       if (commandSelection.includeIntegrated) {
-         PublishCommand.register(this.dispatcher);
-         UnpublishCommand.register(this.dispatcher);
+         PublishCommand.register(dispatcher);
+         UnpublishCommand.register(dispatcher);
       }
 
-      this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
-   }
-
-   public static <S> ParseResults<S> mapSource(final ParseResults<S> parse, final UnaryOperator<S> sourceOperator) {
-      CommandContextBuilder<S> context = parse.getContext();
-      CommandContextBuilder<S> source = context.withSource(sourceOperator.apply(context.getSource()));
-      return new ParseResults(source, parse.getReader(), parse.getExceptions());
    }
 
    public void performPrefixedCommand(final CommandSourceStack sender, String command) {
       command = trimOptionalPrefix(command);
-      this.performCommand(this.dispatcher.parse(command, sender), command);
+      performCommand(sender, this.parseBox.parse(command, ParseContext.of(sender)), command);
    }
 
    public static String trimOptionalPrefix(final String command) {
       return command.startsWith("/") ? command.substring(1) : command;
    }
 
-   public void performCommand(final ParseResults<CommandSourceStack> command, final String commandString) {
-      CommandSourceStack sender = (CommandSourceStack)command.getContext().getSource();
+   public static void performCommand(final CommandSourceStack executionContext, final ParseBox.Result command, final String commandString) {
       Profiler.get().push((Supplier)(() -> "/" + commandString));
-      ContextChain<CommandSourceStack> commandChain = finishParsing(command, commandString, sender);
+      ContextChain<CommandSourceStack> commandChain = finishParsing(command, executionContext);
 
       try {
          if (commandChain != null) {
-            executeCommandInContext(sender, (executionContext) -> ExecutionContext.queueInitialCommandExecution(executionContext, commandString, commandChain, sender, CommandResultCallback.EMPTY));
+            executeCommandInContext(executionContext, (ec) -> ExecutionContext.queueInitialCommandExecution(ec, commandString, commandChain, executionContext, CommandResultCallback.EMPTY));
          }
-      } catch (Exception var12) {
-         MutableComponent hover = Component.literal(var12.getMessage() == null ? var12.getClass().getName() : var12.getMessage());
+      } catch (Exception var11) {
+         MutableComponent hover = Component.literal(var11.getMessage() == null ? var11.getClass().getName() : var11.getMessage());
          if (LOGGER.isDebugEnabled()) {
-            LOGGER.error("Command exception: /{}", commandString, var12);
-            StackTraceElement[] stackTrace = var12.getStackTrace();
+            LOGGER.error("Command exception: /{}", commandString, var11);
+            StackTraceElement[] stackTrace = var11.getStackTrace();
 
             for(int i = 0; i < Math.min(stackTrace.length, 3); ++i) {
                hover.append("\n\n").append(stackTrace[i].getMethodName()).append("\n ").append(stackTrace[i].getFileName()).append(":").append(String.valueOf(stackTrace[i].getLineNumber()));
             }
          }
 
-         sender.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(hover)))));
+         executionContext.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((s) -> s.withHoverEvent(new HoverEvent.ShowText(hover)))));
          if (SharedConstants.DEBUG_VERBOSE_COMMAND_ERRORS || DevUtil.IS_RUNNING_IN_IDE) {
-            sender.sendFailure(Component.literal(Util.describeError(var12)));
-            LOGGER.error("'/{}' threw an exception", commandString, var12);
+            executionContext.sendFailure(Component.literal(Util.describeError(var11)));
+            LOGGER.error("'/{}' threw an exception", commandString, var11);
          }
       } finally {
          Profiler.get().pop();
@@ -340,15 +316,14 @@ public class Commands {
 
    }
 
-   private static @Nullable ContextChain<CommandSourceStack> finishParsing(final ParseResults<CommandSourceStack> command, final String commandString, final CommandSourceStack sender) {
+   private static @Nullable ContextChain<CommandSourceStack> finishParsing(final ParseBox.Result command, final CommandSourceStack sender) {
       try {
-         validateParseResults(command);
-         return (ContextChain)ContextChain.tryFlatten(command.getContext().build(commandString)).orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(command.getReader()));
+         return command.unpack();
       } catch (CommandSyntaxException e) {
          sender.sendFailure(ComponentUtils.fromMessage(e.getRawMessage()));
          if (e.getInput() != null && e.getCursor() >= 0) {
             int cursor = Math.min(e.getInput().length(), e.getCursor());
-            MutableComponent context = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.SuggestCommand("/" + commandString))));
+            MutableComponent context = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.SuggestCommand("/" + command.commandString()))));
             if (cursor > 10) {
                context.append(CommonComponents.ELLIPSIS);
             }
@@ -403,30 +378,7 @@ public class Commands {
    }
 
    public void sendCommands(final ServerPlayer player) {
-      Map<CommandNode<CommandSourceStack>, CommandNode<CommandSourceStack>> playerCommands = new HashMap();
-      RootCommandNode<CommandSourceStack> root = new RootCommandNode();
-      playerCommands.put(this.dispatcher.getRoot(), root);
-      fillUsableCommands(this.dispatcher.getRoot(), root, player.createCommandSourceStack(), playerCommands);
-      player.connection.send(new ClientboundCommandsPacket(root, COMMAND_NODE_INSPECTOR));
-   }
-
-   private static <S> void fillUsableCommands(final CommandNode<S> source, final CommandNode<S> target, final S commandFilter, final Map<CommandNode<S>, CommandNode<S>> converted) {
-      for(CommandNode<S> child : source.getChildren()) {
-         if (child.canUse(commandFilter)) {
-            ArgumentBuilder<S, ?> builder = child.createBuilder();
-            if (builder.getRedirect() != null) {
-               builder.redirect((CommandNode)converted.get(builder.getRedirect()));
-            }
-
-            CommandNode<S> node = builder.build();
-            converted.put(child, node);
-            target.addChild(node);
-            if (!child.getChildren().isEmpty()) {
-               fillUsableCommands(child, node, commandFilter, converted);
-            }
-         }
-      }
-
+      player.connection.send(this.suggestionBox.toPacket(player));
    }
 
    public static LiteralArgumentBuilder<CommandSourceStack> literal(final String literal) {
@@ -448,18 +400,22 @@ public class Commands {
       };
    }
 
-   public CommandDispatcher<CommandSourceStack> getDispatcher() {
-      return this.dispatcher;
+   public SuggestionBox suggestionBox() {
+      return this.suggestionBox;
    }
 
-   public static <S> void validateParseResults(final ParseResults<S> command) throws CommandSyntaxException {
+   public ParseBox parseBox() {
+      return this.parseBox;
+   }
+
+   public static void validateParseResults(final ParseResults<?> command) throws CommandSyntaxException {
       CommandSyntaxException parseException = getParseException(command);
       if (parseException != null) {
          throw parseException;
       }
    }
 
-   public static <S> @Nullable CommandSyntaxException getParseException(final ParseResults<S> parse) {
+   public static @Nullable CommandSyntaxException getParseException(final ParseResults<?> parse) {
       if (!parse.getReader().canRead()) {
          return null;
       } else if (parse.getExceptions().size() == 1) {
@@ -469,91 +425,19 @@ public class Commands {
       }
    }
 
-   public static CommandBuildContext createValidationContext(final HolderLookup.Provider registries) {
-      return new CommandBuildContext() {
-         public FeatureFlagSet enabledFeatures() {
-            return FeatureFlags.REGISTRY.allFlags();
-         }
-
-         public Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-            return registries.listRegistryKeys();
-         }
-
-         public <T> Optional<HolderLookup.RegistryLookup<T>> lookup(final ResourceKey<? extends Registry<? extends T>> key) {
-            return registries.lookup(key).map(this::createLookup);
-         }
-
-         private <T> HolderLookup.RegistryLookup.Delegate<T> createLookup(final HolderLookup.RegistryLookup<T> original) {
-            return new HolderLookup.RegistryLookup.Delegate<T>() {
-               {
-                  Objects.requireNonNull(<VAR_NAMELESS_ENCLOSURE>);
-               }
-
-               public HolderLookup.RegistryLookup<T> parent() {
-                  return original;
-               }
-
-               public Optional<HolderSet.Named<T>> get(final TagKey<T> id) {
-                  return Optional.of(this.getOrThrow(id));
-               }
-
-               public HolderSet.Named<T> getOrThrow(final TagKey<T> id) {
-                  Optional<HolderSet.Named<T>> tag = this.parent().get(id);
-                  return (HolderSet.Named)tag.orElseGet(() -> HolderSet.emptyNamed(this.parent(), id));
-               }
-            };
-         }
-      };
+   public static CommandBuildContext createValidationContext() {
+      return CommandBuildContext.simple(FeatureFlags.REGISTRY.allFlags());
    }
 
    public static void validate() {
-      CommandBuildContext context = createValidationContext(VanillaRegistries.createWorldLookup());
-      CommandDispatcher<CommandSourceStack> dispatcher = (new Commands(Commands.CommandSelection.ALL, context)).getDispatcher();
-      RootCommandNode<CommandSourceStack> root = dispatcher.getRoot();
-      dispatcher.findAmbiguities((parent, child, sibling, ambiguities) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{dispatcher.getPath(child), dispatcher.getPath(sibling), ambiguities}));
-      Set<ArgumentType<?>> usedArgumentTypes = ArgumentUtils.findUsedArgumentTypes(root);
-      Set<ArgumentType<?>> unregisteredTypes = (Set)usedArgumentTypes.stream().filter((arg) -> !ArgumentTypeInfos.isClassRecognized(arg.getClass())).collect(Collectors.toSet());
-      if (!unregisteredTypes.isEmpty()) {
-         LOGGER.warn("Missing type registration for following arguments:\n {}", unregisteredTypes.stream().map((arg) -> "\t" + String.valueOf(arg)).collect(Collectors.joining(",\n")));
-         throw new IllegalStateException("Unregistered argument types");
-      }
+      CommandBuildContext buildContext = createValidationContext();
+      ParseBox parseBox = createVanilla(Commands.CommandSelection.ALL, buildContext).parseBox();
+      ParseContext.Simple parseContext = new ParseContext.Simple(PermissionSet.ALL_PERMISSIONS, PlaceholderRegistries.create(RegistryDataLoader.allKnownRegistries(), PlaceholderRegistries.PlaceholderBehavior.REJECT_ALL), FeatureFlags.REGISTRY.allFlags(), ValidationWrapper.Provider.LAZY);
+      parseBox.findAmbiguities(parseContext);
    }
 
    public static <T extends PermissionSetSupplier> PermissionProviderCheck<T> hasPermission(final PermissionCheck permission) {
       return new PermissionProviderCheck<T>(permission);
-   }
-
-   public static CommandSourceStack createCompilationContext(final PermissionSet compilationPermissions) {
-      return new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, compilationPermissions, CommonComponents.EMPTY, (MinecraftServer)null);
-   }
-
-   static {
-      LEVEL_ALL = PermissionCheck.AlwaysPass.INSTANCE;
-      LEVEL_MODERATORS = new PermissionCheck.Require(Permissions.COMMANDS_MODERATOR);
-      LEVEL_GAMEMASTERS = new PermissionCheck.Require(Permissions.COMMANDS_GAMEMASTER);
-      LEVEL_ADMINS = new PermissionCheck.Require(Permissions.COMMANDS_ADMIN);
-      LEVEL_OWNERS = new PermissionCheck.Require(Permissions.COMMANDS_OWNER);
-      COMMAND_NODE_INSPECTOR = new ClientboundCommandsPacket.NodeInspector<CommandSourceStack>() {
-         private final CommandSourceStack noPermissionSource;
-
-         {
-            this.noPermissionSource = Commands.createCompilationContext(PermissionSet.NO_PERMISSIONS);
-         }
-
-         public @Nullable Identifier suggestionId(final ArgumentCommandNode<CommandSourceStack, ?> node) {
-            SuggestionProvider<CommandSourceStack> suggestionProvider = node.getCustomSuggestions();
-            return suggestionProvider != null ? SuggestionProviders.getName(suggestionProvider) : null;
-         }
-
-         public boolean isExecutable(final CommandNode<CommandSourceStack> node) {
-            return node.getCommand() != null;
-         }
-
-         public boolean isRestricted(final CommandNode<CommandSourceStack> node) {
-            Predicate<CommandSourceStack> requirement = node.getRequirement();
-            return !requirement.test(this.noPermissionSource);
-         }
-      };
    }
 
    public static enum CommandSelection {

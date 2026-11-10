@@ -1,13 +1,16 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.ContextChain;
 import java.util.List;
+import net.minecraft.commands.CommandPermissionLevels;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.ExecutionCommandSource;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.execution.ChainModifiers;
 import net.minecraft.commands.execution.CustomCommandExecutor;
 import net.minecraft.commands.execution.CustomModifierExecutor;
@@ -21,8 +24,12 @@ public class ReturnCommand {
       super();
    }
 
-   public static <T extends ExecutionCommandSource<T>> void register(final CommandDispatcher<T> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(RequiredArgumentBuilder.argument("value", IntegerArgumentType.integer()).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(dispatcher.getRoot(), new ReturnFromCommandCustomModifier(), false)));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)createCommandNode(dispatcher, IntegerArgument.integer()).requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS)));
+   }
+
+   public static <T extends ExecutionCommandSource<T>> LiteralArgumentBuilder<T> createCommandNode(final CommandDispatcher<T> dispatcher, final ArgumentType<Integer> resultArgumentType) {
+      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)LiteralArgumentBuilder.literal("return").then(RequiredArgumentBuilder.argument("value", resultArgumentType).executes(new ReturnValueCustomExecutor()))).then(LiteralArgumentBuilder.literal("fail").executes(new ReturnFailCustomExecutor()))).then(LiteralArgumentBuilder.literal("run").forward(dispatcher.getRoot(), new ReturnFromCommandCustomModifier(), false));
    }
 
    private static class ReturnValueCustomExecutor<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor.CommandAdapter<T> {
@@ -31,7 +38,7 @@ public class ReturnCommand {
       }
 
       public void run(final T sender, final ContextChain<T> currentStep, final ChainModifiers modifiers, final ExecutionControl<T> output) {
-         int returnValue = IntegerArgumentType.getInteger(currentStep.getTopContext(), "value");
+         int returnValue = IntegerArgument.getInteger(currentStep.getTopContext(), "value");
          sender.callback().onSuccess(returnValue);
          Frame frame = output.currentFrame();
          frame.returnSuccess(returnValue);

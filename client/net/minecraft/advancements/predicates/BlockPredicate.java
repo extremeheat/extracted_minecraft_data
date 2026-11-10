@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.Registries;
@@ -82,7 +81,7 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
    }
 
    private static boolean matchesBlockEntityData(final LevelReader level, final @Nullable BlockEntity entity, final NbtPredicate nbt) {
-      return entity != null && nbt.matches((Tag)entity.saveWithFullMetadata((HolderLookup.Provider)level.registryAccess()));
+      return entity != null && nbt.matches((Tag)entity.saveWithFullMetadata((HolderGetter.Provider)level.registryAccess()));
    }
 
    private static boolean matchesComponents(final @Nullable BlockEntity entity, final DataComponentMatchers components) {

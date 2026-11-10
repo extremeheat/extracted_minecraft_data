@@ -12,6 +12,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.LevelBasedPermissionSet;
@@ -68,7 +69,7 @@ public record AdvancementRewards(int experience, HolderSet<LootTable> loot, List
          player.awardRecipesByKey(this.recipes);
       }
 
-      this.function.flatMap((function) -> function.get(server.getFunctions())).ifPresent((function) -> server.getFunctions().execute(function, player.createCommandSourceStack().withSuppressedOutput().withPermission(LevelBasedPermissionSet.GAMEMASTER)));
+      this.function.flatMap((function) -> function.get(server.getFunctions())).ifPresent((function) -> ServerFunctionManager.execute(function, player.createCommandSourceStack().withSuppressedOutput().withPermission(LevelBasedPermissionSet.GAMEMASTER)));
    }
 
    public static class Builder {

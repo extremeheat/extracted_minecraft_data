@@ -49,7 +49,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -163,7 +163,7 @@ public class ChunkMap extends SimpleRegionStorage implements ChunkHolder.PlayerP
       this.activeChunkWrites = new AtomicInteger();
       Path storageFolder = levelStorage.getDimensionPath(level.dimension());
       this.level = level;
-      RegistryAccess registryAccess = level.registryAccess();
+      HolderLookup.Provider registryAccess = level.registryAccess();
       long levelSeed = level.getSeed();
       this.randomState = RandomState.createForGenerator(registryAccess.lookupOrThrow(Registries.NOISE), levelSeed, generator, level);
       this.chunkGeneratorState = generator.createState(registryAccess.lookupOrThrow(Registries.STRUCTURE_SET), this.randomState, levelSeed);

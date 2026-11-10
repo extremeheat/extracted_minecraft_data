@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -69,7 +70,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                CompoundTag upgradedChunkTag = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)tag.get(), -1);
 
                try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(ChunkAccess.problemPath(pos), LOGGER)) {
-                  ValueInput chunkRoot = TagValueInput.create(reporter, this.level.registryAccess(), upgradedChunkTag);
+                  ValueInput chunkRoot = TagValueInput.create(reporter, (HolderGetter.Provider)this.level.registryAccess(), upgradedChunkTag);
                   ValueInput.ValueInputList entities = chunkRoot.childrenListOrEmpty("Entities");
                   List<Entity> chunkEntities = EntityType.loadEntitiesRecursive(entities, this.level, EntitySpawnReason.LOAD).toList();
                   return new ChunkEntities(pos, chunkEntities);

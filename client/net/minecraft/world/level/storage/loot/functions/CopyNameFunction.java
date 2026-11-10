@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextArg;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class CopyNameFunction extends LootItemConditionalFunction {
+public class CopyNameFunction extends LootItemConditionalFunction.ContextUser {
    public static final MapCodec<CopyNameFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(LootContextArg.ENTITY_OR_BLOCK.fieldOf("source").forGetter((f) -> f.source)).apply(i, CopyNameFunction::new));
    private final LootContextArg<Object> source;
 
@@ -26,7 +26,7 @@ public class CopyNameFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(this.source.contextParam());
    }
 

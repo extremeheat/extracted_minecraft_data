@@ -61,7 +61,7 @@ public abstract class RangedZombie extends Zombie implements RangedAttackMob {
          Projectile.spawnProjectileUsingShoot(projectile, serverLevel, itemStack, xd, yd + distanceToTarget * projectile.getTrajectoryCorrectionFactor(), zd, 1.6F, this.rangedAttackUncertainty(serverLevel));
       }
 
-      this.playSound(this.getRangedAttackSound(), 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+      this.playSound(this.getRangedAttackSound(), 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
    }
 
    protected boolean shouldDoRangedAttack() {

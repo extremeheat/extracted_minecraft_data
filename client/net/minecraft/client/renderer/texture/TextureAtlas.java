@@ -75,7 +75,7 @@ public class TextureAtlas implements AutoCloseable {
       GpuTextureView textureView = device.createTextureView(texture);
       GpuSampler sampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       this.texture = new TextureResources(texture, textureView, sampler);
-      this.textureManager.register(this.location, this.texture);
+      this.textureManager.registerProvider(this.location, new ExternalTextureProvider(this.texture));
       this.width = newWidth;
       this.height = newHeight;
       this.maxMipLevel = newMipLevel;
@@ -291,8 +291,12 @@ public class TextureAtlas implements AutoCloseable {
       this.animatedTexturesStates.forEach(SpriteContents.AnimationState::close);
       this.animatedTexturesStates = List.of();
       this.texturesByName = Map.of();
-      this.textureManager.release(this.location);
-      this.texture = null;
+      if (this.texture != null) {
+         this.textureManager.release(this.location);
+         this.texture.close();
+         this.texture = null;
+      }
+
       this.missingSprite = null;
       if (this.spriteUbos != null) {
          this.spriteUbos.close();

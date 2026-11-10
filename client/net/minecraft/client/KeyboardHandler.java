@@ -24,6 +24,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.debug.DebugEnvironmentAttributeOptionsScreen;
 import net.minecraft.client.gui.screens.debug.DebugOptionsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
@@ -34,7 +35,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.fog.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -285,6 +286,16 @@ public class KeyboardHandler {
             debugAction = true;
          }
 
+         if (this.minecraft.canUseRestrictedDebugFeatures() && !this.minecraft.showOnlyReducedInfo() && options.keyDebugEnvironmentAttributeOptions.matches(event)) {
+            if (this.minecraft.gui.screen() instanceof DebugEnvironmentAttributeOptionsScreen) {
+               this.minecraft.gui.screen().onClose();
+            } else if (this.minecraft.canInterruptScreen()) {
+               this.minecraft.gui.setScreen(new DebugEnvironmentAttributeOptionsScreen(this.minecraft.gui.screen()));
+            }
+
+            debugAction = true;
+         }
+
          if (options.keyDebugFocusPause.matches(event)) {
             options.pauseOnLostFocus = !options.pauseOnLostFocus;
             options.save();
@@ -295,7 +306,7 @@ public class KeyboardHandler {
          if (options.keyDebugDumpDynamicTextures.matches(event)) {
             Path gameDirectory = this.minecraft.gameDirectory.toPath().toAbsolutePath();
             Path debugTexturePath = TextureUtil.getDebugTexturePath(gameDirectory);
-            this.minecraft.getTextureManager().dumpAllSheets(debugTexturePath);
+            this.minecraft.getTextureManager().dumpTextures(debugTexturePath);
             this.minecraft.getAtlasManager().dumpAllSprites(debugTexturePath);
             Component pathComponent = Component.literal(gameDirectory.relativize(debugTexturePath).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((s) -> s.withClickEvent(new ClickEvent.OpenFile(debugTexturePath))));
             this.debugFeedbackComponent(Component.translatable("debug.dump_dynamic_textures", pathComponent));
@@ -377,7 +388,7 @@ public class KeyboardHandler {
                      });
                   } else {
                      BlockEntity blockEntity = level.getBlockEntity(blockPos);
-                     CompoundTag tag = blockEntity != null ? blockEntity.saveWithoutMetadata((HolderLookup.Provider)level.registryAccess()) : null;
+                     CompoundTag tag = blockEntity != null ? blockEntity.saveWithoutMetadata((HolderGetter.Provider)level.registryAccess()) : null;
                      this.copyCreateBlockCommand(state, blockPos, tag);
                      this.debugFeedbackTranslated("debug.inspect.client.block");
                   }
@@ -460,7 +471,7 @@ public class KeyboardHandler {
          if (screen != null) {
             if (event.isCycleFocus()) {
                this.minecraft.setLastInputType(InputType.KEYBOARD_TAB);
-            } else if (!screen.isInputCaptured()) {
+            } else if (!screen.isInputCaptured() && !event.repeat()) {
                if (event.isSelection()) {
                   this.minecraft.setLastInputType(InputType.KEYBOARD_SELECTION);
                } else if (event.isLeft() || event.isRight() || event.isUp() || event.isDown()) {
@@ -470,11 +481,11 @@ public class KeyboardHandler {
          }
 
          if (action == 1) {
-            label196: {
+            label197: {
                if (screen instanceof KeyBindsScreen) {
                   KeyBindsScreen keyBindsScreen = (KeyBindsScreen)screen;
                   if (keyBindsScreen.lastKeySelection > Util.getMillis() - 20L) {
-                     break label196;
+                     break label197;
                   }
                }
 
@@ -534,22 +545,22 @@ public class KeyboardHandler {
          InputConstants.Key key;
          boolean handlesGameInput;
          boolean var10000;
-         label175: {
+         label176: {
             key = InputConstants.getKey(event);
             handlesGameInput = this.minecraft.gui.screen() == null;
             if (!handlesGameInput) {
-               label173: {
+               label174: {
                   Screen var15 = this.minecraft.gui.screen();
                   if (var15 instanceof PauseScreen) {
                      PauseScreen pauseScreen = (PauseScreen)var15;
                      if (!pauseScreen.showsPauseMenu()) {
-                        break label173;
+                        break label174;
                      }
                   }
 
                   if (!(this.minecraft.gui.screen() instanceof GameModeSwitcherScreen)) {
                      var10000 = false;
-                     break label175;
+                     break label176;
                   }
                }
             }

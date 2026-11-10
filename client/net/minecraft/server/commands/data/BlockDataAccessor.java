@@ -8,7 +8,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
@@ -45,7 +45,7 @@ public class BlockDataAccessor implements DataAccessor {
       BlockState state = this.entity.getLevel().getBlockState(this.pos);
 
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.entity.problemPath(), LOGGER)) {
-         this.entity.loadWithComponents(TagValueInput.create(reporter, this.entity.getLevel().registryAccess(), tag));
+         this.entity.loadWithComponents(TagValueInput.create(reporter, (HolderGetter.Provider)this.entity.getLevel().registryAccess(), tag));
          this.entity.setChanged();
          this.entity.getLevel().sendBlockUpdated(this.pos, state, state, 3);
       }
@@ -53,7 +53,7 @@ public class BlockDataAccessor implements DataAccessor {
    }
 
    public CompoundTag getData() {
-      return this.entity.saveWithFullMetadata((HolderLookup.Provider)this.entity.getLevel().registryAccess());
+      return this.entity.saveWithFullMetadata((HolderGetter.Provider)this.entity.getLevel().registryAccess());
    }
 
    public Component getModifiedSuccess() {

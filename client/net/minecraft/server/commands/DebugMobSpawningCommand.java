@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
@@ -15,7 +16,7 @@ public class DebugMobSpawningCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      LiteralArgumentBuilder<CommandSourceStack> base = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
+      LiteralArgumentBuilder<CommandSourceStack> base = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS));
 
       for(MobCategory mobCategory : MobCategory.values()) {
          base.then(Commands.literal(mobCategory.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((c) -> spawnMobs((CommandSourceStack)c.getSource(), mobCategory, BlockPosArgument.getLoadedBlockPos(c, "at")))));

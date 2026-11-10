@@ -12,18 +12,23 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
-public class GameModeArgument implements ArgumentType<GameType> {
+public class GameModeArgument implements SerializableArgument.ContextFree<GameType> {
+   private static final GameModeArgument INSTANCE = new GameModeArgument();
+   public static final SerializableArgument.Type<GameModeArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final GameType[] VALUES;
    private static final DynamicCommandExceptionType ERROR_INVALID;
 
-   public GameModeArgument() {
+   private GameModeArgument() {
       super();
+   }
+
+   public SerializableArgument.Type<GameModeArgument> type() {
+      return TYPE;
    }
 
    public GameType parse(final StringReader reader) throws CommandSyntaxException {
@@ -36,23 +41,24 @@ public class GameModeArgument implements ArgumentType<GameType> {
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-      return context.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(Arrays.stream(VALUES).map(GameType::getName), builder) : Suggestions.empty();
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(Arrays.stream(VALUES).map(GameType::getName), builder);
    }
 
    public Collection<String> getExamples() {
       return EXAMPLES;
    }
 
-   public static GameModeArgument gameMode() {
-      return new GameModeArgument();
+   public static ArgumentType<GameType> gameMode() {
+      return INSTANCE.toBrigadier();
    }
 
-   public static GameType getGameMode(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
+   public static GameType getGameMode(final CommandContext<?> context, final String name) throws CommandSyntaxException {
       return (GameType)context.getArgument(name, GameType.class);
    }
 
    static {
+      TYPE = SerializableArgument.<GameModeArgument>singletonType(INSTANCE);
       EXAMPLES = (Collection)Stream.of(GameType.SURVIVAL, GameType.CREATIVE).map(GameType::getName).collect(Collectors.toList());
       VALUES = GameType.values();
       ERROR_INVALID = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.gamemode.invalid", value));

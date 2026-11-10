@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -48,28 +49,28 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
       return ResourceKey.create(Registries.VILLAGER_PROFESSION, Identifier.withDefaultNamespace(name));
    }
 
-   private static VillagerProfession register(final Registry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final ResourceKey<PoiType> jobSite, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
-      return register(registry, name, (poiType) -> poiType.is(jobSite), (poiType) -> poiType.is(jobSite), workSound, trades);
+   private static void register(final WritableRegistry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final ResourceKey<PoiType> jobSite, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
+      register(registry, name, (poiType) -> poiType.is(jobSite), (poiType) -> poiType.is(jobSite), workSound, trades);
    }
 
-   private static VillagerProfession register(final Registry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final @Nullable SoundEvent workSound) {
-      return register(registry, name, heldJobSite, acquirableJobSite, ImmutableSet.of(), ImmutableSet.of(), workSound, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[0]));
+   private static void register(final WritableRegistry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final @Nullable SoundEvent workSound) {
+      register(registry, name, heldJobSite, acquirableJobSite, ImmutableSet.of(), ImmutableSet.of(), workSound, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[0]));
    }
 
-   private static VillagerProfession register(final Registry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
-      return register(registry, name, heldJobSite, acquirableJobSite, ImmutableSet.of(), ImmutableSet.of(), workSound, trades);
+   private static void register(final WritableRegistry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
+      register(registry, name, heldJobSite, acquirableJobSite, ImmutableSet.of(), ImmutableSet.of(), workSound, trades);
    }
 
-   private static VillagerProfession register(final Registry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final ResourceKey<PoiType> jobSite, final ImmutableSet<Item> requestedItems, final ImmutableSet<Block> secondaryPoi, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
-      return register(registry, name, (poiType) -> poiType.is(jobSite), (poiType) -> poiType.is(jobSite), requestedItems, secondaryPoi, workSound, trades);
+   private static void register(final WritableRegistry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final ResourceKey<PoiType> jobSite, final ImmutableSet<Item> requestedItems, final ImmutableSet<Block> secondaryPoi, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
+      register(registry, name, (poiType) -> poiType.is(jobSite), (poiType) -> poiType.is(jobSite), requestedItems, secondaryPoi, workSound, trades);
    }
 
-   private static VillagerProfession register(final Registry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final ImmutableSet<Item> requestedItems, final ImmutableSet<Block> secondaryPoi, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
+   private static void register(final WritableRegistry<VillagerProfession> registry, final ResourceKey<VillagerProfession> name, final Predicate<Holder<PoiType>> heldJobSite, final Predicate<Holder<PoiType>> acquirableJobSite, final ImmutableSet<Item> requestedItems, final ImmutableSet<Block> secondaryPoi, final @Nullable SoundEvent workSound, final Int2ObjectMap<ResourceKey<TradeSet>> trades) {
       String var10004 = name.identifier().getNamespace();
-      return (VillagerProfession)Registry.register(registry, (ResourceKey)name, new VillagerProfession(Component.translatable("entity." + var10004 + ".villager." + name.identifier().getPath()), heldJobSite, acquirableJobSite, requestedItems, secondaryPoi, workSound, trades));
+      Registry.register(registry, (ResourceKey)name, new VillagerProfession(Component.translatable("entity." + var10004 + ".villager." + name.identifier().getPath()), heldJobSite, acquirableJobSite, requestedItems, secondaryPoi, workSound, trades));
    }
 
-   public static VillagerProfession bootstrap(final Registry<VillagerProfession> registry) {
+   public static void bootstrap(final WritableRegistry<VillagerProfession> registry) {
       register(registry, NONE, PoiType.NONE, (Predicate)ALL_ACQUIRABLE_JOBS, (SoundEvent)null);
       register(registry, ARMORER, PoiTypeIds.ARMORER, SoundEvents.VILLAGER_WORK_ARMORER, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.ARMORER_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.ARMORER_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.ARMORER_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.ARMORER_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.ARMORER_LEVEL_5)}));
       register(registry, BUTCHER, PoiTypeIds.BUTCHER, SoundEvents.VILLAGER_WORK_BUTCHER, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.BUTCHER_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.BUTCHER_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.BUTCHER_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.BUTCHER_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.BUTCHER_LEVEL_5)}));
@@ -84,7 +85,7 @@ public record VillagerProfession(Component name, Predicate<Holder<PoiType>> held
       register(registry, NITWIT, PoiType.NONE, (Predicate)PoiType.NONE, (SoundEvent)null);
       register(registry, SHEPHERD, PoiTypeIds.SHEPHERD, SoundEvents.VILLAGER_WORK_SHEPHERD, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.SHEPHERD_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.SHEPHERD_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.SHEPHERD_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.SHEPHERD_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.SHEPHERD_LEVEL_5)}));
       register(registry, TOOLSMITH, PoiTypeIds.TOOLSMITH, SoundEvents.VILLAGER_WORK_TOOLSMITH, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.TOOLSMITH_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.TOOLSMITH_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.TOOLSMITH_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.TOOLSMITH_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.TOOLSMITH_LEVEL_5)}));
-      return register(registry, WEAPONSMITH, PoiTypeIds.WEAPONSMITH, SoundEvents.VILLAGER_WORK_WEAPONSMITH, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.WEAPONSMITH_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.WEAPONSMITH_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.WEAPONSMITH_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.WEAPONSMITH_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.WEAPONSMITH_LEVEL_5)}));
+      register(registry, WEAPONSMITH, PoiTypeIds.WEAPONSMITH, SoundEvents.VILLAGER_WORK_WEAPONSMITH, Int2ObjectMap.ofEntries(new Int2ObjectMap.Entry[]{Int2ObjectMap.entry(1, TradeSets.WEAPONSMITH_LEVEL_1), Int2ObjectMap.entry(2, TradeSets.WEAPONSMITH_LEVEL_2), Int2ObjectMap.entry(3, TradeSets.WEAPONSMITH_LEVEL_3), Int2ObjectMap.entry(4, TradeSets.WEAPONSMITH_LEVEL_4), Int2ObjectMap.entry(5, TradeSets.WEAPONSMITH_LEVEL_5)}));
    }
 
    public @Nullable ResourceKey<TradeSet> getTrades(final int level) {

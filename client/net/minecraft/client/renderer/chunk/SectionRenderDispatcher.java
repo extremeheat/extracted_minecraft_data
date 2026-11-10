@@ -6,9 +6,9 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.StagingBuffer;
 import com.mojang.blaze3d.vertex.TlsfAllocator;
 import com.mojang.blaze3d.vertex.UberGpuBuffer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.device.DeviceLimits;
 import com.mojang.renderpearl.api.device.GpuDevice;
 import java.nio.ByteBuffer;
 import java.util.Map;
@@ -20,6 +20,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.TracingExecutor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.RotatingSectionStorage;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.SectionBufferBuilderPack;
 import net.minecraft.client.renderer.SectionBufferBuilderPool;
@@ -57,16 +58,29 @@ public class SectionRenderDispatcher {
       this.bufferPool = renderBuffers.sectionBufferPool();
       this.executor = executor;
       this.sectionCompiler = sectionCompiler;
-      int vertexBufferHeapSize = 134217728;
+      int requestedVertexBufferHeapSize = 67108864;
       int indexBufferHeapSize = 33554432;
-      int stagingBufferSize = 102760448;
+      int requestedStagingBufferSize = 67108864;
       GpuDevice gpuDevice = RenderSystem.getDevice();
-      this.stagingBuffer = StagingBuffer.create("Chunk", gpuDevice, 102760448);
+      DeviceLimits deviceLimits = gpuDevice.getDeviceInfo().limits();
+      int texelFormatSize = BindGroupLayouts.TERRAIN_VERTEX_TEXEL_FORMAT.blockSize();
+      long maxTexelBufferSize = (long)deviceLimits.maxTexelBufferElements() * (long)texelFormatSize;
+      int clampedMaxTexelBufferSize = Long.compareUnsigned(maxTexelBufferSize, 2147483647L) >= 0 ? 2147483647 : (int)maxTexelBufferSize;
+      int stagingBufferSize = Math.min(clampedMaxTexelBufferSize, 67108864);
+      int vertexBufferHeapSize = Math.min(clampedMaxTexelBufferSize, 67108864);
+      this.stagingBuffer = StagingBuffer.create("Chunk", gpuDevice, stagingBufferSize);
       this.chunkUberBuffers = Util.<ChunkSectionLayer, SectionUberBuffers>makeEnumMap(ChunkSectionLayer.class, (layer) -> {
-         VertexFormat vertexFormat = layer.vertexFormat();
-         UberGpuBuffer<SectionMesh> vertexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 32, 134217728, vertexFormat.getVertexSize(), this.stagingBuffer);
-         UberGpuBuffer<SectionMesh> indexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 64, 33554432, 8, this.stagingBuffer);
-         return new SectionUberBuffers(vertexUberBuffer, indexUberBuffer);
+         if (layer.vertexBufferFaceSize() % texelFormatSize != 0) {
+            String var6 = String.valueOf(layer);
+            throw new IllegalStateException("Vertex buffer face size of " + var6 + " layer is not aligned to texel buffer format size: " + texelFormatSize);
+         } else if (layer.vertexBufferBakedFaceSize() % texelFormatSize != 0) {
+            String var10002 = String.valueOf(layer);
+            throw new IllegalStateException("Baked face vertex size of " + var10002 + " layer is not aligned to texel buffer format size: " + texelFormatSize);
+         } else {
+            UberGpuBuffer<SectionMesh> vertexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 256, vertexBufferHeapSize, texelFormatSize, this.stagingBuffer);
+            UberGpuBuffer<SectionMesh> indexUberBuffer = new UberGpuBuffer<SectionMesh>(layer.label(), 64, 33554432, 8, this.stagingBuffer);
+            return new SectionUberBuffers(vertexUberBuffer, indexUberBuffer);
+         }
       });
    }
 

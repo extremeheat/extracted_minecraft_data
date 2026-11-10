@@ -53,10 +53,6 @@ public class MapDecorationTypes {
       super();
    }
 
-   public static Holder<MapDecorationType> bootstrap(final Registry<MapDecorationType> registry) {
-      return PLAYER;
-   }
-
    private static Holder<MapDecorationType> register(final String name, final String assetName, final boolean showOnItemFrame, final boolean trackCount) {
       ResourceKey<MapDecorationType> key = ResourceKey.create(Registries.MAP_DECORATION_TYPE, Identifier.withDefaultNamespace(name));
       MapDecorationType type = new MapDecorationType(Identifier.withDefaultNamespace(assetName), showOnItemFrame, trackCount);

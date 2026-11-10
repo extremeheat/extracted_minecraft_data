@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.WorldOptionsScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Position;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.gizmos.SimpleGizmoCollector;
@@ -442,7 +443,7 @@ public class IntegratedServer extends MinecraftServer {
             return super.selectLevelLoadFocusPos();
          } else {
             try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-               ValueInput input = TagValueInput.create(reporter, this.registryAccess(), (CompoundTag)playerData.get());
+               ValueInput input = TagValueInput.create(reporter, (HolderGetter.Provider)this.registryAccess(), (CompoundTag)playerData.get());
                ServerPlayer.SavedPosition loadedPosition = (ServerPlayer.SavedPosition)input.read(ServerPlayer.SavedPosition.MAP_CODEC).orElse(ServerPlayer.SavedPosition.EMPTY);
                if (loadedPosition.dimension().isPresent() && loadedPosition.position().isPresent()) {
                   return new GlobalPos((ResourceKey)loadedPosition.dimension().get(), BlockPos.containing((Position)loadedPosition.position().get()));

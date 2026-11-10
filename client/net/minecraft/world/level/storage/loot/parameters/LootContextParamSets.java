@@ -8,6 +8,9 @@ import java.util.function.Consumer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.context.ContextKey;
@@ -15,10 +18,12 @@ import net.minecraft.util.context.ContextKeySet;
 
 public class LootContextParamSets {
    public static final Codec<ContextKeySet> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ContextKeySet> STREAM_CODEC;
    public static final ContextKeySet EMPTY;
    public static final ContextKeySet ALL_PARAMS;
    public static final ContextKeySet CHEST;
-   public static final ContextKeySet COMMAND;
+   public static final ContextKeySet COMMAND_PREDICATE;
+   public static final ContextKeySet COMMAND_MODIFIER;
    public static final ContextKeySet COMMAND_SLOT_SOURCE;
    public static final ContextKeySet COMMAND_COMPUTE_DEFAULT;
    public static final ContextKeySet COMMAND_COMPUTE_POSITION;
@@ -62,10 +67,6 @@ public class LootContextParamSets {
       return (ContextKeySet)Registry.register(BuiltInRegistries.CONTEXT_KEY_SET, (ResourceKey)key, builder.build());
    }
 
-   public static ContextKeySet bootstrap(final Registry<ContextKeySet> registry) {
-      return ALL_PARAMS;
-   }
-
    public static void validate() {
       Set<ContextKey<?>> allParams = new HashSet();
       BuiltInRegistries.CONTEXT_KEY_SET.forEach((paramSet) -> {
@@ -82,11 +83,13 @@ public class LootContextParamSets {
 
    static {
       CODEC = BuiltInRegistries.CONTEXT_KEY_SET.byNameCodec();
+      STREAM_CODEC = ByteBufCodecs.registry(Registries.CONTEXT_KEY_SET);
       EMPTY = register("empty", (Consumer)((var0) -> {
       }));
       ALL_PARAMS = register("generic", (Consumer)((builder) -> builder.required(LootContextParams.THIS_ENTITY).required(LootContextParams.LAST_DAMAGE_PLAYER).required(LootContextParams.DAMAGE_SOURCE).required(LootContextParams.ATTACKING_ENTITY).required(LootContextParams.DIRECT_ATTACKING_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE).required(LootContextParams.BLOCK_ENTITY).required(LootContextParams.TOOL).required(LootContextParams.EXPLOSION_RADIUS).required(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED).required(LootContextParams.CONTAINER).required(LootContextParams.INTERACTING_ENTITY).required(LootContextParams.TARGET_ENTITY).required(LootContextParams.ENCHANTMENT_ACTIVE).required(LootContextParams.ENCHANTMENT_LEVEL)));
       CHEST = register("chest", (Consumer)((builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)));
-      COMMAND = register("command", (Consumer)((builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)));
+      COMMAND_PREDICATE = register("command_predicate", (Consumer)((builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)));
+      COMMAND_MODIFIER = register("command_modifier", (Consumer)((builder) -> builder.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)));
       COMMAND_SLOT_SOURCE = register("command_slot_source", (Consumer)((builder) -> builder.required(LootContextParams.ORIGIN).required(LootContextParams.CONTAINER).optional(LootContextParams.THIS_ENTITY)));
       COMMAND_COMPUTE_DEFAULT = register("command_compute_default", (Consumer)((builder) -> builder.optional(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN)));
       COMMAND_COMPUTE_POSITION = register("command_compute_position", (Consumer)((builder) -> builder.optional(LootContextParams.THIS_ENTITY).required(LootContextParams.ORIGIN).required(LootContextParams.BLOCK_STATE).optional(LootContextParams.BLOCK_ENTITY)));

@@ -29,11 +29,13 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.minecraft.SharedConstants;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.StringArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.packs.PackType;
@@ -60,20 +62,20 @@ public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_EXISTS = new DynamicCommandExceptionType((id) -> Component.translatableEscape("commands.datapack.create.already_exists", id));
    private static final Dynamic2CommandExceptionType ERROR_PACK_METADATA_ENCODE_FAILURE = new Dynamic2CommandExceptionType((id, error) -> Component.translatableEscape("commands.datapack.create.metadata_encode_failure", id, error));
    private static final DynamicCommandExceptionType ERROR_PACK_IO_FAILURE = new DynamicCommandExceptionType((id) -> Component.translatableEscape("commands.datapack.create.io_failure", id));
-   private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (c, p) -> SharedSuggestionProvider.suggest(((CommandSourceStack)c.getSource()).getServer().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), p);
-   private static final SuggestionProvider<CommandSourceStack> UNSELECTED_PACKS = (c, p) -> {
-      PackRepository packRepository = ((CommandSourceStack)c.getSource()).getServer().getPackRepository();
+   private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = SuggestionProviders.serverOnly((server, var1, builder) -> SuggestionContext.suggest(server.getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), builder));
+   private static final SuggestionProvider<CommandSourceStack> UNSELECTED_PACKS = SuggestionProviders.serverOnly((server, context, builder) -> {
+      PackRepository packRepository = server.getPackRepository();
       Collection<String> selectedIds = packRepository.getSelectedIds();
-      FeatureFlagSet enabledFeatures = ((CommandSourceStack)c.getSource()).enabledFeatures();
-      return SharedSuggestionProvider.suggest(packRepository.getAvailablePacks().stream().filter((pack) -> pack.getRequestedFeatures().isSubsetOf(enabledFeatures)).map(Pack::getId).filter((id) -> !selectedIds.contains(id)).map(StringArgumentType::escapeIfRequired), p);
-   };
+      FeatureFlagSet enabledFeatures = ((SuggestionContext)context.getSource()).enabledFeatures();
+      return SuggestionContext.suggest(packRepository.getAvailablePacks().stream().filter((pack) -> pack.getRequestedFeatures().isSubsetOf(enabledFeatures)).map(Pack::getId).filter((id) -> !selectedIds.contains(id)).map(StringArgumentType::escapeIfRequired), builder);
+   });
 
    public DataPackCommand() {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("datapack").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("enable").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", StringArgumentType.string()).suggests(UNSELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> p.getDefaultPosition().insert(l, p, Pack::selectionConfig, false)))).then(Commands.literal("after").then(Commands.argument("existing", StringArgumentType.string()).suggests(SELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(l.indexOf(getPack(c, "existing", false)) + 1, p)))))).then(Commands.literal("before").then(Commands.argument("existing", StringArgumentType.string()).suggests(SELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(l.indexOf(getPack(c, "existing", false)), p)))))).then(Commands.literal("last").executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), List::add)))).then(Commands.literal("first").executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(0, p))))))).then(Commands.literal("disable").then(Commands.argument("name", StringArgumentType.string()).suggests(SELECTED_PACKS).executes((c) -> disablePack((CommandSourceStack)c.getSource(), getPack(c, "name", false)))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("list").executes((c) -> listPacks((CommandSourceStack)c.getSource()))).then(Commands.literal("available").executes((c) -> listAvailablePacks((CommandSourceStack)c.getSource())))).then(Commands.literal("enabled").executes((c) -> listEnabledPacks((CommandSourceStack)c.getSource()))))).then(((LiteralArgumentBuilder)Commands.literal("create").requires(Commands.hasPermission(Commands.LEVEL_OWNERS))).then(Commands.argument("id", StringArgumentType.string()).then(Commands.argument("description", ComponentArgument.textComponent(context)).executes((c) -> createPack((CommandSourceStack)c.getSource(), StringArgumentType.getString(c, "id"), ComponentArgument.getResolvedComponent(c, "description")))))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("datapack").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("enable").then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", StringArgument.string()).suggests(UNSELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> p.getDefaultPosition().insert(l, p, Pack::selectionConfig, false)))).then(Commands.literal("after").then(Commands.argument("existing", StringArgument.string()).suggests(SELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(l.indexOf(getPack(c, "existing", false)) + 1, p)))))).then(Commands.literal("before").then(Commands.argument("existing", StringArgument.string()).suggests(SELECTED_PACKS).executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(l.indexOf(getPack(c, "existing", false)), p)))))).then(Commands.literal("last").executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), List::add)))).then(Commands.literal("first").executes((c) -> enablePack((CommandSourceStack)c.getSource(), getPack(c, "name", true), (l, p) -> l.add(0, p))))))).then(Commands.literal("disable").then(Commands.argument("name", StringArgument.string()).suggests(SELECTED_PACKS).executes((c) -> disablePack((CommandSourceStack)c.getSource(), getPack(c, "name", false)))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("list").executes((c) -> listPacks((CommandSourceStack)c.getSource()))).then(Commands.literal("available").executes((c) -> listAvailablePacks((CommandSourceStack)c.getSource())))).then(Commands.literal("enabled").executes((c) -> listEnabledPacks((CommandSourceStack)c.getSource()))))).then(((LiteralArgumentBuilder)Commands.literal("create").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_OWNERS))).then(Commands.argument("id", StringArgument.string()).then(Commands.argument("description", ComponentArgument.textComponent()).executes((c) -> createPack((CommandSourceStack)c.getSource(), StringArgument.getString(c, "id"), ComponentArgument.getResolvedComponent(c, "description")))))));
    }
 
    private static int createPack(final CommandSourceStack source, final String id, final Component description) throws CommandSyntaxException {
@@ -198,7 +200,7 @@ public class DataPackCommand {
    }
 
    private static Pack getPack(final CommandContext<CommandSourceStack> context, final String name, final boolean enabling) throws CommandSyntaxException {
-      String id = StringArgumentType.getString(context, name);
+      String id = StringArgument.getString(context, name);
       PackRepository repository = ((CommandSourceStack)context.getSource()).getServer().getPackRepository();
       Pack pack = repository.getPack(id);
       if (pack == null) {

@@ -97,7 +97,7 @@ public class MoveNoiseBiomesFix extends DataFix {
    }
 
    private static Dynamic<?> renameBiomesToNoiseBiomes(final Dynamic<?> status) {
-      return NamespacedSchema.ensureNamespaced(status.asString("")).equals("minecraft:biomes") ? status.createString("minecraft:noise_biomes") : status;
+      return NamespacedSchema.namespacedIdMatches(status, "minecraft:biomes") ? status.createString("minecraft:noise_biomes") : status;
    }
 
    private static List<String> collectStatusesToRerun(final String status, final String targetStatus, final boolean alwaysIncludeBiomes) {

@@ -3,18 +3,15 @@ package net.minecraft.client.gui.components;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.context.CommandContextBuilder;
 import com.mojang.brigadier.context.ParsedArgument;
-import com.mojang.brigadier.context.SuggestionContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
@@ -34,12 +31,10 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.client.renderer.Rect2i;
-import net.minecraft.commands.ArgumentVisitor;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.commands.SuggestionBox;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -71,7 +66,7 @@ public class CommandSuggestions implements Renderable {
    private final List<FormattedCharSequence> commandUsage = new ArrayList();
    private int commandUsagePosition;
    private int commandUsageWidth;
-   private @Nullable ParseResults<ClientSuggestionProvider> currentParse;
+   private SuggestionBox.Result currentParse;
    private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
    private @Nullable SuggestionsList suggestions;
    private boolean currentParseIsCommand;
@@ -193,7 +188,7 @@ public class CommandSuggestions implements Renderable {
 
    public void updateCommandInfo() {
       String command = this.input.getValue();
-      if (this.currentParse != null && !this.currentParse.getReader().getString().equals(command)) {
+      if (this.currentParse != null && !this.currentParse.parseResults().getReader().getString().equals(command)) {
          this.currentParse = null;
          this.currentParseIsCommand = false;
          this.currentParseIsMessage = false;
@@ -214,19 +209,19 @@ public class CommandSuggestions implements Renderable {
       boolean isCommand = this.commandsOnly || startsWithSlash;
       int cursorPosition = this.input.getCursorPosition();
       if (isCommand) {
-         CommandDispatcher<ClientSuggestionProvider> commands = this.minecraft.player.connection.getCommands();
+         SuggestionBox suggestionBox = this.minecraft.player.connection.commandSuggestions();
          if (this.currentParse == null) {
-            this.currentParse = commands.parse(reader, this.minecraft.player.connection.getSuggestionsProvider());
+            this.currentParse = suggestionBox.parse(reader, this.minecraft.player.connection.getSuggestionsProvider());
             this.currentParseIsCommand = true;
-            this.currentParseIsMessage = hasMessageArguments(this.currentParse);
+            this.currentParseIsMessage = this.currentParse.hasMessageArguments();
          }
 
          int parseStart = this.onlyShowIfCursorPastError ? reader.getCursor() : 1;
          if (cursorPosition >= parseStart && (this.suggestions == null || !this.keepSuggestions)) {
-            this.pendingSuggestions = commands.getCompletionSuggestions(this.currentParse, cursorPosition);
+            this.pendingSuggestions = this.currentParse.computeSuggestions(cursorPosition);
             this.pendingSuggestions.thenAccept((suggestionResult) -> {
                if (this.pendingSuggestions.isDone()) {
-                  this.updateUsageInfo(this.currentParse, suggestionResult);
+                  this.updateUsageInfo(this.currentParse.parseResults(), suggestionResult);
                }
             });
          }
@@ -234,8 +229,8 @@ public class CommandSuggestions implements Renderable {
          this.currentParseIsMessage = true;
          String partialCommand = command.substring(0, cursorPosition);
          int lastWord = getLastWordIndex(partialCommand);
-         Collection<String> nonCommandSuggestions = this.minecraft.player.connection.getSuggestionsProvider().getCustomTabSuggestions();
-         this.pendingSuggestions = SharedSuggestionProvider.suggest(nonCommandSuggestions, new SuggestionsBuilder(partialCommand, lastWord));
+         Collection<String> nonCommandSuggestions = this.minecraft.player.connection.getSuggestionsProvider().customTabSuggestions();
+         this.pendingSuggestions = SuggestionContext.suggest(nonCommandSuggestions, new SuggestionsBuilder(partialCommand, lastWord));
          if (this.currentParseIsMessage && !this.messagesAllowed) {
             this.commandUsage.add(MESSAGES_NOT_ALLOWED_TEXT.getVisualOrderText());
          }
@@ -246,24 +241,6 @@ public class CommandSuggestions implements Renderable {
          this.pendingSuggestions = null;
       }
 
-   }
-
-   private static boolean hasMessageArguments(final ParseResults<ClientSuggestionProvider> parseResults) {
-      class Visitor implements ArgumentVisitor.Output<ClientSuggestionProvider> {
-         private boolean foundMessageArgument;
-
-         Visitor() {
-            super();
-         }
-
-         public <T> void accept(final CommandContextBuilder<ClientSuggestionProvider> context, final ArgumentCommandNode<ClientSuggestionProvider, T> argument, final @Nullable ParsedArgument<ClientSuggestionProvider, T> value) {
-            this.foundMessageArgument |= value != null && value.getResult() instanceof MessageArgument.Message;
-         }
-      }
-
-      Visitor visitor = new Visitor();
-      ArgumentVisitor.visitArguments(parseResults, visitor, false);
-      return visitor.foundMessageArgument;
    }
 
    private static int getLastWordIndex(final String text) {
@@ -285,13 +262,13 @@ public class CommandSuggestions implements Renderable {
       return context == null ? message.getVisualOrderText() : Component.translatable("command.context.parse_error", message, e.getCursor(), context).getVisualOrderText();
    }
 
-   private void updateUsageInfo(final ParseResults<ClientSuggestionProvider> currentParse, final Suggestions suggestions) {
+   private void updateUsageInfo(final ParseResults<? extends SuggestionContext> currentParse, final Suggestions suggestions) {
       boolean trailingCharacters = false;
       if (this.input.getCursorPosition() == this.input.getValue().length()) {
          if (suggestions.isEmpty() && !currentParse.getExceptions().isEmpty()) {
             int literals = 0;
 
-            for(Map.Entry<CommandNode<ClientSuggestionProvider>, CommandSyntaxException> entry : currentParse.getExceptions().entrySet()) {
+            for(Map.Entry<? extends CommandNode<?>, CommandSyntaxException> entry : currentParse.getExceptions().entrySet()) {
                CommandSyntaxException exception = (CommandSyntaxException)entry.getValue();
                if (exception.getType() == CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect()) {
                   ++literals;
@@ -308,7 +285,7 @@ public class CommandSuggestions implements Renderable {
          }
       }
 
-      SuggestionContext<ClientSuggestionProvider> suggestionContextAtCursor = currentParse.getContext().findSuggestionContext(this.input.getCursorPosition());
+      com.mojang.brigadier.context.SuggestionContext<? extends SuggestionContext> suggestionContextAtCursor = currentParse.getContext().findSuggestionContext(this.input.getCursorPosition());
       if (this.commandUsage.isEmpty()) {
          List<FormattedCharSequence> usageEntries = this.fillNodeUsage(suggestionContextAtCursor, USAGE_FORMAT);
          if (usageEntries.isEmpty() && trailingCharacters) {
@@ -340,11 +317,11 @@ public class CommandSuggestions implements Renderable {
 
    }
 
-   private List<FormattedCharSequence> fillNodeUsage(final SuggestionContext<ClientSuggestionProvider> suggestionContext, final Style usageFormat) {
-      Map<CommandNode<ClientSuggestionProvider>, String> usage = this.minecraft.player.connection.getCommands().getSmartUsage(suggestionContext.parent, this.minecraft.player.connection.getSuggestionsProvider());
+   private List<FormattedCharSequence> fillNodeUsage(final com.mojang.brigadier.context.SuggestionContext<? extends SuggestionContext> suggestionContext, final Style usageFormat) {
+      Map<? extends CommandNode<?>, String> usage = this.minecraft.player.connection.commandSuggestions().getSmartUsage(suggestionContext.parent, this.minecraft.player.connection.getSuggestionsProvider());
       List<FormattedCharSequence> lines = new ArrayList();
 
-      for(Map.Entry<CommandNode<ClientSuggestionProvider>, String> entry : usage.entrySet()) {
+      for(Map.Entry<? extends CommandNode<?>, String> entry : usage.entrySet()) {
          if (!(entry.getKey() instanceof LiteralCommandNode)) {
             lines.add(FormattedCharSequence.forward((String)entry.getValue(), usageFormat));
          }
@@ -364,20 +341,20 @@ public class CommandSuggestions implements Renderable {
    }
 
    private @Nullable FormattedCharSequence formatChat(final String text, final int offset) {
-      return this.currentParse != null ? formatText(this.currentParse, text, offset) : null;
+      return this.currentParse != null ? formatText(this.currentParse.parseResults(), text, offset) : null;
    }
 
    private static @Nullable String calculateSuggestionSuffix(final String contents, final String suggestion) {
       return suggestion.startsWith(contents) ? suggestion.substring(contents.length()) : null;
    }
 
-   private static FormattedCharSequence formatText(final ParseResults<ClientSuggestionProvider> currentParse, final String text, final int offset) {
+   private static FormattedCharSequence formatText(final ParseResults<?> currentParse, final String text, final int offset) {
       List<FormattedCharSequence> parts = new ArrayList();
       int unformattedStart = 0;
       int nextColor = -1;
-      CommandContextBuilder<ClientSuggestionProvider> context = currentParse.getContext().getLastChild();
+      CommandContextBuilder<?> context = currentParse.getContext().getLastChild();
 
-      for(ParsedArgument<ClientSuggestionProvider, ?> argument : context.getArguments().values()) {
+      for(ParsedArgument<?, ?> argument : context.getArguments().values()) {
          ++nextColor;
          if (nextColor >= ARGUMENT_STYLES.size()) {
             nextColor = 0;

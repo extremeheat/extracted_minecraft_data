@@ -12,6 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.CommonComponents;
@@ -67,7 +68,7 @@ public class OptimizeWorldScreen extends Screen {
       }
    }
 
-   private OptimizeWorldScreen(final BooleanConsumer callback, final DataFixer dataFixer, final LevelStorageSource.LevelStorageAccess levelSource, final WorldData worldData, final boolean eraseCache, final RegistryAccess registryAccess) {
+   private OptimizeWorldScreen(final BooleanConsumer callback, final DataFixer dataFixer, final LevelStorageSource.LevelStorageAccess levelSource, final WorldData worldData, final boolean eraseCache, final HolderLookup.Provider registryAccess) {
       super(Component.translatable("optimizeWorld.title", worldData.getLevelSettings().levelName()));
       this.callback = callback;
       this.upgrader = new WorldUpgrader(levelSource, dataFixer, registryAccess, eraseCache, false);

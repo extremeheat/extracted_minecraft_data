@@ -2,6 +2,7 @@ package net.minecraft.network.protocol.common;
 
 import net.minecraft.network.PacketProcessor;
 import net.minecraft.network.protocol.cookie.ClientCookiePacketListener;
+import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 
 public interface ClientCommonPacketListener extends ClientCookiePacketListener, PacketProcessor.Handler {
    void handleKeepAlive(ClientboundKeepAlivePacket packet);
@@ -31,4 +32,6 @@ public interface ClientCommonPacketListener extends ClientCookiePacketListener, 
    void handleClearDialog(ClientboundClearDialogPacket packet);
 
    void handleShowDialog(ClientboundShowDialogPacket packet);
+
+   void handleCommands(ClientboundCommandsPacket packet);
 }

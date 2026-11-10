@@ -4,7 +4,6 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Transparency;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.Locale;
-import java.util.Objects;
 import net.minecraft.client.renderer.oit.OitStage;
 import net.minecraft.client.renderer.pipeline.RenderPipelines;
 import net.minecraft.client.renderer.pipeline.variant.TerrainRenderPipelineVariant;
@@ -52,12 +51,12 @@ public enum ChunkSectionLayer {
       return this.translucent;
    }
 
-   public VertexFormat vertexFormat() {
-      if (this.vertexFormat == null) {
-         this.vertexFormat = (VertexFormat)Objects.requireNonNull(RenderPipelines.terrain(new RenderPipelines.TerrainParameters(this.variant, false, false, false, (OitStage)null)).getVertexFormatBinding(0));
-      }
+   public int vertexBufferFaceSize() {
+      return this.variant.vertexFaceSize();
+   }
 
-      return this.vertexFormat;
+   public int vertexBufferBakedFaceSize() {
+      return this.variant.vertexBakedFaceSize();
    }
 
    // $FF: synthetic method

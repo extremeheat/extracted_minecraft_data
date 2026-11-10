@@ -33,6 +33,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
 import net.minecraft.client.renderer.Panorama;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.TextureProvider2d;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -91,9 +92,9 @@ public class TitleScreen extends Screen {
    }
 
    public static void registerTextures(final TextureManager textureManager) {
-      textureManager.registerForNextReload(LogoRenderer.MINECRAFT_LOGO);
-      textureManager.registerForNextReload(LogoRenderer.MINECRAFT_EDITION);
-      textureManager.registerForNextReload(Panorama.PANORAMA_OVERLAY);
+      textureManager.registerProvider(LogoRenderer.MINECRAFT_LOGO, TextureProvider2d.INSTANCE);
+      textureManager.registerProvider(LogoRenderer.MINECRAFT_EDITION, TextureProvider2d.INSTANCE);
+      textureManager.registerProvider(Panorama.PANORAMA_OVERLAY, TextureProvider2d.INSTANCE);
    }
 
    public boolean isPauseScreen() {

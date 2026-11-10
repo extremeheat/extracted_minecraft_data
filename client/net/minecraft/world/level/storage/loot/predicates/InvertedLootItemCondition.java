@@ -3,9 +3,11 @@ package net.minecraft.world.level.storage.loot.predicates;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
+import net.minecraft.util.TriBool;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.Validatable;
 import net.minecraft.world.level.storage.loot.ValidationContext;
+import org.jspecify.annotations.Nullable;
 
 public record InvertedLootItemCondition(Holder<LootItemCondition> term) implements LootItemCondition {
    public static final MapCodec<InvertedLootItemCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LootItemCondition.CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(i, InvertedLootItemCondition::new));
@@ -23,8 +25,18 @@ public record InvertedLootItemCondition(Holder<LootItemCondition> term) implemen
    }
 
    public void validate(final ValidationContext output) {
-      LootItemCondition.super.validate(output);
       Validatable.validateHolder(output, "term", this.term);
+   }
+
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      LootItemCondition subCondition = this.term.value();
+      if (!context.push(subCondition)) {
+         return null;
+      } else {
+         Boolean result = TriBool.not(subCondition.constantValue(context));
+         context.pop(subCondition);
+         return result;
+      }
    }
 
    public static LootItemCondition.Builder invert(final LootItemCondition.Builder term) {

@@ -94,7 +94,7 @@ public class Frostbite extends RangedZombie {
    }
 
    protected SoundEvent getRangedAttackSound() {
-      return SoundEvents.ICE_BALL_THROW;
+      return SoundEvents.FROSTBITE_THROW;
    }
 
    public TagKey<Item> getPreferredWeaponType() {

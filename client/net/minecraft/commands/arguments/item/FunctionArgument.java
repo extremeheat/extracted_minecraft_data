@@ -7,26 +7,33 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.SerializableArgument;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-public class FunctionArgument implements ArgumentType<Result> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "#foo");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((tag) -> Component.translatableEscape("arguments.function.tag.unknown", tag));
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((value) -> Component.translatableEscape("arguments.function.unknown", value));
+public class FunctionArgument implements SerializableArgument.ContextFree<Result> {
+   private static final FunctionArgument INSTANCE = new FunctionArgument();
+   public static final SerializableArgument.Type<FunctionArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG;
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION;
 
-   public FunctionArgument() {
+   private FunctionArgument() {
       super();
    }
 
-   public static FunctionArgument functions() {
-      return new FunctionArgument();
+   public SerializableArgument.Type<FunctionArgument> type() {
+      return TYPE;
+   }
+
+   public static ArgumentType<Result> functions() {
+      return INSTANCE.toBrigadier();
    }
 
    public Result parse(final StringReader reader) throws CommandSyntaxException {
@@ -99,6 +106,13 @@ public class FunctionArgument implements ArgumentType<Result> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<FunctionArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("foo", "foo:bar", "#foo");
+      ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((tag) -> Component.translatableEscape("arguments.function.tag.unknown", tag));
+      ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((value) -> Component.translatableEscape("arguments.function.unknown", value));
    }
 
    public interface Result {

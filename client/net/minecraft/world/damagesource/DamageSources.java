@@ -1,7 +1,6 @@
 package net.minecraft.world.damagesource;
 
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class DamageSources {
-   private final Registry<DamageType> damageTypes;
+   private final HolderGetter<DamageType> damageTypes;
    private final DamageSource inFire;
    private final DamageSource campfire;
    private final DamageSource lightningBolt;
@@ -43,9 +42,9 @@ public class DamageSources {
    private final DamageSource outsideBorder;
    private final DamageSource genericKill;
 
-   public DamageSources(final RegistryAccess registries) {
+   public DamageSources(final HolderGetter.Provider registries) {
       super();
-      this.damageTypes = registries.lookupOrThrow(Registries.DAMAGE_TYPE);
+      this.damageTypes = registries.<DamageType>lookupOrThrow(Registries.DAMAGE_TYPE);
       this.inFire = this.source(DamageTypes.IN_FIRE);
       this.campfire = this.source(DamageTypes.CAMPFIRE);
       this.lightningBolt = this.source(DamageTypes.LIGHTNING_BOLT);

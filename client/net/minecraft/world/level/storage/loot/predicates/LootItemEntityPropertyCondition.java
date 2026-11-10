@@ -8,10 +8,11 @@ import net.minecraft.advancements.predicates.entity.EntityPredicate;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) implements LootItemCondition {
+public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) implements LootItemCondition.ContextUser {
    public static final MapCodec<LootItemEntityPropertyCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(i, LootItemEntityPropertyCondition::new));
 
    public LootItemEntityPropertyCondition {
@@ -22,8 +23,11 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(LootContextParams.ORIGIN, this.entityTarget.contextParam());
+   public Set<ContextKey<?>> requiredContextParams() {
+      return Set.of(this.entityTarget.contextParam());
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

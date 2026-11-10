@@ -1,26 +1,25 @@
 package net.minecraft.util.parsing.packrat.commands;
 
-import com.mojang.brigadier.StringReader;
 import net.minecraft.util.parsing.packrat.CachedParseState;
 import net.minecraft.util.parsing.packrat.ErrorCollector;
 
-public class StringReaderParserState extends CachedParseState<StringReader> {
-   private final StringReader input;
+public class StringReaderParserState<S extends CommandParserState> extends CachedParseState<S> {
+   private final S input;
 
-   public StringReaderParserState(final ErrorCollector<StringReader> errorCollector, final StringReader input) {
+   public StringReaderParserState(final ErrorCollector errorCollector, final S input) {
       super(errorCollector);
       this.input = input;
    }
 
-   public StringReader input() {
+   public S input() {
       return this.input;
    }
 
    public int mark() {
-      return this.input.getCursor();
+      return this.input.reader().getCursor();
    }
 
    public void restore(final int mark) {
-      this.input.setCursor(mark);
+      this.input.reader().setCursor(mark);
    }
 }

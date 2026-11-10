@@ -8,7 +8,7 @@ import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Rule;
 import org.jspecify.annotations.Nullable;
 
-public class TagParseRule<T> implements Rule<StringReader, Dynamic<?>> {
+public class TagParseRule<S extends CommandParserState, T> implements Rule<S, Dynamic<?>> {
    private final TagParser<T> parser;
 
    public TagParseRule(final DynamicOps<T> ops) {
@@ -16,12 +16,13 @@ public class TagParseRule<T> implements Rule<StringReader, Dynamic<?>> {
       this.parser = TagParser.<T>create(ops);
    }
 
-   public @Nullable Dynamic<T> parse(final ParseState<StringReader> state) {
-      ((StringReader)state.input()).skipWhitespace();
+   public @Nullable Dynamic<T> parse(final ParseState<S> state) {
+      StringReader reader = ((CommandParserState)state.input()).reader();
+      reader.skipWhitespace();
       int mark = state.mark();
 
       try {
-         return new Dynamic(this.parser.getOps(), this.parser.parseAsArgument(state.input()));
+         return new Dynamic(this.parser.getOps(), this.parser.parseAsArgument(reader));
       } catch (Exception e) {
          state.errorCollector().store(mark, e);
          return null;

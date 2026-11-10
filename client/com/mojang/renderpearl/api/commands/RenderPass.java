@@ -62,7 +62,7 @@ public interface RenderPass extends UncheckedAutoCloseable {
 
    void drawIndexedIndirect(GpuBufferSlice commands, int drawCount);
 
-   <T> void drawMultipleIndexed(Collection<Draw<T>> draws, @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, Collection<String> dynamicUniforms, T uniformArgument);
+   <T> void drawMultipleIndexed(Collection<Draw<T>> draws, Collection<String> dynamicUniforms, T uniformArgument);
 
    void draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance);
 
@@ -72,9 +72,9 @@ public interface RenderPass extends UncheckedAutoCloseable {
 
    void drawIndirect(GpuBufferSlice commands, final int drawCount);
 
-   public static record Draw<T>(int slot, GpuBuffer vertexBuffer, @Nullable GpuBuffer indexBuffer, @Nullable IndexType indexType, int firstIndex, int indexCount, int baseVertex, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
-      public Draw(final int slot, final GpuBuffer vertexBuffer, final GpuBuffer indexBuffer, final IndexType indexType, final int firstIndex, final int indexCount, final int baseVertex) {
-         this(slot, vertexBuffer, indexBuffer, indexType, firstIndex, indexCount, baseVertex, (BiConsumer)null);
+   public static record Draw<T>(int firstIndex, int indexCount, int baseVertex, @Nullable BiConsumer<T, UniformUploader> uniformUploaderConsumer) {
+      public Draw(final int firstIndex, final int indexCount, final int baseVertex) {
+         this(firstIndex, indexCount, baseVertex, (BiConsumer)null);
       }
 
       public Draw {

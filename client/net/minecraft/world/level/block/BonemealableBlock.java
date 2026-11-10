@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,14 +17,14 @@ public interface BonemealableBlock {
    void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state, BonemealSource source);
 
    static boolean hasSpreadableNeighbourPos(final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
-      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.stream().toList(), level, pos, blockToPlace).isPresent();
+      return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL, level, pos, blockToPlace).isPresent();
    }
 
    static Optional<BlockPos> findSpreadableNeighbourPos(final Level level, final BlockPos pos, final BlockState blockToPlace) {
       return getSpreadableNeighbourPos(Direction.Plane.HORIZONTAL.shuffledCopy(level.getRandom()), level, pos, blockToPlace);
    }
 
-   private static Optional<BlockPos> getSpreadableNeighbourPos(final List<Direction> directions, final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
+   private static Optional<BlockPos> getSpreadableNeighbourPos(final Iterable<Direction> directions, final LevelReader level, final BlockPos pos, final BlockState blockToPlace) {
       for(Direction direction : directions) {
          BlockPos neighbourPos = pos.relative(direction);
          if (level.isEmptyBlock(neighbourPos) && blockToPlace.canSurvive(level, neighbourPos)) {

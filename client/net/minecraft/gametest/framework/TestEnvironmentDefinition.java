@@ -11,6 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
@@ -35,14 +36,14 @@ public interface TestEnvironmentDefinition<SavedDataType> {
    Codec<TestEnvironmentDefinition<?>> DIRECT_CODEC = BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE.byNameCodec().dispatch(TestEnvironmentDefinition::codec, (c) -> c);
    Codec<Holder<TestEnvironmentDefinition<?>>> CODEC = RegistryCodecs.holder(Registries.TEST_ENVIRONMENT, DIRECT_CODEC);
 
-   static MapCodec<? extends TestEnvironmentDefinition<?>> bootstrap(final Registry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends TestEnvironmentDefinition<?>>> registry) {
       Registry.register(registry, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
       Registry.register(registry, (String)"clock_time", TestEnvironmentDefinition.ClockTime.CODEC);
       Registry.register(registry, (String)"difficulty", TestEnvironmentDefinition.SetDifficulty.CODEC);
       Registry.register(registry, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
       Registry.register(registry, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(registry, (String)"timeline_attributes", TestEnvironmentDefinition.Timelines.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
+      Registry.register(registry, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
    }
 
    SavedDataType setup(ServerLevel level);
@@ -212,7 +213,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
          Optional<CommandFunction<CommandSourceStack>> function = functions.get(functionId);
          if (function.isPresent()) {
             CommandSourceStack source = server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withLevel(level);
-            functions.execute((CommandFunction)function.get(), source);
+            ServerFunctionManager.execute((CommandFunction)function.get(), source);
          } else {
             LOGGER.error("Test Batch failed for non-existent function {}", functionId);
          }

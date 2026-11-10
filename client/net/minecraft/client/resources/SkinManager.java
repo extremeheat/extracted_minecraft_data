@@ -32,7 +32,7 @@ import net.minecraft.world.entity.player.PlayerSkin;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class SkinManager {
+public class SkinManager implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Services services;
    private final SkinTextureDownloader skinTextureDownloader;
@@ -121,6 +121,10 @@ public class SkinManager {
       MinecraftProfileTexture elytraInfo = textures.elytra();
       CompletableFuture<ClientAsset.Texture> elytraTexture = elytraInfo != null ? this.elytraTextures.getOrLoad(elytraInfo) : CompletableFuture.completedFuture((Object)null);
       return CompletableFuture.allOf(skinTexture, capeTexture, elytraTexture).thenApply((unused) -> new PlayerSkin((ClientAsset.Texture)skinTexture.join(), (ClientAsset.Texture)capeTexture.join(), (ClientAsset.Texture)elytraTexture.join(), model, textures.signatureState() == SignatureState.SIGNED));
+   }
+
+   public void close() {
+      this.skinTextureDownloader.close();
    }
 
    private class TextureCache {

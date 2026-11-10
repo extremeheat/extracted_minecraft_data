@@ -5,15 +5,15 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemInstance;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import org.jspecify.annotations.Nullable;
 
 public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Float> values) implements LootItemCondition {
    public static final MapCodec<BonusLevelTableCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(BonusLevelTableCondition::enchantment), ExtraCodecs.nonEmptyList(Codec.FLOAT.listOf()).fieldOf("chances").forGetter(BonusLevelTableCondition::values)).apply(i, BonusLevelTableCondition::new));
@@ -26,8 +26,11 @@ public record BonusLevelTableCondition(Holder<Enchantment> enchantment, List<Flo
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
-      return Set.of(LootContextParams.TOOL);
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      return null;
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

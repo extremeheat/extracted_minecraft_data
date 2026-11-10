@@ -7,6 +7,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 
@@ -23,13 +24,13 @@ public interface LevelBasedValue {
       return var10000;
    });
 
-   static MapCodec<? extends LevelBasedValue> bootstrap(final Registry<MapCodec<? extends LevelBasedValue>> registry) {
+   static void bootstrap(final WritableRegistry<MapCodec<? extends LevelBasedValue>> registry) {
       Registry.register(registry, (String)"clamped", LevelBasedValue.Clamped.CODEC);
       Registry.register(registry, (String)"fraction", LevelBasedValue.Fraction.CODEC);
       Registry.register(registry, (String)"levels_squared", LevelBasedValue.LevelsSquared.CODEC);
       Registry.register(registry, (String)"linear", LevelBasedValue.Linear.CODEC);
       Registry.register(registry, (String)"exponent", LevelBasedValue.Exponent.CODEC);
-      return (MapCodec)Registry.register(registry, (String)"lookup", LevelBasedValue.Lookup.CODEC);
+      Registry.register(registry, (String)"lookup", LevelBasedValue.Lookup.CODEC);
    }
 
    static Constant constant(final float value) {

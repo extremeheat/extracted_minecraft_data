@@ -79,7 +79,6 @@ public abstract class CompositeSlotSource implements SlotSource {
    }
 
    public void validate(final ValidationContext context) {
-      SlotSource.super.validate(context);
       Validatable.validateHolderSet(context, "terms", this.terms);
    }
 }

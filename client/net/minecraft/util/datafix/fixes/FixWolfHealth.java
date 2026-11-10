@@ -17,7 +17,7 @@ public class FixWolfHealth extends NamedEntityFix {
    protected Typed<?> fix(final Typed<?> entity) {
       return entity.update(DSL.remainderFinder(), (dynamic) -> {
          MutableBoolean healthAdjusted = new MutableBoolean(false);
-         dynamic = dynamic.update("Attributes", (attributes) -> attributes.createList(attributes.asStream().map((attribute) -> "minecraft:generic.max_health".equals(NamespacedSchema.ensureNamespaced(attribute.get("Name").asString(""))) ? attribute.update("Base", (base) -> {
+         dynamic = dynamic.update("Attributes", (attributes) -> attributes.createList(attributes.asStream().map((attribute) -> NamespacedSchema.namespacedIdMatches(attribute.get("Name"), "minecraft:generic.max_health") ? attribute.update("Base", (base) -> {
                   if (base.asDouble(0.0) == 20.0) {
                      healthAdjusted.setTrue();
                      return base.createDouble(40.0);

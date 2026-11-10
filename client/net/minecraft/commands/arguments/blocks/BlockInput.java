@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -57,7 +58,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
             return true;
          } else {
             BlockEntity entity = blockInWorld.getEntity();
-            return entity != null && NbtUtils.compareNbt(this.tag, entity.saveWithFullMetadata((HolderLookup.Provider)blockInWorld.getLevel().registryAccess()), true);
+            return entity != null && NbtUtils.compareNbt(this.tag, entity.saveWithFullMetadata((HolderGetter.Provider)blockInWorld.getLevel().registryAccess()), true);
          }
       }
    }
@@ -87,7 +88,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
                TagValueOutput initialOutput = TagValueOutput.createWithContext(blockEntityReporter.forChild(() -> "(before)"), registries);
                entity.saveWithoutMetadata((ValueOutput)initialOutput);
                CompoundTag before = initialOutput.buildResult();
-               entity.loadWithComponents(TagValueInput.create(reporter, registries, this.tag));
+               entity.loadWithComponents(TagValueInput.create(reporter, (HolderGetter.Provider)registries, this.tag));
                TagValueOutput updatedOutput = TagValueOutput.createWithContext(blockEntityReporter.forChild(() -> "(after)"), registries);
                entity.saveWithoutMetadata((ValueOutput)updatedOutput);
                CompoundTag after = updatedOutput.buildResult();

@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
@@ -20,7 +21,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 
-public interface MinMaxBounds<T extends Number & Comparable<T>> {
+public interface MinMaxBounds<T extends Comparable<T>> {
    SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
    SimpleCommandExceptionType ERROR_SWAPPED = new SimpleCommandExceptionType(Component.translatable("argument.range.swapped"));
 
@@ -38,7 +39,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       return this.bounds().isAny();
    }
 
-   static <V extends Number & Comparable<V>, B extends MinMaxBounds<V>> Function<B, DataResult<B>> validateContainedInRange(final MinMaxBounds<V> allowed) {
+   static <V extends Comparable<V>, B extends MinMaxBounds<V>> Function<B, DataResult<B>> validateContainedInRange(final MinMaxBounds<V> allowed) {
       Range<V> allowedRange = allowed.bounds().asRange();
       return (target) -> {
          Range<V> selfAsRange = target.bounds().asRange();
@@ -99,7 +100,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          Function var10001 = Integer::parseInt;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds<Integer> bounds = MinMaxBounds.Bounds.<Integer>fromReader(reader, var10001, var10002::readerInvalidInt);
+         Bounds<Integer> bounds = MinMaxBounds.Bounds.<Integer>fromNumberReader(reader, var10001, var10002::readerInvalidInt);
          if (bounds.areSwapped()) {
             reader.setCursor(start);
             throw ERROR_SWAPPED.createWithContext(reader);
@@ -164,7 +165,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          Function var10001 = Double::parseDouble;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds<Double> bounds = MinMaxBounds.Bounds.<Double>fromReader(reader, var10001, var10002::readerInvalidDouble);
+         Bounds<Double> bounds = MinMaxBounds.Bounds.<Double>fromNumberReader(reader, var10001, var10002::readerInvalidDouble);
          if (bounds.areSwapped()) {
             reader.setCursor(start);
             throw ERROR_SWAPPED.createWithContext(reader);
@@ -192,7 +193,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          Function var10001 = Float::parseFloat;
          BuiltInExceptionProvider var10002 = CommandSyntaxException.BUILT_IN_EXCEPTIONS;
          Objects.requireNonNull(var10002);
-         Bounds<Float> bounds = MinMaxBounds.Bounds.<Float>fromReader(reader, var10001, var10002::readerInvalidFloat);
+         Bounds<Float> bounds = MinMaxBounds.Bounds.<Float>fromNumberReader(reader, var10001, var10002::readerInvalidFloat);
          return new FloatDegrees(bounds);
       }
 
@@ -202,7 +203,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       }
    }
 
-   public static record Bounds<T extends Number & Comparable<T>>(Optional<T> min, Optional<T> max) {
+   public static record Bounds<T extends Comparable<T>>(Optional<T> min, Optional<T> max) {
       public Bounds {
          super();
       }
@@ -219,14 +220,14 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       }
 
       public boolean areSwapped() {
-         return this.min.isPresent() && this.max.isPresent() && ((Comparable)((Number)this.min.get())).compareTo((Number)this.max.get()) > 0;
+         return this.min.isPresent() && this.max.isPresent() && ((Comparable)this.min.get()).compareTo((Comparable)this.max.get()) > 0;
       }
 
       public Range<T> asRange() {
          if (this.min.isPresent()) {
-            return this.max.isPresent() ? Range.closed((Number)this.min.get(), (Number)this.max.get()) : Range.atLeast((Number)this.min.get());
+            return this.max.isPresent() ? Range.closed((Comparable)this.min.get(), (Comparable)this.max.get()) : Range.atLeast((Comparable)this.min.get());
          } else {
-            return this.max.isPresent() ? Range.atMost((Number)this.max.get()) : Range.all();
+            return this.max.isPresent() ? Range.atMost((Comparable)this.max.get()) : Range.all();
          }
       }
 
@@ -236,48 +237,52 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          return min.equals(max) ? min : Optional.empty();
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> any() {
+      public static <T extends Comparable<T>> Bounds<T> any() {
          return new Bounds<T>(Optional.empty(), Optional.empty());
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> exactly(final T value) {
+      public static <T extends Comparable<T>> Bounds<T> exactly(final T value) {
          Optional<T> wrapped = Optional.of(value);
          return new Bounds<T>(wrapped, wrapped);
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> between(final T min, final T max) {
+      public static <T extends Comparable<T>> Bounds<T> between(final T min, final T max) {
          return new Bounds<T>(Optional.of(min), Optional.of(max));
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> atLeast(final T value) {
+      public static <T extends Comparable<T>> Bounds<T> atLeast(final T value) {
          return new Bounds<T>(Optional.of(value), Optional.empty());
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> atMost(final T value) {
+      public static <T extends Comparable<T>> Bounds<T> atMost(final T value) {
          return new Bounds<T>(Optional.empty(), Optional.of(value));
       }
 
-      public <U extends Number & Comparable<U>> Bounds<U> map(final Function<T, U> mapper) {
+      public <U extends Comparable<U>> Bounds<U> map(final Function<T, U> mapper) {
          return new Bounds<U>(this.min.map(mapper), this.max.map(mapper));
       }
 
-      public static <T extends Number & Comparable<T>> Codec<Bounds<T>> createCodec(final Codec<T> numberCodec) {
-         Codec<Bounds<T>> rangeCodec = RecordCodecBuilder.create((i) -> i.group(numberCodec.optionalFieldOf("min").forGetter(Bounds::min), numberCodec.optionalFieldOf("max").forGetter(Bounds::max)).apply(i, Bounds::new));
-         return Codec.either(rangeCodec, numberCodec).xmap((either) -> (Bounds)either.map((v) -> v, (x$0) -> exactly(x$0)), (bounds) -> {
+      public static <T extends Comparable<T>> Codec<Bounds<T>> createCodec(final Codec<T> elementCodec) {
+         Codec<Bounds<T>> rangeCodec = createMapCodec(elementCodec).codec();
+         return Codec.either(rangeCodec, elementCodec).xmap((either) -> (Bounds)either.map((v) -> v, Bounds::exactly), (bounds) -> {
             Optional<T> point = bounds.asPoint();
-            return point.isPresent() ? Either.right((Number)point.get()) : Either.left(bounds);
+            return point.isPresent() ? Either.right((Comparable)point.get()) : Either.left(bounds);
          });
       }
 
-      public static <B extends ByteBuf, T extends Number & Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> numberCodec) {
+      public static <T extends Comparable<T>> MapCodec<Bounds<T>> createMapCodec(final Codec<T> elementCodec) {
+         return RecordCodecBuilder.mapCodec((i) -> i.group(elementCodec.optionalFieldOf("min").forGetter(Bounds::min), elementCodec.optionalFieldOf("max").forGetter(Bounds::max)).apply(i, Bounds::new));
+      }
+
+      public static <B extends ByteBuf, T extends Comparable<T>> StreamCodec<B, Bounds<T>> createStreamCodec(final StreamCodec<B, T> elementCodec) {
          return new StreamCodec<B, Bounds<T>>() {
             private static final int MIN_FLAG = 1;
             private static final int MAX_FLAG = 2;
 
             public Bounds<T> decode(final B input) {
                byte flags = input.readByte();
-               Optional<T> min = (flags & 1) != 0 ? Optional.of((Number)numberCodec.decode(input)) : Optional.empty();
-               Optional<T> max = (flags & 2) != 0 ? Optional.of((Number)numberCodec.decode(input)) : Optional.empty();
+               Optional<T> min = (flags & 1) != 0 ? Optional.of((Comparable)elementCodec.decode(input)) : Optional.empty();
+               Optional<T> max = (flags & 2) != 0 ? Optional.of((Comparable)elementCodec.decode(input)) : Optional.empty();
                return new Bounds<T>(min, max);
             }
 
@@ -285,13 +290,13 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
                Optional<T> min = value.min();
                Optional<T> max = value.max();
                output.writeByte((min.isPresent() ? 1 : 0) | (max.isPresent() ? 2 : 0));
-               min.ifPresent((v) -> numberCodec.encode(output, v));
-               max.ifPresent((v) -> numberCodec.encode(output, v));
+               min.ifPresent((v) -> elementCodec.encode(output, v));
+               max.ifPresent((v) -> elementCodec.encode(output, v));
             }
          };
       }
 
-      public static <T extends Number & Comparable<T>> Bounds<T> fromReader(final StringReader reader, final Function<String, T> converter, final Supplier<DynamicCommandExceptionType> parseExc) throws CommandSyntaxException {
+      public static <T extends Number & Comparable<T>> Bounds<T> fromNumberReader(final StringReader reader, final Function<String, T> converter, final Supplier<DynamicCommandExceptionType> parseExc) throws CommandSyntaxException {
          if (!reader.canRead()) {
             throw MinMaxBounds.ERROR_EMPTY.createWithContext(reader);
          } else {
@@ -323,7 +328,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
       private static <T extends Number> Optional<T> readNumber(final StringReader reader, final Function<String, T> converter, final Supplier<DynamicCommandExceptionType> parseExc) throws CommandSyntaxException {
          int start = reader.getCursor();
 
-         while(reader.canRead() && isAllowedInputChar(reader)) {
+         while(reader.canRead() && isAllowedNumberChar(reader)) {
             reader.skip();
          }
 
@@ -339,7 +344,7 @@ public interface MinMaxBounds<T extends Number & Comparable<T>> {
          }
       }
 
-      private static boolean isAllowedInputChar(final StringReader reader) {
+      private static boolean isAllowedNumberChar(final StringReader reader) {
          char c = reader.peek();
          if ((c < '0' || c > '9') && c != '-') {
             if (c != '.') {

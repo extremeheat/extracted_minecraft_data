@@ -32,8 +32,17 @@ public interface ConditionalProvider<Value extends Validatable> extends Validata
 
    default void validate(final ValidationContext context) {
       Validatable.validateHolder(context, "condition", this.condition());
-      Validatable.validateHolder(context, "on_true", this.onTrue());
-      Validatable.validateHolder(context, "on_false", this.onFalse());
+      Boolean constantValue = ((LootItemCondition)this.condition().value()).validateConstantConditions(context);
+      boolean canBeTrue = constantValue != Boolean.FALSE;
+      if (canBeTrue) {
+         Validatable.validateHolder(context, "on_true", this.onTrue());
+      }
+
+      boolean canBeFalse = constantValue != Boolean.TRUE;
+      if (canBeFalse) {
+         Validatable.validateHolder(context, "on_false", this.onFalse());
+      }
+
    }
 
    @FunctionalInterface

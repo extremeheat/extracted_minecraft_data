@@ -165,7 +165,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
          public ItemStack decode(final RegistryFriendlyByteBuf input) {
             ItemStack itemStack = (ItemStack)codec.decode(input);
             if (!itemStack.isEmpty()) {
-               RegistryOps<Unit> ops = input.registryAccess().createSerializationContext(NullOps.INSTANCE);
+               RegistryOps<Unit> ops = input.registries().<Unit>createSerializationContext(NullOps.INSTANCE);
                ItemStack.CODEC.encodeStart(ops, itemStack).getOrThrow(DecoderException::new);
             }
 

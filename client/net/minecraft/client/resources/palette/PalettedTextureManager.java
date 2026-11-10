@@ -28,6 +28,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import net.minecraft.client.renderer.texture.DynamicAtlasTree;
 import net.minecraft.client.renderer.texture.DynamicAtlasTreeSlot;
+import net.minecraft.client.renderer.texture.ExternalTextureProvider;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
@@ -154,7 +155,7 @@ public class PalettedTextureManager implements PreparableReloadListener, AutoClo
          }
 
          AtlasTexture atlas = new AtlasTexture(Identifier.withDefaultNamespace("paletted/atlas_" + this.atlasTextures.size()));
-         this.textureManager.register(atlas.location, atlas.texture);
+         this.textureManager.registerProvider(atlas.location, new ExternalTextureProvider(atlas.texture));
          this.atlasTextures.add(atlas);
          DynamicAtlasTreeSlot atlasSlot = atlas.tryAllocateSlot(width, height);
          if (atlasSlot == null) {
@@ -164,7 +165,7 @@ public class PalettedTextureManager implements PreparableReloadListener, AutoClo
          }
       } else {
          OverflowTexture texture = new OverflowTexture(Identifier.withDefaultNamespace("paletted/overflow_" + this.overflowTextures.size()), width, height);
-         this.textureManager.register(texture.location, texture.texture);
+         this.textureManager.registerProvider(texture.location, new ExternalTextureProvider(texture.texture));
          this.overflowTextures.add(texture);
          return new Slot(texture.texture, texture.location, 0, 0, width, height);
       }
@@ -173,10 +174,12 @@ public class PalettedTextureManager implements PreparableReloadListener, AutoClo
    public void close() {
       for(AtlasTexture atlas : this.atlasTextures) {
          this.textureManager.release(atlas.location);
+         atlas.texture.close();
       }
 
       for(OverflowTexture texture : this.overflowTextures) {
          this.textureManager.release(texture.location);
+         texture.texture.close();
       }
 
       this.atlasTextures.clear();

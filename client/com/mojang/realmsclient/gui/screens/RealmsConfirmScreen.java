@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
@@ -14,7 +13,7 @@ public class RealmsConfirmScreen extends RealmsScreen {
    private final Component title2;
 
    public RealmsConfirmScreen(final BooleanConsumer callback, final Component title1, final Component title2) {
-      super(GameNarrator.NO_TITLE);
+      super(title1);
       this.callback = callback;
       this.title1 = title1;
       this.title2 = title2;
@@ -29,5 +28,9 @@ public class RealmsConfirmScreen extends RealmsScreen {
       super.extractRenderState(graphics);
       graphics.centeredText(this.font, (Component)this.title1, this.width / 2, row(3), -1);
       graphics.centeredText(this.font, (Component)this.title2, this.width / 2, row(5), -1);
+   }
+
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), this.title2);
    }
 }

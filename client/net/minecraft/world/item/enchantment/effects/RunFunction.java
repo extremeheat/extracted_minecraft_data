@@ -30,7 +30,7 @@ public record RunFunction(Identifier function) implements EnchantmentEntityEffec
       Optional<CommandFunction<CommandSourceStack>> function = functions.get(this.function);
       if (function.isPresent()) {
          CommandSourceStack source = server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withEntity(entity).withLevel(serverLevel).withPosition(position).withRotation(entity.getRotationVector());
-         functions.execute((CommandFunction)function.get(), source);
+         ServerFunctionManager.execute((CommandFunction)function.get(), source);
       } else {
          LOGGER.error("Enchantment run_function effect failed for non-existent function {}", this.function);
       }

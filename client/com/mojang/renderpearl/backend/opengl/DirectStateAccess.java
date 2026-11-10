@@ -202,7 +202,7 @@ public abstract class DirectStateAccess {
          return GL33C.glGenFramebuffers();
       }
 
-      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int stencil, final int stencilMipLevel, final int depthMipLevel, final int bindSlot) {
+      public void bindFrameBufferTextures(final int fbo, final int[] color, final int[] colorMipLevels, final int depth, final int depthMipLevel, final int stencil, final int stencilMipLevel, final int bindSlot) {
          int tempBindSlot = bindSlot == 0 ? '\u8ca9' : bindSlot;
          int oldFbo = this.stateManager.getFrameBuffer(tempBindSlot);
          this.stateManager._glBindFramebuffer(tempBindSlot, fbo);

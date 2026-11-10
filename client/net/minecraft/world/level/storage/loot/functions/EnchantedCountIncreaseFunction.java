@@ -22,7 +22,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 
-public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction {
+public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction.ContextUser {
    public static final int NO_LIMIT = 0;
    public static final MapCodec<EnchantedCountIncreaseFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((f) -> f.enchantment), ContextFloatProviders.CODEC.fieldOf("count").forGetter((f) -> f.count), Codec.INT.optionalFieldOf("limit", 0).forGetter((f) -> f.limit))).apply(i, EnchantedCountIncreaseFunction::new));
    private final Holder<Enchantment> enchantment;
@@ -40,12 +40,12 @@ public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction 
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(LootContextParams.ATTACKING_ENTITY);
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
+      super.validateCustom(context);
       Validatable.validateHolder(context, "count", this.count);
    }
 

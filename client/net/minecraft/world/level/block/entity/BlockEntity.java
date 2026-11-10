@@ -10,7 +10,7 @@ import net.minecraft.CrashReportDetail;
 import net.minecraft.CrashReportUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.TypedInstance;
 import net.minecraft.core.component.DataComponentGetter;
@@ -113,7 +113,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
    protected void saveAdditional(final ValueOutput output) {
    }
 
-   public final CompoundTag saveWithFullMetadata(final HolderLookup.Provider registries) {
+   public final CompoundTag saveWithFullMetadata(final HolderGetter.Provider registries) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
          this.saveWithFullMetadata((ValueOutput)output);
@@ -131,7 +131,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
       this.saveId(output);
    }
 
-   public final CompoundTag saveWithoutMetadata(final HolderLookup.Provider registries) {
+   public final CompoundTag saveWithoutMetadata(final HolderGetter.Provider registries) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
          this.saveWithoutMetadata((ValueOutput)output);
@@ -144,7 +144,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
       output.store("components", DataComponentMap.CODEC, this.components);
    }
 
-   public final CompoundTag saveCustomOnly(final HolderLookup.Provider registries) {
+   public final CompoundTag saveCustomOnly(final HolderGetter.Provider registries) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(this.problemPath(), LOGGER)) {
          TagValueOutput output = TagValueOutput.createWithContext(reporter, registries);
          this.saveCustomOnly((ValueOutput)output);
@@ -171,7 +171,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
       output.putInt("z", this.worldPosition.getZ());
    }
 
-   public static @Nullable BlockEntity loadStatic(final BlockPos pos, final BlockState state, final CompoundTag tag, final HolderLookup.Provider registries) {
+   public static @Nullable BlockEntity loadStatic(final BlockPos pos, final BlockState state, final CompoundTag tag, final HolderGetter.Provider registries) {
       BlockEntityType<?> type = (BlockEntityType)tag.read("id", TYPE_CODEC).orElse((Object)null);
       if (type == null) {
          LOGGER.error("Skipping block entity with invalid type: {}", tag.get("id"));
@@ -186,7 +186,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
          }
 
          try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
-            entity.loadWithComponents(TagValueInput.create(reporter, registries, tag));
+            entity.loadWithComponents(TagValueInput.create(reporter, (HolderGetter.Provider)registries, tag));
             return entity;
          } catch (Throwable t) {
             LOGGER.error("Failed to load data for block entity {} for block {} at position {}", new Object[]{type, state, pos, t});
@@ -222,7 +222,7 @@ public abstract class BlockEntity implements DebugValueSource, TypedInstance<Blo
       return null;
    }
 
-   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+   public CompoundTag getUpdateTag(final HolderGetter.Provider registries) {
       return new CompoundTag();
    }
 

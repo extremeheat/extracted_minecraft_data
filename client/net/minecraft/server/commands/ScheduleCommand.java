@@ -1,7 +1,6 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -12,14 +11,17 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import java.util.Optional;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.IdentifierArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.commands.functions.MacroFunction;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
@@ -31,14 +33,14 @@ public class ScheduleCommand {
    private static final SimpleCommandExceptionType ERROR_SAME_TICK = new SimpleCommandExceptionType(Component.translatable("commands.schedule.same_tick"));
    private static final DynamicCommandExceptionType ERROR_CANT_REMOVE = new DynamicCommandExceptionType((s) -> Component.translatableEscape("commands.schedule.cleared.failure", s));
    private static final SimpleCommandExceptionType ERROR_MACRO = new SimpleCommandExceptionType(Component.translatableEscape("commands.schedule.macro"));
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (c, p) -> SharedSuggestionProvider.suggestResource(((CommandSourceStack)c.getSource()).getServer().getScheduledEvents().getEventsIds().stream().map(Identifier::parse), p);
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = SuggestionProviders.serverOnly((server, var1, builder) -> SuggestionContext.suggestResource(server.getScheduledEvents().getEventsIds().stream().map(Identifier::parse), builder));
 
    public ScheduleCommand() {
       super();
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("schedule").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(Commands.literal("function").then(Commands.argument("function", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("time", TimeArgument.time()).executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgumentType.getInteger(c, "time"), true))).then(Commands.literal("append").executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgumentType.getInteger(c, "time"), false)))).then(Commands.literal("replace").executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgumentType.getInteger(c, "time"), true))))))).then(Commands.literal("clear").then(Commands.argument("function", IdentifierArgument.id()).suggests(SUGGEST_SCHEDULE).executes((c) -> remove((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "function"))))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("schedule").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(Commands.literal("function").then(Commands.argument("function", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("time", TimeArgument.time()).executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgument.getInteger(c, "time"), true))).then(Commands.literal("append").executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgument.getInteger(c, "time"), false)))).then(Commands.literal("replace").executes((c) -> schedule((CommandSourceStack)c.getSource(), FunctionArgument.getFunctionOrTag(c, "function"), IntegerArgument.getInteger(c, "time"), true))))))).then(Commands.literal("clear").then(Commands.argument("function", IdentifierArgument.id()).suggests(SUGGEST_SCHEDULE).executes((c) -> remove((CommandSourceStack)c.getSource(), IdentifierArgument.getId(c, "function"))))));
    }
 
    private static int schedule(final CommandSourceStack source, final Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> callback, final int time, final boolean replace) throws CommandSyntaxException {

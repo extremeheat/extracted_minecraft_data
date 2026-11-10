@@ -27,6 +27,14 @@ public class AttributeTrackSampler<Value, Argument> implements EnvironmentAttrib
       this.argumentSampler = argumentTrack.bakeSampler(periodTicks, argumentLerp);
    }
 
+   public AttributeModifier<Value, Argument> modifier() {
+      return this.modifier;
+   }
+
+   public Argument sampleArgument() {
+      return this.argumentSampler.sample(this.clockManager.getInstance(this.clock).totalTicks());
+   }
+
    public Value applyTimeBased(final Value baseValue, final int cacheTickId) {
       if (this.cachedArgument == null || cacheTickId != this.cachedTickId) {
          this.cachedTickId = cacheTickId;

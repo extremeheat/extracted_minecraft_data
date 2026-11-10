@@ -13,6 +13,7 @@ import java.util.Objects;
 import net.minecraft.client.gui.font.glyphs.BakedSheetGlyph;
 import net.minecraft.client.renderer.texture.DynamicAtlasTree;
 import net.minecraft.client.renderer.texture.DynamicAtlasTreeSlot;
+import net.minecraft.client.renderer.texture.ExternalTextureProvider;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
@@ -41,11 +42,12 @@ public class FontTexture implements AutoCloseable {
       GpuTextureView textureView = device.createTextureView(texture);
       this.texture = new TextureResources(texture, textureView, sampler, (argb) -> ARGB.alpha(argb) == 0 ? -16777216 : argb);
       this.renderTypes = renderTypes;
-      textureManager.register(textureId, this.texture);
+      textureManager.registerProvider(textureId, new ExternalTextureProvider(this.texture));
    }
 
    public void close() {
       this.textureManager.release(this.textureId);
+      this.texture.close();
    }
 
    public @Nullable BakedSheetGlyph add(final GlyphInfo info, final GlyphBitmap glyph) {

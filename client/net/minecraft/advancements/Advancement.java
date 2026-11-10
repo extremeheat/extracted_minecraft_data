@@ -10,7 +10,6 @@ import java.util.function.UnaryOperator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.ClientAsset;
-import net.minecraft.core.HolderGetter;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -68,9 +67,9 @@ public record Advancement(Optional<Identifier> parent, Optional<DisplayInfo> dis
       return this.parent.isEmpty();
    }
 
-   public void validate(final ProblemReporter reporter, final HolderGetter.Provider lootData) {
+   public void validate(final ProblemReporter reporter) {
       this.criteria.forEach((name, criterion) -> {
-         ValidationContextSource validator = new ValidationContextSource(reporter.forChild(new ProblemReporter.RootFieldPathElement(name)), lootData);
+         ValidationContextSource validator = new ValidationContextSource(reporter.forChild(new ProblemReporter.RootFieldPathElement(name)));
          criterion.triggerInstance().validate(validator);
       });
    }

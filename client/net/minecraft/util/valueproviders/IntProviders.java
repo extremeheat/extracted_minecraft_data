@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public class IntProviders {
@@ -33,7 +34,7 @@ public class IntProviders {
       }
    }
 
-   public static MapCodec<? extends IntProvider> bootstrap(final Registry<MapCodec<? extends IntProvider>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends IntProvider>> registry) {
       Registry.register(registry, (String)"constant", ConstantInt.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformInt.MAP_CODEC);
       Registry.register(registry, (String)"biased_to_bottom", BiasedToBottomInt.MAP_CODEC);
@@ -41,7 +42,7 @@ public class IntProviders {
       Registry.register(registry, (String)"clamped", ClampedInt.MAP_CODEC);
       Registry.register(registry, (String)"weighted_list", WeightedListInt.MAP_CODEC);
       Registry.register(registry, (String)"clamped_normal", ClampedNormalInt.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"trapezoid", TrapezoidInt.MAP_CODEC);
+      Registry.register(registry, (String)"trapezoid", TrapezoidInt.MAP_CODEC);
    }
 
    static {

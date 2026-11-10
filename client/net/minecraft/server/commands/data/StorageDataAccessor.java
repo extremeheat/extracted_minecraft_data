@@ -1,29 +1,30 @@
 package net.minecraft.server.commands.data;
 
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.Locale;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.NbtPathArgument;
+import net.minecraft.commands.suggestions.SuggestionContext;
+import net.minecraft.commands.suggestions.SuggestionProviders;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
-   private static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (c, p) -> SharedSuggestionProvider.suggestResource(getGlobalTags(c).keys(), p);
-   public static final ArgProvider.Factory<DataAccessor> PROVIDER = (arg) -> ArgProvider.create("storage", () -> Commands.argument(arg, IdentifierArgument.id()).suggests(SUGGEST_STORAGE), (c) -> new StorageDataAccessor(getGlobalTags(c), IdentifierArgument.getId(c, arg)));
+   private static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = SuggestionProviders.serverOnly((server, var1, builder) -> SuggestionContext.suggestResource(getGlobalTags(server).keys(), builder));
+   public static final ArgProvider.Factory<DataAccessor> PROVIDER = (arg) -> ArgProvider.create("storage", () -> Commands.argument(arg, IdentifierArgument.id()).suggests(SUGGEST_STORAGE), (c) -> new StorageDataAccessor(getGlobalTags(((CommandSourceStack)c.getSource()).getServer()), IdentifierArgument.getId(c, arg)));
    private final CommandStorage storage;
    private final Identifier id;
 
-   private static CommandStorage getGlobalTags(final CommandContext<CommandSourceStack> context) {
-      return ((CommandSourceStack)context.getSource()).getServer().getCommandStorage();
+   private static CommandStorage getGlobalTags(final MinecraftServer server) {
+      return server.getCommandStorage();
    }
 
    private StorageDataAccessor(final CommandStorage storage, final Identifier id) {

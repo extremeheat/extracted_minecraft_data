@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -19,7 +20,7 @@ public class KillCommand {
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).executes((c) -> kill((CommandSourceStack)c.getSource(), ImmutableList.of(((CommandSourceStack)c.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> kill((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets")))));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("kill").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).executes((c) -> kill((CommandSourceStack)c.getSource(), ImmutableList.of(((CommandSourceStack)c.getSource()).getEntityOrException())))).then(Commands.argument("targets", EntityArgument.entities()).executes((c) -> kill((CommandSourceStack)c.getSource(), EntityArgument.getEntities(c, "targets")))));
    }
 
    private static int kill(final CommandSourceStack source, final Collection<? extends Entity> victims) throws CommandSyntaxException {

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -49,14 +50,18 @@ public class WidgetTooltipHolder {
          }
 
          if (shouldDisplay && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
-            graphics.setTooltipForNextFrame(minecraft.font, this.tooltip.toCharSequence(minecraft), this.tooltip.component(), this.createTooltipPositioner(screenRectangle, isHovered, isFocused), mouseX, mouseY, isFocused, this.tooltip.style(), this.tooltip.extraSpaceAfterFirstLine());
+            graphics.setTooltipForNextFrame(minecraft.font, this.tooltip.toCharSequence(minecraft), this.tooltip.component(), this.createTooltipPositioner(screenRectangle, isHovered, isFocused, this.tooltip.besideCursor()), mouseX, mouseY, isFocused, this.tooltip.style(), this.tooltip.extraSpaceAfterFirstLine());
          }
 
       }
    }
 
-   private ClientTooltipPositioner createTooltipPositioner(final ScreenRectangle screenRectangle, final boolean isHovered, final boolean isFocused) {
-      return (ClientTooltipPositioner)(!isHovered && isFocused && Minecraft.getInstance().getLastInputType().isKeyboard() ? new BelowOrAboveWidgetTooltipPositioner(screenRectangle) : new MenuTooltipPositioner(screenRectangle));
+   private ClientTooltipPositioner createTooltipPositioner(final ScreenRectangle screenRectangle, final boolean isHovered, final boolean isFocused, final boolean besideCursor) {
+      if (!isHovered && isFocused && Minecraft.getInstance().getLastInputType().isKeyboard()) {
+         return new BelowOrAboveWidgetTooltipPositioner(screenRectangle);
+      } else {
+         return (ClientTooltipPositioner)(besideCursor ? DefaultTooltipPositioner.INSTANCE : new MenuTooltipPositioner(screenRectangle));
+      }
    }
 
    public void updateNarration(final NarrationElementOutput output) {

@@ -81,8 +81,7 @@ public class SequenceFunction extends LootItemConditionalFunction {
       return (ItemStack)this.compositeFunction.apply(stack, context);
    }
 
-   public void validate(final ValidationContext output) {
-      super.validate(output);
+   public void validateCustom(final ValidationContext output) {
       Validatable.validateHolderSet(output, "functions", this.functions);
    }
 

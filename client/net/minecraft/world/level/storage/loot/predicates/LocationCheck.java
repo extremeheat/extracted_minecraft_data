@@ -10,10 +10,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-public record LocationCheck(Optional<LocationPredicate> predicate, Vec3i offset) implements LootItemCondition {
+public record LocationCheck(Optional<LocationPredicate> predicate, Vec3i offset) implements LootItemCondition.ContextUser {
    private static final MapCodec<Vec3i> OFFSET_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.INT.optionalFieldOf("offsetX", 0).forGetter(Vec3i::getX), Codec.INT.optionalFieldOf("offsetY", 0).forGetter(Vec3i::getY), Codec.INT.optionalFieldOf("offsetZ", 0).forGetter(Vec3i::getZ)).apply(i, Vec3i::new));
    public static final MapCodec<LocationCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(LocationPredicate.CODEC.optionalFieldOf("predicate").forGetter(LocationCheck::predicate), OFFSET_CODEC.forGetter(LocationCheck::offset)).apply(i, LocationCheck::new));
 
@@ -30,8 +31,11 @@ public record LocationCheck(Optional<LocationPredicate> predicate, Vec3i offset)
       return pos != null && (this.predicate.isEmpty() || ((LocationPredicate)this.predicate.get()).matches(context.getLevel(), pos.x() + (double)this.offset.getX(), pos.y() + (double)this.offset.getY(), pos.z() + (double)this.offset.getZ()));
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return Set.of(LootContextParams.ORIGIN);
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public static LootItemCondition.Builder checkLocation(final LocationPredicate.Builder predicate) {

@@ -30,11 +30,11 @@ import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -456,7 +456,7 @@ public abstract class ChunkGenerator {
       return ((MobSpawnSettings)level.environmentAttributes().getValue(EnvironmentAttributes.NATURAL_MOB_SPAWNS, pos)).getMobsToSpawn(mobCategory);
    }
 
-   public CompletableFuture<ChunkAccess> createStructures(final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
+   public CompletableFuture<ChunkAccess> createStructures(final HolderGetter.Provider registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
       ChunkPos sourceChunkPos = centerChunk.getPos();
       List<Holder<StructureSet>> structureSetsInChunk = state.possibleStructureSets().stream().filter((set) -> {
          StructurePlacement featurePlacement = ((StructureSet)set.value()).placement();
@@ -473,7 +473,7 @@ public abstract class ChunkGenerator {
       return structureSetsInChunk.isEmpty() ? CompletableFuture.completedFuture(centerChunk) : CompletableFuture.supplyAsync(() -> this.createStructuresForSets(structureSetsInChunk, registryAccess, state, structureManager, centerChunk, structureTemplateManager, level), Util.backgroundExecutor().forName("createStructures"));
    }
 
-   private ChunkAccess createStructuresForSets(final List<Holder<StructureSet>> structureSetsInChunk, final RegistryAccess registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
+   private ChunkAccess createStructuresForSets(final List<Holder<StructureSet>> structureSetsInChunk, final HolderGetter.Provider registryAccess, final ChunkGeneratorStructureState state, final StructureManager structureManager, final ChunkAccess centerChunk, final StructureTemplateManager structureTemplateManager, final ResourceKey<Level> level) {
       Climate.Sampler climateSampler = state.randomState().createClimateSampler(SamplerContext.builder().enableCaches().build());
       structureSetsInChunk.forEach((set) -> {
          StructureStart start = ((StructureSet)set.value()).tryGenerateStartInChunk(this, registryAccess, state, centerChunk.getPos(), centerChunk, structureTemplateManager, level, climateSampler);

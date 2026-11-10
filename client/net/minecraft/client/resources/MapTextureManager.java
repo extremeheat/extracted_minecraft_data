@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Objects;
 import java.util.function.Supplier;
+import net.minecraft.client.renderer.texture.ExternalTextureProvider;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureResources;
 import net.minecraft.resources.Identifier;
@@ -39,6 +40,7 @@ public class MapTextureManager implements AutoCloseable {
    }
 
    public void resetData() {
+      this.maps.values().forEach(MapInstance::close);
       this.maps.clear();
    }
 
@@ -73,7 +75,7 @@ public class MapTextureManager implements AutoCloseable {
          GpuSampler sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
          GpuTextureView textureView = device.createTextureView(this.texture);
          this.location = Identifier.withDefaultNamespace("map/" + id);
-         MapTextureManager.this.textureManager.register(this.location, new TextureResources(this.texture, textureView, sampler));
+         MapTextureManager.this.textureManager.registerProvider(this.location, new ExternalTextureProvider(new TextureResources(this.texture, textureView, sampler)));
       }
 
       private void replaceMapData(final MapItemSavedData data) {
@@ -84,6 +86,11 @@ public class MapTextureManager implements AutoCloseable {
 
       public void forceUpload() {
          this.requiresUpload = true;
+      }
+
+      public void close() {
+         MapTextureManager.this.textureManager.release(this.location);
+         this.texture.close();
       }
 
       private void updateTextureIfNeeded() {

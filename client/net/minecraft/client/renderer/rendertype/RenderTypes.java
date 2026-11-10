@@ -6,7 +6,6 @@ import com.mojang.renderpearl.api.textures.AddressMode;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.blockentity.AbstractEndPortalRenderer;
 import net.minecraft.client.renderer.feature.ItemFeatureRenderer;
 import net.minecraft.client.renderer.oit.OitStage;
@@ -54,7 +53,6 @@ public class RenderTypes {
    private static final Function<Identifier, RenderType> EYES;
    private static final RenderType LEASH;
    private static final RenderType WATER_MASK;
-   private static final RenderType OIT_WATER_MASK;
    private static final RenderType PATTERNED_SHIELD_GLINT;
    private static final RenderType TRIMMED_ARMOR_GLINT;
    private static final Function<Identifier, RenderType> CRUMBLING;
@@ -224,7 +222,7 @@ public class RenderTypes {
    }
 
    public static RenderType waterMask() {
-      return Minecraft.getInstance().gameRenderer.useImprovedTransparency() ? OIT_WATER_MASK : WATER_MASK;
+      return WATER_MASK;
    }
 
    public static RenderType outline(final Identifier texture) {
@@ -429,8 +427,7 @@ public class RenderTypes {
       }));
       EYES = Util.memoize((Function)((texture) -> RenderType.create("eyes", RenderSetup.builder((stage) -> RenderPipelines.entity(new RenderPipelines.EntityParameters(EntityRenderPipelineVariant.EYES, stage))).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));
       LEASH = RenderType.create("leash", RenderSetup.nonOitBuilder(RenderPipelines.LEASH).useLightmap().createRenderSetup());
-      WATER_MASK = RenderType.create("water_mask", RenderSetup.nonOitBuilder(RenderPipelines.waterMask(new RenderPipelines.WaterMaskParameters(false))).createRenderSetup());
-      OIT_WATER_MASK = RenderType.create("oit_water_mask", RenderSetup.nonOitBuilder(RenderPipelines.waterMask(new RenderPipelines.WaterMaskParameters(true))).createRenderSetup());
+      WATER_MASK = RenderType.create("water_mask", RenderSetup.nonOitBuilder(RenderPipelines.WATER_MASK).createRenderSetup());
       PATTERNED_SHIELD_GLINT = RenderType.create("patterned_shield_glint", RenderSetup.nonOitBuilder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ITEM).setTextureTransform(TextureTransform.ENTITY_GLINT_TEXTURING).withForcedSolidModelPhase().createRenderSetup());
       TRIMMED_ARMOR_GLINT = RenderType.create("trimmed_armor_glint", RenderSetup.nonOitBuilder(RenderPipelines.GLINT).withTexture("Sampler0", ItemFeatureRenderer.ENCHANTED_GLINT_ARMOR).setTextureTransform(TextureTransform.ARMOR_ENTITY_GLINT_TEXTURING).setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING).withForcedSolidModelPhase().createRenderSetup());
       CRUMBLING = Util.memoize((Function)((texture) -> RenderType.create("crumbling", RenderSetup.builder(RenderPipelines::crumbling).withTexture("Sampler0", texture).sortOnUpload().createRenderSetup())));

@@ -14,9 +14,9 @@ public enum OitStage {
    public RenderPassLayout.Subpass subpass() {
       RenderPassLayout.Subpass var10000;
       switch (this.ordinal()) {
-         case 0 -> var10000 = RenderPassLayouts.OIT_DEPTH_BOUNDS.subpass(0);
-         case 1 -> var10000 = RenderPassLayouts.OIT_TRANSMITTANCE.subpass(0);
-         case 2 -> var10000 = RenderPassLayouts.OIT_ACCUMULATE.subpass(0);
+         case 0 -> var10000 = RenderPassLayouts.OIT_DEPTH_BOUNDS_SUBPASS;
+         case 1 -> var10000 = RenderPassLayouts.OIT_TRANSMITTANCE_SUBPASS;
+         case 2 -> var10000 = RenderPassLayouts.OIT_ACCUMULATE_SUBPASS;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 

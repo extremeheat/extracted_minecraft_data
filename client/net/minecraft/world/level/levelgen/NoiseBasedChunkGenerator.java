@@ -155,8 +155,9 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          int range = 8;
          ChunkPos pos = chunk.getPos();
          int protectedBlocksOnTop = chunk.isUpgrading() ? 0 : 7;
-         int maxY = heightAccessor.getMaxY() - protectedBlocksOnTop;
-         CarvingMask mask = new CarvingMask(heightAccessor.getMinY() + 1, maxY);
+         int minY = Math.max(verticalAnchorContext.minY(), heightAccessor.getMinY()) + 1;
+         int maxY = Math.min(verticalAnchorContext.maxY(), heightAccessor.getMaxY()) - protectedBlocksOnTop;
+         CarvingMask mask = new CarvingMask(minY, maxY);
 
          for(int dx = -8; dx <= 8; ++dx) {
             for(int dz = -8; dz <= 8; ++dz) {

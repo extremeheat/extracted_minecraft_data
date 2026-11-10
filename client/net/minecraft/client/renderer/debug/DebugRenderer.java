@@ -77,6 +77,10 @@ public class DebugRenderer {
          this.renderers.add(new SolidFaceRenderer(minecraft));
       }
 
+      if (minecraft.canUseRestrictedDebugFeatures() && minecraft.debugEntries.isCurrentlyEnabled(DebugScreenEntries.VISUALIZE_ENVIRONMENT_ATTRIBUTE)) {
+         this.renderers.add(new EnvironmentAttributeDebugRenderer(minecraft));
+      }
+
       if (SharedConstants.DEBUG_VILLAGE_SECTIONS) {
          this.renderers.add(new VillageSectionsDebugRenderer());
       }

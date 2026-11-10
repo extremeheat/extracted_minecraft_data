@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public class FloatProviders {
@@ -29,11 +30,11 @@ public class FloatProviders {
       return CODEC.validate((value) -> value.min() < minValue ? DataResult.error(() -> "Value provider too low: " + minValue + " [" + value.min() + "-" + value.max() + "]") : DataResult.success(value));
    }
 
-   public static MapCodec<? extends FloatProvider> bootstrap(final Registry<MapCodec<? extends FloatProvider>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends FloatProvider>> registry) {
       Registry.register(registry, (String)"constant", ConstantFloat.MAP_CODEC);
       Registry.register(registry, (String)"uniform", UniformFloat.MAP_CODEC);
       Registry.register(registry, (String)"clamped_normal", ClampedNormalFloat.MAP_CODEC);
-      return (MapCodec)Registry.register(registry, (String)"trapezoid", TrapezoidFloat.MAP_CODEC);
+      Registry.register(registry, (String)"trapezoid", TrapezoidFloat.MAP_CODEC);
    }
 
    static {

@@ -8,10 +8,11 @@ import net.minecraft.advancements.predicates.DamageSourcePredicate;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
-public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) implements LootItemCondition {
+public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) implements LootItemCondition.ContextUser {
    public static final MapCodec<DamageSourceCondition> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(DamageSourcePredicate.CODEC.optionalFieldOf("predicate").forGetter(DamageSourceCondition::predicate)).apply(i, DamageSourceCondition::new));
 
    public DamageSourceCondition {
@@ -22,8 +23,11 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return Set.of(LootContextParams.ORIGIN, LootContextParams.DAMAGE_SOURCE);
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

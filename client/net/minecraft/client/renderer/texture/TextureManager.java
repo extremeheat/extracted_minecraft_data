@@ -21,66 +21,37 @@ import net.minecraft.ReportedException;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TextureManager implements PreparableReloadListener, UncheckedAutoCloseable {
-   private static final TextureProvider2d DEFAULT_PROVIDER = new TextureProvider2d();
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<Identifier, TextureResources> byPath = new HashMap();
-   private final Map<Identifier, TextureProvider<? extends UncheckedAutoCloseable>> providers = new HashMap();
+   private final Map<Identifier, Entry<?, ?>> byPath = new HashMap();
    private final ResourceManager resourceManager;
+   private final TextureResources missingTexture;
 
    public TextureManager(final ResourceManager resourceManager) {
       super();
       this.resourceManager = resourceManager;
 
       try (NativeImage checkerboard = MissingTextureAtlasSprite.generateMissingImage()) {
-         this.register(MissingTextureAtlasSprite.getLocation(), TextureResources.from2dImage(() -> "(intentionally-)Missing Texture", checkerboard));
+         this.missingTexture = TextureResources.from2dImage(() -> "(intentionally-)Missing Texture", checkerboard);
+         this.registerProvider(MissingTextureAtlasSprite.getLocation(), new ExternalTextureProvider(this.missingTexture));
       }
 
    }
 
-   public <T extends UncheckedAutoCloseable> TextureHandle registerAndLoad(final Identifier textureId, final TextureProvider<T> textureProvider) {
-      try (T content = this.loadContentsSafe(textureId, textureProvider)) {
-         TextureResources texture = textureProvider.createTexture(content, textureId);
-         this.register(textureId, texture);
-         return texture;
-      } catch (Throwable t) {
-         CrashReport report = CrashReport.forThrowable(t, "Uploading texture");
-         CrashReportCategory category = report.addCategory("Uploaded texture");
-         category.setDetail("Texture id", textureId);
-         throw new ReportedException(report);
+   public <ResourcesType extends TextureProvider.IntermediaryResources, HandleType extends TextureHandle> void registerProvider(final Identifier location, final TextureProvider<ResourcesType, HandleType> provider) {
+      Entry<?, ?> old = (Entry)this.byPath.put(location, new Entry(location, provider, (TextureHandle)null));
+      if (old != null) {
+         this.safeClose(location, old);
       }
+
    }
 
-   private <T extends UncheckedAutoCloseable> T loadContentsSafe(final Identifier textureId, final TextureProvider<T> provider) {
+   private void safeClose(final Identifier id, final Entry<?, ?> entry) {
       try {
-         return (T)loadContents(this.resourceManager, provider, textureId);
-      } catch (Exception e) {
-         LOGGER.error("Failed to load texture {}", textureId, e);
-         return provider.missingState();
-      }
-   }
-
-   public void registerForNextReload(final Identifier location) {
-      this.registerProvider(location, DEFAULT_PROVIDER);
-   }
-
-   public void register(final Identifier location, final TextureResources texture) {
-      TextureResources prev = (TextureResources)this.byPath.put(location, texture);
-      if (prev != texture && prev != null) {
-         this.safeClose(location, prev);
-      }
-
-   }
-
-   public <T extends UncheckedAutoCloseable> void registerProvider(final Identifier location, final TextureProvider<T> provider) {
-      this.providers.put(location, provider);
-   }
-
-   private void safeClose(final Identifier id, final TextureResources texture) {
-      try {
-         texture.close();
+         entry.close();
       } catch (Exception e) {
          LOGGER.warn("Failed to close texture {}", id, e);
       }
@@ -88,43 +59,38 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
    }
 
    public TextureHandle getTexture(final Identifier location) {
-      TextureHandle textureObject = (TextureHandle)this.byPath.get(location);
-      if (textureObject != null) {
-         return textureObject;
-      } else {
-         TextureProvider<?> provider = (TextureProvider)this.providers.getOrDefault(location, DEFAULT_PROVIDER);
-         return this.registerAndLoad(location, provider);
+      Entry<?, ?> entry = (Entry)this.byPath.computeIfAbsent(location, (loc) -> new Entry(loc, TextureProvider2d.INSTANCE, (TextureHandle)null));
+      if (entry.current == null) {
+         entry.loadCurrentTexture(this.resourceManager);
       }
+
+      return entry.current;
    }
 
    public void release(final Identifier location) {
-      TextureResources texture = (TextureResources)this.byPath.remove(location);
-      if (texture != null) {
-         this.safeClose(location, texture);
+      Entry<?, ?> entry = (Entry)this.byPath.remove(location);
+      if (entry != null) {
+         this.safeClose(location, entry);
       }
 
    }
 
    public void close() {
-      this.byPath.forEach(this::safeClose);
+      this.byPath.forEach((var0, entry) -> entry.close());
       this.byPath.clear();
+      this.missingTexture.close();
    }
 
    public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
       ResourceManager manager = currentReload.resourceManager();
-      List<PendingReload<?>> reloads = new ArrayList();
-      this.providers.forEach((identifier, provider) -> reloads.add(scheduleLoad(manager, provider, taskExecutor, identifier)));
-      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.stream().map(PendingReload::getState).toArray((x$0) -> new CompletableFuture[x$0]));
+      List<CompletableFuture<?>> reloads = new ArrayList();
+      this.byPath.forEach((var3, entry) -> reloads.add(entry.scheduleLoad(manager, taskExecutor)));
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.toArray((x$0) -> new CompletableFuture[x$0]));
       Objects.requireNonNull(preparationBarrier);
-      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((var2) -> {
-         for(PendingReload<?> reload : reloads) {
-            this.register(reload.identifier, reload.finish());
-         }
-
-      }, reloadExecutor);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((var1) -> this.byPath.forEach((var0, entry) -> entry.finishReload()), reloadExecutor);
    }
 
-   public void dumpAllSheets(final Path targetDir) {
+   public void dumpTextures(final Path targetDir) {
       try {
          Files.createDirectories(targetDir);
       } catch (IOException e) {
@@ -132,9 +98,9 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
          return;
       }
 
-      this.byPath.forEach((location, texture) -> {
+      this.byPath.forEach((location, entry) -> {
          try {
-            texture.dumpContents(location, targetDir);
+            entry.dumpContents(targetDir);
          } catch (Exception e) {
             LOGGER.error("Failed to dump texture {}", location, e);
          }
@@ -142,33 +108,110 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
       });
    }
 
-   private static <T extends UncheckedAutoCloseable> T loadContents(final ResourceManager manager, final TextureProvider<T> provider, final Identifier identifier) throws IOException {
-      try {
-         return provider.prepareState(manager, identifier);
-      } catch (FileNotFoundException var4) {
-         return provider.missingState();
-      }
-   }
+   private static class Entry<ResourcesType extends TextureProvider.IntermediaryResources, HandleType extends TextureHandle> implements UncheckedAutoCloseable {
+      private final Identifier identifier;
+      private final TextureProvider<ResourcesType, HandleType> provider;
+      private @Nullable HandleType current;
+      private @Nullable CompletableFuture<ResourcesType> pendingReload;
 
-   private static <T extends UncheckedAutoCloseable> PendingReload<T> scheduleLoad(final ResourceManager manager, final TextureProvider<T> provider, final Executor executor, final Identifier identifier) {
-      return new PendingReload<T>(identifier, CompletableFuture.supplyAsync(() -> {
-         try {
-            return loadContents(manager, provider, identifier);
-         } catch (IOException e) {
-            throw new UncheckedIOException(e);
-         }
-      }, executor), provider);
-   }
-
-   private static record PendingReload<T extends UncheckedAutoCloseable>(Identifier identifier, CompletableFuture<T> getState, TextureProvider<T> provider) {
-      private PendingReload {
+      public Entry(final Identifier identifier, final TextureProvider<ResourcesType, HandleType> provider, final @Nullable HandleType current) {
          super();
+         this.identifier = identifier;
+         this.provider = provider;
+         this.current = current;
       }
 
-      private TextureResources finish() {
-         try (T state = (T)(this.getState.join())) {
-            return this.provider.createTexture(state, this.identifier);
+      protected void loadCurrentTexture(final ResourceManager resourceManager) {
+         try {
+            try (ResourcesType content = this.loadContentsSafe(resourceManager)) {
+               this.current = this.provider.createTexture(content, this.identifier);
+            }
+
+         } catch (Throwable t) {
+            CrashReport report = CrashReport.forThrowable(t, "Uploading texture");
+            CrashReportCategory category = report.addCategory("Uploaded texture");
+            category.setDetail("Texture id", this.identifier);
+            throw new ReportedException(report);
          }
+      }
+
+      private ResourcesType loadContentsSafe(final ResourceManager resourceManager) {
+         try {
+            return (ResourcesType)this.loadContents(resourceManager);
+         } catch (Exception e) {
+            TextureManager.LOGGER.error("Failed to load texture {}", this.identifier, e);
+            return this.provider.missingState();
+         }
+      }
+
+      private ResourcesType loadContents(final ResourceManager resourceManager) throws IOException {
+         try {
+            return this.provider.prepareState(resourceManager, this.identifier);
+         } catch (FileNotFoundException var3) {
+            return this.provider.missingState();
+         }
+      }
+
+      private CompletableFuture<ResourcesType> scheduleLoad(final ResourceManager resourceManager, final Executor executor) {
+         if (this.pendingReload != null) {
+            throw new IllegalStateException("A reload is already scheduled!");
+         } else {
+            this.pendingReload = CompletableFuture.supplyAsync(() -> {
+               try {
+                  return this.loadContents(resourceManager);
+               } catch (IOException e) {
+                  throw new UncheckedIOException(e);
+               }
+            }, executor);
+            return this.pendingReload;
+         }
+      }
+
+      private void finishReload() {
+         if (this.pendingReload != null) {
+            try {
+               ResourcesType state = (ResourcesType)(this.pendingReload.join());
+
+               try {
+                  if (this.current != null) {
+                     this.provider.releaseTexture(this.current);
+                  }
+
+                  this.current = this.provider.createTexture(state, this.identifier);
+               } catch (Throwable var9) {
+                  if (state != null) {
+                     try {
+                        state.close();
+                     } catch (Throwable var8) {
+                        var9.addSuppressed(var8);
+                     }
+                  }
+
+                  throw var9;
+               }
+
+               if (state != null) {
+                  state.close();
+               }
+            } finally {
+               this.pendingReload = null;
+            }
+         }
+
+      }
+
+      public void close() {
+         if (this.current != null) {
+            this.provider.releaseTexture(this.current);
+         }
+
+      }
+
+      public void dumpContents(final Path outputDirectory) {
+         if (this.current != null) {
+            this.provider.dumpContents(this.identifier, outputDirectory, this.current);
+         }
+
       }
    }
 }

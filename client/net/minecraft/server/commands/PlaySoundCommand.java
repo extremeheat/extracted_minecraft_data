@@ -1,19 +1,20 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import java.util.List;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.FloatArgument;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
-import net.minecraft.commands.synchronization.SuggestionProviders;
+import net.minecraft.commands.suggestions.SuggestAvailableSounds;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
@@ -29,23 +30,26 @@ import org.jspecify.annotations.Nullable;
 public class PlaySoundCommand {
    private static final SimpleCommandExceptionType ERROR_TOO_FAR = new SimpleCommandExceptionType(Component.translatable("commands.playsound.failed"));
    private static final CommandResponseTracker.MessagesWithArg<ServerPlayer, Identifier> RESPONSE_PLAY;
+   private static final float DEFAULT_VOLUME = 1.0F;
+   private static final float DEFAULT_PITCH = 1.0F;
+   private static final float DEFAULT_MIN_VOLUME = 0.0F;
 
    public PlaySoundCommand() {
       super();
    }
 
    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
-      RequiredArgumentBuilder<CommandSourceStack, Identifier> name = (RequiredArgumentBuilder)Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS)).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), SoundSource.MASTER, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
+      RequiredArgumentBuilder<CommandSourceStack, Identifier> name = (RequiredArgumentBuilder)Commands.argument("sound", IdentifierArgument.id()).suggests(SuggestAvailableSounds.suggestAvailableSounds()).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), SoundSource.MASTER, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F));
 
       for(SoundSource source : SoundSource.values()) {
          name.then(source(source));
       }
 
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))).then(name));
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("playsound").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS))).then(name));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> source(final SoundSource source) {
-      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(source.getName()).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("volume", FloatArgumentType.floatArg(0.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pitch", FloatArgumentType.floatArg(0.0F, 2.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), (Float)c.getArgument("pitch", Float.class), 0.0F))).then(Commands.argument("minVolume", FloatArgumentType.floatArg(0.0F, 1.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), (Float)c.getArgument("volume", Float.class), (Float)c.getArgument("pitch", Float.class), (Float)c.getArgument("minVolume", Float.class))))))));
+      return (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(source.getName()).executes((c) -> playSound((CommandSourceStack)c.getSource(), getCallingPlayerAsCollection(((CommandSourceStack)c.getSource()).getPlayer()), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, ((CommandSourceStack)c.getSource()).getPosition(), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pos", Vec3Argument.vec3()).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), 1.0F, 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("volume", FloatArgument.floatArg(0.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), FloatArgument.getFloat(c, "volume"), 1.0F, 0.0F))).then(((RequiredArgumentBuilder)Commands.argument("pitch", FloatArgument.floatArg(0.0F, 2.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), FloatArgument.getFloat(c, "volume"), FloatArgument.getFloat(c, "pitch"), 0.0F))).then(Commands.argument("minVolume", FloatArgument.floatArg(0.0F, 1.0F)).executes((c) -> playSound((CommandSourceStack)c.getSource(), EntityArgument.getPlayers(c, "targets"), IdentifierArgument.getId(c, "sound"), source, Vec3Argument.getVec3(c, "pos"), FloatArgument.getFloat(c, "volume"), FloatArgument.getFloat(c, "pitch"), FloatArgument.getFloat(c, "minVolume"))))))));
    }
 
    private static Collection<ServerPlayer> getCallingPlayerAsCollection(final @Nullable ServerPlayer player) {

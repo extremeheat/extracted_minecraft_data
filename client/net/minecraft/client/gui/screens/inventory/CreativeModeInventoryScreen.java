@@ -32,10 +32,10 @@ import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
 import net.minecraft.client.searchtree.SearchTree;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
@@ -805,7 +805,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
 
    public static void handleHotbarLoadOrSave(final Minecraft minecraft, final int index, final boolean isLoadPressed, final boolean isSavePressed) {
       LocalPlayer player = minecraft.player;
-      RegistryAccess registries = player.level().registryAccess();
+      HolderGetter.Provider registries = player.level().registryAccess();
       HotbarManager manager = minecraft.getHotbarManager();
       Hotbar hotbar = manager.get(index);
       if (isLoadPressed) {

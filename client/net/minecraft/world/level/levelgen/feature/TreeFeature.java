@@ -159,6 +159,15 @@ public record TreeFeature(Holder<BlockStateProvider> trunkProvider, TrunkPlacer 
 
          return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(roots, trunks, foliage, decorations)).map((bounds) -> {
             DiscreteVoxelShape shape = updateLeaves(level, bounds, trunks, decorations, roots);
+            foliage.forEach((pos) -> {
+               int x = pos.getX() - bounds.minX();
+               int y = pos.getY() - bounds.minY();
+               int z = pos.getZ() - bounds.minZ();
+               if (!shape.isFull(x, y, z)) {
+                  shape.fill(x, y, z);
+               }
+
+            });
             StructureTemplate.updateShapeAtEdge(level, 3, shape, bounds.minX(), bounds.minY(), bounds.minZ());
             return true;
          }).orElse(false);

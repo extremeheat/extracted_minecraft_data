@@ -5,26 +5,32 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import net.minecraft.commands.CommandSourceStack;
+import java.util.List;
+import net.minecraft.commands.arguments.SerializableArgument;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
-public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("xyz", "x");
-   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("arguments.swizzle.invalid"));
+public class SwizzleArgument implements SerializableArgument.ContextFree<EnumSet<Direction.Axis>> {
+   private static final SwizzleArgument INSTANCE = new SwizzleArgument();
+   public static final SerializableArgument.Type<SwizzleArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   private static final SimpleCommandExceptionType ERROR_INVALID;
 
-   public SwizzleArgument() {
+   private SwizzleArgument() {
       super();
    }
 
-   public static SwizzleArgument swizzle() {
-      return new SwizzleArgument();
+   public SerializableArgument.Type<SwizzleArgument> type() {
+      return TYPE;
    }
 
-   public static EnumSet<Direction.Axis> getSwizzle(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<EnumSet<Direction.Axis>> swizzle() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static EnumSet<Direction.Axis> getSwizzle(final CommandContext<?> context, final String name) {
       return (EnumSet)context.getArgument(name, EnumSet.class);
    }
 
@@ -54,5 +60,11 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<SwizzleArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("xyz", "x");
+      ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("arguments.swizzle.invalid"));
    }
 }

@@ -10,7 +10,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.CompilableString;
@@ -19,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public record BlockDataSource(CompilableString<Coordinates> coordinates) implements DataSource {
    public static final Codec<CompilableString<Coordinates>> BLOCK_POS_CODEC = CompilableString.codec(new CompilableString.CommandParserHelper<Coordinates>() {
       protected Coordinates parse(final StringReader reader) throws CommandSyntaxException {
-         return BlockPosArgument.blockPos().parse(reader);
+         return BlockPosArgument.INSTANCE.parse(reader);
       }
 
       protected String errorMessage(final String original, final CommandSyntaxException exception) {
@@ -38,7 +37,7 @@ public record BlockDataSource(CompilableString<Coordinates> coordinates) impleme
       if (level.isLoaded(pos)) {
          BlockEntity entity = level.getBlockEntity(pos);
          if (entity != null) {
-            return Stream.of(entity.saveWithFullMetadata((HolderLookup.Provider)sender.registryAccess()));
+            return Stream.of(entity.saveWithFullMetadata(sender.holderGetters()));
          }
       }
 

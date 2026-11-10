@@ -1,28 +1,36 @@
 package net.minecraft.commands.arguments.coordinates;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import java.util.Arrays;
 import java.util.Collection;
-import net.minecraft.commands.CommandSourceStack;
+import java.util.List;
+import net.minecraft.commands.arguments.SerializableArgument;
 import net.minecraft.network.chat.Component;
 
-public class RotationArgument implements ArgumentType<Coordinates> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "~-5 ~5");
-   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(Component.translatable("argument.rotation.incomplete"));
+public class RotationArgument implements SerializableArgument.ContextFree<Coordinates> {
+   @VisibleForTesting
+   public static final RotationArgument INSTANCE = new RotationArgument();
+   public static final SerializableArgument.Type<RotationArgument> TYPE;
+   private static final Collection<String> EXAMPLES;
+   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE;
 
-   public RotationArgument() {
+   private RotationArgument() {
       super();
    }
 
-   public static RotationArgument rotation() {
-      return new RotationArgument();
+   public SerializableArgument.Type<RotationArgument> type() {
+      return TYPE;
    }
 
-   public static Coordinates getRotation(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<Coordinates> rotation() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static Coordinates getRotation(final CommandContext<?> context, final String name) {
       return (Coordinates)context.getArgument(name, Coordinates.class);
    }
 
@@ -45,5 +53,11 @@ public class RotationArgument implements ArgumentType<Coordinates> {
 
    public Collection<String> getExamples() {
       return EXAMPLES;
+   }
+
+   static {
+      TYPE = SerializableArgument.<RotationArgument>singletonType(INSTANCE);
+      EXAMPLES = List.of("0 0", "~ ~", "~-5 ~5");
+      ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(Component.translatable("argument.rotation.incomplete"));
    }
 }

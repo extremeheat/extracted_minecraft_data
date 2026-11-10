@@ -27,7 +27,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextArg;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
-public class CopyComponentsFunction extends LootItemConditionalFunction {
+public class CopyComponentsFunction extends LootItemConditionalFunction.ContextUser {
    private static final Codec<LootContextArg<DataComponentGetter>> GETTER_CODEC = LootContextArg.createArgCodec((builder) -> builder.anyEntity(DirectSource::new).anyBlockEntity(BlockEntitySource::new).anyItemStack(DirectSource::new));
    public static final MapCodec<CopyComponentsFunction> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> commonFields(i).and(i.group(GETTER_CODEC.fieldOf("source").forGetter((f) -> f.source), DataComponentType.CODEC.listOf().optionalFieldOf("include").forGetter((f) -> f.include), DataComponentType.CODEC.listOf().optionalFieldOf("exclude").forGetter((f) -> f.exclude))).apply(i, CopyComponentsFunction::new));
    private final LootContextArg<DataComponentGetter> source;
@@ -53,7 +53,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(this.source.contextParam());
    }
 

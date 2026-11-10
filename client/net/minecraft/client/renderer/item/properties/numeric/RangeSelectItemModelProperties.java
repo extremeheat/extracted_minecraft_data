@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.item.properties.numeric;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.core.registries.BuiltInClientRegistries;
 import net.minecraft.core.Registry;
+import net.minecraft.core.WritableRegistry;
 
 public class RangeSelectItemModelProperties {
    public static final MapCodec<RangeSelectItemModelProperty> MAP_CODEC;
@@ -11,7 +12,7 @@ public class RangeSelectItemModelProperties {
       super();
    }
 
-   public static Object bootstrap(final Registry<MapCodec<? extends RangeSelectItemModelProperty>> registry) {
+   public static void bootstrap(final WritableRegistry<MapCodec<? extends RangeSelectItemModelProperty>> registry) {
       Registry.register(registry, (String)"custom_model_data", CustomModelDataProperty.MAP_CODEC);
       Registry.register(registry, (String)"bundle/fullness", BundleFullness.MAP_CODEC);
       Registry.register(registry, (String)"damage", Damage.MAP_CODEC);
@@ -21,7 +22,7 @@ public class RangeSelectItemModelProperties {
       Registry.register(registry, (String)"crossbow/pull", CrossbowPull.MAP_CODEC);
       Registry.register(registry, (String)"use_cycle", UseCycle.MAP_CODEC);
       Registry.register(registry, (String)"use_duration", UseDuration.MAP_CODEC);
-      return Registry.register(registry, (String)"count", Count.MAP_CODEC);
+      Registry.register(registry, (String)"count", Count.MAP_CODEC);
    }
 
    static {

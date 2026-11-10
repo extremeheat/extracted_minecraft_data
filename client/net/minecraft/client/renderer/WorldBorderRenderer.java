@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.renderpearl.api.buffers.GpuBuffer;
 import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
 import com.mojang.renderpearl.api.commands.RenderPass;
-import com.mojang.renderpearl.api.pipeline.IndexType;
 import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -175,11 +174,13 @@ public class WorldBorderRenderer implements AutoCloseable {
       for(WorldBorderRenderState.DistancePerDirection distancePerDirection : distancesPerDirection) {
          if (distancePerDirection.distance() < renderDistance) {
             int sideIndex = distancePerDirection.direction().get2DDataValue();
-            draws.add(new RenderPass.Draw(0, this.worldBorderBuffer, indexBuffer, this.indices.type(), 6 * sideIndex, 6, 0));
+            draws.add(new RenderPass.Draw(6 * sideIndex, 6, 0));
          }
       }
 
-      renderPass.drawMultipleIndexed(draws, (GpuBuffer)null, (IndexType)null, Collections.emptyList(), this);
+      renderPass.setVertexBuffer(0, this.worldBorderBuffer.slice());
+      renderPass.setIndexBuffer(indexBuffer, this.indices.type());
+      renderPass.drawMultipleIndexed(draws, Collections.emptyList(), this);
       renderPass.popDebugGroup();
    }
 

@@ -6,9 +6,10 @@ import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.attribute.EnvironmentAttribute;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record EnvironmentAttributeCheck<Value>(EnvironmentAttribute<Value> attribute, Value value) implements LootItemCondition {
+public record EnvironmentAttributeCheck<Value>(EnvironmentAttribute<Value> attribute, Value value) implements LootItemCondition.ContextUser {
    public static final MapCodec<EnvironmentAttributeCheck<?>> MAP_CODEC;
 
    public EnvironmentAttributeCheck {
@@ -23,8 +24,11 @@ public record EnvironmentAttributeCheck<Value>(EnvironmentAttribute<Value> attri
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return this.attribute.isPositional() ? Set.of(LootContextParams.ORIGIN) : Set.of();
+   }
+
+   public void validate(final ValidationContext context) {
    }
 
    public boolean test(final LootContext context) {

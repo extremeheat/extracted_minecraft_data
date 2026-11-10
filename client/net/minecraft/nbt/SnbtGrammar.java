@@ -2,7 +2,6 @@ package net.minecraft.nbt;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -29,6 +28,7 @@ import net.minecraft.util.parsing.packrat.NamedRule;
 import net.minecraft.util.parsing.packrat.ParseState;
 import net.minecraft.util.parsing.packrat.Scope;
 import net.minecraft.util.parsing.packrat.Term;
+import net.minecraft.util.parsing.packrat.commands.CommandParserState;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.util.parsing.packrat.commands.GreedyPatternParseRule;
 import net.minecraft.util.parsing.packrat.commands.GreedyPredicateParseRule;
@@ -57,11 +57,11 @@ public class SnbtGrammar {
    private static final DelayedException<CommandSyntaxException> ERROR_EMPTY_KEY = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.empty_key")));
    private static final DelayedException<CommandSyntaxException> ERROR_LEADING_ZERO_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.leading_zero_not_allowed")));
    private static final DelayedException<CommandSyntaxException> ERROR_INFINITY_NOT_ALLOWED = DelayedException.create(new SimpleCommandExceptionType(Component.translatable("snbt.parser.infinity_not_allowed")));
-   private static final NumberRunParseRule BINARY_NUMERAL;
-   private static final NumberRunParseRule DECIMAL_NUMERAL;
-   private static final NumberRunParseRule HEX_NUMERAL;
-   private static final GreedyPredicateParseRule PLAIN_STRING_CHUNK;
-   private static final StringReaderTerms.TerminalCharacters NUMBER_LOOKEAHEAD;
+   private static final NumberRunParseRule<CommandParserState> BINARY_NUMERAL;
+   private static final NumberRunParseRule<CommandParserState> DECIMAL_NUMERAL;
+   private static final NumberRunParseRule<CommandParserState> HEX_NUMERAL;
+   private static final GreedyPredicateParseRule<CommandParserState> PLAIN_STRING_CHUNK;
+   private static final StringReaderTerms.TerminalCharacters<CommandParserState> NUMBER_LOOKEAHEAD;
    private static final Pattern UNICODE_NAME;
 
    public SnbtGrammar() {
@@ -211,12 +211,12 @@ public class SnbtGrammar {
       return var10000;
    }
 
-   public static <T> Grammar<T> createParser(final DynamicOps<T> ops) {
+   public static <S extends CommandParserState, T> Grammar<CommandParserState, T> createParser(final DynamicOps<T> ops) {
       T trueValue = (T)ops.createBoolean(true);
       T falseValue = (T)ops.createBoolean(false);
       T emptyMapValue = (T)ops.emptyMap();
       T emptyList = (T)ops.emptyList();
-      Dictionary<StringReader> rules = new Dictionary<StringReader>();
+      Dictionary<CommandParserState> rules = new Dictionary<CommandParserState>();
       Atom<Sign> sign = Atom.<Sign>of("sign");
       rules.put(sign, Term.alternative(Term.sequence(StringReaderTerms.character('+'), Term.marker(sign, SnbtGrammar.Sign.PLUS)), Term.sequence(StringReaderTerms.character('-'), Term.marker(sign, SnbtGrammar.Sign.MINUS))), (scope) -> (Sign)scope.getOrThrow(sign));
       Atom<IntegerSuffix> integerSuffix = Atom.<IntegerSuffix>of("integer_suffix");
@@ -228,7 +228,7 @@ public class SnbtGrammar {
       Atom<String> hexNumeral = Atom.<String>of("hex_numeral");
       rules.put(hexNumeral, HEX_NUMERAL);
       Atom<IntegerLiteral> integerLiteral = Atom.<IntegerLiteral>of("integer_literal");
-      NamedRule<StringReader, IntegerLiteral> integerLiteralRule = rules.put(integerLiteral, Term.sequence(Term.optional(rules.named(sign)), Term.alternative(Term.sequence(StringReaderTerms.character('0'), Term.cut(), Term.alternative(Term.sequence(StringReaderTerms.characters('x', 'X'), Term.cut(), rules.named(hexNumeral)), Term.sequence(StringReaderTerms.characters('b', 'B'), rules.named(binaryNumeral)), Term.sequence(rules.named(decimalNumeral), Term.cut(), Term.fail(ERROR_LEADING_ZERO_NOT_ALLOWED)), Term.marker(decimalNumeral, "0"))), rules.named(decimalNumeral)), Term.optional(rules.named(integerSuffix))), (scope) -> {
+      NamedRule<CommandParserState, IntegerLiteral> integerLiteralRule = rules.put(integerLiteral, Term.sequence(Term.optional(rules.named(sign)), Term.alternative(Term.sequence(StringReaderTerms.character('0'), Term.cut(), Term.alternative(Term.sequence(StringReaderTerms.characters('x', 'X'), Term.cut(), rules.named(hexNumeral)), Term.sequence(StringReaderTerms.characters('b', 'B'), rules.named(binaryNumeral)), Term.sequence(rules.named(decimalNumeral), Term.cut(), Term.fail(ERROR_LEADING_ZERO_NOT_ALLOWED)), Term.marker(decimalNumeral, "0"))), rules.named(decimalNumeral)), Term.optional(rules.named(integerSuffix))), (scope) -> {
          IntegerSuffix suffix = (IntegerSuffix)scope.getOrDefault(integerSuffix, SnbtGrammar.IntegerSuffix.EMPTY);
          Sign signValue = (Sign)scope.getOrDefault(sign, SnbtGrammar.Sign.PLUS);
          String decimalContents = (String)scope.get(decimalNumeral);
@@ -304,11 +304,11 @@ public class SnbtGrammar {
       Atom<List<String>> stringChunks = Atom.<List<String>>of("string_chunks");
       Atom<String> stringContents = Atom.<String>of("string_contents");
       Atom<String> singleQuotedStringChunk = Atom.<String>of("single_quoted_string_chunk");
-      NamedRule<StringReader, String> singleQuotedStringChunkRule = rules.put(singleQuotedStringChunk, Term.alternative(rules.namedWithAlias(stringPlainContents, stringContents), Term.sequence(StringReaderTerms.character('\\'), rules.namedWithAlias(stringEscapeSequence, stringContents)), Term.sequence(StringReaderTerms.character('"'), Term.marker(stringContents, "\""))), (scope) -> (String)scope.getOrThrow(stringContents));
+      NamedRule<CommandParserState, String> singleQuotedStringChunkRule = rules.put(singleQuotedStringChunk, Term.alternative(rules.namedWithAlias(stringPlainContents, stringContents), Term.sequence(StringReaderTerms.character('\\'), rules.namedWithAlias(stringEscapeSequence, stringContents)), Term.sequence(StringReaderTerms.character('"'), Term.marker(stringContents, "\""))), (scope) -> (String)scope.getOrThrow(stringContents));
       Atom<String> singleQuotedStringContents = Atom.<String>of("single_quoted_string_contents");
       rules.put(singleQuotedStringContents, Term.repeated(singleQuotedStringChunkRule, stringChunks), (scope) -> joinList((List)scope.getOrThrow(stringChunks)));
       Atom<String> doubleQuotedStringChunk = Atom.<String>of("double_quoted_string_chunk");
-      NamedRule<StringReader, String> doubleQuotedStringChunkRule = rules.put(doubleQuotedStringChunk, Term.alternative(rules.namedWithAlias(stringPlainContents, stringContents), Term.sequence(StringReaderTerms.character('\\'), rules.namedWithAlias(stringEscapeSequence, stringContents)), Term.sequence(StringReaderTerms.character('\''), Term.marker(stringContents, "'"))), (scope) -> (String)scope.getOrThrow(stringContents));
+      NamedRule<CommandParserState, String> doubleQuotedStringChunkRule = rules.put(doubleQuotedStringChunk, Term.alternative(rules.namedWithAlias(stringPlainContents, stringContents), Term.sequence(StringReaderTerms.character('\\'), rules.namedWithAlias(stringEscapeSequence, stringContents)), Term.sequence(StringReaderTerms.character('\''), Term.marker(stringContents, "'"))), (scope) -> (String)scope.getOrThrow(stringContents));
       Atom<String> doubleQuotedStringContents = Atom.<String>of("double_quoted_string_contents");
       rules.put(doubleQuotedStringContents, Term.repeated(doubleQuotedStringChunkRule, stringChunks), (scope) -> joinList((List)scope.getOrThrow(stringChunks)));
       Atom<String> quotedStringLiteral = Atom.<String>of("quoted_string_literal");
@@ -346,7 +346,7 @@ public class SnbtGrammar {
       Atom<String> mapKey = Atom.<String>of("map_key");
       rules.put(mapKey, Term.alternative(rules.named(quotedStringLiteral), rules.named(unquotedString)), (scope) -> (String)scope.getAnyOrThrow(quotedStringLiteral, unquotedString));
       Atom<Map.Entry<String, T>> mapEntry = Atom.<Map.Entry<String, T>>of("map_entry");
-      NamedRule<StringReader, Map.Entry<String, T>> mapEntryRule = rules.putComplex(mapEntry, Term.sequence(rules.named(mapKey), StringReaderTerms.character(':'), rules.named(literal)), (state) -> {
+      NamedRule<CommandParserState, Map.Entry<String, T>> mapEntryRule = rules.putComplex(mapEntry, Term.sequence(rules.named(mapKey), StringReaderTerms.character(':'), rules.named(literal)), (state) -> {
          Scope scope = state.scope();
          String key = (String)scope.getOrThrow(mapKey);
          if (key.isEmpty()) {
@@ -392,7 +392,7 @@ public class SnbtGrammar {
             return entries.isEmpty() ? emptyList : ops.createList(entries.stream());
          }
       });
-      NamedRule<StringReader, T> literalRule = rules.putComplex(literal, Term.alternative(Term.sequence(Term.positiveLookahead(NUMBER_LOOKEAHEAD), Term.alternative(rules.namedWithAlias(floatLiteral, literal), rules.named(integerLiteral))), Term.sequence(Term.positiveLookahead(StringReaderTerms.characters('"', '\'')), Term.cut(), rules.named(quotedStringLiteral)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('{')), Term.cut(), rules.namedWithAlias(mapLiteral, literal)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('[')), Term.cut(), rules.namedWithAlias(listLiteral, literal)), rules.namedWithAlias(unquotedStringOrBuiltIn, literal)), (state) -> {
+      NamedRule<CommandParserState, T> literalRule = rules.putComplex(literal, Term.alternative(Term.sequence(Term.positiveLookahead(NUMBER_LOOKEAHEAD), Term.alternative(rules.namedWithAlias(floatLiteral, literal), rules.named(integerLiteral))), Term.sequence(Term.positiveLookahead(StringReaderTerms.characters('"', '\'')), Term.cut(), rules.named(quotedStringLiteral)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('{')), Term.cut(), rules.namedWithAlias(mapLiteral, literal)), Term.sequence(Term.positiveLookahead(StringReaderTerms.character('[')), Term.cut(), rules.namedWithAlias(listLiteral, literal)), rules.namedWithAlias(unquotedStringOrBuiltIn, literal)), (state) -> {
          Scope scope = state.scope();
          String quotedString = (String)scope.get(quotedStringLiteral);
          if (quotedString != null) {
@@ -402,11 +402,11 @@ public class SnbtGrammar {
             return integer != null ? integer.create(ops, state) : scope.getOrThrow(literal);
          }
       });
-      return new Grammar<T>(rules, literalRule);
+      return new Grammar<CommandParserState, T>(rules, literalRule);
    }
 
    static {
-      BINARY_NUMERAL = new NumberRunParseRule(ERROR_EXPECTED_BINARY_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
+      BINARY_NUMERAL = new NumberRunParseRule<CommandParserState>(ERROR_EXPECTED_BINARY_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
          protected boolean isAccepted(final char c) {
             boolean var10000;
             switch (c) {
@@ -422,7 +422,7 @@ public class SnbtGrammar {
             return var10000;
          }
       };
-      DECIMAL_NUMERAL = new NumberRunParseRule(ERROR_EXPECTED_DECIMAL_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
+      DECIMAL_NUMERAL = new NumberRunParseRule<CommandParserState>(ERROR_EXPECTED_DECIMAL_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
          protected boolean isAccepted(final char c) {
             boolean var10000;
             switch (c) {
@@ -446,7 +446,7 @@ public class SnbtGrammar {
             return var10000;
          }
       };
-      HEX_NUMERAL = new NumberRunParseRule(ERROR_EXPECTED_HEX_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
+      HEX_NUMERAL = new NumberRunParseRule<CommandParserState>(ERROR_EXPECTED_HEX_NUMERAL, ERROR_UNDESCORE_NOT_ALLOWED) {
          protected boolean isAccepted(final char c) {
             boolean var10000;
             switch (c) {
@@ -514,7 +514,7 @@ public class SnbtGrammar {
             return var10000;
          }
       };
-      PLAIN_STRING_CHUNK = new GreedyPredicateParseRule(1, ERROR_INVALID_STRING_CONTENTS) {
+      PLAIN_STRING_CHUNK = new GreedyPredicateParseRule<CommandParserState>(1, ERROR_INVALID_STRING_CONTENTS) {
          protected boolean isAccepted(final char c) {
             boolean var10000;
             switch (c) {
@@ -530,7 +530,7 @@ public class SnbtGrammar {
             return var10000;
          }
       };
-      NUMBER_LOOKEAHEAD = new StringReaderTerms.TerminalCharacters(CharList.of()) {
+      NUMBER_LOOKEAHEAD = new StringReaderTerms.TerminalCharacters<CommandParserState>(CharList.of()) {
          protected boolean isAccepted(final char c) {
             return SnbtGrammar.canStartNumber(c);
          }
@@ -715,7 +715,7 @@ public class SnbtGrammar {
       }
    }
 
-   private static class SimpleHexLiteralParseRule extends GreedyPredicateParseRule {
+   private static class SimpleHexLiteralParseRule extends GreedyPredicateParseRule<CommandParserState> {
       public SimpleHexLiteralParseRule(final int size) {
          super(size, size, DelayedException.create(SnbtGrammar.ERROR_EXPECTED_HEX_ESCAPE, String.valueOf(size)));
       }

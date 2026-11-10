@@ -10,6 +10,7 @@ import java.util.Objects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ValidationWrapper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.commands.ArgProvider;
 import net.minecraft.server.commands.CommandResponseTracker;
@@ -30,7 +31,7 @@ public record EntityItemAccessor(Collection<? extends Entity> entities) implemen
       super();
    }
 
-   public SlotCollection getSlots(final CommandSourceStack source, final SlotSource slotSource) {
+   public SlotCollection getSlots(final CommandSourceStack source, final ValidationWrapper<SlotSource> slotSource) throws CommandSyntaxException {
       List<SlotCollection> slotCollections = new ArrayList();
 
       for(Entity entity : this.entities) {
@@ -41,7 +42,7 @@ public record EntityItemAccessor(Collection<? extends Entity> entities) implemen
       return SlotCollection.concat(slotCollections);
    }
 
-   public void setItems(final CommandSourceStack source, final SlotSource slotSource, final ItemAccessor.SetterFunction<Entity> function) {
+   public void setItems(final CommandSourceStack source, final ValidationWrapper<SlotSource> slotSource, final ItemAccessor.SetterFunction<Entity> function) throws CommandSyntaxException {
       for(Entity entity : this.entities) {
          SlotCollection targetSlots = ItemCommands.getSlotsFromProvider(source, entity, slotSource);
          int updatedSlots = function.apply(entity, targetSlots);

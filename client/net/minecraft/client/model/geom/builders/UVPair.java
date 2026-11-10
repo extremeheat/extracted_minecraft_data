@@ -10,17 +10,17 @@ public record UVPair(float u, float v) {
    }
 
    public static long pack(final float u, final float v) {
-      long high = (long)Float.floatToIntBits(u) & 4294967295L;
-      long low = (long)Float.floatToIntBits(v) & 4294967295L;
+      long high = (long)Float.floatToIntBits(v) & 4294967295L;
+      long low = (long)Float.floatToIntBits(u) & 4294967295L;
       return high << 32 | low;
    }
 
-   public static float unpackU(final long packedUV) {
+   public static float unpackV(final long packedUV) {
       int bits = (int)(packedUV >> 32);
       return Float.intBitsToFloat(bits);
    }
 
-   public static float unpackV(final long packedUV) {
+   public static float unpackU(final long packedUV) {
       return Float.intBitsToFloat((int)packedUV);
    }
 }

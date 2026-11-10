@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -318,13 +319,13 @@ public class EntityType<T extends Entity> implements EntityTypeTest<Entity, T>, 
 
    public static @Nullable Entity loadEntityRecursive(final CompoundTag tag, final Level level, final EntitySpawnRequest request, final EntityProcessor postLoad) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-         return loadEntityRecursive(TagValueInput.create(reporter, level.registryAccess(), tag), level, request, postLoad);
+         return loadEntityRecursive(TagValueInput.create(reporter, (HolderGetter.Provider)level.registryAccess(), tag), level, request, postLoad);
       }
    }
 
    public static @Nullable Entity loadEntityRecursive(final EntityType<?> type, final CompoundTag tag, final Level level, final EntitySpawnReason reason, final EntityProcessor postLoad) {
       try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(LOGGER)) {
-         return loadEntityRecursive(type, TagValueInput.create(reporter, level.registryAccess(), tag), level, reason, postLoad);
+         return loadEntityRecursive(type, TagValueInput.create(reporter, (HolderGetter.Provider)level.registryAccess(), tag), level, reason, postLoad);
       }
    }
 

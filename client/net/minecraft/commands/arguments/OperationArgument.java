@@ -7,29 +7,34 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.suggestions.SuggestionContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.scores.ScoreAccess;
 
-public class OperationArgument implements ArgumentType<Operation> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("=", ">", "<");
-   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(Component.translatable("arguments.operation.invalid"));
-   private static final SimpleCommandExceptionType ERROR_DIVIDE_BY_ZERO = new SimpleCommandExceptionType(Component.translatable("arguments.operation.div0"));
+public class OperationArgument implements SerializableArgument.ContextFree<Operation> {
+   private static final OperationArgument INSTANCE = new OperationArgument();
+   public static final SerializableArgument.Type<OperationArgument> TYPE;
+   private static final List<String> VALUES;
+   private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION;
+   private static final SimpleCommandExceptionType ERROR_DIVIDE_BY_ZERO;
 
-   public OperationArgument() {
+   private OperationArgument() {
       super();
    }
 
-   public static OperationArgument operation() {
-      return new OperationArgument();
+   public SerializableArgument.Type<OperationArgument> type() {
+      return TYPE;
    }
 
-   public static Operation getOperation(final CommandContext<CommandSourceStack> context, final String name) {
+   public static ArgumentType<Operation> operation() {
+      return INSTANCE.toBrigadier();
+   }
+
+   public static Operation getOperation(final CommandContext<?> context, final String name) {
       return (Operation)context.getArgument(name, Operation.class);
    }
 
@@ -47,12 +52,12 @@ public class OperationArgument implements ArgumentType<Operation> {
       }
    }
 
-   public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-      return SharedSuggestionProvider.suggest(new String[]{"=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><"}, builder);
+   public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
+      return SuggestionContext.suggest(VALUES, builder);
    }
 
    public Collection<String> getExamples() {
-      return EXAMPLES;
+      return VALUES;
    }
 
    private static Operation getOperation(final String op) throws CommandSyntaxException {
@@ -90,6 +95,13 @@ public class OperationArgument implements ArgumentType<Operation> {
       }
 
       return var10000;
+   }
+
+   static {
+      TYPE = SerializableArgument.<OperationArgument>singletonType(INSTANCE);
+      VALUES = List.of("=", "+=", "-=", "*=", "/=", "%=", "<", ">", "><");
+      ERROR_INVALID_OPERATION = new SimpleCommandExceptionType(Component.translatable("arguments.operation.invalid"));
+      ERROR_DIVIDE_BY_ZERO = new SimpleCommandExceptionType(Component.translatable("arguments.operation.div0"));
    }
 
    @FunctionalInterface

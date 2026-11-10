@@ -42,8 +42,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
       return MAP_CODEC;
    }
 
-   public void validate(final ValidationContext context) {
-      super.validate(context);
+   public void validateCustom(final ValidationContext context) {
       Validatable.validate(context, "source", this.source);
    }
 

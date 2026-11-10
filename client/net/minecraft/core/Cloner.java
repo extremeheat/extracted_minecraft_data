@@ -16,7 +16,7 @@ public class Cloner<T> {
       this.directCodec = directCodec;
    }
 
-   public T clone(final T value, final HolderLookup.Provider from, final HolderLookup.Provider to) {
+   public T clone(final T value, final HolderGetter.Provider from, final HolderGetter.Provider to) {
       DynamicOps<Object> sourceOps = from.<Object>createSerializationContext(JavaOps.INSTANCE);
       DynamicOps<Object> targetOps = to.<Object>createSerializationContext(JavaOps.INSTANCE);
       Object serialized = this.directCodec.encodeStart(sourceOps, value).getOrThrow((error) -> new IllegalStateException("Failed to encode: " + error));

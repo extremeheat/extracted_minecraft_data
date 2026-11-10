@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.SectionTracker;
@@ -47,7 +47,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    private final DistanceTracker distanceTracker = new DistanceTracker();
    private final LongSet loadedChunks = new LongOpenHashSet();
 
-   public PoiManager(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean sync, final RegistryAccess registryAccess, final ServerLevel level) {
+   public PoiManager(final RegionStorageInfo info, final Path folder, final DataFixer fixerUpper, final boolean sync, final HolderGetter.Provider registryAccess, final ServerLevel level) {
       super(new SimpleRegionStorage(info, folder, fixerUpper, sync, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, registryAccess, level.getServer(), level);
    }
 

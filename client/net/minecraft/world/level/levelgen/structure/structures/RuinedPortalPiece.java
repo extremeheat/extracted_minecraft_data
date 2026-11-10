@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -55,7 +55,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    private final VerticalPlacement verticalPlacement;
    private final Properties properties;
 
-   public RuinedPortalPiece(final HolderLookup.Provider registries, final StructureTemplateManager structureTemplateManager, final BlockPos templatePosition, final VerticalPlacement verticalPlacement, final Properties properties, final Identifier templateLocation, final StructureTemplate template, final Rotation rotation, final Mirror mirror, final BlockPos pivot) {
+   public RuinedPortalPiece(final HolderGetter.Provider registries, final StructureTemplateManager structureTemplateManager, final BlockPos templatePosition, final VerticalPlacement verticalPlacement, final Properties properties, final Identifier templateLocation, final StructureTemplate template, final Rotation rotation, final Mirror mirror, final BlockPos pivot) {
       super(StructurePieceType.RUINED_PORTAL, 0, structureTemplateManager, templateLocation, templateLocation.toString(), makeSettings(registries, mirror, rotation, verticalPlacement, pivot, properties), templatePosition);
       this.verticalPlacement = verticalPlacement;
       this.properties = properties;
@@ -75,14 +75,14 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       tag.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
-   private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
+   private static StructurePlaceSettings makeSettings(final HolderGetter.Provider registries, final StructureTemplateManager structureTemplateManager, final CompoundTag tag, final Identifier location) {
       StructureTemplate template = structureTemplateManager.getOrEmpty(location);
       BlockPos pivot = new BlockPos(template.getSize().getX() / 2, 0, template.getSize().getZ() / 2);
       return makeSettings(registries, (Mirror)tag.read("Mirror", Mirror.LEGACY_CODEC).orElseThrow(), (Rotation)tag.read("Rotation", Rotation.LEGACY_CODEC).orElseThrow(), (VerticalPlacement)tag.read("VerticalPlacement", RuinedPortalPiece.VerticalPlacement.CODEC).orElseThrow(), pivot, (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, tag.get("Properties"))).getPartialOrThrow());
    }
 
-   private static StructurePlaceSettings makeSettings(final HolderLookup.Provider registries, final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
-      HolderLookup.RegistryLookup<Block> blocks = registries.lookupOrThrow(Registries.BLOCK);
+   private static StructurePlaceSettings makeSettings(final HolderGetter.Provider registries, final Mirror mirror, final Rotation rotation, final VerticalPlacement verticalPlacement, final BlockPos pivot, final Properties properties) {
+      HolderGetter<Block> blocks = registries.<Block>lookupOrThrow(Registries.BLOCK);
       BlockIgnoreProcessor ignoreProcessor = properties.airPocket ? BlockIgnoreProcessor.STRUCTURE_BLOCK : BlockIgnoreProcessor.STRUCTURE_AND_AIR;
       List<ProcessorRule> rules = new ArrayList();
       rules.add(getBlockReplaceRule(Blocks.GOLD_BLOCK, 0.3F, Blocks.AIR));

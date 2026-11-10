@@ -6,7 +6,7 @@ import java.util.Objects;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -191,7 +191,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   public CompoundTag getUpdateTag(final HolderLookup.Provider registries) {
+   public CompoundTag getUpdateTag(final HolderGetter.Provider registries) {
       CompoundTag tag = super.getUpdateTag(registries);
       tag.storeNullable("hit_direction", Direction.LEGACY_ID_CODEC, this.hitDirection);
       if (!this.item.isEmpty()) {

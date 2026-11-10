@@ -1,13 +1,13 @@
 package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandPermissionLevels;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.IntegerArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -33,8 +33,8 @@ public class RaidCommand {
       super();
    }
 
-   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext context) {
-      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(Commands.LEVEL_ADMINS))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgumentType.integer(0)).executes((c) -> start((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "omenlvl")))))).then(Commands.literal("stop").executes((c) -> stop((CommandSourceStack)c.getSource())))).then(Commands.literal("check").executes((c) -> check((CommandSourceStack)c.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent(context)).executes((c) -> playSound((CommandSourceStack)c.getSource(), ComponentArgument.getResolvedComponent(c, "type")))))).then(Commands.literal("spawnleader").executes((c) -> spawnLeader((CommandSourceStack)c.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgumentType.integer(0)).executes((c) -> setRaidOmenLevel((CommandSourceStack)c.getSource(), IntegerArgumentType.getInteger(c, "level")))))).then(Commands.literal("glow").executes((c) -> glow((CommandSourceStack)c.getSource()))));
+   public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
+      dispatcher.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("raid").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_ADMINS))).then(Commands.literal("start").then(Commands.argument("omenlvl", IntegerArgument.integer(0)).executes((c) -> start((CommandSourceStack)c.getSource(), IntegerArgument.getInteger(c, "omenlvl")))))).then(Commands.literal("stop").executes((c) -> stop((CommandSourceStack)c.getSource())))).then(Commands.literal("check").executes((c) -> check((CommandSourceStack)c.getSource())))).then(Commands.literal("sound").then(Commands.argument("type", ComponentArgument.textComponent()).executes((c) -> playSound((CommandSourceStack)c.getSource(), ComponentArgument.getResolvedComponent(c, "type")))))).then(Commands.literal("spawnleader").executes((c) -> spawnLeader((CommandSourceStack)c.getSource())))).then(Commands.literal("setomen").then(Commands.argument("level", IntegerArgument.integer(0)).executes((c) -> setRaidOmenLevel((CommandSourceStack)c.getSource(), IntegerArgument.getInteger(c, "level")))))).then(Commands.literal("glow").executes((c) -> glow((CommandSourceStack)c.getSource()))));
    }
 
    private static int glow(final CommandSourceStack source) throws CommandSyntaxException {
@@ -74,7 +74,7 @@ public class RaidCommand {
          return 0;
       } else {
          raider.setPatrolLeader(true);
-         raider.setItemSlot(EquipmentSlot.HEAD, Raid.getOminousBannerInstance(source.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+         raider.setItemSlot(EquipmentSlot.HEAD, Raid.getOminousBannerInstance(source.holderGetters().lookupOrThrow(Registries.BANNER_PATTERN)));
          raider.setPos(source.getPosition().x, source.getPosition().y, source.getPosition().z);
          raider.finalizeSpawn(source.getLevel(), source.getLevel().getCurrentDifficultyAt(BlockPos.containing(source.getPosition())), EntitySpawnReason.COMMAND, (SpawnGroupData)null);
          source.getLevel().addFreshEntityWithPassengers(raider);

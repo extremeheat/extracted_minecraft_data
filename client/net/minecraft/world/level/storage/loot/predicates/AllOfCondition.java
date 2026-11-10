@@ -4,8 +4,10 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.util.TriBool;
 import net.minecraft.util.Util;
 import net.minecraft.world.level.storage.loot.LootContext;
+import org.jspecify.annotations.Nullable;
 
 public class AllOfCondition extends CompositeLootItemCondition {
    public static final MapCodec<AllOfCondition> MAP_CODEC = createCodec(AllOfCondition::new);
@@ -24,6 +26,22 @@ public class AllOfCondition extends CompositeLootItemCondition {
 
          return true;
       } : Util.allOf(holdersToLazyPredicates(terms));
+   }
+
+   public @Nullable Boolean constantValue(final LootItemCondition.ConstantConditionEvaluationContext context) {
+      Boolean result = true;
+
+      for(Holder<LootItemCondition> term : this.terms) {
+         LootItemCondition subCondition = term.value();
+         if (!context.push(subCondition)) {
+            return null;
+         }
+
+         result = TriBool.and(result, subCondition.constantValue(context));
+         context.pop(subCondition);
+      }
+
+      return result;
    }
 
    public static AllOfCondition allOf(final HolderSet<LootItemCondition> terms) {

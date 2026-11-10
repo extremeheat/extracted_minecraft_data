@@ -6,9 +6,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record EnchantmentActiveCheck(boolean active) implements LootItemCondition {
+public record EnchantmentActiveCheck(boolean active) implements LootItemCondition, LootItemCondition.ContextUser {
    public static final MapCodec<EnchantmentActiveCheck> MAP_CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(i, EnchantmentActiveCheck::new));
 
    public EnchantmentActiveCheck {
@@ -20,11 +21,14 @@ public record EnchantmentActiveCheck(boolean active) implements LootItemConditio
       return value != null && value == this.active;
    }
 
+   public void validate(final ValidationContext context) {
+   }
+
    public MapCodec<EnchantmentActiveCheck> codec() {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> requiredContextParams() {
       return Set.of(LootContextParams.ENCHANTMENT_ACTIVE);
    }
 

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
@@ -260,7 +261,7 @@ public class ProtoChunk extends ChunkAccess {
 
    public @Nullable CompoundTag getBlockEntityNbtForSaving(final BlockPos blockPos, final HolderLookup.Provider registryAccess) {
       BlockEntity blockEntity = this.getBlockEntity(blockPos);
-      return blockEntity != null ? blockEntity.saveWithFullMetadata(registryAccess) : (CompoundTag)this.pendingBlockEntities.get(blockPos);
+      return blockEntity != null ? blockEntity.saveWithFullMetadata((HolderGetter.Provider)registryAccess) : (CompoundTag)this.pendingBlockEntities.get(blockPos);
    }
 
    public void removeBlockEntity(final BlockPos pos) {

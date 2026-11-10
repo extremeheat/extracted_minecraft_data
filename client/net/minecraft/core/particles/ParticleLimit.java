@@ -1,20 +1,15 @@
 package net.minecraft.core.particles;
 
-public enum ParticleLimit {
-   SPORE_BLOSSOM(1000);
-
+public class ParticleLimit {
+   public static final ParticleLimit SPORE_BLOSSOM = new ParticleLimit(1000);
    private final int limit;
 
-   private ParticleLimit(final int limit) {
+   public ParticleLimit(final int limit) {
+      super();
       this.limit = limit;
    }
 
    public int limit() {
       return this.limit;
-   }
-
-   // $FF: synthetic method
-   private static ParticleLimit[] $values() {
-      return new ParticleLimit[]{SPORE_BLOSSOM};
    }
 }

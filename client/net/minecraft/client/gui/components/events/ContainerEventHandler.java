@@ -42,14 +42,15 @@ public interface ContainerEventHandler extends GuiEventListener {
          return false;
       } else {
          GuiEventListener widget = (GuiEventListener)child.get();
-         if (widget.mouseClicked(event, doubleClick) && widget.shouldTakeFocusAfterInteraction()) {
+         boolean mouseClicked = widget.mouseClicked(event, doubleClick);
+         if (mouseClicked && widget.shouldTakeFocusAfterInteraction()) {
             this.setFocused(widget);
             if (event.isLeftMouse()) {
                this.setDragging(true);
             }
          }
 
-         return true;
+         return mouseClicked;
       }
    }
 

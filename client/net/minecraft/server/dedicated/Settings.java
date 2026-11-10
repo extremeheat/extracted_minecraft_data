@@ -19,7 +19,7 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderGetter;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -229,7 +229,7 @@ public abstract class Settings<T extends Settings<T>> {
       return result;
    }
 
-   protected abstract T reload(final RegistryAccess registryAccess, final Properties properties);
+   protected abstract T reload(HolderGetter.Provider registryAccess, Properties properties);
 
    public class MutableValue<V> implements Supplier<V> {
       private final String key;
@@ -248,7 +248,7 @@ public abstract class Settings<T extends Settings<T>> {
          return this.value;
       }
 
-      public T update(final RegistryAccess registryAccess, final V value) {
+      public T update(final HolderGetter.Provider registryAccess, final V value) {
          Properties properties = Settings.this.cloneProperties();
          properties.put(this.key, this.serializer.apply(value));
          return (T)Settings.this.reload(registryAccess, properties);

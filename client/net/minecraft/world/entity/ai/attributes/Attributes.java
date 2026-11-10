@@ -56,10 +56,6 @@ public class Attributes {
       return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, Identifier.withDefaultNamespace(name), attribute);
    }
 
-   public static Holder<Attribute> bootstrap(final Registry<Attribute> registry) {
-      return MAX_HEALTH;
-   }
-
    static {
       BURNING_TIME = register("burning_time", (new RangedAttribute("attribute.name.burning_time", 1.0, 0.0, 1024.0)).setSyncable(true).setSentiment(Attribute.Sentiment.NEGATIVE));
       CAMERA_DISTANCE = register("camera_distance", (new RangedAttribute("attribute.name.camera_distance", 4.0, 0.0, 32.0)).setSyncable(true));

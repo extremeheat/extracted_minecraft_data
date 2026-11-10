@@ -10,9 +10,10 @@ import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootContextArg;
+import net.minecraft.world.level.storage.loot.LootContextUser;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public class RangeSlotSource implements SlotSource {
+public class RangeSlotSource implements SlotSource, LootContextUser {
    private static final LootContextArg<Object> CONTAINER_ARG;
    private static final Codec<LootContextArg<Object>> SOURCE_CODEC;
    public static final MapCodec<RangeSlotSource> MAP_CODEC;
@@ -29,7 +30,7 @@ public class RangeSlotSource implements SlotSource {
       return MAP_CODEC;
    }
 
-   public Set<ContextKey<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getRequiredParams() {
       return Set.of(this.source.contextParam());
    }
 

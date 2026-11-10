@@ -54,8 +54,10 @@ public interface DispatcherProvider<Value extends Validatable> extends Validatab
       }
 
       public void validate(final ValidationContext context) {
-         Validatable.validateHolder(context, "condition", this.condition);
-         Validatable.validateHolder(context, "value", this.value);
+         if (Validatable.validateIfConditionCanPass(context, "condition", this.condition)) {
+            Validatable.validateHolder(context, "value", this.value);
+         }
+
       }
    }
 

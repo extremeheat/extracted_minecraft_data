@@ -12,6 +12,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,21 +26,21 @@ public class LootContextSources {
       super();
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> decorate(final ArgumentBuilder<CommandSourceStack, ?> node, final NodeVisitor nodeVisitor, final ContextDecorator decorator) {
+   private static ArgumentBuilder<CommandSourceStack, ?> decorate(final ArgumentBuilder<CommandSourceStack, ?> node, final NodeVisitor nodeVisitor, final ContextKeySet contextKeySet, final ContextDecorator decorator) {
       Objects.requireNonNull(node);
-      nodeVisitor.visit(decorator, node::then);
+      nodeVisitor.visit(decorator, contextKeySet, node::then);
       return node;
    }
 
    public static <T extends ArgumentBuilder<CommandSourceStack, T>> T addContextSources(final T node, final NodeVisitor factory) {
-      return (T)node.then(decorate(Commands.literal("default"), factory, (var0, params) -> params.create(LootContextParamSets.COMMAND_COMPUTE_DEFAULT))).then(Commands.literal("block").then(decorate(Commands.argument("computePos", BlockPosArgument.blockPos()), factory, (context, params) -> {
+      return (T)node.then(decorate(Commands.literal("default"), factory, LootContextParamSets.COMMAND_COMPUTE_DEFAULT, (var0, params) -> params.create(LootContextParamSets.COMMAND_COMPUTE_DEFAULT))).then(Commands.literal("block").then(decorate(Commands.argument("computePos", BlockPosArgument.blockPos()), factory, LootContextParamSets.COMMAND_COMPUTE_POSITION, (context, params) -> {
          BlockPos pos = BlockPosArgument.getLoadedBlockPos(context, "computePos");
          CommandSourceStack source = (CommandSourceStack)context.getSource();
          ServerLevel level = source.getLevel();
          BlockState blockState = level.getBlockState(pos);
          BlockEntity blockEntity = level.getBlockEntity(pos);
          return params.withParameter(LootContextParams.BLOCK_STATE, blockState).withOptionalParameter(LootContextParams.BLOCK_ENTITY, blockEntity).create(LootContextParamSets.COMMAND_COMPUTE_POSITION);
-      }))).then(Commands.literal("entity").then(decorate(Commands.argument("computeTarget", EntityArgument.entity()), factory, (context, params) -> {
+      }))).then(Commands.literal("entity").then(decorate(Commands.argument("computeTarget", EntityArgument.entity()), factory, LootContextParamSets.COMMAND_COMPUTE_ENTITY, (context, params) -> {
          Entity target = EntityArgument.getEntity(context, "computeTarget");
          return params.withParameter(LootContextParams.TARGET_ENTITY, target).create(LootContextParamSets.COMMAND_COMPUTE_ENTITY);
       })));
@@ -64,6 +65,6 @@ public class LootContextSources {
 
    @FunctionalInterface
    public interface NodeVisitor {
-      void visit(ContextDecorator contextDecorator, Consumer<ArgumentBuilder<CommandSourceStack, ?>> output);
+      void visit(ContextDecorator contextDecorator, ContextKeySet contextKeySet, Consumer<ArgumentBuilder<CommandSourceStack, ?>> output);
    }
 }

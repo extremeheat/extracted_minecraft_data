@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -21,7 +22,7 @@ import net.minecraft.util.thread.ParallelMapTransform;
 
 public class ResourceManagerRegistryLoadTask<T> extends RegistryLoadTask<T> {
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize((Function)((knownPack) -> {
-      Lifecycle lifecycle = (Lifecycle)knownPack.map(KnownPack::isVanilla).map((info) -> Lifecycle.stable()).orElse(Lifecycle.experimental());
+      Lifecycle lifecycle = (Lifecycle)knownPack.map(KnownPack::isVanilla).map((var0) -> Lifecycle.stable()).orElse(Lifecycle.experimental());
       return new RegistrationInfo(knownPack, lifecycle);
    }));
    private final ResourceManager resourceManager;
@@ -31,10 +32,10 @@ public class ResourceManagerRegistryLoadTask<T> extends RegistryLoadTask<T> {
       this.resourceManager = resourceManager;
    }
 
-   public CompletableFuture<?> load(final RegistryOps.RegistryInfoLookup context, final Executor executor) {
+   public CompletableFuture<?> load(final HolderGetter.Provider context, final Executor executor) {
       FileToIdConverter lister = FileToIdConverter.registry(this.registryKey());
       return CompletableFuture.supplyAsync(() -> lister.listMatchingResources(this.resourceManager), executor).thenCompose((registryResources) -> {
-         RegistryOps<JsonElement> ops = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)context);
+         RegistryOps<JsonElement> ops = context.<JsonElement>createSerializationContext(JsonOps.INSTANCE);
          return ParallelMapTransform.schedule(registryResources, (resourceId, thunk) -> {
             ResourceKey<T> elementKey = ResourceKey.create(this.registryKey(), lister.fileToId(resourceId));
             RegistrationInfo registrationInfo = (RegistrationInfo)REGISTRATION_INFO_CACHE.apply(thunk.knownPackInfo());

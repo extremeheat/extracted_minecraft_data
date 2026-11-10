@@ -91,11 +91,13 @@ public class LootPool implements Validatable {
    }
 
    public void validate(final ValidationContext output) {
-      Validatable.validateHolder(output, "condition", this.condition);
-      Validatable.validateHolder(output, "modifier", this.modifier);
-      Validatable.validate(output, "entries", this.entries);
-      Validatable.validateHolder(output, "rolls", this.rolls);
-      Validatable.validateHolder(output, "bonus_rolls", this.bonusRolls);
+      if (Validatable.validateIfConditionCanPass(output, "condition", this.condition)) {
+         Validatable.validateHolder(output, "modifier", this.modifier);
+         Validatable.validate(output, "entries", this.entries);
+         Validatable.validateHolder(output, "rolls", this.rolls);
+         Validatable.validateHolder(output, "bonus_rolls", this.bonusRolls);
+      }
+
    }
 
    public static Builder lootPool() {

@@ -42,7 +42,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       LinearLayout header = (LinearLayout)this.layout.addToHeader(LinearLayout.vertical().spacing(4));
       header.defaultCellSetting().alignHorizontallyCenter();
       header.addChild(new StringWidget(this.title, this.font));
-      this.search = (EditBox)header.addChild(new EditBox(this.font, 0, 0, 200, 15, Component.empty()));
+      this.search = (EditBox)header.addChild(new EditBox(this.font, 0, 0, 200, 15, SEARCH_HINT));
       this.search.setHint(SEARCH_HINT);
       this.search.setResponder((string) -> {
          if (this.languageSelectionList != null) {
@@ -127,7 +127,17 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       private void filterEntries(final String filter) {
          SortedMap<String, LanguageInfo> languages = LanguageSelectScreen.this.languageManager.getLanguages();
          List<Entry> filteredEntries = languages.entrySet().stream().filter((entry) -> filter.isEmpty() || ((LanguageInfo)entry.getValue()).name().toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT)) || ((LanguageInfo)entry.getValue()).region().toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT))).map((entry) -> new Entry((String)entry.getKey(), (LanguageInfo)entry.getValue())).toList();
+         Entry selected = (Entry)this.getSelected();
          this.replaceEntries(filteredEntries);
+         if (selected != null) {
+            filteredEntries.forEach((entry) -> {
+               if (entry.code.equals(selected.code)) {
+                  this.setSelected(entry);
+               }
+
+            });
+         }
+
          this.refreshScrollAmount();
       }
 
