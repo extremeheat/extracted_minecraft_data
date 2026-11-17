@@ -18,7 +18,7 @@ public class DoubleArgument extends BrigadierWrapperArgument<Double, DoubleArgum
    public static final SerializableArgument.Type<DoubleArgument> TYPE;
    private final MinMaxBounds.Bounds<Double> bounds;
 
-   private DoubleArgument(final MinMaxBounds.Bounds<Double> bounds) {
+   public DoubleArgument(final MinMaxBounds.Bounds<Double> bounds) {
       super(DoubleArgumentType.doubleArg((Double)bounds.min().orElse(MIN), (Double)bounds.max().orElse(MAX)));
       this.bounds = bounds;
    }

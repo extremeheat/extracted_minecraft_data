@@ -1,6 +1,7 @@
 package net.minecraft.world.item;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -14,7 +15,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public class WindChargeItem extends Item implements ProjectileItem {
@@ -30,7 +30,7 @@ public class WindChargeItem extends Item implements ProjectileItem {
          Projectile.spawnProjectileFromRotation((source, l, itemStack) -> new WindCharge(player, level, player.position().x(), player.getEyePosition().y(), player.position().z()), serverLevel, stack, player, 0.0F, 1.5F, 1.0F);
       }
 
-      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), (Holder)SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
       player.awardStat(Stats.ITEM_USED.get(this));
       stack.consume(1, player);
       return InteractionResult.SUCCESS;
@@ -48,9 +48,5 @@ public class WindChargeItem extends Item implements ProjectileItem {
    }
 
    public void shoot(final Projectile projectile, final double xd, final double yd, final double zd, final float pow, final float uncertainty) {
-   }
-
-   public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().positionFunction((source, direction) -> DispenserBlock.getDispensePosition(source, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1051).build();
    }
 }

@@ -5,7 +5,7 @@ import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.core.dispenser.DropItemDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
@@ -215,7 +215,7 @@ public class CrafterBlock extends BaseEntityBlock {
       if (!remaining.isEmpty()) {
          Vec3 centerPos = Vec3.atCenterOf(pos);
          Vec3 itemSpawnOffset = centerPos.relative(direction, 0.7);
-         DefaultDispenseItemBehavior.spawnItem(level, remaining, 6, direction, itemSpawnOffset);
+         DropItemDispenseBehavior.spawnItem(level, remaining, 6, direction, itemSpawnOffset);
 
          for(ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(centerPos, 17.0, 17.0, 17.0))) {
             CriteriaTriggers.CRAFTER_RECIPE_CRAFTED.trigger(player, recipe.id(), blockEntity.getItems());

@@ -1,0 +1,72 @@
+package net.minecraft.data;
+
+import java.util.List;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.component.BlockTransformer;
+import net.minecraft.core.dispenser.BrushArmadilloDispenseBehavior;
+import net.minecraft.core.dispenser.ChargeRespawnAnchorDispenseBehavior;
+import net.minecraft.core.dispenser.ConvertToMudDispenseBehavior;
+import net.minecraft.core.dispenser.DispenseBehavior;
+import net.minecraft.core.dispenser.DispenseBehaviorIds;
+import net.minecraft.core.dispenser.DropItemDispenseBehavior;
+import net.minecraft.core.dispenser.EmptyBucketDispenseBehavior;
+import net.minecraft.core.dispenser.EquipChestBehavior;
+import net.minecraft.core.dispenser.EquipDispenseBehavior;
+import net.minecraft.core.dispenser.EquipSulfurCubeDispenseBehavior;
+import net.minecraft.core.dispenser.FillBottleDispenseBehavior;
+import net.minecraft.core.dispenser.FillBucketDispenseBehavior;
+import net.minecraft.core.dispenser.GrowPlantDispenseBehavior;
+import net.minecraft.core.dispenser.IgniteDispenseBehavior;
+import net.minecraft.core.dispenser.InsertIntoContainerDispenseBehavior;
+import net.minecraft.core.dispenser.PlaceArmorStandDispenseBehavior;
+import net.minecraft.core.dispenser.PlaceBlockDispenseBehavior;
+import net.minecraft.core.dispenser.PlaceBoatDispenseBehavior;
+import net.minecraft.core.dispenser.PlaceMinecartDispenseBehavior;
+import net.minecraft.core.dispenser.ShearDispenseBehavior;
+import net.minecraft.core.dispenser.ShootProjectileDispenseBehavior;
+import net.minecraft.core.dispenser.SpawnGolemFromCarvedPumpkinDispenseBehavior;
+import net.minecraft.core.dispenser.SpawnMobDispenseBehavior;
+import net.minecraft.core.dispenser.SpawnTNTDispenseBehavior;
+import net.minecraft.core.dispenser.SpawnWitherFromWitherSkeletonSkullDispenseBehavior;
+import net.minecraft.core.dispenser.TransformBlockDispenseBehavior;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.valueproviders.ConstantFloat;
+import net.minecraft.util.valueproviders.TrapezoidFloat;
+import net.minecraft.util.valueproviders.UniformFloat;
+import net.minecraft.world.item.component.BlockTransformers;
+import net.minecraft.world.phys.Vec3;
+
+public interface DispenseBehaviors {
+   static void bootstrap(final BootstrapContext<List<DispenseBehavior>> context) {
+      HolderGetter<BlockTransformer> blockTransformers = context.lookup(Registries.BLOCK_TRANSFORMER);
+      context.register(DispenseBehaviorIds.ARMOR_STAND, List.of(PlaceArmorStandDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.BOAT, List.of(PlaceBoatDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.BONE_MEAL, List.of(GrowPlantDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.BRUSH, List.of(BrushArmadilloDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.CARVED_PUMPKIN, List.of(SpawnGolemFromCarvedPumpkinDispenseBehavior.INSTANCE, EquipDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.CHEST, List.of(EquipChestBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.DEFAULT, List.of(EquipSulfurCubeDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.DEFAULT_PROJECTILE, List.of(ShootProjectileDispenseBehavior.DEFAULT));
+      context.register(DispenseBehaviorIds.DROPPER, List.of(InsertIntoContainerDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.EMPTY_BUCKET, List.of(FillBucketDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.EQUIPMENT, List.of(EquipDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.FILLED_BUCKET, List.of(EmptyBucketDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.FIRE_CHARGE, List.of(ShootProjectileDispenseBehavior.builder().position(Vec3.ZERO, 1.0).uncertainty(6.6666665F).power(1.0F).sound(new ShootProjectileDispenseBehavior.DispenseSound(SoundEvents.BLAZE_SHOOT, ConstantFloat.of(2.0F), TrapezoidFloat.of(0.8F, 1.2F, 0.0F))).build()));
+      context.register(DispenseBehaviorIds.FIREWORK_ROCKET, List.of(ShootProjectileDispenseBehavior.builder().positionJustOutside().uncertainty(1.0F).power(0.5F).sound(new ShootProjectileDispenseBehavior.DispenseSound(SoundEvents.FIREWORK_ROCKET_SHOOT, 1.0F, 1.2F)).build()));
+      context.register(DispenseBehaviorIds.FLINT_AND_STEEL, List.of(IgniteDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.GLASS_BOTTLE, List.of(FillBottleDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.GLOWSTONE, List.of(ChargeRespawnAnchorDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.HONEYCOMB, List.of(new TransformBlockDispenseBehavior(blockTransformers.getOrThrow(BlockTransformers.HONEYCOMB)), DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.MINECART, List.of(PlaceMinecartDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.POTION, List.of(ConvertToMudDispenseBehavior.INSTANCE, DropItemDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.SHEARS, List.of(ShearDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.SHULKER_BOX, List.of(PlaceBlockDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.SPAWN_EGG, List.of(SpawnMobDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.THROWN_POTION, List.of(ShootProjectileDispenseBehavior.builder().uncertainty(3.0F).power(1.375F).build()));
+      context.register(DispenseBehaviorIds.TNT, List.of(EquipSulfurCubeDispenseBehavior.INSTANCE, SpawnTNTDispenseBehavior.INSTANCE));
+      context.register(DispenseBehaviorIds.WIND_CHARGE, List.of(ShootProjectileDispenseBehavior.builder().position(Vec3.ZERO, 1.0).uncertainty(6.6666665F).power(1.0F).sound(new ShootProjectileDispenseBehavior.DispenseSound(SoundEvents.WIND_CHARGE_THROW, ConstantFloat.of(0.5F), UniformFloat.of(0.33333334F, 0.5F))).build()));
+      context.register(DispenseBehaviorIds.WITHER_SKELETON_SKULL, List.of(SpawnWitherFromWitherSkeletonSkullDispenseBehavior.INSTANCE, EquipDispenseBehavior.INSTANCE));
+   }
+}

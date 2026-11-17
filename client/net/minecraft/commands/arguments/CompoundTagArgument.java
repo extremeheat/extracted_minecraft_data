@@ -10,7 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 
 public class CompoundTagArgument implements SerializableArgument.ContextFree<CompoundTag> {
-   private static final CompoundTagArgument INSTANCE = new CompoundTagArgument();
+   public static final CompoundTagArgument INSTANCE = new CompoundTagArgument();
    public static final SerializableArgument.Type<CompoundTagArgument> TYPE;
    private static final Collection<String> EXAMPLES;
 
@@ -40,6 +40,6 @@ public class CompoundTagArgument implements SerializableArgument.ContextFree<Com
 
    static {
       TYPE = SerializableArgument.<CompoundTagArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("{}", "{foo=bar}");
+      EXAMPLES = List.of("{}", "{foo:bar}");
    }
 }

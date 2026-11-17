@@ -43,7 +43,7 @@ public class RotationArgument implements SerializableArgument.ContextFree<Coordi
          if (reader.canRead() && reader.peek() == ' ') {
             reader.skip();
             WorldCoordinate x = WorldCoordinate.parseDouble(reader, false);
-            return new WorldCoordinates(x, y, new WorldCoordinate(true, 0.0));
+            return new WorldCoordinates(x, y, WorldCoordinates.UNUSED);
          } else {
             reader.setCursor(start);
             throw ERROR_NOT_COMPLETE.createWithContext(reader);

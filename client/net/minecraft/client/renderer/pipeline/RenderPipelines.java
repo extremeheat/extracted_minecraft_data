@@ -54,6 +54,7 @@ public class RenderPipelines {
    public static final RenderPipeline.Snippet OIT_ACCUMULATE_SNIPPET;
    public static final RenderPipeline.Snippet GLINT_SNIPPET;
    private static final RenderPipeline.Snippet IMPROVED_FOG_SNIPPET;
+   private static final RenderPipeline.Snippet CLOUDS_IN_FOG_SNIPPET;
    private static final RenderPipeline.Snippet OUTLINE_SNIPPET;
    public static final RenderPipeline LEASH;
    public static final RenderPipeline GLINT;
@@ -129,11 +130,12 @@ public class RenderPipelines {
       boolean improvedTransparency = context.options().improvedTransparency;
 
       for(TerrainRenderPipelineVariant variant : TerrainRenderPipelineVariant.values()) {
-         precompiledVariant(dynamicPipelines, variant, (stage) -> terrain(new TerrainParameters(variant, improvedTransparency, context.multidraw(), false, stage)), improvedTransparency);
+         precompiledVariant(dynamicPipelines, variant, (stage) -> terrain(new TerrainParameters(variant, context.options().improvedFog, improvedTransparency, context.multidraw(), false, stage, false)), improvedTransparency);
+         precompiledVariant(dynamicPipelines, variant, (stage) -> terrain(new TerrainParameters(variant, context.options().improvedFog, improvedTransparency, context.multidraw(), false, stage, true)), improvedTransparency);
       }
 
       for(SkyRenderer.SkyElement skyElement : SkyRenderer.SkyElement.values()) {
-         precompiledDynamic(dynamicPipelines, sky(new SkyParameters(skyElement)), improvedTransparency ? RenderPassLayouts.COLOR_ONLY : RenderPassLayouts.COLOR_DEPTH);
+         precompiledDynamic(dynamicPipelines, sky(new SkyParameters(skyElement)), context.options().improvedFog ? RenderPassLayouts.COLOR_ONLY : RenderPassLayouts.COLOR_DEPTH);
       }
 
       for(EntityRenderPipelineVariant variant : EntityRenderPipelineVariant.values()) {
@@ -279,24 +281,37 @@ public class RenderPipelines {
             builder.withShaderDefine("ALPHA_CUTOUT", parameters.variant.alphaCutoutThreshold());
          }
 
-         if (parameters.variant.supportsOit()) {
+         if (parameters.variant.supportsOit() && parameters.checkWaterMask()) {
             builder.withShaderDefine("CHECK_WATER_MASK").withBindGroupLayout(BindGroupLayouts.WATER_MASK_SAMPLER);
          }
 
          String var10000 = parameters.variant.name();
-         String locationPostfix = var10000 + (parameters.improvedFog ? "_improved_fog" : "") + (parameters.multiDraw ? "_multi_draw" : "") + (parameters.wireframe ? "_wireframe" : "");
+         String locationPostfix = var10000 + (parameters.improvedFog ? "_improved_fog" : "") + (parameters.cloudsInFog ? "_with_clouds" : "") + (parameters.multiDraw ? "_multi_draw" : "") + (parameters.wireframe ? "_wireframe" : "");
          return finishDynamicPipeline(builder, "terrain", parameters.variant.supportsOit(), parameters.oitStage, (nonOitBuilder) -> {
             nonOitBuilder.withBindGroupLayout(BindGroupLayouts.SAMPLER2);
+            if (parameters.improvedFog) {
+               nonOitBuilder.withSnippet(IMPROVED_FOG_SNIPPET);
+            }
+
             if (!parameters.wireframe) {
                nonOitBuilder.withColorTargetState(parameters.variant.nonOitColorTargetState());
-               if (parameters.improvedFog) {
-                  builder.withSnippet(IMPROVED_FOG_SNIPPET);
+               if (parameters.cloudsInFog) {
+                  nonOitBuilder.withSnippet(CLOUDS_IN_FOG_SNIPPET);
                }
             } else {
                nonOitBuilder.withPolygonMode(PolygonMode.WIREFRAME).withColorTargetState(ColorTargetState.DEFAULT);
             }
 
-         }, (Consumer)null, (oitAccumulateBuilder) -> oitAccumulateBuilder.withSnippet(IMPROVED_FOG_SNIPPET).withBindGroupLayout(BindGroupLayouts.SAMPLER2), locationPostfix);
+         }, (Consumer)null, (oitAccumulateBuilder) -> {
+            oitAccumulateBuilder.withBindGroupLayout(BindGroupLayouts.SAMPLER2);
+            if (parameters.improvedFog) {
+               oitAccumulateBuilder.withSnippet(IMPROVED_FOG_SNIPPET);
+               if (parameters.cloudsInFog) {
+                  oitAccumulateBuilder.withSnippet(CLOUDS_IN_FOG_SNIPPET);
+               }
+            }
+
+         }, locationPostfix);
       });
    }
 
@@ -539,7 +554,8 @@ public class RenderPipelines {
       OIT_TRANSMITTANCE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.GLOBALS).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ALPHA_ONLY").withShaderDefine("OIT_TRANSMITTANCE").withColorTargetStates(0, 1, () -> new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       OIT_ACCUMULATE_SNIPPET = RenderPipeline.builder(OIT_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.OIT_COEFFS_DEPTH_BOUNDS_SAMPLER).withShaderDefine("OIT_ACCUMULATE").withColorTargetState(new ColorTargetState(Optional.of(BlendFunction.ADDITIVE), 15)).withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false)).buildSnippet();
       GLINT_SNIPPET = RenderPipeline.builder().withShaderDefine("GLINT").withBindGroupLayout(BindGroupLayouts.GLINT_SAMPLER).buildSnippet();
-      IMPROVED_FOG_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.SKY_CLOUDS_SAMPLER).withShaderDefine("IMPROVED_FOG").buildSnippet();
+      IMPROVED_FOG_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.SKY_SAMPLER).withShaderDefine("IMPROVED_FOG").buildSnippet();
+      CLOUDS_IN_FOG_SNIPPET = RenderPipeline.builder().withBindGroupLayout(BindGroupLayouts.CLOUDS_SAMPLER).withShaderDefine("CLOUDS_IN_FOG").buildSnippet();
       OUTLINE_SNIPPET = RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withVertexShader("core/rendertype_outline").withFragmentShader("core/rendertype_outline").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR).withPrimitiveTopology(PrimitiveTopology.QUADS).withColorTargetState(ColorTargetState.DEFAULT).buildSnippet();
       LEASH = precompiled(RenderPipeline.builder(MATRICES_FOG_SNIPPET).withLocation("pipeline/leash").withVertexShader("core/rendertype_leash").withFragmentShader("core/rendertype_leash").withBindGroupLayout(BindGroupLayouts.SAMPLER2).withCull(false).withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_LIGHTMAP).withPrimitiveTopology(PrimitiveTopology.TRIANGLE_STRIP).withColorTargetState(ColorTargetState.DEFAULT).withDepthStencilState(DepthStencilState.DEFAULT).build(), RenderPassLayouts.COLOR_DEPTH);
       GLINT = precompiled(RenderPipeline.builder(GLOBALS_SNIPPET).withBindGroupLayout(BindGroupLayouts.PROJECTION).withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS).withBindGroupLayout(BindGroupLayouts.FOG).withLocation("pipeline/glint").withVertexShader("core/glint").withFragmentShader("core/glint").withBindGroupLayout(BindGroupLayouts.SAMPLER0).withCull(false).withColorTargetState(new ColorTargetState(BlendFunction.GLINT)).withVertexBinding(0, DefaultVertexFormat.POSITION_TEX).withPrimitiveTopology(PrimitiveTopology.QUADS).withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false)).build(), RenderPassLayouts.COLOR_DEPTH);
@@ -569,7 +585,7 @@ public class RenderPipelines {
       }
    }
 
-   public static record TerrainParameters(TerrainRenderPipelineVariant variant, boolean improvedFog, boolean multiDraw, boolean wireframe, @Nullable OitStage oitStage) {
+   public static record TerrainParameters(TerrainRenderPipelineVariant variant, boolean improvedFog, boolean cloudsInFog, boolean multiDraw, boolean wireframe, @Nullable OitStage oitStage, boolean checkWaterMask) {
       public TerrainParameters {
          super();
       }

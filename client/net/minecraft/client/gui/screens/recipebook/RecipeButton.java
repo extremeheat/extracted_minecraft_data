@@ -1,49 +1,67 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.RecipeDisplayId;
+import org.jspecify.annotations.Nullable;
 
-public class RecipeButton extends AbstractWidget {
+public class RecipeButton extends AbstractButton {
    private static final Identifier SLOT_MANY_CRAFTABLE_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_many_craftable");
    private static final Identifier SLOT_CRAFTABLE_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_craftable");
    private static final Identifier SLOT_MANY_UNCRAFTABLE_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_many_uncraftable");
    private static final Identifier SLOT_UNCRAFTABLE_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_uncraftable");
+   private static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_highlight_back");
+   private static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("recipe_book/slot_highlight_front");
    private static final float ANIMATION_TIME = 15.0F;
-   private static final int BACKGROUND_SIZE = 25;
-   private static final Component MORE_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.moreRecipes");
+   public static final int SIZE = 25;
+   private static final Component MORE_RECIPES_TOOLTIP_MOUSE = Component.translatable("gui.recipebook.moreRecipes");
+   private static final Component MORE_RECIPES_TOOLTIP_KEYBOARD = Component.translatable("gui.recipebook.moreRecipes.keyboard");
    private RecipeCollection collection;
    private List<ResolvedEntry> selectedEntries;
    private boolean allRecipesHaveSameResultDisplay;
    private final SlotSelectTime slotSelectTime;
+   private final RecipeBookComponent.RecipePlacer recipePlacer;
+   private final Predicate<RecipeButton> tryOpenOverlay;
    private float animationTime;
 
-   public RecipeButton(final SlotSelectTime slotSelectTime) {
+   public RecipeButton(final SlotSelectTime slotSelectTime, final RecipeBookComponent.RecipePlacer recipePlacer, final Predicate<RecipeButton> tryOpenOverlay) {
       super(0, 0, 25, 25, CommonComponents.EMPTY);
       this.collection = RecipeCollection.EMPTY;
       this.selectedEntries = List.of();
       this.slotSelectTime = slotSelectTime;
+      this.recipePlacer = recipePlacer;
+      this.tryOpenOverlay = tryOpenOverlay;
    }
 
-   public void init(final RecipeCollection collection, final boolean isFiltering, final RecipeBookPage page, final ContextMap resolutionContext) {
+   public void onPress(final InputWithModifiers input) {
+      this.recipePlacer.placeRecipe(this.collection, this.getCurrentRecipe(), input.hasShiftDown());
+   }
+
+   public void update(final RecipeCollection collection, final boolean isFiltering, final RecipeBookPage page, final ContextMap resolutionContext) {
       this.collection = collection;
       List<RecipeDisplayEntry> fittingRecipes = collection.getSelectedRecipes(isFiltering ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
       this.selectedEntries = fittingRecipes.stream().map((entry) -> new ResolvedEntry(entry.id(), entry.resultItems(resolutionContext))).toList();
@@ -82,7 +100,7 @@ public class RecipeButton extends AbstractWidget {
       return this.collection;
    }
 
-   public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+   protected void extractContents(final GuiGraphicsExtractor graphics) {
       Identifier sprite;
       if (this.collection.hasCraftable()) {
          if (this.hasMultipleRecipes()) {
@@ -107,6 +125,10 @@ public class RecipeButton extends AbstractWidget {
       }
 
       graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+      if (this.isHighlighted()) {
+         this.extractHighlight(graphics, SLOT_HIGHLIGHT_BACK_SPRITE);
+      }
+
       ItemStack currentItemStack = this.getDisplayStack();
       int offset = 4;
       if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
@@ -115,10 +137,40 @@ public class RecipeButton extends AbstractWidget {
       }
 
       graphics.fakeItem(currentItemStack, this.getX() + offset, this.getY() + offset);
+      if (this.isHighlighted()) {
+         this.extractHighlight(graphics, SLOT_HIGHLIGHT_FRONT_SPRITE);
+      }
+
       if (shouldAnimate) {
          graphics.pose().popMatrix();
       }
 
+   }
+
+   private void extractHighlight(final GuiGraphicsExtractor graphics, final Identifier sprite) {
+      graphics.blitSprite(GuiPipeline.TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+   }
+
+   protected void extractTooltipForNextRenderPass(final GuiGraphicsExtractor graphics) {
+      this.setTooltip(this.isHighlighted() ? this.createTooltip(this.getDisplayStack(), this.isHovered() ? MORE_RECIPES_TOOLTIP_MOUSE : MORE_RECIPES_TOOLTIP_KEYBOARD) : null);
+      super.extractTooltipForNextRenderPass(graphics);
+   }
+
+   public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
+      return event.isRightMouse() && this.openOverlay() ? true : super.mouseClicked(event, doubleClick);
+   }
+
+   public boolean keyPressed(final KeyEvent event) {
+      return event.hasControlDown() && event.isSelection() ? this.openOverlay() : super.keyPressed(event);
+   }
+
+   private boolean openOverlay() {
+      if (!this.tryOpenOverlay.test(this)) {
+         return false;
+      } else {
+         this.playDownSound(Minecraft.getInstance().getSoundManager());
+         return true;
+      }
    }
 
    private boolean hasMultipleRecipes() {
@@ -135,38 +187,51 @@ public class RecipeButton extends AbstractWidget {
    }
 
    public ItemStack getDisplayStack() {
-      int currentIndex = this.slotSelectTime.currentIndex();
-      int entryCount = this.selectedEntries.size();
-      int offsetIndex = currentIndex / entryCount;
-      int entryIndex = currentIndex - entryCount * offsetIndex;
-      return ((ResolvedEntry)this.selectedEntries.get(entryIndex)).selectItem(offsetIndex);
+      if (this.selectedEntries.isEmpty()) {
+         return ItemStack.EMPTY;
+      } else {
+         int currentIndex = this.slotSelectTime.currentIndex();
+         int entryCount = this.selectedEntries.size();
+         int offsetIndex = currentIndex / entryCount;
+         int entryIndex = currentIndex - entryCount * offsetIndex;
+         return ((ResolvedEntry)this.selectedEntries.get(entryIndex)).selectItem(offsetIndex);
+      }
    }
 
-   public List<Component> getTooltipText(final ItemStack displayStack) {
-      List<Component> texts = new ArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), displayStack));
-      if (this.hasMultipleRecipes()) {
-         texts.add(MORE_RECIPES_TOOLTIP);
-      }
+   private @Nullable Tooltip createTooltip(final ItemStack displayStack, final Component moreRecipesTooltip) {
+      if (displayStack.isEmpty()) {
+         return null;
+      } else {
+         List<Component> itemLines = Screen.getTooltipFromItem(Minecraft.getInstance(), displayStack);
+         Component narration = itemLines.size() > 1 ? CommonComponents.joinLines((Collection)itemLines.subList(1, itemLines.size())) : null;
+         List<Component> texts = new ArrayList(itemLines);
+         if (this.hasMultipleRecipes()) {
+            texts.add(moreRecipesTooltip);
+         }
 
-      return texts;
+         return Tooltip.createForItem(texts, narration, displayStack);
+      }
+   }
+
+   protected MutableComponent createNarrationMessage() {
+      return Component.translatable("narration.recipe", this.getDisplayStack().getHoverName());
    }
 
    public void updateWidgetNarration(final NarrationElementOutput output) {
-      output.add(NarratedElementType.TITLE, (Component)Component.translatable("narration.recipe", this.getDisplayStack().getHoverName()));
-      if (this.hasMultipleRecipes()) {
-         output.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));
-      } else {
-         output.add(NarratedElementType.USAGE, (Component)Component.translatable("narration.button.usage.hovered"));
-      }
+      output.add(NarratedElementType.TITLE, (Component)this.createNarrationMessage());
+      if (this.active) {
+         Component usage = Component.translatable(this.isFocused() ? "narration.button.usage.focused" : "narration.button.usage.hovered");
+         if (this.hasMultipleRecipes()) {
+            output.add(NarratedElementType.USAGE, usage, Component.translatable(this.isFocused() ? "narration.recipe.usage.more.keyboard" : "narration.recipe.usage.more"));
+         } else {
+            output.add(NarratedElementType.USAGE, usage);
+         }
 
+      }
    }
 
    public int getWidth() {
       return 25;
-   }
-
-   protected boolean isValidClickButton(final MouseButtonInfo buttonInfo) {
-      return buttonInfo.isLeftMouse() || buttonInfo.isRightMouse();
    }
 
    private static record ResolvedEntry(RecipeDisplayId id, List<ItemStack> displayItems) {

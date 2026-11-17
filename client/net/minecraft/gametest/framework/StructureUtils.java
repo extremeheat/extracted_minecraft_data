@@ -18,7 +18,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypeIds;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -83,7 +82,7 @@ public class StructureUtils {
       level.getBlockTicks().clearArea(structureBoundingBox);
       level.clearBlockEvents(structureBoundingBox);
       AABB bounds = AABB.of(structureBoundingBox);
-      List<Entity> livingEntities = level.getEntitiesOfClass(Entity.class, bounds, (mob) -> !(mob instanceof Player));
+      List<Entity> livingEntities = level.getEntitiesOfClass(Entity.class, bounds, GameTestHelper::isNonPlayerEntity);
       livingEntities.forEach(Entity::discard);
    }
 

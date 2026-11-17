@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
 public class GameModeArgument implements SerializableArgument.ContextFree<GameType> {
-   private static final GameModeArgument INSTANCE = new GameModeArgument();
+   public static final GameModeArgument INSTANCE = new GameModeArgument();
    public static final SerializableArgument.Type<GameModeArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final GameType[] VALUES;

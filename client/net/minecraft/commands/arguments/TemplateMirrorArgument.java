@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.world.level.block.Mirror;
 
 public class TemplateMirrorArgument extends StringRepresentableArgument<Mirror> {
-   private static final TemplateMirrorArgument INSTANCE = new TemplateMirrorArgument();
+   public static final TemplateMirrorArgument INSTANCE = new TemplateMirrorArgument();
    public static final SerializableArgument.Type<TemplateMirrorArgument> TYPE;
 
    private TemplateMirrorArgument() {

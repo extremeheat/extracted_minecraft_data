@@ -21,11 +21,11 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 import net.minecraft.util.DevUtil;
 import net.minecraft.util.StrictJsonParser;
 import net.minecraft.util.Util;
+import net.minecraft.util.crypto.CryptException;
+import net.minecraft.util.crypto.SigningCryptoUtils;
 import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import org.jspecify.annotations.Nullable;
@@ -139,7 +139,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
       KeyPairResponse keyPair = userApiService.getKeyPair();
       if (keyPair != null) {
          ProfilePublicKey.Data publicKeyData = parsePublicKey(keyPair);
-         return new ProfileKeyPair(Crypt.stringToPemRsaPrivateKey(keyPair.keyPair().privateKey()), new ProfilePublicKey(publicKeyData), Instant.parse(keyPair.refreshedAfter()));
+         return new ProfileKeyPair(SigningCryptoUtils.stringToPemRsaPrivateKey(keyPair.keyPair().privateKey()), new ProfilePublicKey(publicKeyData), Instant.parse(keyPair.refreshedAfter()));
       } else {
          return null;
       }
@@ -150,7 +150,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
       if (keyPair != null && !Strings.isNullOrEmpty(keyPair.publicKey()) && response.publicKeySignature() != null && response.publicKeySignature().array().length != 0) {
          try {
             Instant expiresAt = Instant.parse(response.expiresAt());
-            PublicKey key = Crypt.stringToRsaPublicKey(keyPair.publicKey());
+            PublicKey key = SigningCryptoUtils.stringToRsaPublicKey(keyPair.publicKey());
             ByteBuffer signature = response.publicKeySignature();
             return new ProfilePublicKey.Data(expiresAt, key, signature.array());
          } catch (IllegalArgumentException | DateTimeException e) {

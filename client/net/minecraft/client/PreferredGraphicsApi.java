@@ -4,7 +4,6 @@ import com.mojang.renderpearl.api.device.GpuBackend;
 import com.mojang.renderpearl.backend.opengl.GlBackend;
 import com.mojang.renderpearl.backend.vulkan.VulkanBackend;
 import com.mojang.serialization.Codec;
-import java.util.Random;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
@@ -35,10 +34,15 @@ public enum PreferredGraphicsApi implements StringRepresentable {
       VulkanBackend vulkan = new VulkanBackend();
       GpuBackend[] var10000;
       switch (this.ordinal()) {
-         case 0 -> var10000 = (new Random()).nextBoolean() ? new GpuBackend[]{vulkan, gl} : new GpuBackend[]{gl, vulkan};
-         case 1 -> var10000 = new GpuBackend[]{gl, vulkan};
-         case 2 -> var10000 = new GpuBackend[]{vulkan, gl};
-         default -> throw new MatchException((String)null, (Throwable)null);
+         case 0:
+         case 2:
+            var10000 = new GpuBackend[]{vulkan, gl};
+            break;
+         case 1:
+            var10000 = new GpuBackend[]{gl, vulkan};
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;

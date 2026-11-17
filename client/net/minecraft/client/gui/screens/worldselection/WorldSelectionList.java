@@ -200,6 +200,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
    private void fillLevels(final String filter, final List<LevelSummary> levels) {
       List<Entry> worldEntries = new ArrayList();
       Optional<WorldListEntry> selectedOpt = this.getSelectedOpt();
+      this.clearEntries();
       WorldListEntry entryToSelect = null;
 
       for(LevelSummary level : levels.stream().filter((levelx) -> this.filterAccepts(filter.toLowerCase(Locale.ROOT), levelx)).toList()) {
@@ -211,13 +212,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          worldEntries.add(worldListEntry);
       }
 
-      this.removeEntries(this.children().stream().filter((entry) -> !worldEntries.contains(entry)).toList());
-      worldEntries.forEach((entry) -> {
-         if (!this.children().contains(entry)) {
-            this.addEntry(entry);
-         }
-
-      });
+      worldEntries.forEach((x$0) -> this.addEntry(x$0));
       this.setSelected((Entry)entryToSelect);
       this.notifyListUpdated();
    }
@@ -311,6 +306,9 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       public void close() {
       }
 
+      public void reopen() {
+      }
+
       public @Nullable LevelSummary getLevelSummary() {
          return null;
       }
@@ -340,7 +338,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       private final Minecraft minecraft;
       private final Screen screen;
       private final LevelSummary summary;
-      private final FaviconTexture icon;
+      private FaviconTexture icon;
       private final StringWidget worldNameText;
       private final StringWidget idAndLastPlayedText;
       private final StringWidget infoText;
@@ -692,6 +690,14 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       public void close() {
          if (!this.icon.isClosed()) {
             this.icon.close();
+         }
+
+      }
+
+      public void reopen() {
+         if (this.icon.isClosed()) {
+            this.icon = FaviconTexture.forWorld(this.minecraft.getTextureManager(), this.summary.getLevelId());
+            this.loadIcon();
          }
 
       }

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.TextAlignment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.reporting.DraftIconButton;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.chat.report.Report;
@@ -59,7 +60,7 @@ public class DeathScreen extends Screen {
       if (this.hardcore) {
          this.exitToTitleScreen();
       } else {
-         ConfirmScreen confirm = new TitleConfirmScreen((result) -> {
+         ConfirmScreen confirm = new TitleConfirmScreen(this, (result) -> {
             if (result) {
                this.exitToTitleScreen();
             } else {
@@ -150,12 +151,24 @@ public class DeathScreen extends Screen {
    }
 
    public static class TitleConfirmScreen extends ConfirmScreen {
-      public TitleConfirmScreen(final BooleanConsumer callback, final Component title, final Component message, final Component yesButton, final Component noButton) {
+      private final Screen previousScreen;
+
+      public TitleConfirmScreen(final Screen previousScreen, final BooleanConsumer callback, final Component title, final Component message, final Component yesButton, final Component noButton) {
          super(callback, title, message, yesButton, noButton);
+         this.previousScreen = previousScreen;
       }
 
       public void extractBackground(final GuiGraphicsExtractor graphics) {
          DeathScreen.extractDeathBackground(graphics, this.width, this.height);
+      }
+
+      public boolean keyPressed(final KeyEvent event) {
+         if (this.hasPressedEscape(event)) {
+            this.minecraft.setScreenAndShow(this.previousScreen);
+            return true;
+         } else {
+            return super.keyPressed(event);
+         }
       }
    }
 }

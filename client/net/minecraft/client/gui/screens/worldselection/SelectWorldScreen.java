@@ -157,6 +157,13 @@ public class SelectWorldScreen extends Screen {
       }
    }
 
+   public void added() {
+      if (this.list != null) {
+         this.list.children().forEach(WorldSelectionList.Entry::reopen);
+      }
+
+   }
+
    public void removed() {
       if (this.list != null) {
          this.list.children().forEach(WorldSelectionList.Entry::close);

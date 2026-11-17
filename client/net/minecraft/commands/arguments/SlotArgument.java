@@ -16,7 +16,7 @@ import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
 
 public class SlotArgument implements SerializableArgument.ContextFree<Integer> {
-   private static final SlotArgument INSTANCE = new SlotArgument();
+   public static final SlotArgument INSTANCE = new SlotArgument();
    public static final SerializableArgument.Type<SlotArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_ONLY_SINGLE_SLOT_ALLOWED;

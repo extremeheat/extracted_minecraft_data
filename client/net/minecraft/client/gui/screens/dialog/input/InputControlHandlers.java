@@ -1,18 +1,24 @@
 package net.minecraft.client.gui.screens.dialog.input;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,6 +28,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.dialog.action.Action;
 import net.minecraft.server.dialog.input.BooleanInput;
 import net.minecraft.server.dialog.input.InputControl;
@@ -33,6 +40,8 @@ import org.slf4j.Logger;
 
 public class InputControlHandlers {
    private static final Logger LOGGER = LogUtils.getLogger();
+   @VisibleForTesting
+   public static final Predicate<String> EMAIL_PREDICATE = Pattern.compile("\\S*\\w@\\w\\S*\\.\\S+").asPredicate();
    private static final Map<MapCodec<? extends InputControl>, InputControlHandler<?>> HANDLERS = new HashMap();
 
    public InputControlHandlers() {
@@ -63,6 +72,22 @@ public class InputControlHandlers {
       register(NumberRangeInput.MAP_CODEC, new NumberRangeHandler());
    }
 
+   private static void checkForSignsOfPII(final AbstractWidget widget, final String input) {
+      if (EMAIL_PREDICATE.test(input)) {
+         if (widget instanceof EditBox) {
+            EditBox editBox = (EditBox)widget;
+            editBox.setTextColor(-65536);
+         } else if (widget instanceof MultiLineEditBox) {
+            MultiLineEditBox editBox = (MultiLineEditBox)widget;
+            editBox.setTextColor(-65536);
+         }
+
+         MutableComponent tooltip = Component.translatable("menu.custom_screen_info.input.tooltip").withStyle(ChatFormatting.RED);
+         widget.setTooltip(Tooltip.create(tooltip));
+      }
+
+   }
+
    private static class TextInputHandler implements InputControlHandler<TextInput> {
       private TextInputHandler() {
          super();
@@ -88,6 +113,7 @@ public class InputControlHandlers {
             control = editBox;
             Objects.requireNonNull(editBox);
             getter = editBox::getValue;
+            editBox.setValueListener((text) -> InputControlHandlers.checkForSignsOfPII(editBox, text));
          } else {
             EditBox editBox = new EditBox(font, input.width(), 20, input.label());
             editBox.setMaxLength(input.maxLength());
@@ -95,6 +121,7 @@ public class InputControlHandlers {
             control = editBox;
             Objects.requireNonNull(editBox);
             getter = editBox::getValue;
+            editBox.setResponder((text) -> InputControlHandlers.checkForSignsOfPII(editBox, text));
          }
 
          LayoutElement wrappedControl = (LayoutElement)(input.labelVisible() ? CommonLayouts.labeledElement(font, control, input.label()) : control);

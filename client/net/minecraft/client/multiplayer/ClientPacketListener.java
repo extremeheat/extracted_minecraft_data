@@ -258,13 +258,13 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.CommonLinks;
-import net.minecraft.util.Crypt;
 import net.minecraft.util.HashOps;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.Util;
+import net.minecraft.util.crypto.SigningCryptoUtils;
 import net.minecraft.util.debug.DebugValueAccess;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
@@ -2428,7 +2428,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void sendChat(final String content) {
       Instant timeStamp = Instant.now();
-      long salt = Crypt.SaltSupplier.getLong();
+      long salt = SigningCryptoUtils.SaltSupplier.getLong();
       LastSeenMessagesTracker.Update lastSeenUpdate = this.lastSeenMessages.generateAndApplyUpdate();
       MessageSignature signature = this.signedMessageEncoder.pack(new SignedMessageBody(content, timeStamp, salt, lastSeenUpdate.lastSeen()));
       this.send(new ServerboundChatPacket(content, timeStamp, salt, Optional.ofNullable(signature), lastSeenUpdate.update()));
@@ -2440,7 +2440,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.send(new ServerboundChatCommandPacket(command));
       } else {
          Instant timeStamp = Instant.now();
-         long salt = Crypt.SaltSupplier.getLong();
+         long salt = SigningCryptoUtils.SaltSupplier.getLong();
          LastSeenMessagesTracker.Update lastSeenUpdate = this.lastSeenMessages.generateAndApplyUpdate();
          ArgumentSignatures argumentSignatures = ArgumentSignatures.signCommand(signableCommand, (argument) -> {
             SignedMessageBody signedBody = new SignedMessageBody(argument, timeStamp, salt, lastSeenUpdate.lastSeen());

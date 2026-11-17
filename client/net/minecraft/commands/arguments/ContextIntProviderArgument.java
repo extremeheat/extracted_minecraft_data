@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 public class ContextIntProviderArgument extends ValidatableResourceOrIdArgument<ContextIntProvider> {
    public static final SerializableArgument.Type<ContextIntProviderArgument> TYPE = ValidatableArgument.codecWithValidation(ContextIntProviderArgument::new);
 
-   private ContextIntProviderArgument(final ContextKeySet contextKeySet) {
+   public ContextIntProviderArgument(final ContextKeySet contextKeySet) {
       super(Registries.CONTEXT_INT_PROVIDER, ContextIntProviders.DIRECT_CODEC, contextKeySet);
    }
 

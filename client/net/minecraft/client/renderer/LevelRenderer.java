@@ -166,7 +166,8 @@ public class LevelRenderer implements AutoCloseable {
    public void render(final GraphicsResourceAllocator resourceAllocator, final boolean renderOutline, final CameraRenderState cameraState, final GpuBufferSlice fogBuffer, final boolean consistentDepthRequired) {
       RenderSystem.isRenderingLevel = true;
       final ProfilerFiller profiler = Profiler.get();
-      this.submitNodeStorage.setUseImprovedTransparency(this.gameRenderer.useImprovedTransparency());
+      boolean improvedTransparency = this.gameRenderer.useImprovedTransparency();
+      this.submitNodeStorage.setUseImprovedTransparency(improvedTransparency);
       profiler.push("repositionCamera");
       this.repositionCamera(cameraState);
       Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
@@ -184,7 +185,11 @@ public class LevelRenderer implements AutoCloseable {
       int screenHeight = this.gameRenderer.mainRenderTarget().height;
       this.targets.waterMask = frame.<RenderTarget>createInternal("water_mask", new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties(new Vector4f(-1.0F), GpuFormat.R32_FLOAT), (RenderTargetDescriptor.TextureProperties)null));
       RenderTargetDescriptor extraDepthTargetDescriptorCleared = new RenderTargetDescriptor(screenWidth, screenHeight, (RenderTargetDescriptor.TextureProperties)null, RenderTargetDescriptor.TextureProperties.DEFAULT_DEPTH);
-      if (this.gameRenderer.useImprovedTransparency()) {
+      if (this.optionsRenderState.improvedFog) {
+         this.targets.sky = frame.<RenderTarget>createInternal("sky", new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA8_UNORM), (RenderTargetDescriptor.TextureProperties)null));
+      }
+
+      if (improvedTransparency) {
          RenderTargetDescriptor depthBoundsTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA32_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
          this.targets.depthBounds = frame.<RenderTarget>createInternal("depth_bounds", depthBoundsTargetDescriptor);
          this.targets.depthBoundsCulled = frame.<RenderTarget>createInternal("depth_bounds_culled", depthBoundsTargetDescriptor);
@@ -196,7 +201,6 @@ public class LevelRenderer implements AutoCloseable {
 
          RenderTargetDescriptor accumulateTargetDescriptor = new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA16_FLOAT), (RenderTargetDescriptor.TextureProperties)null);
          this.targets.accumulate = frame.<RenderTarget>createInternal("accumulate", accumulateTargetDescriptor);
-         this.targets.sky = frame.<RenderTarget>createInternal("sky", new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA8_UNORM), (RenderTargetDescriptor.TextureProperties)null));
          this.targets.clouds = frame.<RenderTarget>createInternal("clouds", new RenderTargetDescriptor(screenWidth, screenHeight, new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.RGBA8_UNORM), new RenderTargetDescriptor.TextureProperties((Vector4fc)null, GpuFormat.D32_FLOAT)));
       }
 
@@ -213,8 +217,11 @@ public class LevelRenderer implements AutoCloseable {
          this.skyRenderer = new SkyRenderer(this.textureManager, this.atlasManager);
       }
 
-      if (this.gameRenderer.useImprovedTransparency()) {
+      if (this.optionsRenderState.improvedFog) {
          this.addSkyPass(frame, fogBuffer);
+      }
+
+      if (improvedTransparency) {
          this.addCloudsPass(frame, fogBuffer);
       }
 
@@ -222,9 +229,9 @@ public class LevelRenderer implements AutoCloseable {
       this.usingMultiDrawIndirectForTerrain = this.multiDrawIndirectAvailable && this.levelRenderState.shouldUseMultiDrawIndirectForTerrain;
       ChunkSectionsToRender chunkSectionsToRender;
       if (this.usingMultiDrawIndirectForTerrain) {
-         chunkSectionsToRender = this.prepareChunkRendersIndirect(terrainMatrix, !this.gameRenderer.useImprovedTransparency());
+         chunkSectionsToRender = this.prepareChunkRendersIndirect(terrainMatrix, !improvedTransparency);
       } else {
-         chunkSectionsToRender = this.prepareChunkRenders(terrainMatrix, !this.gameRenderer.useImprovedTransparency());
+         chunkSectionsToRender = this.prepareChunkRenders(terrainMatrix, !improvedTransparency);
       }
 
       this.addMainPass(frame, featureFrame, fogBuffer, chunkSectionsToRender, consistentDepthRequired);
@@ -385,9 +392,12 @@ public class LevelRenderer implements AutoCloseable {
    private void addMainPass(final FrameGraphBuilder frame, final FeatureRenderDispatcher.PreparedFrame featureFrame, final GpuBufferSlice fogBuffer, final ChunkSectionsToRender chunkSectionsToRender, final boolean consistentDepthRequired) {
       FramePass pass = frame.addPass("main");
       this.targets.main = pass.<RenderTarget>readsAndWrites(this.targets.main);
+      if (this.optionsRenderState.improvedFog) {
+         pass.reads(this.targets.sky);
+      }
+
       boolean useImprovedTransparency = this.gameRenderer.useImprovedTransparency();
       if (useImprovedTransparency) {
-         pass.reads(this.targets.sky);
          pass.reads(this.targets.clouds);
          this.targets.depthBounds = pass.<RenderTarget>readsAndWrites(this.targets.depthBounds);
          this.targets.depthBoundsCulled = pass.<RenderTarget>readsAndWrites(this.targets.depthBoundsCulled);
@@ -423,7 +433,7 @@ public class LevelRenderer implements AutoCloseable {
          this.prepareTranslucents();
          this.gameRenderer.lighting().setupFor(Lighting.Entry.LEVEL);
          boolean shouldRenderSky = this.shouldRenderSky();
-         boolean shouldRenderSkyInMainPass = !useImprovedTransparency && shouldRenderSky;
+         boolean shouldRenderSkyInMainPass = !this.optionsRenderState.improvedFog && shouldRenderSky;
          if (shouldRenderSkyInMainPass) {
             this.skyRenderer.prepare(this.levelRenderState.skyRenderState);
          }
@@ -431,7 +441,12 @@ public class LevelRenderer implements AutoCloseable {
          GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
          RenderTarget mainTarget = this.targets.main.get();
          Vector4f fogColor = this.levelRenderState.cameraRenderState.fogData.color;
-         this.executeWaterMask(featureFrame);
+         boolean hasWaterMask = featureFrame.hasAnyWaterMask();
+         if (hasWaterMask) {
+            this.executeWaterMask(featureFrame);
+         }
+
+         ChunkSectionsToRender.ImprovedFogTextures improvedFogTextures = this.getImprovedFogTextures();
 
          try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> useImprovedTransparency ? "Solid" : "Main", RenderPassLayouts.COLOR_DEPTH, mainTarget.getColorTextureView(), Optional.of(fogColor), mainTarget.getDepthTextureView(), OptionalDouble.of(0.0))) {
             RenderSystem.bindDefaultUniforms(renderPass);
@@ -440,18 +455,18 @@ public class LevelRenderer implements AutoCloseable {
                this.skyRenderer.render(this.levelRenderState.skyRenderState, renderPass, fogColor);
             }
 
-            this.executeSolid(chunkSectionsToRender, featureFrame, renderPass);
-            if (useImprovedTransparency) {
-               if (shouldRenderSky) {
-                  this.blitSky(renderPass, nearestSampler);
-               }
-            } else {
-               this.executeClassicTransparency(chunkSectionsToRender, featureFrame, renderPass);
+            this.executeSolid(chunkSectionsToRender, improvedFogTextures, featureFrame, renderPass, hasWaterMask);
+            if (this.optionsRenderState.improvedFog && shouldRenderSky) {
+               this.blitSky(renderPass, nearestSampler);
+            }
+
+            if (!useImprovedTransparency) {
+               this.executeClassicTransparency(chunkSectionsToRender, improvedFogTextures, featureFrame, renderPass, hasWaterMask);
             }
          }
 
          if (useImprovedTransparency) {
-            this.executeOit(chunkSectionsToRender, featureFrame);
+            this.executeOit(chunkSectionsToRender, featureFrame, hasWaterMask);
          }
 
          this.executeOutline(featureFrame);
@@ -517,16 +532,20 @@ public class LevelRenderer implements AutoCloseable {
       return !this.finalizedGizmos.alwaysOnTopPrimitives().isEmpty();
    }
 
-   private void executeSolid(final ChunkSectionsToRender chunkSectionsToRender, final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderPass renderPass) {
+   private void executeSolid(final ChunkSectionsToRender chunkSectionsToRender, final ChunkSectionsToRender.@Nullable ImprovedFogTextures improvedFogTextures, final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderPass renderPass, final boolean hasWaterMask) {
       ProfilerFiller profiler = Profiler.get();
       profiler.push("solidTerrain");
       GpuTextureView blockAtlas = this.textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).textureView();
-      boolean improvedFog = this.gameRenderer.useImprovedTransparency();
-      ChunkSectionsToRender.ImprovedFogTextures improvedFogTextures = improvedFog ? new ChunkSectionsToRender.ImprovedFogTextures(((RenderTarget)this.targets.sky.get()).getColorTextureView(), ((RenderTarget)this.targets.clouds.get()).getColorTextureView(), ((RenderTarget)this.targets.clouds.get()).getDepthTextureView()) : null;
-      chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.OPAQUE, renderPass, this.chunkLayerSampler, blockAtlas, improvedFogTextures, this.levelRenderState.renderWireframeTerrain);
+      chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.OPAQUE, renderPass, this.chunkLayerSampler, blockAtlas, improvedFogTextures, this.levelRenderState.renderWireframeTerrain, hasWaterMask);
       profiler.popPush("renderSolidFeatures");
       featureFrame.executeSolid(renderPass);
       profiler.pop();
+   }
+
+   private ChunkSectionsToRender.@Nullable ImprovedFogTextures getImprovedFogTextures() {
+      boolean improvedTransparency = this.gameRenderer.useImprovedTransparency();
+      ChunkSectionsToRender.ImprovedFogTextures improvedFogTextures = this.optionsRenderState.improvedFog ? new ChunkSectionsToRender.ImprovedFogTextures(((RenderTarget)this.targets.sky.get()).getColorTextureView(), improvedTransparency ? ((RenderTarget)this.targets.clouds.get()).getColorTextureView() : null, improvedTransparency ? ((RenderTarget)this.targets.clouds.get()).getDepthTextureView() : null) : null;
+      return improvedFogTextures;
    }
 
    private void prepareTranslucents() {
@@ -541,7 +560,7 @@ public class LevelRenderer implements AutoCloseable {
       RenderSystem.resizeAllAutoStorageIndexBuffers();
    }
 
-   private void executeOit(final ChunkSectionsToRender chunkSectionsToRender, final FeatureRenderDispatcher.PreparedFrame featureFrame) {
+   private void executeOit(final ChunkSectionsToRender chunkSectionsToRender, final FeatureRenderDispatcher.PreparedFrame featureFrame, final boolean hasWaterMask) {
       boolean shouldRenderClouds = this.shouldRenderClouds();
       int renderDistance = this.optionsRenderState.renderDistance * 16;
       CameraRenderState cameraState = this.levelRenderState.cameraRenderState;
@@ -560,7 +579,7 @@ public class LevelRenderer implements AutoCloseable {
       GpuSampler nearestSampler = RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST);
       GpuTextureView blockAtlas = this.textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).textureView();
       GpuTextureView lightmap = this.gameRenderer.lightmap();
-      ChunkSectionsToRender.ImprovedFogTextures improvedFogTextures = new ChunkSectionsToRender.ImprovedFogTextures(((RenderTarget)this.targets.sky.get()).getColorTextureView(), ((RenderTarget)this.targets.clouds.get()).getColorTextureView(), ((RenderTarget)this.targets.clouds.get()).getDepthTextureView());
+      ChunkSectionsToRender.ImprovedFogTextures improvedFogTextures = this.getImprovedFogTextures();
 
       try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(oitRenderPassBuilder.build())) {
          RenderSystem.bindDefaultUniforms(renderPass);
@@ -573,7 +592,7 @@ public class LevelRenderer implements AutoCloseable {
 
          for(OitStage stage : OitStage.values()) {
             renderPass.pushDebugGroup(() -> "Terrain");
-            chunkSectionsToRender.renderLayers(ChunkSectionLayerGroup.TRANSLUCENT.layers(), this.chunkLayerSampler, renderPass, blockAtlas, lightmap, improvedFogTextures, this.levelRenderState.renderWireframeTerrain, stage);
+            chunkSectionsToRender.renderLayers(ChunkSectionLayerGroup.TRANSLUCENT.layers(), this.chunkLayerSampler, renderPass, blockAtlas, lightmap, improvedFogTextures, this.levelRenderState.renderWireframeTerrain, stage, hasWaterMask);
             renderPass.popDebugGroup();
             featureFrame.executeOit(stage, renderPass);
             this.worldBorderRenderer.render(this.levelRenderState.worldBorderRenderState, renderPass, cameraState.pos, (double)renderDistance, stage);
@@ -616,7 +635,7 @@ public class LevelRenderer implements AutoCloseable {
 
    }
 
-   private void executeClassicTransparency(final ChunkSectionsToRender chunkSectionsToRender, final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderPass renderPass) {
+   private void executeClassicTransparency(final ChunkSectionsToRender chunkSectionsToRender, final ChunkSectionsToRender.@Nullable ImprovedFogTextures improvedFogTextures, final FeatureRenderDispatcher.PreparedFrame featureFrame, final RenderPass renderPass, final boolean hasWaterMask) {
       ProfilerFiller profiler = Profiler.get();
       boolean shouldRenderClouds = this.shouldRenderClouds();
       int renderDistance = this.optionsRenderState.renderDistance * 16;
@@ -625,7 +644,7 @@ public class LevelRenderer implements AutoCloseable {
       profiler.pop();
       GpuTextureView blockAtlas = this.textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).textureView();
       profiler.push("translucentTerrain");
-      chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, renderPass, this.chunkLayerSampler, blockAtlas, (ChunkSectionsToRender.ImprovedFogTextures)null, this.levelRenderState.renderWireframeTerrain);
+      chunkSectionsToRender.renderGroup(ChunkSectionLayerGroup.TRANSLUCENT, renderPass, this.chunkLayerSampler, blockAtlas, improvedFogTextures, this.levelRenderState.renderWireframeTerrain, hasWaterMask);
       profiler.pop();
       featureFrame.executeTranslucentAfterTerrain(renderPass);
       if (shouldRenderClouds) {

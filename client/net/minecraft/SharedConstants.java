@@ -17,7 +17,7 @@ public class SharedConstants {
    public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 5128;
+   public static final int WORLD_VERSION = 5129;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
@@ -26,19 +26,19 @@ public class SharedConstants {
    public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 778;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 346;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 347;
    public static final int SNBT_NAG_VERSION = 5116;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT_MAJOR = 103;
+   public static final int RESOURCE_PACK_FORMAT_MAJOR = 104;
    /** @deprecated */
    @Deprecated
    public static final int RESOURCE_PACK_FORMAT_MINOR = 0;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT_MAJOR = 127;
+   public static final int DATA_PACK_FORMAT_MAJOR = 128;
    /** @deprecated */
    @Deprecated
    public static final int DATA_PACK_FORMAT_MINOR = 0;
@@ -218,7 +218,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 1073742170;
+      return 1073742171;
    }
 
    public static boolean debugVoidTerrain(final ChunkPos pos) {

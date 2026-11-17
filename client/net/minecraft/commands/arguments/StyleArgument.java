@@ -13,13 +13,12 @@ import net.minecraft.util.parsing.packrat.commands.CommandArgumentParser;
 import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 
 public class StyleArgument extends ParserBasedArgument<CommandArgumentParser.RegistryAwareState, Style> {
-   private static final StyleArgument INSTANCE = new StyleArgument();
+   public static final StyleArgument INSTANCE = new StyleArgument();
    public static final SerializableArgument.Type<StyleArgument> TYPE;
    private static final Collection<String> EXAMPLES;
-   public static final DynamicCommandExceptionType ERROR_INVALID_STYLE;
 
    private StyleArgument() {
-      super(CommandArgumentParser.RegistryAwareState.FACTORY, CommandArgumentParser.withCodec(NbtOps.INSTANCE, SnbtGrammar.createParser(NbtOps.INSTANCE), Style.Serializer.CODEC, ERROR_INVALID_STYLE));
+      super(CommandArgumentParser.RegistryAwareState.FACTORY, CommandArgumentParser.withCodec(NbtOps.INSTANCE, SnbtGrammar.createParser(NbtOps.INSTANCE), Style.Serializer.CODEC, new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.style.invalid", message))));
    }
 
    public SerializableArgument.Type<StyleArgument> type() {
@@ -41,6 +40,5 @@ public class StyleArgument extends ParserBasedArgument<CommandArgumentParser.Reg
    static {
       TYPE = SerializableArgument.<StyleArgument>singletonType(INSTANCE);
       EXAMPLES = List.of("{bold: true}", "{color: 'red'}", "{}");
-      ERROR_INVALID_STYLE = new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.style.invalid", message));
    }
 }

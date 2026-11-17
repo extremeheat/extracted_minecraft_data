@@ -32,7 +32,7 @@ public class ResourceSelectorArgument implements SerializableArgument.ContextFre
    public static final Dynamic2CommandExceptionType ERROR_NO_MATCHES;
    private final ResourceKey<? extends Registry<?>> registryKey;
 
-   private ResourceSelectorArgument(final ResourceKey<? extends Registry<?>> registryKey) {
+   public ResourceSelectorArgument(final ResourceKey<? extends Registry<?>> registryKey) {
       super();
       this.registryKey = registryKey;
    }

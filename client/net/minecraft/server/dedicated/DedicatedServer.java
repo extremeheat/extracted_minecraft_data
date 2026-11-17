@@ -60,6 +60,7 @@ import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Util;
 import net.minecraft.util.debug.DebugSubscriptions;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
@@ -94,7 +95,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private final @Nullable ManagementServer jsonRpcServer;
 
    public DedicatedServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final DedicatedServerSettings settings, final DataFixer fixerUpper, final Services services, final @Nullable ManagementServer jsonRpcServer, final NotificationManager notificationManager) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer(), true, notificationManager);
+      super(serverThread, levelStorageSource, packRepository, worldStem, gameRules, Proxy.NO_PROXY, fixerUpper, services, LoggingLevelLoadListener.forDedicatedServer(), true, notificationManager, (long)settings.getProperties().keyRotationPeriodSeconds * TimeUtil.MILLISECONDS_PER_SECOND);
       this.settings = settings;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.serverTextFilter = ServerTextFilter.createFromConfig(settings.getProperties());
@@ -206,7 +207,6 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          this.setPort(properties.serverPort);
       }
 
-      this.initializeKeyPair();
       LOGGER.info("Starting Minecraft server on {}:{}", this.getLocalIp().isEmpty() ? "*" : this.getLocalIp(), this.getPort());
 
       try {

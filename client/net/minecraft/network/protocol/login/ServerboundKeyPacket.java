@@ -1,12 +1,13 @@
 package net.minecraft.network.protocol.login;
 
 import io.netty.buffer.ByteBuf;
+import java.security.PublicKey;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundKeyPacket(byte[] encryptedSecretKey, byte[] encryptedChallenge) implements Packet<ServerLoginPacketListener> {
+public record ServerboundKeyPacket(PublicKey clientKey, byte[] signature) implements Packet<ServerLoginPacketListener> {
    public static final StreamCodec<ByteBuf, ServerboundKeyPacket> STREAM_CODEC;
 
    public ServerboundKeyPacket {
@@ -22,6 +23,6 @@ public record ServerboundKeyPacket(byte[] encryptedSecretKey, byte[] encryptedCh
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BYTE_ARRAY, ServerboundKeyPacket::encryptedSecretKey, ByteBufCodecs.BYTE_ARRAY, ServerboundKeyPacket::encryptedChallenge, ServerboundKeyPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.X509_XDH_PUBLIC_KEY, ServerboundKeyPacket::clientKey, ByteBufCodecs.fixedSizeByteArray(32), ServerboundKeyPacket::signature, ServerboundKeyPacket::new);
    }
 }

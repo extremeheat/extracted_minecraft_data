@@ -8,8 +8,6 @@ import com.mojang.authlib.exceptions.InsufficientPrivilegesException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import com.mojang.authlib.exceptions.UserBannedException;
 import com.mojang.logging.LogUtils;
-import java.math.BigInteger;
-import java.security.PublicKey;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +17,11 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -56,9 +56,12 @@ import net.minecraft.network.protocol.login.ServerboundOptionsAppliedPacket;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.ServerLinks;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 import net.minecraft.util.Util;
+import net.minecraft.util.crypto.CryptException;
+import net.minecraft.util.crypto.PublicPeerInfo;
+import net.minecraft.util.crypto.SessionKeyExchange;
+import net.minecraft.util.crypto.SessionKeys;
+import net.minecraft.util.crypto.StreamCryptoUtils;
 import net.minecraft.world.flag.FeatureFlags;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -78,7 +81,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    private final boolean wasTransferredTo;
    private final Map<UUID, PlayerInfo> seenPlayers;
    private final boolean seenInsecureChatWarning;
-   private @Nullable SecretKey pendingSecretKey;
+   private @Nullable SessionKeys pendingSessionKeys;
+   private StreamCryptoUtils.@Nullable IVPair pendingIvSeeds;
    private int pendingCompressionThreshold;
    private final AtomicReference<State> state;
 
@@ -114,22 +118,23 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void handleKey(final ClientboundKeyPacket packet) {
       this.switchState(ClientHandshakePacketListenerImpl.State.AUTHORIZING);
 
-      String digest;
-      ServerboundKeyPacket setKeyPacket;
-      SecretKey secretKey;
+      SessionKeys sessionKeys;
+      byte[] signature;
       try {
-         secretKey = Crypt.generateSecretKey();
-         PublicKey publicKey = Crypt.byteToPublicKey(packet.publicKey());
-         digest = (new BigInteger(Crypt.digestData(packet.serverId(), publicKey, secretKey))).toString(16);
-         byte[] challenge = packet.challenge();
-         setKeyPacket = new ServerboundKeyPacket(Crypt.encryptUsingKey(publicKey, secretKey.getEncoded()), Crypt.encryptUsingKey(publicKey, challenge));
+         String clientName = this.minecraft.getUser().getName();
+         int protocolVersion = SharedConstants.getCurrentVersion().protocolVersion();
+         SessionKeyExchange sessionKeyExchange = SessionKeyExchange.createClientSide(clientName, protocolVersion, packet.salt(), packet.shouldAuthenticate());
+         PublicPeerInfo serverInfo = new PublicPeerInfo(packet.serverKey(), packet.serverId());
+         sessionKeys = sessionKeyExchange.createSessionKeys(serverInfo);
+         signature = sessionKeys.computeIntegrityDigest();
       } catch (Exception e) {
          throw new IllegalStateException("Protocol error", e);
       }
 
+      this.pendingIvSeeds = (new StreamCryptoUtils.IVGenerator(signature)).generatePair();
       if (packet.shouldAuthenticate()) {
          Util.ioPool().execute(() -> {
-            Component error = this.authenticateServer(digest);
+            Component error = this.authenticateServer(sessionKeys.computeKeysAuthenticationDigest());
             if (error != null) {
                if (this.serverData == null || !this.serverData.isLan()) {
                   this.connection.disconnect(error);
@@ -139,18 +144,19 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                LOGGER.warn("Authentication failed: {}", error.getString());
             }
 
-            this.sendKeys(setKeyPacket, secretKey);
+            this.sendKeys(sessionKeys, signature);
          });
       } else {
-         this.sendKeys(setKeyPacket, secretKey);
+         this.sendKeys(sessionKeys, signature);
       }
 
    }
 
-   private void sendKeys(final ServerboundKeyPacket setKeyPacket, final SecretKey secretKey) {
-      this.pendingSecretKey = secretKey;
+   private void sendKeys(final SessionKeys sessionKeys, final byte[] signature) {
+      this.pendingSessionKeys = sessionKeys;
       this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-      this.connection.send(setKeyPacket);
+      PublicPeerInfo clientPeerInfo = sessionKeys.peerInfo(SessionKeyExchange.DEFAULT_CLIENT_SIDE);
+      this.connection.send(new ServerboundKeyPacket(clientPeerInfo.publicKey(), signature));
    }
 
    private @Nullable Component authenticateServer(final String digest) {
@@ -224,14 +230,20 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.applyInboundConnectionOptions(options);
       this.connection.send(response);
       this.applyOutboundConnectionOptions(options);
+      if (ConnectionOptionsPacket.isEncryption(options)) {
+         this.pendingSessionKeys = null;
+      }
+
    }
 
    private void applyInboundConnectionOptions(final @ConnectionOptionsPacket.Flags byte options) {
       if (ConnectionOptionsPacket.isEncryption(options)) {
-         SecretKey secretKey = (SecretKey)Objects.requireNonNull(this.pendingSecretKey, "Key not initialized");
+         SessionKeys sessionKeys = (SessionKeys)Objects.requireNonNull(this.pendingSessionKeys, "Key not initialized");
+         SecretKey secretKey = sessionKeys.inboundStreamKey(SessionKeyExchange.DEFAULT_CLIENT_SIDE);
+         IvParameterSpec ivs = ((StreamCryptoUtils.IVPair)Objects.requireNonNull(this.pendingIvSeeds)).serverToClient();
 
          try {
-            this.connection.setInboundEncryptionKey(Crypt.getCipher(2, secretKey));
+            this.connection.setInboundEncryptionKey(StreamCryptoUtils.getCipher(2, secretKey, ivs));
          } catch (CryptException e) {
             throw new IllegalStateException("Failed to setup inbound key", e);
          }
@@ -245,10 +257,12 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
    private void applyOutboundConnectionOptions(final @ConnectionOptionsPacket.Flags byte options) {
       if (ConnectionOptionsPacket.isEncryption(options)) {
-         SecretKey secretKey = (SecretKey)Objects.requireNonNull(this.pendingSecretKey, "Key not initialized");
+         SessionKeys sessionKeys = (SessionKeys)Objects.requireNonNull(this.pendingSessionKeys, "Key not initialized");
+         SecretKey secretKey = sessionKeys.outboundStreamKey(SessionKeyExchange.DEFAULT_CLIENT_SIDE);
+         IvParameterSpec ivs = ((StreamCryptoUtils.IVPair)Objects.requireNonNull(this.pendingIvSeeds)).clientToServer();
 
          try {
-            this.connection.setOutboundEncryptionKey(Crypt.getCipher(1, secretKey));
+            this.connection.setOutboundEncryptionKey(StreamCryptoUtils.getCipher(1, secretKey, ivs));
          } catch (CryptException e) {
             throw new IllegalStateException("Failed to setup outbound key", e);
          }

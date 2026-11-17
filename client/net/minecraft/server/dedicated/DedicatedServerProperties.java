@@ -119,6 +119,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean logIPs;
    public final Settings<DedicatedServerProperties>.MutableValue<Integer> pauseWhenEmptySeconds;
    public final String allowedConnectionIds;
+   public final int keyRotationPeriodSeconds;
    private final WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
    public final Settings<DedicatedServerProperties>.MutableValue<Boolean> acceptsTransfers;
@@ -176,6 +177,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.logIPs = this.get("log-ips", true);
       this.pauseWhenEmptySeconds = this.getMutable("pause-when-empty-seconds", 60);
       this.allowedConnectionIds = this.get("allowed-connection-ids", "");
+      this.keyRotationPeriodSeconds = this.get("key-rotation-period-seconds", 60);
       this.acceptsTransfers = this.getMutable("accepts-transfers", false);
       String levelSeed = this.get("level-seed", "");
       boolean generateStructures = this.get("generate-structures", true);

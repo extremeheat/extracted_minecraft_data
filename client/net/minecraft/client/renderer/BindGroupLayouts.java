@@ -17,7 +17,7 @@ public class BindGroupLayouts {
    public static final BindGroupLayout SAMPLER1;
    public static final BindGroupLayout SAMPLER2;
    public static final BindGroupLayout SKY_SAMPLER;
-   public static final BindGroupLayout SKY_CLOUDS_SAMPLER;
+   public static final BindGroupLayout CLOUDS_SAMPLER;
    public static final BindGroupLayout SAMPLER0_SAMPLER2;
    public static final BindGroupLayout SAMPLER0_SAMPLER1;
    public static final BindGroupLayout SAMPLER0_SAMPLER1_SAMPLER2;
@@ -53,7 +53,7 @@ public class BindGroupLayouts {
       SAMPLER1 = BindGroupLayout.builder().withUniform("Sampler1", UniformType.COMBINED_IMAGE_SAMPLER).build();
       SAMPLER2 = BindGroupLayout.builder().withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER).build();
       SKY_SAMPLER = BindGroupLayout.builder().withUniform("SkySampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
-      SKY_CLOUDS_SAMPLER = BindGroupLayout.builder().withUniform("SkySampler", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("CloudsSampler", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("CloudsDepthSampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
+      CLOUDS_SAMPLER = BindGroupLayout.builder().withUniform("CloudsSampler", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("CloudsDepthSampler", UniformType.COMBINED_IMAGE_SAMPLER).build();
       SAMPLER0_SAMPLER2 = BindGroupLayout.builder().withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER).build();
       SAMPLER0_SAMPLER1 = BindGroupLayout.builder().withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("Sampler1", UniformType.COMBINED_IMAGE_SAMPLER).build();
       SAMPLER0_SAMPLER1_SAMPLER2 = BindGroupLayout.builder().withUniform("Sampler0", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("Sampler1", UniformType.COMBINED_IMAGE_SAMPLER).withUniform("Sampler2", UniformType.COMBINED_IMAGE_SAMPLER).build();

@@ -3,10 +3,12 @@ package net.minecraft.client.gui.screens.social;
 import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.response.PresenceResponse;
 import com.mojang.authlib.services.response.PresenceStatus;
+import com.mojang.authlib.services.response.PresenceStatusDto;
 import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -45,20 +47,42 @@ public class PresenceHandler {
       CompletableFuture.runAsync(() -> {
          PresenceResponse newPresence = this.postPresence(publicPresenceStatus);
          if (newPresence != null) {
-            this.minecraft.execute(() -> {
-               boolean refreshPresence = !Objects.equals(this.latestPresence, newPresence);
-               this.latestPresence = newPresence;
-               if (refreshPresence) {
-                  Screen patt0$temp = this.minecraft.gui.screen();
-                  if (patt0$temp instanceof PresenceAwareScreen) {
-                     PresenceAwareScreen presenceAwareScreen = (PresenceAwareScreen)patt0$temp;
-                     presenceAwareScreen.applyPresenceUpdate(this.latestPresence);
-                  }
-               }
-
-            });
+            this.minecraft.execute(() -> this.setLatestPresence(newPresence));
          }
       }, Util.nonCriticalIoPool());
+   }
+
+   public void updatePresenceWith(final PresenceStatusDto presenceStatusDto) {
+      this.minecraft.execute(() -> {
+         List<PresenceStatusDto> presence = new ArrayList(this.latestPresence.presence());
+
+         for(PresenceStatusDto presenceStatus : presence) {
+            if (presenceStatus.profileId().equals(presenceStatusDto.profileId())) {
+               if (presenceStatusDto.lastUpdated().isAfter(presenceStatus.lastUpdated())) {
+                  presence.set(presence.indexOf(presenceStatus), presenceStatusDto);
+                  this.setLatestPresence(new PresenceResponse(presence));
+               }
+
+               return;
+            }
+         }
+
+         presence.add(presenceStatusDto);
+         this.setLatestPresence(new PresenceResponse(presence));
+      });
+   }
+
+   private void setLatestPresence(final PresenceResponse newPresence) {
+      boolean refreshPresence = !Objects.equals(this.latestPresence, newPresence);
+      this.latestPresence = newPresence;
+      if (refreshPresence) {
+         Screen var4 = this.minecraft.gui.screen();
+         if (var4 instanceof PresenceAwareScreen) {
+            PresenceAwareScreen presenceAwareScreen = (PresenceAwareScreen)var4;
+            presenceAwareScreen.applyPresenceUpdate(this.latestPresence);
+         }
+      }
+
    }
 
    private @Nullable PresenceResponse postPresence(final PresenceStatus status) {

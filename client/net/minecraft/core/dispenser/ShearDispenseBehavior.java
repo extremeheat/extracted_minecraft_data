@@ -1,5 +1,6 @@
 package net.minecraft.core.dispenser;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,23 +20,26 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 
-public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
-   public ShearsDispenseItemBehavior() {
+public class ShearDispenseBehavior implements DispenseBehavior {
+   public static final ShearDispenseBehavior INSTANCE = new ShearDispenseBehavior();
+   public static final MapCodec<ShearDispenseBehavior> MAP_CODEC;
+
+   private ShearDispenseBehavior() {
       super();
    }
 
-   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+   public DispenseBehavior.DispenseResult execute(final BlockSource source, final ItemStack dispensed) {
       ServerLevel level = source.level();
       if (!level.isClientSide()) {
          BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
-         this.setSuccess(tryShearBeehive(level, dispensed, pos) || tryShearEntity(level, pos, dispensed));
-         if (this.isSuccess()) {
-            dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (item) -> {
+         if (tryShearBeehive(level, dispensed, pos) || tryShearEntity(level, pos, dispensed)) {
+            dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (var0) -> {
             });
+            return DispenseBehavior.DispenseResult.success(dispensed);
          }
       }
 
-      return dispensed;
+      return DispenseBehavior.DispenseResult.failure();
    }
 
    private static boolean tryShearBeehive(final ServerLevel level, final ItemStack tool, final BlockPos pos) {
@@ -70,5 +74,13 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       }
 
       return false;
+   }
+
+   public MapCodec<ShearDispenseBehavior> codec() {
+      return MAP_CODEC;
+   }
+
+   static {
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

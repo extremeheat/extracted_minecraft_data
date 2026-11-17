@@ -21,7 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 public class DimensionArgument implements SerializableArgument.ContextFree<ResourceKey<Level>> {
-   private static final DimensionArgument INSTANCE = new DimensionArgument();
+   public static final DimensionArgument INSTANCE = new DimensionArgument();
    public static final SerializableArgument.Type<DimensionArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_INVALID_VALUE;

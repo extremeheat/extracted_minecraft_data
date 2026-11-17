@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public class LootTableArgument extends ValidatableResourceOrIdArgument<LootTable> {
    public static final SerializableArgument.Type<LootTableArgument> TYPE = ValidatableArgument.codecWithValidation(LootTableArgument::new);
 
-   private LootTableArgument(final ContextKeySet contextKeySet) {
+   public LootTableArgument(final ContextKeySet contextKeySet) {
       super(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, contextKeySet);
    }
 

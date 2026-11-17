@@ -301,7 +301,7 @@ public class RegionFile implements AutoCloseable {
       CommitOp commitOp;
       if (sectorsNeeded >= 256) {
          Path externalChunkPath = this.getExternalChunkPath(pos);
-         LOGGER.warn("Saving oversized chunk {} ({} bytes} to external file {}", new Object[]{pos, dataSize, externalChunkPath});
+         LOGGER.warn("Saving oversized chunk {} ({} bytes) to external file {}", new Object[]{pos, dataSize, externalChunkPath});
          sectorsNeeded = 1;
          newSectorNumber = this.usedSectors.allocate(sectorsNeeded);
          commitOp = this.writeToExternalFile(externalChunkPath, data);

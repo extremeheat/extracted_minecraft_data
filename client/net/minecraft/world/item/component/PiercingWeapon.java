@@ -55,7 +55,7 @@ public record PiercingWeapon(boolean dealsKnockback, boolean dismounts, Optional
                }
             }
 
-            return !jabber.isPassengerOfSameVehicle(target);
+            return !jabber.isPartOfSameEntityGraph(target);
          }
       } else {
          return false;

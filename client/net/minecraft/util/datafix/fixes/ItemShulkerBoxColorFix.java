@@ -36,7 +36,7 @@ public class ItemShulkerBoxColorFix extends DataFix {
                   Typed<?> blockEntity = (Typed)blockEntityOpt.get();
                   Dynamic<?> blockEntityRest = (Dynamic)blockEntity.get(DSL.remainderFinder());
                   int color = blockEntityRest.get("Color").asInt(0);
-                  blockEntityRest.remove("Color");
+                  blockEntityRest = blockEntityRest.remove("Color");
                   return input.set(tagF, tag.set(blockEntityF, blockEntity.set(DSL.remainderFinder(), blockEntityRest))).set(idF, Pair.of(References.ITEM_NAME.typeName(), NAMES_BY_COLOR[color % 16]));
                }
             }

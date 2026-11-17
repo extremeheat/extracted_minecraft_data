@@ -405,10 +405,12 @@ public class Phantom extends Mob implements Enemy {
          if (target != null) {
             Phantom.this.moveTargetPoint = new Vec3(target.getX(), target.getY(0.5), target.getZ());
             if (Phantom.this.getBoundingBox().inflate(0.20000000298023224).intersects(target.getBoundingBox())) {
-               Phantom.this.doHurtTarget(getServerLevel(Phantom.this.level()), target);
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-               if (!Phantom.this.isSilent()) {
-                  Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
+               if (Phantom.this.hasLineOfSight(target)) {
+                  Phantom.this.doHurtTarget(getServerLevel(Phantom.this.level()), target);
+                  if (!Phantom.this.isSilent()) {
+                     Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
+                  }
                }
             } else if (Phantom.this.horizontalCollision || Phantom.this.wasHurtRecently()) {
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;

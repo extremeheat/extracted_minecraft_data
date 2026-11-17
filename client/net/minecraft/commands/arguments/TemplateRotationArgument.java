@@ -5,7 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.world.level.block.Rotation;
 
 public class TemplateRotationArgument extends StringRepresentableArgument<Rotation> {
-   private static final TemplateRotationArgument INSTANCE = new TemplateRotationArgument();
+   public static final TemplateRotationArgument INSTANCE = new TemplateRotationArgument();
    public static final SerializableArgument.Type<TemplateRotationArgument> TYPE;
 
    private TemplateRotationArgument() {

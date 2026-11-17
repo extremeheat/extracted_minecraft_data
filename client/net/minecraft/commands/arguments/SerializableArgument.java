@@ -33,12 +33,16 @@ public interface SerializableArgument<T> {
       return List.of();
    }
 
-   static <T> BrigadierWrapper<T> unwrapOrThrow(final ArgumentType<T> original) {
+   static <T> BrigadierWrapper<T> castOrThrow(final ArgumentType<T> original) {
       if (original instanceof BrigadierWrapper<T> wrapper) {
          return wrapper;
       } else {
          throw new UnsupportedOperationException("Invalid argument type: " + String.valueOf(original));
       }
+   }
+
+   static <T> SerializableArgument<T> unwrapOrThrow(final ArgumentType<T> original) {
+      return castOrThrow(original).argument();
    }
 
    static <A extends SerializableArgument<?>> Type<A> singletonType(final A instance) {

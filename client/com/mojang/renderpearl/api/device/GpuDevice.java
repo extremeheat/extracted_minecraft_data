@@ -12,6 +12,7 @@ import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuSampler;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import com.mojang.renderpearl.util.ShaderCompileException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.OptionalDouble;
@@ -42,7 +43,7 @@ public interface GpuDevice {
 
    boolean isDebuggingEnabled();
 
-   SpvModule createSpvModule(String name, ByteBuffer spv, ShaderType type, String entryPoint);
+   SpvModule createSpvModule(String name, ByteBuffer spv, ShaderType type, String entryPoint) throws ShaderCompileException;
 
    CompiledRenderPipeline.Pending compilePipeline(CompiledRenderPipeline.CreateInfo createInfo);
 

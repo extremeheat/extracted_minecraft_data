@@ -18,6 +18,8 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.dispenser.DispenseBehavior;
+import net.minecraft.core.dispenser.DispenseBehaviorTypes;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.gametest.framework.BuiltinTestFunctions;
@@ -173,6 +175,7 @@ public class BuiltInRegistries {
    public static final Registry<SoundEvent> SOUND_EVENT;
    public static final DefaultedRegistry<Fluid> FLUID;
    public static final Registry<MobEffect> MOB_EFFECT;
+   public static final Registry<MapCodec<? extends DispenseBehavior>> DISPENSE_BEHAVIOR_TYPE;
    public static final DefaultedRegistry<Block> BLOCK;
    public static final Registry<DebugSubscription<?>> DEBUG_SUBSCRIPTION;
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE;
@@ -282,6 +285,7 @@ public class BuiltInRegistries {
       SOUND_EVENT = BUILDER.<SoundEvent>registerSimple(Registries.SOUND_EVENT, BuiltinRegistryBuilder.staticFieldBootstrap(() -> SoundEvents.ITEM_PICKUP));
       FLUID = BUILDER.<Fluid>registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", BuiltinRegistryBuilder.staticFieldBootstrap(() -> Fluids.EMPTY));
       MOB_EFFECT = BUILDER.<MobEffect>registerSimple(Registries.MOB_EFFECT, BuiltinRegistryBuilder.staticFieldBootstrap(() -> MobEffects.SPEED));
+      DISPENSE_BEHAVIOR_TYPE = BUILDER.<MapCodec<? extends DispenseBehavior>>registerSimple(Registries.DISPENSE_BEHAVIOR_TYPE, DispenseBehaviorTypes::bootstrap);
       BLOCK = BUILDER.<Block>registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", BuiltinRegistryBuilder.staticFieldBootstrap(() -> Blocks.AIR));
       DEBUG_SUBSCRIPTION = BUILDER.<DebugSubscription<?>>registerSimple(Registries.DEBUG_SUBSCRIPTION, BuiltinRegistryBuilder.staticFieldBootstrap(() -> DebugSubscriptions.DEDICATED_SERVER_TICK_TIME));
       ENTITY_TYPE = BUILDER.<EntityType<?>>registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", BuiltinRegistryBuilder.staticFieldBootstrap(() -> EntityTypes.PIG));

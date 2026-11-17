@@ -77,6 +77,7 @@ public class EntityPortraitWidget extends AbstractWidget {
       if (renderState instanceof LivingEntityRenderState livingRenderState) {
          livingRenderState.boundingBoxWidth /= livingRenderState.scale;
          livingRenderState.boundingBoxHeight /= livingRenderState.scale;
+         livingRenderState.eyeHeight /= livingRenderState.scale;
          livingRenderState.scale = 1.0F;
       }
 

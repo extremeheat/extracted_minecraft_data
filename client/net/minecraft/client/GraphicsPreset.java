@@ -50,6 +50,7 @@ public enum GraphicsPreset implements StringRepresentable {
             set(screen, minecraft.options.menuBackgroundBlurriness(), 2);
             set(screen, minecraft.options.cloudRange(), 32);
             set(screen, minecraft.options.cutoutLeaves(), false);
+            set(screen, minecraft.options.improvedFog(), false);
             set(screen, minecraft.options.improvedTransparency(), false);
             set(screen, minecraft.options.weatherRadius(), 5);
             set(screen, minecraft.options.maxAnisotropyBit(), 1);
@@ -70,6 +71,7 @@ public enum GraphicsPreset implements StringRepresentable {
             set(screen, minecraft.options.menuBackgroundBlurriness(), 5);
             set(screen, minecraft.options.cloudRange(), 64);
             set(screen, minecraft.options.cutoutLeaves(), true);
+            set(screen, minecraft.options.improvedFog(), true);
             set(screen, minecraft.options.improvedTransparency(), false);
             set(screen, minecraft.options.weatherRadius(), 10);
             set(screen, minecraft.options.maxAnisotropyBit(), 1);
@@ -90,6 +92,7 @@ public enum GraphicsPreset implements StringRepresentable {
             set(screen, minecraft.options.menuBackgroundBlurriness(), 5);
             set(screen, minecraft.options.cloudRange(), 128);
             set(screen, minecraft.options.cutoutLeaves(), true);
+            set(screen, minecraft.options.improvedFog(), true);
             set(screen, minecraft.options.improvedTransparency(), true);
             set(screen, minecraft.options.weatherRadius(), 10);
             set(screen, minecraft.options.maxAnisotropyBit(), 2);

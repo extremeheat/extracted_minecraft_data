@@ -22,6 +22,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gizmos.GizmoStyle;
+import net.minecraft.gizmos.Gizmos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -129,7 +131,7 @@ public class GameTestHelper {
 
    public void killAllEntitiesOfClass(final Class<? extends Entity> baseClass) {
       AABB bounds = this.getBounds();
-      List<? extends Entity> entities = this.getLevel().getEntitiesOfClass(baseClass, bounds.inflate(1.0), (mob) -> !(mob instanceof Player));
+      List<? extends Entity> entities = this.getLevel().getEntitiesOfClass(baseClass, bounds.inflate(1.0), GameTestHelper::isNonPlayerEntity);
       entities.forEach((entity) -> entity.kill(this.getLevel()));
    }
 
@@ -290,17 +292,17 @@ public class GameTestHelper {
       return (E)this.spawnWithNoFreeWill(entityType, new Vec3((double)x, (double)y, (double)z));
    }
 
-   public void moveTo(final Mob mob, final float x, final float y, final float z) {
-      this.moveTo(mob, new Vec3((double)x, (double)y, (double)z));
+   public void moveTo(final Entity entity, final float x, final float y, final float z) {
+      this.moveTo(entity, new Vec3((double)x, (double)y, (double)z));
    }
 
-   public void moveTo(final Mob mob, final BlockPos pos) {
-      this.moveTo(mob, Vec3.atBottomCenterOf(pos));
+   public void moveTo(final Entity entity, final BlockPos pos) {
+      this.moveTo(entity, Vec3.atBottomCenterOf(pos));
    }
 
-   public void moveTo(final Mob mob, final Vec3 pos) {
+   public void moveTo(final Entity entity, final Vec3 pos) {
       Vec3 absoluteVec = this.absoluteVec(pos);
-      mob.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, mob.getYRot(), mob.getXRot());
+      entity.snapTo(absoluteVec.x, absoluteVec.y, absoluteVec.z, entity.getYRot(), entity.getXRot());
    }
 
    public GameTestSequence walkTo(final Mob mob, final BlockPos targetPos, final float speedModifier) {
@@ -367,6 +369,11 @@ public class GameTestHelper {
 
          public boolean isClientAuthoritative() {
             return false;
+         }
+
+         public void tick() {
+            super.tick();
+            Gizmos.cuboid(this.getBoundingBox(), GizmoStyle.stroke(-1));
          }
       };
    }
@@ -511,6 +518,13 @@ public class GameTestHelper {
       this.assertBlock(pos, (block) -> state.is(blockType), (block) -> Component.translatable("test.error.expected_block", blockType.getName(), block.getName()));
    }
 
+   public void assertBlockPresent(final Block blockType, final BlockPos from, final BlockPos to) {
+      boolean foundBlock = BlockPos.betweenClosedStream(from, to).anyMatch((pos) -> this.getBlockState(pos).is(blockType));
+      if (!foundBlock) {
+         throw this.assertionException((BlockPos)from, (Component)Component.translatable("test.error.expected_block_present", blockType.getName()));
+      }
+   }
+
    public void assertBlockPresent(final Block blockType) {
       AABB aabb = this.getRelativeBounds().contract(1.0, 1.0, 1.0);
       boolean foundBlock = BlockPos.MutableBlockPos.betweenClosedStream(aabb).anyMatch((blockPos) -> this.getBlockState(blockPos).is(blockType));
@@ -521,6 +535,13 @@ public class GameTestHelper {
 
    public void assertBlockNotPresent(final Block blockType, final int x, final int y, final int z) {
       this.assertBlockNotPresent(blockType, new BlockPos(x, y, z));
+   }
+
+   public void assertBlockNotPresent(final Block blockType, final BlockPos from, final BlockPos to) {
+      boolean foundBlock = BlockPos.betweenClosedStream(from, to).anyMatch((pos) -> this.getBlockState(pos).is(blockType));
+      if (foundBlock) {
+         throw this.assertionException((BlockPos)from, (Component)Component.translatable("test.error.unexpected_block", blockType.getName()));
+      }
    }
 
    public void assertBlockNotPresent(final Block blockType, final BlockPos pos) {
@@ -1161,6 +1182,10 @@ public class GameTestHelper {
 
    private static Component getItemName(final Item itemType) {
       return (Component)itemType.components().getOrDefault(DataComponents.ITEM_NAME, CommonComponents.EMPTY);
+   }
+
+   public static boolean isNonPlayerEntity(final Entity entity) {
+      return !(entity instanceof Player) || !entity.isClientAuthoritative();
    }
 
    private class TestBlockPlaceContext extends BlockPlaceContext {

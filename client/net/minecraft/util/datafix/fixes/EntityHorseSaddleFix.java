@@ -28,7 +28,7 @@ public class EntityHorseSaddleFix extends NamedEntityFix {
          saddleTag = saddleTag.set("Count", saddleTag.createByte((byte)1));
          saddleTag = saddleTag.set("Damage", saddleTag.createShort((short)0));
          newSaddle = newSaddle.set(DSL.remainderFinder(), saddleTag);
-         tag.remove("Saddle");
+         tag = tag.remove("Saddle");
          return entity.set(saddleF, newSaddle).set(DSL.remainderFinder(), tag);
       } else {
          return entity;

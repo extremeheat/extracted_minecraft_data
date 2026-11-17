@@ -28,15 +28,15 @@ public abstract class ChunkSectionsToRender {
       this.terrainTransformUBO = terrainTransformUBO;
    }
 
-   protected abstract void render(final ChunkSectionLayer layer, final RenderPass renderPass, @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, boolean improvedFog, boolean wireframe, @Nullable OitStage oitStage);
+   protected abstract void render(final ChunkSectionLayer layer, final RenderPass renderPass, @Nullable GpuBuffer defaultIndexBuffer, @Nullable IndexType defaultIndexType, boolean improvedFog, boolean cloudsInFog, boolean wireframe, @Nullable OitStage oitStage, final boolean hasWaterMask);
 
-   public void renderGroup(final ChunkSectionLayerGroup group, final RenderPass renderPass, final GpuSampler sampler, final GpuTextureView atlas, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe) {
+   public void renderGroup(final ChunkSectionLayerGroup group, final RenderPass renderPass, final GpuSampler sampler, final GpuTextureView atlas, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe, final boolean hasWaterMask) {
       GameRenderer gameRenderer = Minecraft.getInstance().gameRenderer;
       GpuTextureView lightmap = gameRenderer.lightmap();
-      this.renderLayers(group.layers(), sampler, renderPass, atlas, lightmap, improvedFogTextures, wireframe, (OitStage)null);
+      this.renderLayers(group.layers(), sampler, renderPass, atlas, lightmap, improvedFogTextures, wireframe, (OitStage)null, hasWaterMask);
    }
 
-   public void renderLayers(final ChunkSectionLayer[] layers, final GpuSampler sampler, final RenderPass renderPass, final GpuTextureView atlas, final GpuTextureView lightmap, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe, final @Nullable OitStage oitStage) {
+   public void renderLayers(final ChunkSectionLayer[] layers, final GpuSampler sampler, final RenderPass renderPass, final GpuTextureView atlas, final GpuTextureView lightmap, final @Nullable ImprovedFogTextures improvedFogTextures, final boolean wireframe, final @Nullable OitStage oitStage, final boolean hasWaterMask) {
       RenderSystem.AutoStorageIndexBuffer autoIndices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
       GpuBuffer defaultIndexBuffer = this.maxIndicesRequired == 0 ? null : autoIndices.getBuffer();
       IndexType defaultIndexType = this.maxIndicesRequired == 0 ? null : autoIndices.type();
@@ -45,15 +45,18 @@ public abstract class ChunkSectionsToRender {
       renderPass.setUniform("Sampler0", atlas, sampler);
       renderPass.setUniform("Sampler2", lightmap, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR));
       boolean improvedFog = improvedFogTextures != null;
+      boolean cloudsInFog = improvedFog && improvedFogTextures.cloudsView() != null;
       if (improvedFog) {
          renderPass.setUniform("SkySampler", improvedFogTextures.skyView(), nearestSampler);
-         renderPass.setUniform("CloudsSampler", improvedFogTextures.cloudsView(), nearestSampler);
-         renderPass.setUniform("CloudsDepthSampler", improvedFogTextures.cloudsDepthView(), nearestSampler);
+         if (cloudsInFog) {
+            renderPass.setUniform("CloudsSampler", improvedFogTextures.cloudsView(), nearestSampler);
+            renderPass.setUniform("CloudsDepthSampler", improvedFogTextures.cloudsDepthView(), nearestSampler);
+         }
       }
 
       for(ChunkSectionLayer layer : layers) {
          renderPass.pushDebugGroup(() -> "Terrain layer: " + layer.label());
-         this.render(layer, renderPass, defaultIndexBuffer, defaultIndexType, improvedFog, wireframe, oitStage);
+         this.render(layer, renderPass, defaultIndexBuffer, defaultIndexType, improvedFog, cloudsInFog, wireframe, oitStage, hasWaterMask);
          renderPass.popDebugGroup();
       }
 
@@ -75,8 +78,8 @@ public abstract class ChunkSectionsToRender {
          this.chunkSectionInfos = chunkSectionInfos;
       }
 
-      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, wireframe, oitStage), renderPass.activeSubpass()));
+      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean cloudsInFog, final boolean wireframe, final @Nullable OitStage oitStage, final boolean hasWaterMask) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(false, improvedFog, cloudsInFog, wireframe, oitStage, hasWaterMask), renderPass.activeSubpass()));
 
          for(DrawSeparateDrawGroup drawGroup : (List)this.drawGroupsPerLayer.get(layer)) {
             if (!drawGroup.draws.isEmpty()) {
@@ -106,8 +109,8 @@ public abstract class ChunkSectionsToRender {
          this.chunkSectionInfos = chunkSectionInfos;
       }
 
-      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(true, improvedFog, wireframe, oitStage), renderPass.activeSubpass()));
+      protected void render(final ChunkSectionLayer layer, final RenderPass renderPass, final @Nullable GpuBuffer defaultIndexBuffer, final @Nullable IndexType defaultIndexType, final boolean improvedFog, final boolean cloudsInFog, final boolean wireframe, final @Nullable OitStage oitStage, final boolean hasWaterMask) {
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(layer.pipeline(true, improvedFog, cloudsInFog, wireframe, oitStage, hasWaterMask), renderPass.activeSubpass()));
          DeviceLimits deviceLimits = RenderSystem.getDevice().getDeviceInfo().limits();
          int maxDrawIndirectDrawCount = deviceLimits.maxDrawIndirectDrawCount();
          List<GpuMultiDrawIndexedIndirect> drawGroups = (List)this.drawGroupsPerLayer.get(layer);
@@ -137,7 +140,7 @@ public abstract class ChunkSectionsToRender {
       }
    }
 
-   public static record ImprovedFogTextures(GpuTextureView skyView, GpuTextureView cloudsView, GpuTextureView cloudsDepthView) {
+   public static record ImprovedFogTextures(GpuTextureView skyView, @Nullable GpuTextureView cloudsView, @Nullable GpuTextureView cloudsDepthView) {
       public ImprovedFogTextures {
          super();
       }

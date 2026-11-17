@@ -49,6 +49,7 @@ public class SerializableArgumentTypes {
       Registry.register(registry, (String)"function", FunctionArgument.TYPE);
       Registry.register(registry, (String)"game_profile", GameProfileArgument.TYPE);
       Registry.register(registry, (String)"gamemode", GameModeArgument.TYPE);
+      Registry.register(registry, (String)"greedy_string", StringArgument.Greedy.TYPE);
       Registry.register(registry, (String)"heightmap", HeightmapTypeArgument.TYPE);
       Registry.register(registry, (String)"hex_color", HexColorArgument.TYPE);
       Registry.register(registry, (String)"int_range", RangeArgument.Ints.TYPE);
@@ -70,6 +71,7 @@ public class SerializableArgumentTypes {
       Registry.register(registry, (String)"operation", OperationArgument.TYPE);
       Registry.register(registry, (String)"particle", ParticleArgument.TYPE);
       Registry.register(registry, (String)"pattern", PatternStringArgument.TYPE);
+      Registry.register(registry, (String)"quoted_string", StringArgument.Quoted.TYPE);
       Registry.register(registry, (String)"resource", ResourceArgument.TYPE);
       Registry.register(registry, (String)"resource_location", IdentifierArgument.TYPE);
       Registry.register(registry, (String)"resource_or_tag", ResourceOrTagArgument.TYPE);
@@ -78,7 +80,6 @@ public class SerializableArgumentTypes {
       Registry.register(registry, (String)"score_holder", ScoreHolderArgument.TYPE);
       Registry.register(registry, (String)"scoreboard_slot", ScoreboardSlotArgument.TYPE);
       Registry.register(registry, (String)"slot_source", SlotSourceArgument.TYPE);
-      Registry.register(registry, (String)"string", StringArgument.TYPE);
       Registry.register(registry, (String)"style", StyleArgument.TYPE);
       Registry.register(registry, (String)"swing_animation", SwingAnimationArgument.TYPE);
       Registry.register(registry, (String)"swizzle", SwizzleArgument.TYPE);
@@ -90,6 +91,7 @@ public class SerializableArgumentTypes {
       Registry.register(registry, (String)"uuid", UuidArgument.TYPE);
       Registry.register(registry, (String)"vec2", Vec2Argument.TYPE);
       Registry.register(registry, (String)"vec3", Vec3Argument.TYPE);
+      Registry.register(registry, (String)"word", StringArgument.Word.TYPE);
    }
 
    static {

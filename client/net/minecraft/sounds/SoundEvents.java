@@ -151,7 +151,7 @@ public class SoundEvents {
    public static final SoundEvent BLAZE_BURN = register("entity.blaze.burn");
    public static final SoundEvent BLAZE_DEATH = register("entity.blaze.death");
    public static final SoundEvent BLAZE_HURT = register("entity.blaze.hurt");
-   public static final SoundEvent BLAZE_SHOOT = register("entity.blaze.shoot");
+   public static final Holder<SoundEvent> BLAZE_SHOOT = registerForHolder("entity.blaze.shoot");
    public static final SoundEvent BOAT_PADDLE_LAND = register("entity.boat.paddle_land");
    public static final SoundEvent BOAT_PADDLE_WATER = register("entity.boat.paddle_water");
    public static final SoundEvent BOGGED_AMBIENT = register("entity.bogged.ambient");
@@ -190,7 +190,6 @@ public class SoundEvents {
    public static final SoundEvent BUBBLE_COLUMN_UPWARDS_INSIDE = register("block.bubble_column.upwards_inside");
    public static final SoundEvent BUBBLE_COLUMN_WHIRLPOOL_AMBIENT = register("block.bubble_column.whirlpool_ambient");
    public static final SoundEvent BUBBLE_COLUMN_WHIRLPOOL_INSIDE = register("block.bubble_column.whirlpool_inside");
-   public static final SoundEvent BUBBLE_POP = register("ui.hud.bubble_pop");
    public static final SoundEvent BUCKET_EMPTY = register("item.bucket.empty");
    public static final SoundEvent BUCKET_EMPTY_AXOLOTL = register("item.bucket.empty_axolotl");
    public static final SoundEvent BUCKET_EMPTY_FISH = register("item.bucket.empty_fish");
@@ -347,7 +346,7 @@ public class SoundEvents {
    public static final Holder<SoundEvent> DECORATED_POT_SHATTER = registerForHolder("block.decorated_pot.shatter");
    public static final SoundEvent DISPENSER_DISPENSE = register("block.dispenser.dispense");
    public static final SoundEvent DISPENSER_FAIL = register("block.dispenser.fail");
-   public static final SoundEvent DISPENSER_LAUNCH = register("block.dispenser.launch");
+   public static final Holder<SoundEvent> DISPENSER_LAUNCH = registerForHolder("block.dispenser.launch");
    public static final SoundEvent DOLPHIN_AMBIENT = register("entity.dolphin.ambient");
    public static final SoundEvent DOLPHIN_AMBIENT_WATER = register("entity.dolphin.ambient_water");
    public static final SoundEvent DOLPHIN_ATTACK = register("entity.dolphin.attack");
@@ -450,7 +449,7 @@ public class SoundEvents {
    public static final SoundEvent FIREWORK_ROCKET_LARGE_BLAST = register("entity.firework_rocket.large_blast");
    public static final SoundEvent FIREWORK_ROCKET_LARGE_BLAST_FAR = register("entity.firework_rocket.large_blast_far");
    public static final SoundEvent FIREWORK_ROCKET_LAUNCH = register("entity.firework_rocket.launch");
-   public static final SoundEvent FIREWORK_ROCKET_SHOOT = register("entity.firework_rocket.shoot");
+   public static final Holder<SoundEvent> FIREWORK_ROCKET_SHOOT = registerForHolder("entity.firework_rocket.shoot");
    public static final SoundEvent FIREWORK_ROCKET_TWINKLE = register("entity.firework_rocket.twinkle");
    public static final SoundEvent FIREWORK_ROCKET_TWINKLE_FAR = register("entity.firework_rocket.twinkle_far");
    public static final SoundEvent FIRE_AMBIENT = register("block.fire.ambient");
@@ -546,6 +545,7 @@ public class SoundEvents {
    public static final SoundEvent HAPPY_GHAST_DEATH = register("entity.happy_ghast.death");
    public static final SoundEvent HAPPY_GHAST_HURT = register("entity.happy_ghast.hurt");
    public static final SoundEvent HAPPY_GHAST_RIDING = register("entity.happy_ghast.riding");
+   public static final SoundEvent HUD_BUBBLE_POP = register("ui.hud.bubble_pop");
    public static final SoundEvent TRIAL_SPAWNER_SPAWN_MOB = register("block.trial_spawner.spawn_mob");
    public static final SoundEvent TRIAL_SPAWNER_ABOUT_TO_SPAWN_ITEM = register("block.trial_spawner.about_to_spawn_item");
    public static final SoundEvent TRIAL_SPAWNER_SPAWN_ITEM = register("block.trial_spawner.spawn_item");
@@ -571,7 +571,7 @@ public class SoundEvents {
    public static final SoundEvent HOGLIN_RETREAT = register("entity.hoglin.retreat");
    public static final SoundEvent HOGLIN_STEP = register("entity.hoglin.step");
    public static final SoundEvent HONEY_BLOCK_SLIDE = register("block.honey_block.slide");
-   public static final SoundEvent HONEYCOMB_WAX_ON = register("item.honeycomb.wax_on");
+   public static final Holder<SoundEvent> HONEYCOMB_WAX_ON = registerForHolder("item.honeycomb.wax_on");
    public static final Holder<SoundEvent> HONEY_DRINK = registerForHolder("item.honey_bottle.drink");
    public static final int GOAT_HORN_VARIANT_COUNT = 8;
    public static final List<Holder<SoundEvent>> GOAT_HORN_SOUND_VARIANTS = registerGoatHornSoundVariants();
@@ -1192,7 +1192,7 @@ public class SoundEvents {
    public static final SoundEvent WEATHER_RAIN_ABOVE = register("weather.rain.above");
    public static final SoundEvent WET_SPONGE_DRIES = register("block.wet_sponge.dries");
    public static final Holder<SoundEvent> WIND_CHARGE_BURST = registerForHolder("entity.wind_charge.wind_burst");
-   public static final SoundEvent WIND_CHARGE_THROW = register("entity.wind_charge.throw");
+   public static final Holder<SoundEvent> WIND_CHARGE_THROW = registerForHolder("entity.wind_charge.throw");
    public static final SoundEvent WITCH_AMBIENT = register("entity.witch.ambient");
    public static final SoundEvent WITCH_CELEBRATE = register("entity.witch.celebrate");
    public static final SoundEvent WITCH_DEATH = register("entity.witch.death");

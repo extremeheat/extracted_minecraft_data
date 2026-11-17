@@ -190,14 +190,15 @@ public class ScrollableLayout implements Layout {
 
       protected void updateWidgetNarration(final NarrationElementOutput output) {
          if (ScrollableLayout.this.groupNarration != null) {
+            List<AbstractWidget> visibleChildren = this.children.stream().filter(AbstractWidget::isVisible).toList();
             AbstractWidget narrated = (AbstractWidget)getNarratedChild(output.narrationTrigger(), this.getHoveredChild(), this.getFocusedChild());
             if (narrated != null) {
                narrated.updateNarration(output.nest());
-               ScrollableLayout.this.groupNarration.narratePosition(output, this.children, narrated);
+               ScrollableLayout.this.groupNarration.narratePosition(output, visibleChildren, narrated);
             }
 
             if (this.isFocused()) {
-               ScrollableLayout.this.groupNarration.narrateUsage(output, this.children);
+               ScrollableLayout.this.groupNarration.narrateUsage(output, visibleChildren);
             }
 
          }

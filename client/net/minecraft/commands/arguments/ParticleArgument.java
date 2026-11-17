@@ -27,7 +27,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 
 public class ParticleArgument implements SerializableArgument<ParticleOptions> {
-   private static final ParticleArgument INSTANCE = new ParticleArgument();
+   public static final ParticleArgument INSTANCE = new ParticleArgument();
    public static final SerializableArgument.Type<ParticleArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE;
@@ -87,7 +87,7 @@ public class ParticleArgument implements SerializableArgument<ParticleOptions> {
 
    static {
       TYPE = SerializableArgument.<ParticleArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("foo", "foo:bar", "particle{foo:bar}");
+      EXAMPLES = List.of("angry_villager", "minecraft:angry_villager", "block{block_state:dirt}");
       ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("particle.notFound", value));
       ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((message) -> Component.translatableEscape("particle.invalidOptions", message));
       VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);

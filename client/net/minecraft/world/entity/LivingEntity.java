@@ -1170,9 +1170,12 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
          float originalDamage = damage;
          ItemStack itemInUse = this.getUseItem();
-         float damageBlocked = this.applyItemBlocking(level, source, damage);
-         damage -= damageBlocked;
-         boolean blocked = damageBlocked > 0.0F;
+         Optional<Float> damageBlocked = this.applyItemBlocking(level, source, damage);
+         boolean blocked = damageBlocked.isPresent();
+         if (blocked) {
+            damage -= (Float)damageBlocked.get();
+         }
+
          if (source.is(DamageTypeTags.IS_FREEZING) && this.is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES)) {
             damage *= 5.0F;
          }
@@ -1249,14 +1252,14 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          if (this instanceof ServerPlayer) {
             ServerPlayer serverPlayer = (ServerPlayer)this;
             CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(serverPlayer, source, originalDamage, damage, blocked);
-            if (damageBlocked > 0.0F && damageBlocked < 3.4028235E37F) {
-               serverPlayer.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(damageBlocked * 10.0F));
+            if (damageBlocked.isPresent() && (Float)damageBlocked.get() < 3.4028235E37F) {
+               serverPlayer.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round((Float)damageBlocked.get() * 10.0F));
             }
          }
 
-         Entity var17 = source.getEntity();
-         if (var17 instanceof ServerPlayer) {
-            ServerPlayer sourcePlayer = (ServerPlayer)var17;
+         Entity var16 = source.getEntity();
+         if (var16 instanceof ServerPlayer) {
+            ServerPlayer sourcePlayer = (ServerPlayer)var16;
             CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(sourcePlayer, this, source, originalDamage, damage, blocked);
          }
 
@@ -1284,49 +1287,52 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    }
 
-   public float applyItemBlocking(final ServerLevel level, final DamageSource source, final float damage) {
-      if (damage <= 0.0F) {
-         return 0.0F;
+   public Optional<Float> applyItemBlocking(final ServerLevel level, final DamageSource source, final float damage) {
+      ItemStack blockingWith = this.getItemBlockingWith();
+      if (blockingWith == null) {
+         return Optional.empty();
       } else {
-         ItemStack blockingWith = this.getItemBlockingWith();
-         if (blockingWith == null) {
-            return 0.0F;
-         } else {
-            BlocksAttacks blocksAttacks = (BlocksAttacks)blockingWith.get(DataComponents.BLOCKS_ATTACKS);
-            if (blocksAttacks != null && !(Boolean)blocksAttacks.bypassedBy().map((t) -> t.contains(source.typeHolder())).orElse(false)) {
-               Entity var7 = source.getDirectEntity();
-               if (var7 instanceof AbstractArrow) {
-                  AbstractArrow abstractArrow = (AbstractArrow)var7;
-                  if (abstractArrow.getPierceLevel() > 0) {
-                     return 0.0F;
-                  }
+         BlocksAttacks blocksAttacks = (BlocksAttacks)blockingWith.get(DataComponents.BLOCKS_ATTACKS);
+         if (blocksAttacks != null && !(Boolean)blocksAttacks.bypassedBy().map((t) -> t.contains(source.typeHolder())).orElse(false)) {
+            Entity var7 = source.getDirectEntity();
+            if (var7 instanceof AbstractArrow) {
+               AbstractArrow abstractArrow = (AbstractArrow)var7;
+               if (abstractArrow.getPierceLevel() > 0) {
+                  return Optional.empty();
                }
+            }
 
-               Vec3 sourcePosition = source.getSourcePosition();
-               double angle;
-               if (sourcePosition != null) {
-                  Vec3 viewVector = calculateViewVector(0.0F, this.getYHeadRot());
-                  Vec3 vectorTo = sourcePosition.subtract(this.position());
-                  vectorTo = (new Vec3(vectorTo.x, 0.0, vectorTo.z)).normalize();
-                  angle = Math.acos(vectorTo.dot(viewVector));
-               } else {
-                  angle = 3.1415927410125732;
-               }
+            Vec3 sourcePosition = source.getSourcePosition();
+            double angle;
+            if (sourcePosition != null) {
+               Vec3 viewVector = calculateViewVector(0.0F, this.getYHeadRot());
+               Vec3 vectorTo = sourcePosition.subtract(this.position());
+               vectorTo = (new Vec3(vectorTo.x, 0.0, vectorTo.z)).normalize();
+               angle = Math.acos(vectorTo.dot(viewVector));
+            } else {
+               angle = 3.1415927410125732;
+            }
 
-               float damageBlocked = blocksAttacks.resolveBlockedDamage(source, damage, angle);
-               blocksAttacks.hurtBlockingItem(this.level(), blockingWith, this, this.getUsedItemHand(), damageBlocked);
-               if (damageBlocked > 0.0F && !source.is(DamageTypeTags.IS_PROJECTILE)) {
+            ItemStack weapon = source.getWeaponItem();
+            if (weapon != null && weapon.is(ItemTags.KNOCKS_BACK_PLAYERS_EVEN_WITH_ZERO_DAMAGE)) {
+               return blocksAttacks.resolveBlockedDamage(source, 1.0F, angle).map((var0) -> 0.0F);
+            } else if (damage <= 0.0F) {
+               return Optional.empty();
+            } else {
+               Optional<Float> damageBlocked = blocksAttacks.resolveBlockedDamage(source, damage, angle);
+               blocksAttacks.hurtBlockingItem(this.level(), blockingWith, this, this.getUsedItemHand(), (Float)damageBlocked.orElse(0.0F));
+               if (damageBlocked.isPresent() && !source.is(DamageTypeTags.IS_PROJECTILE)) {
                   Entity directEntity = source.getDirectEntity();
                   if (directEntity instanceof LivingEntity) {
                      LivingEntity livingEntity = (LivingEntity)directEntity;
-                     this.blockUsingItem(level, livingEntity, source, damage, damageBlocked >= damage);
+                     this.blockUsingItem(level, livingEntity, source, damage, (Float)damageBlocked.get() >= damage);
                   }
                }
 
                return damageBlocked;
-            } else {
-               return 0.0F;
             }
+         } else {
+            return Optional.empty();
          }
       }
    }
@@ -2105,12 +2111,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
 
    private void makeDrownParticles() {
       Vec3 movement = this.getDeltaMovement();
+      double baseY = this.getY() + (double)this.getEyeHeight();
 
       for(int i = 0; i < 8; ++i) {
          double offsetX = this.random.triangle(0.0, 1.0);
          double offsetY = this.random.triangle(0.0, 1.0);
          double offsetZ = this.random.triangle(0.0, 1.0);
-         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + offsetX, this.getY() + offsetY, this.getZ() + offsetZ, movement.x, movement.y, movement.z);
+         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + offsetX, baseY + offsetY, this.getZ() + offsetZ, movement.x, movement.y, movement.z);
       }
 
    }

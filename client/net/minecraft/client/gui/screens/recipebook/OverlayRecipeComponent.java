@@ -4,15 +4,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.GroupNarration;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.recipebook.PlaceRecipeHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -27,223 +35,247 @@ import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplay;
 import org.jspecify.annotations.Nullable;
 
-public class OverlayRecipeComponent implements GuiEventListener, Renderable {
+public class OverlayRecipeComponent extends AbstractContainerWidget {
+   private static final int BORDER_PADDING = 4;
    private static final Identifier OVERLAY_RECIPE_SPRITE = Identifier.withDefaultNamespace("recipe_book/overlay_recipe");
    private static final int MAX_ROW = 4;
    private static final int MAX_ROW_LARGE = 5;
    private static final float ITEM_RENDER_SCALE = 0.375F;
    public static final int BUTTON_SIZE = 25;
+   private static final int CRAFTING_GRID_WIDTH = 3;
+   private static final int CRAFTING_GRID_HEIGHT = 3;
+   private static final WidgetSprites FURNACE_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/furnace_overlay"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled_highlighted"));
+   private static final WidgetSprites CRAFTING_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/crafting_overlay"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled_highlighted"));
    private final List<OverlayRecipeButton> recipeButtons = new ArrayList();
-   private boolean isVisible;
-   private int x;
-   private int y;
    private RecipeCollection collection;
-   private @Nullable RecipeDisplayId lastRecipeClicked;
+   private @Nullable RecipeButton opener;
+   private int columns;
    private final SlotSelectTime slotSelectTime;
    private final boolean isFurnaceMenu;
+   private final RecipeBookComponent.RecipePlacer recipePlacer;
 
-   public OverlayRecipeComponent(final SlotSelectTime slotSelectTime, final boolean isFurnaceMenu) {
-      super();
+   public OverlayRecipeComponent(final SlotSelectTime slotSelectTime, final boolean isFurnaceMenu, final RecipeBookComponent.RecipePlacer recipePlacer) {
+      super(0, 0, 0, 0, CommonComponents.EMPTY);
       this.collection = RecipeCollection.EMPTY;
+      this.columns = 4;
       this.slotSelectTime = slotSelectTime;
       this.isFurnaceMenu = isFurnaceMenu;
+      this.recipePlacer = recipePlacer;
+      this.allowTabNavigationInside(false);
+      this.setVisible(false);
    }
 
-   public void init(final RecipeCollection collection, final ContextMap context, final boolean isFiltering, final int buttonX, final int buttonY, final int centerX, final int centerY, final float buttonWidth) {
-      this.collection = collection;
-      List<RecipeDisplayEntry> craftable = collection.getSelectedRecipes(RecipeCollection.CraftableStatus.CRAFTABLE);
-      List<RecipeDisplayEntry> unCraftable = isFiltering ? Collections.emptyList() : collection.getSelectedRecipes(RecipeCollection.CraftableStatus.NOT_CRAFTABLE);
+   public void init(final RecipeButton opener, final ContextMap context, final boolean isFiltering, final int centerX, final int centerY) {
+      this.opener = opener;
+      this.collection = opener.getCollection();
+      float buttonWidth = (float)opener.getWidth();
+      List<RecipeDisplayEntry> craftable = this.collection.getSelectedRecipes(RecipeCollection.CraftableStatus.CRAFTABLE);
+      List<RecipeDisplayEntry> unCraftable = isFiltering ? Collections.emptyList() : this.collection.getSelectedRecipes(RecipeCollection.CraftableStatus.NOT_CRAFTABLE);
       int craftables = craftable.size();
       int total = craftables + unCraftable.size();
       int maxRow = total <= 16 ? 4 : 5;
+      this.columns = maxRow;
       int rows = (int)Math.ceil((double)((float)total / (float)maxRow));
-      this.x = buttonX;
-      this.y = buttonY;
-      float rightPos = (float)(this.x + Math.min(total, maxRow) * 25);
+      int x = opener.getX();
+      int y = opener.getY();
+      float rightPos = (float)(x + Math.min(total, maxRow) * 25);
       float maxLeftPos = (float)(centerX + 50);
       if (rightPos > maxLeftPos) {
-         this.x = (int)((float)this.x - buttonWidth * (float)((int)((rightPos - maxLeftPos) / buttonWidth)));
+         x = (int)((float)x - buttonWidth * (float)((int)((rightPos - maxLeftPos) / buttonWidth)));
       }
 
-      float bottomPos = (float)(this.y + rows * 25);
+      float bottomPos = (float)(y + rows * 25);
       float maxBottomPos = (float)(centerY + 50);
       if (bottomPos > maxBottomPos) {
-         this.y = (int)((float)this.y - buttonWidth * (float)Mth.ceil((bottomPos - maxBottomPos) / buttonWidth));
+         y = (int)((float)y - buttonWidth * (float)Mth.ceil((bottomPos - maxBottomPos) / buttonWidth));
       }
 
-      float topPos = (float)this.y;
+      float topPos = (float)y;
       float maxTopPos = (float)(centerY - 100);
       if (topPos < maxTopPos) {
-         this.y = (int)((float)this.y - buttonWidth * (float)Mth.ceil((topPos - maxTopPos) / buttonWidth));
+         y = (int)((float)y - buttonWidth * (float)Mth.ceil((topPos - maxTopPos) / buttonWidth));
       }
 
-      this.isVisible = true;
+      this.setVisible(true);
+      this.setRectangle(Math.min(total, maxRow) * 25 + 8, rows * 25 + 8, x, y);
       this.recipeButtons.clear();
 
       for(int i = 0; i < total; ++i) {
          boolean canCraft = i < craftables;
          RecipeDisplayEntry recipe = canCraft ? (RecipeDisplayEntry)craftable.get(i) : (RecipeDisplayEntry)unCraftable.get(i - craftables);
-         int x = this.x + 4 + 25 * (i % maxRow);
-         int y = this.y + 5 + 25 * (i / maxRow);
+         int overlayButtonX = this.getX() + 4 + 25 * (i % maxRow);
+         int overlayButtonY = this.getY() + 4 + 1 + 25 * (i / maxRow);
+         ItemStack result = recipe.display().result().resolveForFirstStack(context);
          if (this.isFurnaceMenu) {
-            this.recipeButtons.add(new OverlaySmeltingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft, this.slotSelectTime));
+            this.recipeButtons.add(new OverlayRecipeButton(overlayButtonX, overlayButtonY, recipe.id(), result, canCraft, FURNACE_SPRITES, calculateSmeltingIngredientPositions(recipe.display(), context), this.slotSelectTime));
          } else {
-            this.recipeButtons.add(new OverlayCraftingRecipeButton(x, y, recipe.id(), recipe.display(), context, canCraft, this.slotSelectTime));
+            this.recipeButtons.add(new OverlayRecipeButton(overlayButtonX, overlayButtonY, recipe.id(), result, canCraft, CRAFTING_SPRITES, calculateCraftingIngredientPositions(recipe.display(), context), this.slotSelectTime));
          }
       }
 
-      this.lastRecipeClicked = null;
    }
 
-   public RecipeCollection getRecipeCollection() {
-      return this.collection;
+   public void focusFirstButton() {
+      this.setFocused(this.recipeButtons.isEmpty() ? null : (GuiEventListener)this.recipeButtons.getFirst());
    }
 
-   public @Nullable RecipeDisplayId getLastRecipeClicked() {
-      return this.lastRecipeClicked;
+   public @Nullable RecipeButton getOpener() {
+      return this.opener;
+   }
+
+   public List<? extends GuiEventListener> children() {
+      return this.recipeButtons;
+   }
+
+   public @Nullable ComponentPath nextFocusPath(final FocusNavigationEvent navigationEvent) {
+      ComponentPath focusPath = super.nextFocusPath(navigationEvent);
+      return focusPath == null && navigationEvent instanceof FocusNavigationEvent.ArrowNavigation && this.isFocused() ? this.getCurrentFocusPath() : focusPath;
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (!event.isLeftMouse()) {
-         return false;
+      return !event.isLeftMouse() ? false : super.mouseClicked(event, doubleClick);
+   }
+
+   protected void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
+      graphics.blitSprite(GuiPipeline.TEXTURED, OVERLAY_RECIPE_SPRITE, this.getX(), this.getY(), this.getWidth(), this.getHeight());
+
+      for(OverlayRecipeButton component : this.recipeButtons) {
+         component.extractRenderState(graphics);
+      }
+
+   }
+
+   public NarratableEntry.NarrationPriority narrationPriority() {
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredButton() != null);
+   }
+
+   protected void updateWidgetNarration(final NarrationElementOutput output) {
+      OverlayRecipeButton narrated = (OverlayRecipeButton)getNarratedChild(output.narrationTrigger(), this.getHoveredButton(), this.getFocusedButton());
+      GroupNarration groupNarration = GroupNarration.grid(this.columns, "narration.group_navigation.usage.recipe");
+      if (narrated != null) {
+         narrated.updateNarration(output.nest());
+         groupNarration.narratePosition(output, this.recipeButtons, narrated);
+      }
+
+      if (this.isFocused()) {
+         Component close = Component.translatable("narration.recipe.usage.close");
+         Component usage = groupNarration.usage(this.recipeButtons.size());
+         if (usage != null) {
+            output.add(NarratedElementType.USAGE, usage, close);
+         } else {
+            output.add(NarratedElementType.USAGE, close);
+         }
+      }
+
+   }
+
+   private OverlayRecipeButton getHoveredButton() {
+      for(OverlayRecipeButton button : this.recipeButtons) {
+         if (button.isHovered()) {
+            return button;
+         }
+      }
+
+      return null;
+   }
+
+   private OverlayRecipeButton getFocusedButton() {
+      GuiEventListener var2 = this.getFocused();
+      OverlayRecipeButton var10000;
+      if (var2 instanceof OverlayRecipeButton button) {
+         var10000 = button;
       } else {
-         for(OverlayRecipeButton recipeButton : this.recipeButtons) {
-            if (recipeButton.mouseClicked(event, doubleClick)) {
-               this.lastRecipeClicked = recipeButton.recipe;
-               return true;
-            }
+         var10000 = null;
+      }
+
+      return var10000;
+   }
+
+   protected int contentHeight() {
+      return this.height;
+   }
+
+   private static List<Pos> calculateSmeltingIngredientPositions(final RecipeDisplay recipe, final ContextMap context) {
+      if (recipe instanceof FurnaceRecipeDisplay furnaceRecipe) {
+         List<ItemStack> items = furnaceRecipe.ingredient().resolveForStacks(context);
+         if (!items.isEmpty()) {
+            return List.of(createGridPos(1, 1, items));
          }
-
-         return false;
-      }
-   }
-
-   public void extractRenderState(final GuiGraphicsExtractor graphics) {
-      if (this.isVisible) {
-         int maxRow = this.recipeButtons.size() <= 16 ? 4 : 5;
-         int width = Math.min(this.recipeButtons.size(), maxRow);
-         int height = Mth.ceil((float)this.recipeButtons.size() / (float)maxRow);
-         int border = 4;
-         graphics.blitSprite(GuiPipeline.TEXTURED, OVERLAY_RECIPE_SPRITE, this.x, this.y, width * 25 + 8, height * 25 + 8);
-
-         for(OverlayRecipeButton component : this.recipeButtons) {
-            component.extractRenderState(graphics);
-         }
-
-      }
-   }
-
-   public void setVisible(final boolean visible) {
-      this.isVisible = visible;
-   }
-
-   public boolean isVisible() {
-      return this.isVisible;
-   }
-
-   public void setFocused(final boolean focused) {
-   }
-
-   public boolean isFocused() {
-      return false;
-   }
-
-   private static class OverlaySmeltingRecipeButton extends OverlayRecipeButton {
-      private static final WidgetSprites FURNACE_OVERLAY_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/furnace_overlay"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/furnace_overlay_disabled_highlighted"));
-
-      public OverlaySmeltingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable, final SlotSelectTime slotSelectTime) {
-         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context), slotSelectTime);
       }
 
-      private static List<OverlayRecipeButton.Pos> calculateIngredientsPositions(final RecipeDisplay recipe, final ContextMap context) {
-         if (recipe instanceof FurnaceRecipeDisplay furnaceRecipe) {
-            List<ItemStack> items = furnaceRecipe.ingredient().resolveForStacks(context);
-            if (!items.isEmpty()) {
-               return List.of(createGridPos(1, 1, items));
-            }
-         }
-
-         return List.of();
-      }
-
-      protected Identifier getSprite(final boolean isCraftable) {
-         return FURNACE_OVERLAY_SPRITES.get(isCraftable, this.isHighlighted());
-      }
+      return List.of();
    }
 
-   private static class OverlayCraftingRecipeButton extends OverlayRecipeButton {
-      private static final WidgetSprites CRAFTING_OVERLAY_SPRITES = new WidgetSprites(Identifier.withDefaultNamespace("recipe_book/crafting_overlay"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_highlighted"), Identifier.withDefaultNamespace("recipe_book/crafting_overlay_disabled_highlighted"));
-      private static final int GRID_WIDTH = 3;
-      private static final int GRID_HEIGHT = 3;
-
-      public OverlayCraftingRecipeButton(final int x, final int y, final RecipeDisplayId id, final RecipeDisplay recipe, final ContextMap context, final boolean isCraftable, final SlotSelectTime slotSelectTime) {
-         super(x, y, id, isCraftable, calculateIngredientsPositions(recipe, context), slotSelectTime);
-      }
-
-      private static List<OverlayRecipeButton.Pos> calculateIngredientsPositions(final RecipeDisplay recipe, final ContextMap context) {
-         List<OverlayRecipeButton.Pos> result = new ArrayList();
-         Objects.requireNonNull(recipe);
-         byte var4 = 0;
-         //$FF: var4->value
-         //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
-         //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
-         switch (recipe.typeSwitch<invokedynamic>(recipe, var4)) {
-            case 0:
-               ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)recipe;
-               PlaceRecipeHelper.placeRecipe(3, 3, shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, var3, gridXPos, gridYPos) -> {
-                  List<ItemStack> items = ingredient.resolveForStacks(context);
-                  if (!items.isEmpty()) {
-                     result.add(createGridPos(gridXPos, gridYPos, items));
-                  }
-
-               });
-               break;
-            case 1:
-               ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)recipe;
-               List<SlotDisplay> ingredients = shapeless.ingredients();
-
-               for(int i = 0; i < ingredients.size(); ++i) {
-                  List<ItemStack> items = ((SlotDisplay)ingredients.get(i)).resolveForStacks(context);
-                  if (!items.isEmpty()) {
-                     result.add(createGridPos(i % 3, i / 3, items));
-                  }
+   private static List<Pos> calculateCraftingIngredientPositions(final RecipeDisplay recipe, final ContextMap context) {
+      List<Pos> result = new ArrayList();
+      Objects.requireNonNull(recipe);
+      byte var4 = 0;
+      //$FF: var4->value
+      //0->net/minecraft/world/item/crafting/display/ShapedCraftingRecipeDisplay
+      //1->net/minecraft/world/item/crafting/display/ShapelessCraftingRecipeDisplay
+      switch (recipe.typeSwitch<invokedynamic>(recipe, var4)) {
+         case 0:
+            ShapedCraftingRecipeDisplay shaped = (ShapedCraftingRecipeDisplay)recipe;
+            PlaceRecipeHelper.placeRecipe(3, 3, shaped.width(), shaped.height(), shaped.ingredients(), (ingredient, gridIndex, gridXPos, gridYPos) -> {
+               List<ItemStack> items = ingredient.resolveForStacks(context);
+               if (!items.isEmpty()) {
+                  result.add(createGridPos(gridXPos, gridYPos, items));
                }
-         }
 
-         return result;
+            });
+            break;
+         case 1:
+            ShapelessCraftingRecipeDisplay shapeless = (ShapelessCraftingRecipeDisplay)recipe;
+            List<SlotDisplay> ingredients = shapeless.ingredients();
+
+            for(int i = 0; i < ingredients.size(); ++i) {
+               List<ItemStack> items = ((SlotDisplay)ingredients.get(i)).resolveForStacks(context);
+               if (!items.isEmpty()) {
+                  result.add(createGridPos(i % 3, i / 3, items));
+               }
+            }
       }
 
-      protected Identifier getSprite(final boolean isCraftable) {
-         return CRAFTING_OVERLAY_SPRITES.get(isCraftable, this.isHighlighted());
-      }
+      return result;
    }
 
-   private abstract static class OverlayRecipeButton extends AbstractWidget {
+   private static Pos createGridPos(final int gridXPos, final int gridYPos, final List<ItemStack> itemStacks) {
+      return new Pos(3 + gridXPos * 7, 3 + gridYPos * 7, itemStacks);
+   }
+
+   private class OverlayRecipeButton extends AbstractButton {
       private final RecipeDisplayId recipe;
+      private final ItemStack result;
       private final boolean isCraftable;
+      private final WidgetSprites sprites;
       private final List<Pos> slots;
       private final SlotSelectTime slotSelectTime;
 
-      public OverlayRecipeButton(final int x, final int y, final RecipeDisplayId recipe, final boolean isCraftable, final List<Pos> slots, final SlotSelectTime slotSelectTime) {
+      public OverlayRecipeButton(final int x, final int y, final RecipeDisplayId recipe, final ItemStack result, final boolean isCraftable, final WidgetSprites sprites, final List<Pos> slots, final SlotSelectTime slotSelectTime) {
+         Objects.requireNonNull(OverlayRecipeComponent.this);
          super(x, y, 24, 24, CommonComponents.EMPTY);
          this.slots = slots;
          this.recipe = recipe;
+         this.result = result;
          this.isCraftable = isCraftable;
+         this.sprites = sprites;
          this.slotSelectTime = slotSelectTime;
       }
 
-      protected static Pos createGridPos(final int gridXPos, final int gridYPos, final List<ItemStack> itemStacks) {
-         return new Pos(3 + gridXPos * 7, 3 + gridYPos * 7, itemStacks);
+      public void onPress(final InputWithModifiers input) {
+         OverlayRecipeComponent.this.recipePlacer.placeRecipe(OverlayRecipeComponent.this.collection, this.recipe, input.hasShiftDown());
       }
 
-      protected abstract Identifier getSprite(boolean isCraftable);
+      protected MutableComponent createNarrationMessage() {
+         return Component.translatable("narration.recipe", this.result.getHoverName());
+      }
 
-      public void updateWidgetNarration(final NarrationElementOutput output) {
+      protected void updateWidgetNarration(final NarrationElementOutput output) {
          this.defaultButtonNarrationText(output);
       }
 
-      public void extractWidgetRenderState(final GuiGraphicsExtractor graphics) {
-         graphics.blitSprite(GuiPipeline.TEXTURED, this.getSprite(this.isCraftable), this.getX(), this.getY(), this.width, this.height);
+      protected void extractContents(final GuiGraphicsExtractor graphics) {
+         graphics.blitSprite(GuiPipeline.TEXTURED, this.sprites.get(this.isCraftable, this.isHighlighted()), this.getX(), this.getY(), this.width, this.height);
          float gridPosX = (float)(this.getX() + 2);
          float gridPosY = (float)(this.getY() + 2);
 
@@ -257,18 +289,18 @@ public class OverlayRecipeComponent implements GuiEventListener, Renderable {
          }
 
       }
+   }
 
-      protected static record Pos(int x, int y, List<ItemStack> ingredients) {
-         public Pos {
-            super();
-            if (ingredients.isEmpty()) {
-               throw new IllegalArgumentException("Ingredient list must be non-empty");
-            }
+   private static record Pos(int x, int y, List<ItemStack> ingredients) {
+      public Pos {
+         super();
+         if (ingredients.isEmpty()) {
+            throw new IllegalArgumentException("Ingredient list must be non-empty");
          }
+      }
 
-         public ItemStack selectIngredient(final int currentIndex) {
-            return (ItemStack)this.ingredients.get(currentIndex % this.ingredients.size());
-         }
+      public ItemStack selectIngredient(final int currentIndex) {
+         return (ItemStack)this.ingredients.get(currentIndex % this.ingredients.size());
       }
    }
 }

@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.dialog.Dialog;
 
 public class DialogArgument extends ResourceOrIdArgument.Simple<Dialog> {
-   private static final DialogArgument INSTANCE = new DialogArgument();
+   public static final DialogArgument INSTANCE = new DialogArgument();
    public static final SerializableArgument.Type<DialogArgument> TYPE;
 
    private DialogArgument() {

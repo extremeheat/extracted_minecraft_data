@@ -124,7 +124,9 @@ public class Options {
    private final OptionInstance<Boolean> cutoutLeaves;
    private static final Component GRAPHICS_TOOLTIP_VIGNETTE = Component.translatable("options.vignette.tooltip");
    private final OptionInstance<Boolean> vignette;
-   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.oitWithImprovedFog.tooltip");
+   private static final Component GRAPHICS_TOOLTIP_IMPROVED_FOG = Component.translatable("options.improvedFog.tooltip");
+   private final OptionInstance<Boolean> improvedFog;
+   private static final Component GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY = Component.translatable("options.improvedTransparency.oitWithCloudsInFog.tooltip");
    private final OptionInstance<Boolean> improvedTransparency;
    private final OptionInstance<Boolean> ambientOcclusion;
    private static final Component GRAPHICS_TOOLTIP_CHUNK_FADE = Component.translatable("options.chunkFade.tooltip");
@@ -246,6 +248,7 @@ public class Options {
    public final KeyMapping keyInventory;
    public final KeyMapping keySwapOffhand;
    public final KeyMapping keyDrop;
+   public final KeyMapping keyRepeatRecipeOrTrade;
    public final KeyMapping keyUse;
    public final KeyMapping keyAttack;
    public final KeyMapping keyPickItem;
@@ -419,6 +422,10 @@ public class Options {
 
    public OptionInstance<Boolean> vignette() {
       return this.vignette;
+   }
+
+   public OptionInstance<Boolean> improvedFog() {
+      return this.improvedFog;
    }
 
    public OptionInstance<Boolean> improvedTransparency() {
@@ -896,6 +903,7 @@ public class Options {
          this.setGraphicsPresetToCustom();
       });
       this.vignette = OptionInstance.createBoolean("options.vignette", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_VIGNETTE), true);
+      this.improvedFog = OptionInstance.createBoolean("options.improvedFog", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_FOG), true, (var1) -> this.setGraphicsPresetToCustom());
       this.improvedTransparency = OptionInstance.createBoolean("options.improvedTransparency", OptionInstance.cachedConstantTooltip(GRAPHICS_TOOLTIP_IMPROVED_TRANSPARENCY), false, (value) -> {
          operateOnLevelExtractor(LevelExtractor::allChanged);
          this.setGraphicsPresetToCustom();
@@ -1063,6 +1071,7 @@ public class Options {
       this.keyInventory = new KeyMapping("key.inventory", 8, KeyMapping.Category.INVENTORY);
       this.keySwapOffhand = new KeyMapping("key.swapOffhand", 9, KeyMapping.Category.INVENTORY);
       this.keyDrop = new KeyMapping("key.drop", 20, KeyMapping.Category.INVENTORY);
+      this.keyRepeatRecipeOrTrade = new KeyMapping("key.repeatRecipeOrTrade", 21, KeyMapping.Category.INVENTORY);
       InputConstants.Type var10004 = InputConstants.Type.MOUSE;
       KeyMapping.Category var7 = KeyMapping.Category.GAMEPLAY;
       OptionInstance var10007 = this.toggleUse;
@@ -1117,7 +1126,7 @@ public class Options {
       this.keyDebugSwitchTranslucencyMode = new KeyMapping("key.debug.improvedTransparency", InputConstants.Type.KEYBOARD, 27, KeyMapping.Category.DEBUG);
       this.keyDebugEnvironmentAttributeOptions = new KeyMapping("key.debug.environmentAttributeOptions", InputConstants.Type.KEYBOARD, 34, KeyMapping.Category.DEBUG, 5);
       this.debugKeys = (KeyMapping[])Stream.of(this.keyDebugReloadChunk, this.keyDebugShowHitboxes, this.keyDebugClearChat, this.keyDebugCrash, this.keyDebugShowChunkBorders, this.keyDebugShowAdvancedTooltips, this.keyDebugCopyRecreateCommand, this.keyDebugSpectate, this.keyDebugSwitchGameMode, this.keyDebugDebugOptions, this.keyDebugFocusPause, this.keyDebugDumpDynamicTextures, this.keyDebugReloadResourcePacks, this.keyDebugProfiling, this.keyDebugCopyLocation, this.keyDebugDumpVersion, this.keyDebugPofilingChart, this.keyDebugFpsCharts, this.keyDebugNetworkCharts, this.keyDebugLightmapTexture, this.keyDebugSwitchTranslucencyMode, this.keyDebugEnvironmentAttributeOptions).filter((key) -> key != this.keyDebugEnvironmentAttributeOptions || SharedConstants.DEBUG_ENABLED || DevUtil.IS_RUNNING_IN_IDE).toArray((x$0) -> new KeyMapping[x$0]);
-      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keyOtherPlayers, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
+      this.keyMappings = (KeyMapping[])Stream.of(new KeyMapping[]{this.keyAttack, this.keyUse, this.keyUp, this.keyLeft, this.keyDown, this.keyRight, this.keyJump, this.keyShift, this.keySprint, this.keyDrop, this.keyInventory, this.keyChat, this.keyPlayerList, this.keyPickItem, this.keyCommand, this.keyFriends, this.keyOtherPlayers, this.keyToggleGui, this.keyToggleSpectatorShaderEffects, this.keyScreenshot, this.keyTogglePerspective, this.keySmoothCamera, this.keyFullscreen, this.keySpectatorOutlines, this.keySpectatorHotbar, this.keySwapOffhand, this.keyRepeatRecipeOrTrade, this.keySaveHotbarActivator, this.keyLoadHotbarActivator, this.keyAdvancements, this.keyQuickActions, this.keyDebugOverlay, this.keyDebugModifier}, this.keyHotbarSlots, this.debugKeys).flatMap(Stream::of).toArray((x$0) -> new KeyMapping[x$0]);
       this.cameraType = CameraType.FIRST_PERSON;
       this.lastMpIp = "";
       this.fov = new OptionInstance<Integer>("options.fov", OptionInstance.noTooltip(), (caption, value) -> {
@@ -1239,6 +1248,7 @@ public class Options {
       access.process("maxAnisotropyBit", this.maxAnisotropyBit);
       access.process("textureFiltering", this.textureFiltering);
       access.process("maxFps", this.framerateLimit);
+      access.process("improvedFog", this.improvedFog);
       access.process("improvedTransparency", this.improvedTransparency);
       access.process("inactivityFpsLimit", this.inactivityFpsLimit);
       access.process("mipmapLevels", this.mipmapLevels);
@@ -1718,6 +1728,7 @@ public class Options {
    public void extractRenderState(final OptionsRenderState optionsState) {
       optionsState.cloudRange = (Integer)this.cloudRange().get();
       optionsState.cutoutLeaves = (Boolean)this.cutoutLeaves().get();
+      optionsState.improvedFog = (Boolean)this.improvedFog().get();
       optionsState.improvedTransparency = (Boolean)this.improvedTransparency().get();
       optionsState.ambientOcclusion = (Boolean)this.ambientOcclusion().get();
       optionsState.menuBackgroundBlurriness = this.getMenuBackgroundBlurriness();

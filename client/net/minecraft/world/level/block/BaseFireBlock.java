@@ -11,7 +11,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.entity.InsideBlockEffectType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -20,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jspecify.annotations.Nullable;
 
 public abstract class BaseFireBlock extends Block {
    private static final int SECONDS_ON_FIRE = 8;
@@ -154,17 +152,6 @@ public abstract class BaseFireBlock extends Block {
 
    private static boolean inPortalDimension(final Level level) {
       return level.dimension() == Level.OVERWORLD || level.dimension() == Level.NETHER;
-   }
-
-   public void spawnDestroyByEntityParticles(final Level level, final @Nullable Entity entity, final BlockPos pos, final BlockState state) {
-   }
-
-   public BlockState playerWillDestroy(final Level level, final BlockPos pos, final BlockState state, final Player player) {
-      if (!level.isClientSide()) {
-         level.levelEvent((Entity)null, 1009, pos, 0);
-      }
-
-      return super.playerWillDestroy(level, pos, state, player);
    }
 
    public static boolean canBePlacedAt(final Level level, final BlockPos pos, final Direction forwardDirection) {

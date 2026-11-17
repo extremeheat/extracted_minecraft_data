@@ -17,7 +17,7 @@ public class EntityCatSplitFix extends SimpleEntityRenameFix {
             String ownerName = tag.get("Owner").asString("");
             String ownerUUID = tag.get("OwnerUUID").asString("");
             if (!ownerName.isEmpty() || !ownerUUID.isEmpty()) {
-               tag.set("Trusting", tag.createBoolean(true));
+               tag = tag.set("Trusting", tag.createBoolean(true));
             }
          } else if (type > 0 && type < 4) {
             tag = tag.set("CatType", tag.createInt(type));

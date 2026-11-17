@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components.tabs;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
@@ -9,6 +9,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -20,8 +21,8 @@ public class MenuTabBar extends TabNavigationBar {
    private static final int MAX_WIDTH = 400;
    private static final int MARGIN = 14;
 
-   public MenuTabBar(final int x, final int y, final int width, final int height, final TabManager tabManager, final ImmutableList<TabButton> tabButtons, final ImmutableList<Tab> tabs) {
-      super(x, y, width, height, tabManager, tabButtons, tabs);
+   public MenuTabBar(final int x, final int y, final int width, final int height, final TabManager tabManager, final Map<TabNavigationBar.Align, TabNavigationBar.TabGroup> tabGroups, final Component name) {
+      super(x, y, width, height, LinearLayout.Orientation.HORIZONTAL, 0, tabManager, tabGroups, name);
    }
 
    public static Builder builder(final TabManager tabManager, final int width) {
@@ -53,7 +54,7 @@ public class MenuTabBar extends TabNavigationBar {
 
    public static class Builder extends TabNavigationBar.Builder {
       private Builder(final TabManager tabManager, final int width) {
-         super(tabManager, 0, 0, width, 24);
+         super(tabManager, 0, 0, width, 24, LinearLayout.Orientation.HORIZONTAL);
       }
 
       public Builder addTab(final Component label, final Tab tab) {
@@ -62,7 +63,7 @@ public class MenuTabBar extends TabNavigationBar {
       }
 
       public MenuTabBar build() {
-         return new MenuTabBar(this.x, this.y, this.width, this.height, this.tabManager, ImmutableList.copyOf(this.tabButtons), ImmutableList.copyOf(this.tabs));
+         return new MenuTabBar(this.x, this.y, this.width, this.height, this.tabManager, this.groups, this.name);
       }
    }
 

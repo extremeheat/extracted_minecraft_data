@@ -18,7 +18,7 @@ public class LongArgument extends BrigadierWrapperArgument<Long, LongArgumentTyp
    public static final SerializableArgument.Type<LongArgument> TYPE;
    private final MinMaxBounds.Bounds<Long> bounds;
 
-   private LongArgument(final MinMaxBounds.Bounds<Long> bounds) {
+   public LongArgument(final MinMaxBounds.Bounds<Long> bounds) {
       super(LongArgumentType.longArg((Long)bounds.min().orElse(MIN), (Long)bounds.max().orElse(MAX)));
       this.bounds = bounds;
    }

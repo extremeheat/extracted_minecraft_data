@@ -14,9 +14,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ThrowingComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.Crypt;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.crypto.SigningCryptoUtils;
 
 public record ProfilePublicKey(Data data) {
    public static final Component EXPIRED_PROFILE_PUBLIC_KEY = Component.translatable("multiplayer.disconnect.expired_public_key");
@@ -46,7 +46,7 @@ public record ProfilePublicKey(Data data) {
 
    public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
-      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(i, Data::new));
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((i) -> i.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), SigningCryptoUtils.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(i, Data::new));
       public static final StreamCodec<ByteBuf, Data> STREAM_CODEC;
 
       public Data {
@@ -82,7 +82,7 @@ public record ProfilePublicKey(Data data) {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INSTANT, Data::expiresAt, ByteBufCodecs.PUBLIC_KEY, Data::key, ByteBufCodecs.byteArray(4096), Data::keySignature, Data::new);
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INSTANT, Data::expiresAt, ByteBufCodecs.X509_RSA_PUBLIC_KEY, Data::key, ByteBufCodecs.byteArray(4096), Data::keySignature, Data::new);
       }
    }
 

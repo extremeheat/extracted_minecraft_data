@@ -1,6 +1,13 @@
 package net.minecraft.world.entity;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.DispenseBehavior;
+import net.minecraft.core.dispenser.ShootProjectileDispenseBehavior;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -95,8 +102,15 @@ public class OminousItemSpawner extends Entity {
    }
 
    private Entity spawnProjectile(final ServerLevel level, final ProjectileItem projectileItem, final ItemStack item) {
-      ProjectileItem.DispenseConfig dispenseConfig = projectileItem.createDispenseConfig();
-      dispenseConfig.overrideDispenseEvent().ifPresent((event) -> level.levelEvent(event, this.blockPosition(), 0));
+      Holder<List<DispenseBehavior>> holder = (Holder)item.get(DataComponents.DISPENSE_BEHAVIOR);
+      List<DispenseBehavior> dispenseBehaviors = holder != null ? (List)holder.value() : List.of();
+      Stream var10000 = dispenseBehaviors.stream();
+      Objects.requireNonNull(ShootProjectileDispenseBehavior.class);
+      var10000 = var10000.filter(ShootProjectileDispenseBehavior.class::isInstance);
+      Objects.requireNonNull(ShootProjectileDispenseBehavior.class);
+      ShootProjectileDispenseBehavior dispenseConfig = (ShootProjectileDispenseBehavior)var10000.map(ShootProjectileDispenseBehavior.class::cast).findFirst().orElse(ShootProjectileDispenseBehavior.DEFAULT);
+      Vec3 pos = this.position();
+      dispenseConfig.sound().ifPresent((sound) -> level.playSound((Entity)null, pos.x(), pos.y(), pos.z(), sound.sound(), this.getSoundSource(), sound.volume().sample(this.random), sound.pitch().sample(this.random)));
       Direction direction = Direction.DOWN;
       Projectile projectile = Projectile.spawnProjectileUsingShoot(projectileItem.asProjectile(level, this.position(), item, direction), level, item, (double)direction.getStepX(), (double)direction.getStepY(), (double)direction.getStepZ(), dispenseConfig.power(), dispenseConfig.uncertainty());
       projectile.setOwner(this);

@@ -45,7 +45,7 @@ public class ResourceArgument implements SerializableArgument<Holder.Reference<?
    public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE;
    private final ResourceKey<? extends Registry<?>> registryKey;
 
-   private ResourceArgument(final ResourceKey<? extends Registry<?>> registryKey) {
+   public ResourceArgument(final ResourceKey<? extends Registry<?>> registryKey) {
       super();
       this.registryKey = registryKey;
    }
@@ -116,7 +116,7 @@ public class ResourceArgument implements SerializableArgument<Holder.Reference<?
 
    public Holder.Reference<?> parse(final StringReader reader, final ParseContext context) throws CommandSyntaxException {
       ResourceKey<?> resourceId = ResourceKey.create(this.registryKey, Identifier.read(reader));
-      return (Holder.Reference)context.holderGetters().get(resourceId).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(reader, resourceId, this.registryKey.identifier()));
+      return (Holder.Reference)context.holderGetters().get(resourceId).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(reader, resourceId.identifier(), this.registryKey.identifier()));
    }
 
    public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {

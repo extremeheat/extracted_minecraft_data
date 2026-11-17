@@ -59,12 +59,12 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
 
    private static NoiseGeneratorSettings end(final BootstrapContext<?> context) {
       NoiseRouter router = NoiseRouterData.end(context.lookup(Registries.DENSITY_FUNCTION));
-      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.AIR.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(EndMaterialRules.END), List.of(), 0, true, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()), new DebugFunctionEntry("IS", router.erosion()))));
+      return new NoiseGeneratorSettings(NoiseSettings.END_NOISE_SETTINGS, Blocks.AIR.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(EndMaterialRules.END), List.of(), 0, true, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("Final Density", router.finalDensity()), new DebugFunctionEntry("Erosion", router.erosion()))));
    }
 
    private static NoiseGeneratorSettings nether(final BootstrapContext<?> context) {
       NoiseRouter router = NoiseRouterData.nether(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE));
-      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.LAVA.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(NetherMaterialRules.NETHER), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()), new DebugFunctionEntry("T", router.temperature()), new DebugFunctionEntry("V", router.vegetation()))));
+      return new NoiseGeneratorSettings(NoiseSettings.NETHER_NOISE_SETTINGS, Blocks.LAVA.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(NetherMaterialRules.NETHER), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("Final Density", router.finalDensity()), new DebugFunctionEntry("Temperature", router.temperature()), new DebugFunctionEntry("Vegetation", router.vegetation()))));
    }
 
    private static NoiseGeneratorSettings overworld(final BootstrapContext<?> context, final boolean isAmplified, final boolean largeBiomes) {
@@ -84,17 +84,17 @@ public record NoiseGeneratorSettings(NoiseSettings noiseSettings, BlockState def
       Objects.requireNonNull(functions);
       List<SpawnTargetPoint> spawnTarget = var10000.spawnTarget(functionNames.map(functions::getOrThrow), weirdness);
       NoiseRouter router = NoiseRouterData.overworld(functions, functionNames);
-      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD), spawnTarget, 63, false, Optional.of(NoiseRouterData.overworldAquifers(functions, noises, functionNames)), false, new DebugFunctions(List.of(new DebugFunctionEntry("Final density", router.finalDensity()), new DebugFunctionEntry("Temperature", router.temperature()), new DebugFunctionEntry("Vegetation", router.vegetation()), new DebugFunctionEntry("Continents", router.continents()), new DebugFunctionEntry("Erosion", router.erosion()), new DebugFunctionEntry("Depth", router.depth()), new DebugFunctionEntry("Ridges", router.ridges()), new DebugFunctionEntry("Peaks/Valleys", NoiseRouterData.peaksAndValleys(router.ridges())), new DebugFunctionEntry("Prelim Surface", NoiseRouterData.getFunction(functions, functionNames.preliminarySurfaceLevel())))));
+      return new NoiseGeneratorSettings(NoiseSettings.OVERWORLD_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD), spawnTarget, 63, false, Optional.of(NoiseRouterData.overworldAquifers(functions, noises, functionNames)), false, new DebugFunctions(List.of(new DebugFunctionEntry("Final Density", router.finalDensity()), new DebugFunctionEntry("Temperature", router.temperature()), new DebugFunctionEntry("Vegetation", router.vegetation()), new DebugFunctionEntry("Continents", router.continents()), new DebugFunctionEntry("Erosion", router.erosion()), new DebugFunctionEntry("Depth", router.depth()), new DebugFunctionEntry("Ridges", router.ridges()), new DebugFunctionEntry("Peaks/Valleys", NoiseRouterData.peaksAndValleys(router.ridges())), new DebugFunctionEntry("Prelim Surface", NoiseRouterData.getFunction(functions, functionNames.preliminarySurfaceLevel())))));
    }
 
    private static NoiseGeneratorSettings caves(final BootstrapContext<?> context) {
       NoiseRouter router = NoiseRouterData.caves(context.lookup(Registries.DENSITY_FUNCTION));
-      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_CAVES), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()))));
+      return new NoiseGeneratorSettings(NoiseSettings.CAVES_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_CAVES), List.of(), 32, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("Final Density", router.finalDensity()))));
    }
 
    private static NoiseGeneratorSettings floatingIslands(final BootstrapContext<?> context) {
       NoiseRouter router = NoiseRouterData.floatingIslands(context.lookup(Registries.DENSITY_FUNCTION), context.lookup(Registries.NOISE));
-      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_FLOATING_ISLANDS), List.of(), -64, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("N", router.finalDensity()))));
+      return new NoiseGeneratorSettings(NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS, Blocks.WATER.defaultBlockState(), router, context.lookup(Registries.MATERIAL_RULE).getOrThrow(OverworldMaterialRules.OVERWORLD_FLOATING_ISLANDS), List.of(), -64, false, Optional.empty(), true, new DebugFunctions(List.of(new DebugFunctionEntry("Final Density", router.finalDensity()))));
    }
 
    static {

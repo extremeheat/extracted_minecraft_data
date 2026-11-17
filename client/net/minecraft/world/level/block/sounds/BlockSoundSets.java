@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block.sounds;
 
+import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.Identifier;
@@ -15,6 +17,7 @@ public class BlockSoundSets {
    public static final ResourceKey<BlockSoundSet> METAL = key("metal");
    public static final ResourceKey<BlockSoundSet> GLASS = key("glass");
    public static final ResourceKey<BlockSoundSet> WOOL = key("wool");
+   public static final ResourceKey<BlockSoundSet> FIRE = key("fire");
    public static final ResourceKey<BlockSoundSet> SAND = key("sand");
    public static final ResourceKey<BlockSoundSet> SNOW = key("snow");
    public static final ResourceKey<BlockSoundSet> POWDER_SNOW = key("powder_snow");
@@ -158,6 +161,7 @@ public class BlockSoundSets {
       context.register(METAL, new BlockSoundSet(1.0F, 1.5F, SoundEvents.METAL));
       context.register(GLASS, new BlockSoundSet(SoundEvents.GLASS));
       context.register(WOOL, new BlockSoundSet(SoundEvents.WOOL));
+      context.register(FIRE, new BlockSoundSet(SoundEvents.WOOL.withBreak(Optional.of(Holder.direct(SoundEvents.FIRE_EXTINGUISH)))));
       context.register(SAND, new BlockSoundSet(SoundEvents.SAND));
       context.register(SNOW, new BlockSoundSet(SoundEvents.SNOW));
       context.register(POWDER_SNOW, new BlockSoundSet(SoundEvents.POWDER_SNOW));

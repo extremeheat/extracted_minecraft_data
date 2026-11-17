@@ -5,7 +5,6 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.Codec;
@@ -13,14 +12,12 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.SerializableArgument;
 import net.minecraft.commands.suggestions.SuggestionContext;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.phys.Vec2;
@@ -31,7 +28,6 @@ public class Vec2Argument implements SerializableArgument.ContextFree<Coordinate
    private static final StreamCodec<ByteBuf, Vec2Argument> STREAM_CODEC;
    public static final SerializableArgument.Type<Vec2Argument> TYPE;
    private static final Collection<String> EXAMPLES;
-   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE;
    private final boolean centerCorrect;
 
    @VisibleForTesting
@@ -58,32 +54,12 @@ public class Vec2Argument implements SerializableArgument.ContextFree<Coordinate
    }
 
    public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
-      int start = reader.getCursor();
-      if (!reader.canRead()) {
-         throw ERROR_NOT_COMPLETE.createWithContext(reader);
-      } else {
-         WorldCoordinate x = WorldCoordinate.parseDouble(reader, this.centerCorrect);
-         if (reader.canRead() && reader.peek() == ' ') {
-            reader.skip();
-            WorldCoordinate z = WorldCoordinate.parseDouble(reader, this.centerCorrect);
-            return new WorldCoordinates(x, new WorldCoordinate(true, 0.0), z);
-         } else {
-            reader.setCursor(start);
-            throw ERROR_NOT_COMPLETE.createWithContext(reader);
-         }
-      }
+      return Coordinates.parseXZ(reader, WorldCoordinate.doubleParser(this.centerCorrect));
    }
 
    public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
       String remainder = builder.getRemaining();
-      Collection<SuggestionContext.TextCoordinates> suggestedCoordinates;
-      if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
-         suggestedCoordinates = Collections.singleton(SuggestionContext.TextCoordinates.DEFAULT_LOCAL);
-      } else {
-         suggestedCoordinates = ((SuggestionContext)context.getSource()).absoluteCoordinates();
-      }
-
-      return SuggestionContext.suggest2DCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
+      return SuggestionContext.suggestXZCoordinates(remainder, Coordinates.suggestAbsoluteCoordinates(context, remainder), builder, Commands.createValidator(this::parse));
    }
 
    public Collection<String> getExamples() {
@@ -93,7 +69,6 @@ public class Vec2Argument implements SerializableArgument.ContextFree<Coordinate
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, (o) -> o.centerCorrect, Vec2Argument::new);
       TYPE = new SerializableArgument.Type<Vec2Argument>(MAP_CODEC, STREAM_CODEC);
-      EXAMPLES = List.of("0 0", "~ ~", "0.1 -0.5", "~1 ~-2");
-      ERROR_NOT_COMPLETE = new SimpleCommandExceptionType(Component.translatable("argument.pos2d.incomplete"));
+      EXAMPLES = List.of("0 0", "~ ~", "0.1 -0.5", "~1 ~-2", "^ ^", "^1 ^2");
    }
 }

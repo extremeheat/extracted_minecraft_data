@@ -8,8 +8,6 @@ import java.lang.annotation.Target;
 public class LevelEvent {
    public static final int SOUND_DISPENSER_DISPENSE = 1000;
    public static final int SOUND_DISPENSER_FAIL = 1001;
-   public static final int SOUND_DISPENSER_PROJECTILE_LAUNCH = 1002;
-   public static final int SOUND_FIREWORK_SHOOT = 1004;
    public static final int SOUND_EXTINGUISH_FIRE = 1009;
    public static final int SOUND_PLAY_JUKEBOX_SONG = 1010;
    public static final int SOUND_STOP_JUKEBOX_SONG = 1011;
@@ -47,7 +45,6 @@ public class LevelEvent {
    public static final int SOUND_SKELETON_TO_STRAY = 1048;
    public static final int SOUND_CRAFTER_CRAFT = 1049;
    public static final int SOUND_CRAFTER_FAIL = 1050;
-   public static final int SOUND_WIND_CHARGE_SHOOT = 1051;
    public static final int SOUND_SULFUR_SPIKE_LAND = 1052;
    public static final int SOUND_SPELL_POTION_SPLASH = 1053;
    public static final int SOUND_INSTANT_POTION_SPLASH = 1054;

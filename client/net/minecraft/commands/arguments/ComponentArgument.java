@@ -18,13 +18,12 @@ import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 import net.minecraft.world.entity.Entity;
 
 public class ComponentArgument extends ParserBasedArgument<CommandArgumentParser.RegistryAwareState, Component> {
-   private static final ComponentArgument INSTANCE = new ComponentArgument();
+   public static final ComponentArgument INSTANCE = new ComponentArgument();
    public static final SerializableArgument.Type<ComponentArgument> TYPE;
    private static final Collection<String> EXAMPLES;
-   public static final DynamicCommandExceptionType ERROR_INVALID_COMPONENT;
 
    private ComponentArgument() {
-      super(CommandArgumentParser.RegistryAwareState.FACTORY, CommandArgumentParser.withCodec(NbtOps.INSTANCE, SnbtGrammar.createParser(NbtOps.INSTANCE), ComponentSerialization.CODEC, ERROR_INVALID_COMPONENT));
+      super(CommandArgumentParser.RegistryAwareState.FACTORY, CommandArgumentParser.withCodec(NbtOps.INSTANCE, SnbtGrammar.createParser(NbtOps.INSTANCE), ComponentSerialization.CODEC, new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.component.invalid", message))));
    }
 
    public SerializableArgument.Type<ComponentArgument> type() {
@@ -54,6 +53,5 @@ public class ComponentArgument extends ParserBasedArgument<CommandArgumentParser
    static {
       TYPE = SerializableArgument.<ComponentArgument>singletonType(INSTANCE);
       EXAMPLES = List.of("\"hello world\"", "'hello world'", "\"\"", "{text:\"hello world\"}", "[\"\"]");
-      ERROR_INVALID_COMPONENT = new DynamicCommandExceptionType((message) -> Component.translatableEscape("argument.component.invalid", message));
    }
 }

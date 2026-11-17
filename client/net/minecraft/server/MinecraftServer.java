@@ -18,7 +18,7 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.security.KeyPair;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,8 +110,6 @@ import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.waypoints.ServerWaypointManager;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 import net.minecraft.util.FileUtil;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.Mth;
@@ -121,6 +119,7 @@ import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Util;
+import net.minecraft.util.crypto.SessionKeyExchange;
 import net.minecraft.util.debug.ServerDebugSubscribers;
 import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.util.debugchart.TpsDebugDimensions;
@@ -207,6 +206,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
    public static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
    private static final int SERVER_ACTIVITY_MONITOR_SECONDS_BETWEEN_NOTIFICATIONS = 30;
+   protected static final long DEFAULT_MIN_REKEY_TIME_MS;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -248,7 +248,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private int playerIdleTimeout;
    private final long[] tickTimesNanos;
    private long aggregatedTickTimesNanos;
-   private @Nullable KeyPair keyPair;
+   private final SessionKeyExchange.ServerSideFactory connectionPeerFactory;
    private @Nullable GameProfile singleplayerProfile;
    private boolean isDemo;
    private volatile boolean isReady;
@@ -307,7 +307,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return server;
    }
 
-   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener, final boolean propagatesCrashes, final NotificationManager notificationManager) {
+   public MinecraftServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess storageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Proxy proxy, final DataFixer fixerUpper, final Services services, final LevelLoadListener levelLoadListener, final boolean propagatesCrashes, final NotificationManager notificationManager, final long minRekeyTimeMs) {
       super("Server", propagatesCrashes);
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.onMetricsRecordingStopped = (results) -> this.stopRecordingMetrics();
@@ -336,6 +336,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.worldData = worldStem.worldDataAndGenSettings().data();
          this.worldGenSettings = worldStem.worldDataAndGenSettings().genSettings();
          this.savedDataStorage.set(WorldGenSettings.TYPE, this.worldGenSettings);
+         this.connectionPeerFactory = new SessionKeyExchange.ServerSideFactory(new SecureRandom(), minRekeyTimeMs);
          this.proxy = proxy;
          this.packRepository = packRepository;
          this.resources = new ReloadableResources(worldStem.resourceManager(), worldStem.dataPackResources());
@@ -1261,8 +1262,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       LOGGER.info("System chat: {}", message.getString());
    }
 
-   public KeyPair getKeyPair() {
-      return (KeyPair)Objects.requireNonNull(this.keyPair);
+   public SessionKeyExchange.ServerSideFactory connectionPeerFactory() {
+      return this.connectionPeerFactory;
    }
 
    public int getPort() {
@@ -1283,16 +1284,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public boolean isSingleplayer() {
       return this.singleplayerProfile != null;
-   }
-
-   protected void initializeKeyPair() {
-      LOGGER.info("Generating keypair");
-
-      try {
-         this.keyPair = Crypt.generateKeyPair();
-      } catch (CryptException e) {
-         throw new IllegalStateException("Failed to generate key pair", e);
-      }
    }
 
    public void setDifficulty(final Difficulty difficulty, final boolean ignoreLock) {
@@ -2314,6 +2305,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       OVERLOADED_WARNING_INTERVAL_NANOS = 10L * TimeUtil.NANOSECONDS_PER_SECOND;
       STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
       PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
+      DEFAULT_MIN_REKEY_TIME_MS = 60L * TimeUtil.MILLISECONDS_PER_SECOND;
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");

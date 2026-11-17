@@ -41,10 +41,6 @@ class PlayerInteractionsTab extends AbstractFriendsTab {
       this.rearrangeElements();
    }
 
-   public Component getTabExtraNarration() {
-      return Component.empty();
-   }
-
    public SocialInteractionsScreen.Page getPage() {
       return this.page;
    }

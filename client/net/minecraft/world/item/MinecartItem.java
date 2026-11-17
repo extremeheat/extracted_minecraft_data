@@ -6,7 +6,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -17,11 +16,8 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class MinecartItem extends Item {
-   private final EntityType<? extends AbstractMinecart> type;
-
-   public MinecartItem(final EntityType<? extends AbstractMinecart> type, final Item.Properties properties) {
+   public MinecartItem(final Item.Properties properties) {
       super(properties);
-      this.type = type;
    }
 
    public InteractionResult useOn(final UseOnContext context) {
@@ -39,7 +35,7 @@ public class MinecartItem extends Item {
          }
 
          Vec3 spawnPos = new Vec3((double)pos.getX() + 0.5, (double)pos.getY() + 0.0625 + offset, (double)pos.getZ() + 0.5);
-         AbstractMinecart cart = AbstractMinecart.createMinecart(level, spawnPos.x, spawnPos.y, spawnPos.z, this.type, EntitySpawnReason.DISPENSER, itemStack, context.getPlayer());
+         AbstractMinecart cart = AbstractMinecart.createMinecart(level, spawnPos.x, spawnPos.y, spawnPos.z, EntitySpawnReason.DISPENSER, itemStack, context.getPlayer());
          if (cart == null) {
             return InteractionResult.FAIL;
          } else {

@@ -11,7 +11,7 @@ import net.minecraft.util.parsing.packrat.commands.CommandParserState;
 import net.minecraft.util.parsing.packrat.commands.ParserBasedArgument;
 
 public class NbtTagArgument extends ParserBasedArgument<CommandParserState, Tag> {
-   private static final NbtTagArgument INSTANCE = new NbtTagArgument();
+   public static final NbtTagArgument INSTANCE = new NbtTagArgument();
    public static final SerializableArgument.Type<NbtTagArgument> TYPE;
    private static final Collection<String> EXAMPLES;
 
@@ -37,6 +37,6 @@ public class NbtTagArgument extends ParserBasedArgument<CommandParserState, Tag>
 
    static {
       TYPE = SerializableArgument.<NbtTagArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("0", "0b", "0l", "0.0", "\"foo\"", "{foo=bar}", "[0]");
+      EXAMPLES = List.of("0", "0b", "0l", "0.0", "\"foo\"", "{foo:bar}", "[0]", "[]", "{}", "true");
    }
 }

@@ -223,6 +223,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
          CoolingDripHangParticle particle = new CoolingDripHangParticle(level, x, y, z, Fluids.LAVA, ParticleTypes.FALLING_LAVA, this.sprite.get(random));
+         particle.isGlowing = true;
          return particle;
       }
    }
@@ -237,6 +238,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
          DripParticle particle = new FallAndLandParticle(level, x, y, z, Fluids.LAVA, ParticleTypes.LANDING_LAVA, this.sprite.get(random));
+         particle.isGlowing = true;
          particle.setColor(1.0F, 0.2857143F, 0.083333336F);
          return particle;
       }
@@ -252,6 +254,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
          DripParticle particle = new DripLandParticle(level, x, y, z, Fluids.LAVA, this.sprite.get(random));
+         particle.isGlowing = true;
          particle.setColor(1.0F, 0.2857143F, 0.083333336F);
          return particle;
       }
@@ -346,6 +349,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
          CoolingDripHangParticle particle = new CoolingDripHangParticle(level, x, y, z, Fluids.LAVA, ParticleTypes.FALLING_DRIPSTONE_LAVA, this.sprite.get(random));
+         particle.isGlowing = true;
          return particle;
       }
    }
@@ -360,6 +364,7 @@ public class DripParticle extends SingleQuadParticle {
 
       public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
          DripParticle particle = new DripstoneFallAndLandParticle(level, x, y, z, Fluids.LAVA, ParticleTypes.LANDING_LAVA, this.sprite.get(random));
+         particle.isGlowing = true;
          particle.setColor(1.0F, 0.2857143F, 0.083333336F);
          return particle;
       }

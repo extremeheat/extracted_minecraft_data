@@ -32,6 +32,7 @@ import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
    public static final Identifier INVENTORY_LOCATION = Identifier.withDefaultNamespace("textures/gui/container/inventory.png");
+   public static final int RECIPE_BOOK_TAB_GROUP = 0;
    public static final int EQUIPMENT_TAB_GROUP = 1;
    public static final int CONTAINER_TAB_GROUP = 2;
    public static final int BEFORE_INPUT_TAB_GROUP = 3;
@@ -40,8 +41,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    public static final int FUEL_TAB_GROUP = 6;
    public static final int BETWEEN_INPUT_OUTPUT_TAB_GROUP = 7;
    public static final int RESULT_TAB_GROUP = 8;
-   public static final int INVENTORY_TAB_GROUP = 9;
-   public static final int HOTBAR_TAB_GROUP = 10;
+   public static final int AFTER_RESULT_TAB_GROUP = 9;
+   public static final int INVENTORY_TAB_GROUP = 10;
+   public static final int HOTBAR_TAB_GROUP = 11;
    private static final Component EQUIPMENT_GROUP_NAME = Component.translatable("narration.slot_group.equipment");
    private static final Component INPUT_GROUP_NAME = Component.translatable("narration.slot_group.input");
    private static final Component SECOND_INPUT_GROUP_NAME = Component.translatable("narration.slot_group.second_input");
@@ -49,6 +51,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    private static final Component RESULT_GROUP_NAME = Component.translatable("narration.slot_group.result");
    private static final Component INVENTORY_GROUP_NAME = Component.translatable("narration.slot_group.inventory");
    private static final Component HOTBAR_GROUP_NAME = Component.translatable("narration.slot_group.hotbar");
+   private static final Component DESTROY_ITEM_GROUP_NAME = Component.translatable("inventory.binSlot");
    protected static final int BACKGROUND_TEXTURE_WIDTH = 256;
    protected static final int BACKGROUND_TEXTURE_HEIGHT = 256;
    protected static final int DEFAULT_IMAGE_WIDTH = 176;
@@ -158,6 +161,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          case RESULT -> var10000 = RESULT_GROUP_NAME;
          case INVENTORY -> var10000 = INVENTORY_GROUP_NAME;
          case HOTBAR -> var10000 = HOTBAR_GROUP_NAME;
+         case DESTROY_ITEM -> var10000 = DESTROY_ITEM_GROUP_NAME;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -167,15 +171,33 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    protected int getTabOrderGroup(final Slot.Section section) {
       byte var10000;
       switch (section) {
-         case EQUIPMENT -> var10000 = 1;
-         case CONTAINER -> var10000 = 2;
-         case INPUT -> var10000 = 4;
-         case SECOND_INPUT -> var10000 = 5;
-         case FUEL -> var10000 = 6;
-         case RESULT -> var10000 = 8;
-         case INVENTORY -> var10000 = 9;
-         case HOTBAR -> var10000 = 10;
-         default -> throw new MatchException((String)null, (Throwable)null);
+         case EQUIPMENT:
+            var10000 = 1;
+            break;
+         case CONTAINER:
+            var10000 = 2;
+            break;
+         case INPUT:
+            var10000 = 4;
+            break;
+         case SECOND_INPUT:
+            var10000 = 5;
+            break;
+         case FUEL:
+            var10000 = 6;
+            break;
+         case RESULT:
+            var10000 = 8;
+            break;
+         case INVENTORY:
+            var10000 = 10;
+            break;
+         case HOTBAR:
+         case DESTROY_ITEM:
+            var10000 = 11;
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;
@@ -456,7 +478,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          this.recalculateQuickCraftRemaining();
          return true;
       } else {
-         return slotWidget == null && this.menu.getCarried().isEmpty() ? super.mouseDragged(event, dx, dy) : true;
+         return super.mouseDragged(event, dx, dy);
       }
    }
 
@@ -647,7 +669,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return this.checkHotbarSwap((keyMapping) -> keyMapping.matches(event));
    }
 
-   private @Nullable SlotWidget getFocusedSlotWidget() {
+   protected @Nullable SlotWidget getFocusedSlotWidget() {
       if (!this.minecraft.getLastInputType().isKeyboard()) {
          return null;
       } else {

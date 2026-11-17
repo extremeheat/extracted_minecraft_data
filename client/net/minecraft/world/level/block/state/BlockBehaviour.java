@@ -131,7 +131,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          case LAND -> var10000 = !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
          case WATER -> var10000 = state.getFluidState().is(FluidTags.WATER);
          case AIR -> var10000 = !state.isCollisionShapeFullBlock(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
-         default -> var10000 = false;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
       return var10000;

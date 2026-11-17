@@ -9,7 +9,7 @@ import java.util.List;
 import net.minecraft.resources.Identifier;
 
 public class IdentifierArgument implements SerializableArgument.ContextFree<Identifier> {
-   private static final IdentifierArgument INSTANCE = new IdentifierArgument();
+   public static final IdentifierArgument INSTANCE = new IdentifierArgument();
    public static final SerializableArgument.Type<IdentifierArgument> TYPE;
    private static final Collection<String> EXAMPLES;
 

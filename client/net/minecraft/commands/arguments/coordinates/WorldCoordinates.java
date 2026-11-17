@@ -2,12 +2,18 @@ package net.minecraft.commands.arguments.coordinates;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordinate z) implements Coordinates {
    public static final WorldCoordinates ZERO_ROTATION = absolute(new Vec2(0.0F, 0.0F));
+   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE_2D = new SimpleCommandExceptionType(Component.translatable("argument.pos2d.incomplete"));
+   public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE_3D = new SimpleCommandExceptionType(Component.translatable("argument.pos3d.incomplete"));
+   public static final SimpleCommandExceptionType ERROR_MIXED_TYPE = new SimpleCommandExceptionType(Component.translatable("argument.pos.mixed"));
+   public static final WorldCoordinate UNUSED = new WorldCoordinate(false, 0.0);
 
    public WorldCoordinates {
       super();
@@ -35,43 +41,40 @@ public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordi
       return this.z.isRelative();
    }
 
-   public static WorldCoordinates parseInt(final StringReader reader) throws CommandSyntaxException {
+   public static WorldCoordinates parseXYZ(final StringReader reader, final WorldCoordinate.Parser parser) throws CommandSyntaxException {
       int start = reader.getCursor();
-      WorldCoordinate x = WorldCoordinate.parseInt(reader);
+      WorldCoordinate x = parser.parse(reader);
       if (reader.canRead() && reader.peek() == ' ') {
          reader.skip();
-         WorldCoordinate y = WorldCoordinate.parseInt(reader);
+         WorldCoordinate y = parser.parse(reader);
          if (reader.canRead() && reader.peek() == ' ') {
             reader.skip();
-            WorldCoordinate z = WorldCoordinate.parseInt(reader);
+            WorldCoordinate z = parser.parse(reader);
             return new WorldCoordinates(x, y, z);
          } else {
             reader.setCursor(start);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
+            throw ERROR_NOT_COMPLETE_3D.createWithContext(reader);
          }
       } else {
          reader.setCursor(start);
-         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
+         throw ERROR_NOT_COMPLETE_3D.createWithContext(reader);
       }
    }
 
-   public static WorldCoordinates parseDouble(final StringReader reader, final boolean centerCorrect) throws CommandSyntaxException {
+   public static WorldCoordinates parseXZ(final StringReader reader, final WorldCoordinate.Parser parser) throws CommandSyntaxException {
       int start = reader.getCursor();
-      WorldCoordinate x = WorldCoordinate.parseDouble(reader, centerCorrect);
-      if (reader.canRead() && reader.peek() == ' ') {
-         reader.skip();
-         WorldCoordinate y = WorldCoordinate.parseDouble(reader, false);
+      if (!reader.canRead()) {
+         throw ERROR_NOT_COMPLETE_2D.createWithContext(reader);
+      } else {
+         WorldCoordinate x = parser.parse(reader);
          if (reader.canRead() && reader.peek() == ' ') {
             reader.skip();
-            WorldCoordinate z = WorldCoordinate.parseDouble(reader, centerCorrect);
-            return new WorldCoordinates(x, y, z);
+            WorldCoordinate z = parser.parse(reader);
+            return new WorldCoordinates(x, UNUSED, z);
          } else {
             reader.setCursor(start);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
+            throw ERROR_NOT_COMPLETE_2D.createWithContext(reader);
          }
-      } else {
-         reader.setCursor(start);
-         throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
       }
    }
 

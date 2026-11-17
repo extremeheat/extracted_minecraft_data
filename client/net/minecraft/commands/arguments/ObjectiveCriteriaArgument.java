@@ -19,7 +19,7 @@ import net.minecraft.stats.StatType;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class ObjectiveCriteriaArgument implements SerializableArgument.ContextFree<ObjectiveCriteria> {
-   private static final ObjectiveCriteriaArgument INSTANCE = new ObjectiveCriteriaArgument();
+   public static final ObjectiveCriteriaArgument INSTANCE = new ObjectiveCriteriaArgument();
    public static final SerializableArgument.Type<ObjectiveCriteriaArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    public static final DynamicCommandExceptionType ERROR_INVALID_VALUE;
@@ -77,7 +77,7 @@ public class ObjectiveCriteriaArgument implements SerializableArgument.ContextFr
 
    static {
       TYPE = SerializableArgument.<ObjectiveCriteriaArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("foo", "foo.bar.baz", "minecraft:foo");
+      EXAMPLES = List.of("dummy", "teamkill.red", "minecraft.mined:minecraft.dirt");
       ERROR_INVALID_VALUE = new DynamicCommandExceptionType((value) -> Component.translatableEscape("argument.criteria.invalid", value));
    }
 }

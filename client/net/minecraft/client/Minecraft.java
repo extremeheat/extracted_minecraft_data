@@ -110,6 +110,7 @@ import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.options.OnlineOptionsScreen;
 import net.minecraft.client.gui.screens.options.VideoSettingsScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
+import net.minecraft.client.gui.screens.social.PresenceHandler;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
 import net.minecraft.client.input.InputQuirks;
@@ -128,6 +129,7 @@ import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.client.multiplayer.chat.ChatRestriction;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
+import net.minecraft.client.multiplayer.signaling.SignalingClient;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.client.particle.ParticleResources;
 import net.minecraft.client.player.LocalPlayer;
@@ -299,6 +301,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final MapRenderer mapRenderer;
    public final ParticleEngine particleEngine;
    private final User user;
+   private final SignalingClient signalingClient;
    public final Font font;
    public final Font fontFilterFishy;
    public final GameRenderer gameRenderer;
@@ -632,8 +635,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.realmsDataFetcher = new RealmsDataFetcher(realmsClient);
          RenderTarget mainRenderTarget = this.gameRenderer.mainRenderTarget();
          if (mainRenderTarget.width != this.window.getWidth() || mainRenderTarget.height != this.window.getHeight()) {
-            int var41 = this.window.getWidth();
-            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var41 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
+            int var42 = this.window.getWidth();
+            StringBuilder message = new StringBuilder("Recovering from unsupported resolution (" + var42 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
 
             try {
                List<String> messages = device.getLastDebugMessages();
@@ -681,11 +684,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }), false));
          this.quickPlayLog = QuickPlayLog.of(gameConfig.quickPlay.logPath());
          this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
-         TimeSource.NanoTimeSource var42 = Util.timeSource();
+         TimeSource.NanoTimeSource var43 = Util.timeSource();
          IntSupplier var10004 = () -> this.fpsPieRenderTicks;
          FramerateLimitTracker var10005 = this.framerateLimitTracker;
          Objects.requireNonNull(var10005);
-         this.fpsPieProfiler = new ContinuousProfiler(var42, var10004, var10005::isHeavilyThrottled);
+         this.fpsPieProfiler = new ContinuousProfiler(var43, var10004, var10005::isHeavilyThrottled);
          if (TracyClient.isAvailable() && gameConfig.game.captureTracyImages) {
             this.tracyFrameCapture = new TracyFrameCapture();
          } else {
@@ -707,6 +710,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
 
          });
+         this.signalingClient = new SignalingClient(this.user, discoveryService);
+         SignalingClient var10000 = this.signalingClient;
+         PresenceHandler var41 = this.playerSocialManager.getPresenceHandler();
+         Objects.requireNonNull(var41);
+         var10000.addPresenceListener(var41::updatePresenceWith);
+         this.signalingClient.connect();
       }
    }
 
@@ -1088,6 +1097,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       try {
          this.playerSocialManager.getPresenceHandler().sendOfflinePresence();
+         this.signalingClient.close();
          this.remoteFriendListUpdateHandler.close();
          this.timerQuery.close();
          this.telemetryManager.close();
@@ -1902,7 +1912,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.player.sendOpenInventory();
          } else {
             this.tutorial.onOpenInventory();
-            this.gui.setScreen(new InventoryScreen(this.player));
+            if (this.player.hasInfiniteMaterials()) {
+               this.gui.setScreen(new CreativeModeInventoryScreen(this.player, this.player.connection.enabledFeatures(), (Boolean)this.options.operatorItemsTab().get()));
+            } else {
+               this.gui.setScreen(new InventoryScreen(this.player));
+            }
          }
       }
 

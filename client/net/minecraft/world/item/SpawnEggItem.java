@@ -42,7 +42,7 @@ public class SpawnEggItem extends Item {
    public InteractionResult useOn(final UseOnContext context) {
       Level level = context.getLevel();
       ItemStack itemStack = context.getItemInHand();
-      EntityType<?> type = getType(itemStack);
+      EntityType<?> type = TypedEntityData.getType(itemStack);
       if (type != null && type.canSpawn(level)) {
          if (!(level instanceof ServerLevel)) {
             return InteractionResult.SUCCESS;
@@ -108,7 +108,7 @@ public class SpawnEggItem extends Item {
       if (hitResult.getType() != HitResult.Type.BLOCK) {
          return InteractionResult.PASS;
       } else {
-         EntityType<?> type = getType(itemStack);
+         EntityType<?> type = TypedEntityData.getType(itemStack);
          if (type != null && type.canSpawn(level)) {
             if (level instanceof ServerLevel) {
                ServerLevel serverLevel = (ServerLevel)level;
@@ -135,16 +135,11 @@ public class SpawnEggItem extends Item {
    }
 
    public static boolean spawnsEntity(final ItemStack itemStack, final EntityType<?> type) {
-      return Objects.equals(getType(itemStack), type);
+      return Objects.equals(TypedEntityData.getType(itemStack), type);
    }
 
    public static Optional<Holder<Item>> byId(final EntityType<?> type) {
       return BuiltInRegistries.ITEM.componentLookup().findMatching(DataComponents.ENTITY_DATA, (c) -> c.type() == type).findAny();
-   }
-
-   public static @Nullable EntityType<?> getType(final ItemStack itemStack) {
-      TypedEntityData<EntityType<?>> entityData = (TypedEntityData)itemStack.get(DataComponents.ENTITY_DATA);
-      return entityData != null ? (EntityType)entityData.type() : null;
    }
 
    public static Optional<Mob> spawnOffspringFromSpawnEgg(final Player player, final Mob parent, final EntityType<? extends Mob> type, final ServerLevel level, final Vec3 pos, final ItemStack spawnEggStack) {

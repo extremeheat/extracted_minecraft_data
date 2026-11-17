@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class EntityAnchorArgument implements SerializableArgument.ContextFree<Anchor> {
-   private static final EntityAnchorArgument INSTANCE = new EntityAnchorArgument();
+   public static final EntityAnchorArgument INSTANCE = new EntityAnchorArgument();
    public static final SerializableArgument.Type<EntityAnchorArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_INVALID;

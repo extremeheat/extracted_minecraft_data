@@ -230,7 +230,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       } else if (itemStack.is(Items.HONEYCOMB) && !this.isWaxed()) {
          BlockPos pos = this.blockPosition();
          level.levelEvent(this, 3003, pos, 0);
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          this.setWaxed(true);
          this.usePlayerItem(player, hand, itemStack);
          return InteractionResult.SUCCESS_SERVER;

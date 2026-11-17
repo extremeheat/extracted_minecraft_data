@@ -37,7 +37,7 @@ public class ResourceOrTagArgument implements SerializableArgument<Result<?>> {
    private static final Dynamic3CommandExceptionType ERROR_INVALID_TAG_TYPE;
    private final ResourceKey<? extends Registry<?>> registryKey;
 
-   private ResourceOrTagArgument(final ResourceKey<? extends Registry<?>> registryKey) {
+   public ResourceOrTagArgument(final ResourceKey<? extends Registry<?>> registryKey) {
       super();
       this.registryKey = registryKey;
    }

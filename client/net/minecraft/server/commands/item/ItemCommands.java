@@ -30,14 +30,13 @@ import net.minecraft.world.item.ItemProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.slot.CountingModifier;
 import net.minecraft.world.item.slot.SlotCollection;
-import net.minecraft.world.item.slot.SlotSelector;
 import net.minecraft.world.item.slot.SlotSource;
+import net.minecraft.world.item.slot.TrackingSlotSelector;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jspecify.annotations.Nullable;
 
 public class ItemCommands {
@@ -62,18 +61,18 @@ public class ItemCommands {
       LiteralArgumentBuilder<CommandSourceStack> root = (LiteralArgumentBuilder)Commands.literal("item").requires(Commands.hasPermission(CommandPermissionLevels.LEVEL_GAMEMASTERS));
 
       for(ArgProvider<ItemAccessor<?>> targetProvider : TARGET_PROVIDERS) {
-         ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)root.then(wrapSetItems(Commands.literal("replace"), targetProvider, ItemCommands::replaceItemProvider))).then(wrapSetItems(Commands.literal("fill"), targetProvider, ItemCommands::fillItemProvider))).then(wrapSetItems(Commands.literal("override"), targetProvider, ItemCommands::overrideItemProvider))).then(targetProvider.wrap(Commands.literal("modify"), (p) -> p.then(Commands.argument("slots", SlotSourceArgument.slotSource(SLOT_SOURCE_CONTEXT)).then(Commands.argument("modifier", LootModifierArgument.lootModifier(LootContextParamSets.COMMAND_MODIFIER)).executes((c) -> modifyItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), LootModifierArgument.getLootModifier(c, "modifier")))))));
+         ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)root.then(wrapSetItems(Commands.literal("replace"), targetProvider, ItemCommands::replaceItemProvider, true))).then(wrapSetItems(Commands.literal("fill"), targetProvider, ItemCommands::fillItemProvider, true))).then(wrapSetItems(Commands.literal("override"), targetProvider, ItemCommands::overrideItemProvider, false))).then(targetProvider.wrap(Commands.literal("modify"), (p) -> p.then(Commands.argument("slots", SlotSourceArgument.slotSource(SLOT_SOURCE_CONTEXT)).then(Commands.argument("modifier", LootModifierArgument.lootModifier(LootContextParamSets.COMMAND_MODIFIER)).executes((c) -> modifyItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), LootModifierArgument.getLootModifier(c, "modifier")))))));
       }
 
       dispatcher.register(root);
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapSetItems(final ArgumentBuilder<CommandSourceStack, ?> builder, final ArgProvider<ItemAccessor<?>> targetProvider, final ItemDistributor distributor) {
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapSetItems(final ArgumentBuilder<CommandSourceStack, ?> builder, final ArgProvider<ItemAccessor<?>> targetProvider, final ItemDistributor distributor, final boolean requireNonEmptySlotSource) {
       return targetProvider.wrap(builder, (t) -> {
          ArgumentBuilder<CommandSourceStack, ?> slotsNode = Commands.argument("slots", SlotSourceArgument.slotSource(SLOT_SOURCE_CONTEXT));
 
          for(ArgProvider<ItemAccessor<?>> sourceProvider : SOURCE_PROVIDERS) {
-            slotsNode.then(sourceProvider.wrap(Commands.literal("from"), (p) -> p.then(((RequiredArgumentBuilder)Commands.argument("sourceSlots", SlotSourceArgument.slotSource(SLOT_SOURCE_CONTEXT)).executes((c) -> setItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, getItems((CommandSourceStack)c.getSource(), sourceProvider.access(c), SlotSourceArgument.getSlotSource(c, "sourceSlots"), (ValidationWrapper)null)))).then(Commands.argument("modifier", LootModifierArgument.lootModifier(LootContextParamSets.COMMAND_MODIFIER)).executes((c) -> setItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, getItems((CommandSourceStack)c.getSource(), sourceProvider.access(c), SlotSourceArgument.getSlotSource(c, "sourceSlots"), LootModifierArgument.getLootModifier(c, "modifier"))))))));
+            slotsNode.then(sourceProvider.wrap(Commands.literal("from"), (p) -> p.then(((RequiredArgumentBuilder)Commands.argument("sourceSlots", SlotSourceArgument.slotSource(SLOT_SOURCE_CONTEXT)).executes((c) -> setItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, getItems((CommandSourceStack)c.getSource(), sourceProvider.access(c), SlotSourceArgument.getSlotSource(c, "sourceSlots"), requireNonEmptySlotSource, (ValidationWrapper)null)))).then(Commands.argument("modifier", LootModifierArgument.lootModifier(LootContextParamSets.COMMAND_MODIFIER)).executes((c) -> setItems((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, getItems((CommandSourceStack)c.getSource(), sourceProvider.access(c), SlotSourceArgument.getSlotSource(c, "sourceSlots"), requireNonEmptySlotSource, LootModifierArgument.getLootModifier(c, "modifier"))))))));
          }
 
          slotsNode.then(Commands.literal("with").then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item()).executes((c) -> setItem((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, ItemArgument.getItem(c, "item").createItemStack(1)))).then(Commands.argument("count", IntegerArgument.integer(1, 99)).executes((c) -> setItem((CommandSourceStack)c.getSource(), targetProvider.access(c), SlotSourceArgument.getSlotSource(c, "slots"), distributor, ItemArgument.getItem(c, "item").createItemStack(IntegerArgument.getInteger(c, "count")))))));
@@ -94,8 +93,7 @@ public class ItemCommands {
    }
 
    private static <Target> int setItems(final CommandSourceStack source, final ItemAccessor<Target> accessor, final SlotSourceArgument.SlotResult slotSource, final ItemProvider items, final @Nullable ItemStack knownItem) throws CommandSyntaxException {
-      MutableInt selectedCount = new MutableInt();
-      SlotSelector slotSelector = SlotSelector.tracking(selectedCount);
+      TrackingSlotSelector slotSelector = new TrackingSlotSelector();
       CommandResponseTracker<Target> tracker = CommandResponseTracker.<Target>create();
       accessor.setItems(source, slotSource.value(), (target, slots) -> {
          items.restart();
@@ -103,14 +101,14 @@ public class ItemCommands {
          tracker.track(target, count);
          return count;
       });
-      if (selectedCount.intValue() == 0) {
+      if (slotSelector.selectedCount() == 0) {
          Optional var10000 = slotSource.name();
          DynamicCommandExceptionType var10001 = ERROR_TARGET_INAPPLICABLE_SLOT;
          Objects.requireNonNull(var10001);
          var10000 = var10000.map(var10001::create);
-         SimpleCommandExceptionType var9 = ERROR_TARGET_INAPPLICABLE_UNNAMED_SLOT;
-         Objects.requireNonNull(var9);
-         throw (CommandSyntaxException)var10000.orElseGet(var9::create);
+         SimpleCommandExceptionType var8 = ERROR_TARGET_INAPPLICABLE_UNNAMED_SLOT;
+         Objects.requireNonNull(var8);
+         throw (CommandSyntaxException)var10000.orElseGet(var8::create);
       } else {
          return accessor.getReplaceSuccess(source, tracker, knownItem);
       }
@@ -125,8 +123,7 @@ public class ItemCommands {
    }
 
    private static <Target> int modifyItems(final CommandSourceStack source, final ItemAccessor<Target> accessor, final SlotSourceArgument.SlotResult slotSource, final ValidationWrapper<LootItemFunction> modifier) throws CommandSyntaxException {
-      MutableInt selectedCount = new MutableInt();
-      SlotSelector slotSelector = SlotSelector.tracking(SlotSelector.NON_EMPTY_SLOTS, selectedCount);
+      TrackingSlotSelector slotSelector = new TrackingSlotSelector();
       CountingModifier countingModifier = new CountingModifier(applyModifier(source, modifier));
       CommandResponseTracker<Target> tracker = CommandResponseTracker.<Target>create();
       accessor.setItems(source, slotSource.value(), (target, slots) -> {
@@ -136,30 +133,30 @@ public class ItemCommands {
          tracker.track(target, count);
          return count;
       });
-      if (selectedCount.intValue() == 0) {
+      if (slotSelector.selectedCount() == 0) {
          Optional var10000 = slotSource.name();
          DynamicCommandExceptionType var10001 = ERROR_TARGET_INAPPLICABLE_SLOT;
          Objects.requireNonNull(var10001);
          var10000 = var10000.map(var10001::create);
-         SimpleCommandExceptionType var9 = ERROR_TARGET_INAPPLICABLE_UNNAMED_SLOT;
-         Objects.requireNonNull(var9);
-         throw (CommandSyntaxException)var10000.orElseGet(var9::create);
+         SimpleCommandExceptionType var8 = ERROR_TARGET_INAPPLICABLE_UNNAMED_SLOT;
+         Objects.requireNonNull(var8);
+         throw (CommandSyntaxException)var10000.orElseGet(var8::create);
       } else {
          return accessor.getModifySuccess(source, tracker);
       }
    }
 
-   private static Collection<ItemStack> getItems(final CommandSourceStack source, final ItemAccessor<?> accessor, final SlotSourceArgument.SlotResult slotSource, final @Nullable ValidationWrapper<LootItemFunction> modifier) throws CommandSyntaxException {
+   private static Collection<ItemStack> getItems(final CommandSourceStack source, final ItemAccessor<?> accessor, final SlotSourceArgument.SlotResult slotSource, final boolean requireNonEmptySlotSource, final @Nullable ValidationWrapper<LootItemFunction> modifier) throws CommandSyntaxException {
       SlotCollection slots = accessor.getSlots(source, slotSource.value());
       Collection<ItemStack> items = modifier != null ? slots.itemCopies().map(applyModifier(source, modifier)).toList() : slots.itemCopies().toList();
-      if (items.isEmpty()) {
+      if (requireNonEmptySlotSource && items.isEmpty()) {
          Optional var10000 = slotSource.name();
          DynamicCommandExceptionType var10001 = ERROR_SOURCE_INAPPLICABLE_SLOT;
          Objects.requireNonNull(var10001);
          var10000 = var10000.map(var10001::create);
-         SimpleCommandExceptionType var7 = ERROR_SOURCE_INAPPLICABLE_UNNAMED_SLOT;
-         Objects.requireNonNull(var7);
-         throw (CommandSyntaxException)var10000.orElseGet(var7::create);
+         SimpleCommandExceptionType var8 = ERROR_SOURCE_INAPPLICABLE_UNNAMED_SLOT;
+         Objects.requireNonNull(var8);
+         throw (CommandSyntaxException)var10000.orElseGet(var8::create);
       } else {
          return items;
       }

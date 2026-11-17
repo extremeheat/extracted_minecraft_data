@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -83,11 +81,16 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
 
    public CompletableFuture<Void> reload(final PreparableReloadListener.SharedState currentReload, final Executor taskExecutor, final PreparableReloadListener.PreparationBarrier preparationBarrier, final Executor reloadExecutor) {
       ResourceManager manager = currentReload.resourceManager();
-      List<CompletableFuture<?>> reloads = new ArrayList();
-      this.byPath.forEach((var3, entry) -> reloads.add(entry.scheduleLoad(manager, taskExecutor)));
-      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.toArray((x$0) -> new CompletableFuture[x$0]));
+      Map<Entry<?, ?>, CompletableFuture<?>> reloads = new HashMap();
+      this.byPath.forEach((var3, entry) -> reloads.put(entry, entry.scheduleLoad(manager, taskExecutor)));
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])reloads.values().toArray((x$0) -> new CompletableFuture[x$0]));
       Objects.requireNonNull(preparationBarrier);
-      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((var1) -> this.byPath.forEach((var0, entry) -> entry.finishReload()), reloadExecutor);
+      return var10000.thenCompose(preparationBarrier::wait).thenAcceptAsync((var1) -> reloads.forEach((entry, reload) -> {
+            if (entry.pendingReload == reload) {
+               entry.finishReload();
+            }
+
+         }), reloadExecutor).whenCompleteAsync((var1, var2) -> reloads.forEach(Entry::discardPendingReload), reloadExecutor);
    }
 
    public void dumpTextures(final Path targetDir) {
@@ -153,18 +156,23 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
       }
 
       private CompletableFuture<ResourcesType> scheduleLoad(final ResourceManager resourceManager, final Executor executor) {
-         if (this.pendingReload != null) {
-            throw new IllegalStateException("A reload is already scheduled!");
-         } else {
-            this.pendingReload = CompletableFuture.supplyAsync(() -> {
-               try {
-                  return this.loadContents(resourceManager);
-               } catch (IOException e) {
-                  throw new UncheckedIOException(e);
-               }
-            }, executor);
-            return this.pendingReload;
+         this.discardPendingReload(this.pendingReload);
+         this.pendingReload = CompletableFuture.supplyAsync(() -> {
+            try {
+               return this.loadContents(resourceManager);
+            } catch (IOException e) {
+               throw new UncheckedIOException(e);
+            }
+         }, executor);
+         return this.pendingReload;
+      }
+
+      private void discardPendingReload(final @Nullable CompletableFuture<?> expectedReload) {
+         if (this.pendingReload != null && this.pendingReload == expectedReload) {
+            this.pendingReload.thenAccept(UncheckedAutoCloseable::close);
+            this.pendingReload = null;
          }
+
       }
 
       private void finishReload() {
@@ -201,6 +209,7 @@ public class TextureManager implements PreparableReloadListener, UncheckedAutoCl
       }
 
       public void close() {
+         this.discardPendingReload(this.pendingReload);
          if (this.current != null) {
             this.provider.releaseTexture(this.current);
          }

@@ -1,34 +1,27 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
-import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.core.dispenser.EquipmentDispenseItemBehavior;
-import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
-import net.minecraft.core.dispenser.SpawnEggItemBehavior;
-import net.minecraft.core.dispenser.SulfurCubeBlockDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseBehavior;
+import net.minecraft.core.dispenser.DropItemDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.DropperBlockEntity;
@@ -49,17 +42,7 @@ public class DispenserBlock extends BaseEntityBlock {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty TRIGGERED;
-   private static final DefaultDispenseItemBehavior DEFAULT_BEHAVIOR;
-   public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY;
    private static final int TRIGGER_DURATION = 4;
-
-   public static void registerBehavior(final ItemLike item, final DispenseItemBehavior behavior) {
-      DISPENSER_REGISTRY.put(item.asItem(), behavior);
-   }
-
-   public static void registerProjectileBehavior(final ItemLike item) {
-      DISPENSER_REGISTRY.put(item.asItem(), new ProjectileDispenseBehavior(item.asItem()));
-   }
 
    protected DispenserBlock(final BlockBehaviour.Properties properties) {
       super(properties);
@@ -79,10 +62,11 @@ public class DispenserBlock extends BaseEntityBlock {
       return InteractionResult.SUCCESS;
    }
 
-   protected void dispenseFrom(final ServerLevel level, final BlockState state, final BlockPos pos) {
-      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, BlockEntityTypes.DISPENSER).orElse((Object)null);
+   private void dispenseFrom(final ServerLevel level, final BlockState state, final BlockPos pos) {
+      BlockEntityType<? extends DispenserBlockEntity> blockEntityType = this.getBlockEntityType();
+      DispenserBlockEntity blockEntity = (DispenserBlockEntity)level.getBlockEntity(pos, blockEntityType).orElse((Object)null);
       if (blockEntity == null) {
-         LOGGER.warn("Ignoring dispensing attempt for Dispenser without matching block entity at {}", pos);
+         LOGGER.warn("Ignoring dispensing attempt for {} without matching block entity at {}", blockEntityType.builtInRegistryHolder().getRegisteredName(), pos);
       } else {
          BlockSource source = new BlockSource(level, pos, state, blockEntity);
          int slot = blockEntity.getRandomSlot(level.getRandom());
@@ -91,31 +75,18 @@ public class DispenserBlock extends BaseEntityBlock {
             level.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(blockEntity.getBlockState()));
          } else {
             ItemStack itemStack = blockEntity.getItem(slot);
-            DispenseItemBehavior behavior = this.getDispenseMethod(level, itemStack);
-            if (behavior != DispenseItemBehavior.NOOP) {
-               blockEntity.setItem(slot, behavior.dispense(source, itemStack));
-            }
-
+            List<DispenseBehavior> behaviors = this.getDispenseMethods(level, itemStack);
+            blockEntity.setItem(slot, DispenseBehavior.dispense(behaviors, source, itemStack));
          }
       }
    }
 
-   protected DispenseItemBehavior getDispenseMethod(final Level level, final ItemStack itemStack) {
+   protected List<DispenseBehavior> getDispenseMethods(final ServerLevel level, final ItemStack itemStack) {
       if (!itemStack.isItemEnabled(level.enabledFeatures())) {
-         return DEFAULT_BEHAVIOR;
+         return List.of(DropItemDispenseBehavior.INSTANCE);
       } else {
-         DispenseItemBehavior behavior = (DispenseItemBehavior)DISPENSER_REGISTRY.get(itemStack.getItem());
-         return behavior != null ? behavior : getDefaultDispenseMethod(itemStack);
-      }
-   }
-
-   private static DispenseItemBehavior getDefaultDispenseMethod(final ItemStack itemStack) {
-      if (itemStack.has(DataComponents.EQUIPPABLE)) {
-         return EquipmentDispenseItemBehavior.INSTANCE;
-      } else if (itemStack.is(ItemTags.SULFUR_CUBE_SWALLOWABLE)) {
-         return SulfurCubeBlockDispenseItemBehavior.INSTANCE;
-      } else {
-         return (DispenseItemBehavior)(itemStack.getItem() instanceof SpawnEggItem && itemStack.has(DataComponents.ENTITY_DATA) ? SpawnEggItemBehavior.INSTANCE : DEFAULT_BEHAVIOR);
+         Holder<List<DispenseBehavior>> behaviors = (Holder)itemStack.get(DataComponents.DISPENSE_BEHAVIOR);
+         return behaviors != null ? (List)behaviors.value() : List.of();
       }
    }
 
@@ -137,6 +108,10 @@ public class DispenserBlock extends BaseEntityBlock {
 
    public BlockEntity newBlockEntity(final BlockPos worldPosition, final BlockState blockState) {
       return new DispenserBlockEntity(worldPosition, blockState);
+   }
+
+   protected BlockEntityType<? extends DispenserBlockEntity> getBlockEntityType() {
+      return BlockEntityTypes.DISPENSER;
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
@@ -179,7 +154,5 @@ public class DispenserBlock extends BaseEntityBlock {
    static {
       FACING = DirectionalBlock.FACING;
       TRIGGERED = BlockStateProperties.TRIGGERED;
-      DEFAULT_BEHAVIOR = new DefaultDispenseItemBehavior();
-      DISPENSER_REGISTRY = new IdentityHashMap();
    }
 }

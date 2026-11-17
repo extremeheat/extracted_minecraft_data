@@ -28,7 +28,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
 
 public class BlockPredicateArgument implements SerializableArgument<Result> {
-   private static final BlockPredicateArgument INSTANCE = new BlockPredicateArgument();
+   public static final BlockPredicateArgument INSTANCE = new BlockPredicateArgument();
    public static final SerializableArgument.Type<BlockPredicateArgument> TYPE;
    private static final Collection<String> EXAMPLES;
 
@@ -67,7 +67,7 @@ public class BlockPredicateArgument implements SerializableArgument<Result> {
 
    static {
       TYPE = SerializableArgument.<BlockPredicateArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("stone", "minecraft:stone", "stone[foo=bar]", "#stone", "#stone[foo=bar]{baz=nbt}");
+      EXAMPLES = List.of("stone", "minecraft:stone", "wheat[age=0]", "#stone", "#stone[foo=bar]{baz:nbt}");
    }
 
    private static record BlockPredicate(BlockState state, Set<Property<?>> properties, @Nullable CompoundTag nbt) implements Result {

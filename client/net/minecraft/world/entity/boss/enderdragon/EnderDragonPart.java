@@ -48,8 +48,8 @@ public class EnderDragonPart extends Entity {
       return this.isInvulnerableToBase(source) ? false : this.parentMob.hurt(level, this, source, damage);
    }
 
-   public boolean is(final Entity other) {
-      return this == other || this.parentMob == other;
+   public Entity getGraphRoot() {
+      return this.parentMob.getGraphRoot();
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {

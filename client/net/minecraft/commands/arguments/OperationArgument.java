@@ -16,7 +16,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.scores.ScoreAccess;
 
 public class OperationArgument implements SerializableArgument.ContextFree<Operation> {
-   private static final OperationArgument INSTANCE = new OperationArgument();
+   public static final OperationArgument INSTANCE = new OperationArgument();
    public static final SerializableArgument.Type<OperationArgument> TYPE;
    private static final List<String> VALUES;
    private static final SimpleCommandExceptionType ERROR_INVALID_OPERATION;

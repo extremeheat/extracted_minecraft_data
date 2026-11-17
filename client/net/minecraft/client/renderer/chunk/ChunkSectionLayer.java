@@ -35,8 +35,8 @@ public enum ChunkSectionLayer {
       }
    }
 
-   public RenderPipeline pipeline(final boolean multiDraw, final boolean improvedFog, final boolean wireframe, final @Nullable OitStage oitStage) {
-      return RenderPipelines.terrain(new RenderPipelines.TerrainParameters(this.variant, improvedFog, multiDraw, wireframe, oitStage));
+   public RenderPipeline pipeline(final boolean multiDraw, final boolean improvedFog, final boolean cloudsInFog, final boolean wireframe, final @Nullable OitStage oitStage, final boolean hasWaterMask) {
+      return RenderPipelines.terrain(new RenderPipelines.TerrainParameters(this.variant, improvedFog, cloudsInFog, multiDraw, wireframe, oitStage, hasWaterMask));
    }
 
    public int bufferSize() {

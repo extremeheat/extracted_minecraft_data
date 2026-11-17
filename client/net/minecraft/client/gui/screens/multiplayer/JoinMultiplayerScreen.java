@@ -2,6 +2,7 @@ package net.minecraft.client.gui.screens.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import java.util.List;
+import java.util.Objects;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -31,7 +32,7 @@ public class JoinMultiplayerScreen extends Screen {
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 33, 60);
    private final ServerStatusPinger pinger = new ServerStatusPinger();
    private final Screen lastScreen;
-   protected ServerSelectionList serverSelectionList;
+   protected @Nullable ServerSelectionList serverSelectionList;
    private ServerList servers;
    private Button editButton;
    private Button joinButton;
@@ -107,6 +108,7 @@ public class JoinMultiplayerScreen extends Screen {
       bottomFooterButtons.addChild(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(74).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
+      this.serverSelectionList.pingVisibleServers();
       this.onSelectedChange();
    }
 
@@ -124,12 +126,23 @@ public class JoinMultiplayerScreen extends Screen {
 
    public void tick() {
       super.tick();
-      List<LanServer> lanServers = this.lanServerList.takeDirtyServers();
-      if (lanServers != null) {
-         this.serverSelectionList.updateNetworkServers(lanServers);
+      if (this.serverSelectionList != null) {
+         List<LanServer> lanServers = this.lanServerList.takeDirtyServers();
+         if (lanServers != null) {
+            this.serverSelectionList.updateNetworkServers(lanServers);
+         }
+
+         this.serverSelectionList.pingVisibleServers();
       }
 
       this.pinger.tick();
+   }
+
+   public void added() {
+      if (this.serverSelectionList != null) {
+         this.serverSelectionList.added();
+      }
+
    }
 
    public void removed() {
@@ -139,7 +152,10 @@ public class JoinMultiplayerScreen extends Screen {
       }
 
       this.pinger.removeAll();
-      this.serverSelectionList.removed();
+      if (this.serverSelectionList != null) {
+         this.serverSelectionList.removed();
+      }
+
    }
 
    private void refreshServerList() {
@@ -147,7 +163,7 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    private void deleteCallback(final boolean result) {
-      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
+      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)((ServerSelectionList)Objects.requireNonNull(this.serverSelectionList)).getSelected();
       if (result && entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
          this.servers.remove(onlineServerEntry.getServerData());
          this.servers.save();
@@ -159,7 +175,7 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    private void editServerCallback(final boolean result) {
-      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
+      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)((ServerSelectionList)Objects.requireNonNull(this.serverSelectionList)).getSelected();
       if (result && entry instanceof ServerSelectionList.OnlineServerEntry onlineServerEntry) {
          ServerData current = onlineServerEntry.getServerData();
          current.name = this.editingServer.name;
@@ -184,7 +200,7 @@ public class JoinMultiplayerScreen extends Screen {
             this.servers.save();
          }
 
-         this.serverSelectionList.setSelected((ServerSelectionList.Entry)null);
+         ((ServerSelectionList)Objects.requireNonNull(this.serverSelectionList)).setSelected((ServerSelectionList.Entry)null);
          this.serverSelectionList.updateOnlineServers(this.servers);
       }
 
@@ -226,7 +242,7 @@ public class JoinMultiplayerScreen extends Screen {
       this.joinButton.active = false;
       this.editButton.active = false;
       this.deleteButton.active = false;
-      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)this.serverSelectionList.getSelected();
+      ServerSelectionList.Entry entry = (ServerSelectionList.Entry)((ServerSelectionList)Objects.requireNonNull(this.serverSelectionList)).getSelected();
       if (entry != null && !(entry instanceof ServerSelectionList.LANHeader)) {
          this.joinButton.active = true;
          if (entry instanceof ServerSelectionList.OnlineServerEntry) {

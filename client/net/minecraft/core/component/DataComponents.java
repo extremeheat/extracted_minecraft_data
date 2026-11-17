@@ -6,6 +6,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.dispenser.DispenseBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.registries.codec.RegistryCodecs;
@@ -158,6 +159,7 @@ public class DataComponents {
    public static final DataComponentType<Integer> ADDITIONAL_TRADE_COST = register("additional_trade_cost", (b) -> b.networkSynchronized(ByteBufCodecs.VAR_INT));
    public static final DataComponentType<Holder<BlockTransformer>> BLOCK_TRANSFORMER = register("block_transformer", (b) -> b.persistent(BlockTransformer.CODEC).networkSynchronized(BlockTransformer.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<VillagerFood> VILLAGER_FOOD = register("villager_food", (b) -> b.persistent(VillagerFood.CODEC).networkSynchronized(VillagerFood.STREAM_CODEC));
+   public static final DataComponentType<Holder<List<DispenseBehavior>>> DISPENSE_BEHAVIOR = register("dispense_behavior", (b) -> b.persistent(DispenseBehavior.CODEC));
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register("stored_enchantments", (b) -> b.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<DyeColor> DYE = register("dye", (b) -> b.persistent(DyeColor.CODEC).networkSynchronized(DyeColor.STREAM_CODEC));
    public static final DataComponentType<DyedItemColor> DYED_COLOR = register("dyed_color", (b) -> b.persistent(DyedItemColor.CODEC).networkSynchronized(DyedItemColor.STREAM_CODEC));

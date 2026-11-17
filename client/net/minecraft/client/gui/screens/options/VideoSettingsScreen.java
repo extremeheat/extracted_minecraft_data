@@ -48,7 +48,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    private @Nullable Monitor fullscreenModeMonitor;
 
    private static OptionInstance<?>[] qualityOptions(final Options options) {
-      return new OptionInstance[]{options.biomeBlendRadius(), options.renderDistance(), options.prioritizeChunkUpdates(), options.simulationDistance(), options.ambientOcclusion(), options.cloudStatus(), options.particles(), options.mipmapLevels(), options.entityShadows(), options.entityDistanceScaling(), options.menuBackgroundBlurriness(), options.cloudRange(), options.cutoutLeaves(), options.improvedTransparency(), options.textureFiltering(), options.maxAnisotropyBit(), options.weatherRadius()};
+      return new OptionInstance[]{options.biomeBlendRadius(), options.renderDistance(), options.prioritizeChunkUpdates(), options.simulationDistance(), options.ambientOcclusion(), options.cloudStatus(), options.particles(), options.mipmapLevels(), options.entityShadows(), options.entityDistanceScaling(), options.menuBackgroundBlurriness(), options.cloudRange(), options.cutoutLeaves(), options.weatherRadius(), options.textureFiltering(), options.maxAnisotropyBit(), options.improvedFog(), options.improvedTransparency()};
    }
 
    private static OptionInstance<?>[] displayOptions(final Options options) {

@@ -128,12 +128,14 @@ public class Pig extends Animal implements ItemSteerable {
       super.addAdditionalSaveData(output);
       VariantUtils.writeVariant(output, this.getVariant());
       this.getSoundVariant().unwrapKey().ifPresent((soundVariant) -> output.store("sound_variant", ResourceKey.codec(Registries.PIG_SOUND_VARIANT), soundVariant));
+      this.steering.save(output);
    }
 
    protected void readAdditionalSaveData(final ValueInput input) {
       super.readAdditionalSaveData(input);
       VariantUtils.readVariant(input, Registries.PIG_VARIANT).ifPresent(this::setVariant);
       input.read("sound_variant", ResourceKey.codec(Registries.PIG_SOUND_VARIANT)).flatMap((soundVariant) -> this.registryAccess().lookupOrThrow(Registries.PIG_SOUND_VARIANT).get(soundVariant)).ifPresent(this::setSoundVariant);
+      this.steering.load(input);
    }
 
    protected @Nullable SoundEvent getAmbientSound() {

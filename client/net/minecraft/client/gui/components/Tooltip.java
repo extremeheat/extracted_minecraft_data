@@ -55,9 +55,12 @@ public class Tooltip implements NarrationSupplier {
    }
 
    public static Tooltip createForItem(final List<Component> lines, final ItemStack item) {
-      Component message = CommonComponents.joinLines((Collection)lines);
       Component narration = lines.size() > 1 ? CommonComponents.joinLines((Collection)lines.subList(1, lines.size())) : null;
-      return new Tooltip(message, narration, item.getTooltipImage(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), false, true);
+      return createForItem(lines, narration, item);
+   }
+
+   public static Tooltip createForItem(final List<Component> lines, final @Nullable Component narration, final ItemStack item) {
+      return new Tooltip(CommonComponents.joinLines((Collection)lines), narration, item.getTooltipImage(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), false, true);
    }
 
    public Optional<TooltipComponent> component() {

@@ -1,5 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
@@ -11,7 +13,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
-import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -20,12 +21,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.RecipeBookMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import org.jspecify.annotations.Nullable;
 
 public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends AbstractContainerScreen<T> implements RecipeUpdateListener {
    private final RecipeBookComponent<?> recipeBookComponent;
-   private boolean widthTooNarrow;
 
    public AbstractRecipeBookScreen(final T menu, final RecipeBookComponent<?> recipeBookComponent, final Inventory inventory, final Component title) {
       super(menu, inventory, title);
@@ -34,9 +35,7 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
 
    protected void init() {
       super.init();
-      this.widthTooNarrow = this.width < 379;
-      this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow);
-      this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
+      this.recipeBookComponent.init(this.width, this.height, this.minecraft);
       this.updateScreenPositions();
       this.initButton();
    }
@@ -45,22 +44,37 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
 
    private void initButton() {
       ScreenPosition buttonPos = this.getRecipeBookButtonPosition();
-      this.addRenderableWidget(new RecipeBookToggleButton(buttonPos.x(), buttonPos.y(), (button) -> {
+      this.addWidget(this.recipeBookComponent);
+      AbstractRecipeBookScreen<T>.RecipeBookToggleButton recipeButton = (RecipeBookToggleButton)this.addRenderableWidget(new RecipeBookToggleButton(buttonPos.x(), buttonPos.y(), (button) -> {
          this.recipeBookComponent.toggleVisibility();
-         this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
          this.updateScreenPositions();
          ScreenPosition updatedButtonPos = this.getRecipeBookButtonPosition();
          button.setPosition(updatedButtonPos.x(), updatedButtonPos.y());
          this.onRecipeBookButtonClick();
       }));
-      this.addWidget(this.recipeBookComponent);
+      recipeButton.setTabOrderGroup(this.getRecipeBookButtonTabOrderGroup());
+      this.recipeBookComponent.setTabOrderGroup(0);
+   }
+
+   protected int getRecipeBookButtonTabOrderGroup() {
+      return 0;
+   }
+
+   public void updateScreenPositions() {
+      if (this.recipeBookComponent.isVisible() && !this.recipeBookComponent.isWidthTooNarrow()) {
+         this.leftPos = 177 + (this.width - this.imageWidth - 200) / 2;
+      } else {
+         this.leftPos = (this.width - this.imageWidth) / 2;
+      }
+
+      super.updateScreenPositions();
    }
 
    protected void onRecipeBookButtonClick() {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics) {
-      if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
+      if (this.recipeBookComponent.isVisible() && this.recipeBookComponent.isWidthTooNarrow()) {
          this.extractBackground(graphics);
       } else {
          super.extractContents(graphics);
@@ -70,8 +84,16 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       this.recipeBookComponent.extractRenderState(graphics);
       graphics.nextStratum();
       this.extractCarriedItem(graphics);
-      SlotWidget hoveredSlotWidget = this.getHoveredSlot();
-      this.recipeBookComponent.extractTooltip(graphics, hoveredSlotWidget == null ? null : hoveredSlotWidget.slot());
+   }
+
+   protected void updateSlotWidgets() {
+      List<SlotWidget> widgets = new ArrayList();
+
+      for(Slot slot : (this.menu).slots) {
+         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, () -> this.recipeBookComponent.getGhostSlotTooltip(slot)));
+      }
+
+      this.setSlotWidgets(widgets);
    }
 
    protected void extractSlots(final GuiGraphicsExtractor graphics) {
@@ -83,12 +105,28 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       return true;
    }
 
-   public boolean charTyped(final CharacterEvent event) {
-      return this.recipeBookComponent.charTyped(event) ? true : super.charTyped(event);
-   }
-
    public boolean keyPressed(final KeyEvent event) {
-      return this.recipeBookComponent.keyPressed(event) ? true : super.keyPressed(event);
+      if (this.recipeBookComponent.isVisible() && !this.minecraft.player.isSpectator()) {
+         if (event.isEscape() && this.recipeBookComponent.closeOverlay()) {
+            return true;
+         }
+
+         if (event.isEscape() && this.recipeBookComponent.isWidthTooNarrow()) {
+            this.recipeBookComponent.setVisible(false);
+            return true;
+         }
+
+         if (this.minecraft.options.keyChat.matches(event) && this.recipeBookComponent.focusSearchBox()) {
+            this.setFocused(this.recipeBookComponent);
+            return true;
+         }
+
+         if (this.minecraft.options.keyRepeatRecipeOrTrade.matches(event) && !this.isInputCaptured() && this.recipeBookComponent.repeatLastRecipe(event.hasShiftDown())) {
+            return true;
+         }
+      }
+
+      return super.keyPressed(event);
    }
 
    public boolean isInputCaptured() {
@@ -100,7 +138,7 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
          this.setFocused(this.recipeBookComponent);
          return true;
       } else {
-         return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(event, doubleClick);
+         return this.recipeBookComponent.isWidthTooNarrow() && this.recipeBookComponent.isVisible() ? true : super.mouseClicked(event, doubleClick);
       }
    }
 
@@ -109,7 +147,7 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    }
 
    protected @Nullable SlotWidget getHoveredSlot() {
-      return this.widthTooNarrow && this.recipeBookComponent.isVisible() ? null : super.getHoveredSlot();
+      return this.recipeBookComponent.isWidthTooNarrow() && this.recipeBookComponent.isVisible() ? null : super.getHoveredSlot();
    }
 
    protected boolean hasClickedOutside(final double mx, final double my) {

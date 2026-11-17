@@ -208,10 +208,14 @@ public class FriendlyByteBuf extends ByteBuf {
       if (size > maxSize) {
          throw new DecoderException("ByteArray with size " + size + " is bigger than allowed " + maxSize);
       } else {
-         byte[] bytes = new byte[size];
-         input.readBytes(bytes);
-         return bytes;
+         return readFixedSizeByteArray(input, size);
       }
+   }
+
+   public static byte[] readFixedSizeByteArray(final ByteBuf input, final int size) {
+      byte[] bytes = new byte[size];
+      input.readBytes(bytes);
+      return bytes;
    }
 
    public FriendlyByteBuf writeVarIntArray(final int[] ints) {

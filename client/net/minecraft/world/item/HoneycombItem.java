@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -64,12 +65,12 @@ public class HoneycombItem extends Item implements SignApplicator {
          level.setBlock(pos, waxedState, 11);
          level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(player, waxedState));
          level.levelEvent(player, 3003, pos, 0);
-         level.playSound(player, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound(player, (BlockPos)pos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          if (oldState.getBlock() instanceof ChestBlock && oldState.getValue(ChestBlock.TYPE) != ChestType.SINGLE) {
             BlockPos neighborPos = ChestBlock.getConnectedBlockPos(pos, oldState);
             level.gameEvent(GameEvent.BLOCK_CHANGE, neighborPos, GameEvent.Context.of(player, level.getBlockState(neighborPos)));
             level.levelEvent(player, 3003, neighborPos, 0);
-            level.playSound(player, (BlockPos)pos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound(player, (BlockPos)pos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
 
          return InteractionResult.SUCCESS;
@@ -84,7 +85,7 @@ public class HoneycombItem extends Item implements SignApplicator {
       if (sign.setWaxed(true)) {
          BlockPos blockPos = sign.getBlockPos();
          level.levelEvent((Entity)null, 3003, blockPos, 0);
-         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)blockPos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {
          return false;

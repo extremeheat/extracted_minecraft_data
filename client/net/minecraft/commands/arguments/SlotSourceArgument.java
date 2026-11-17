@@ -27,7 +27,7 @@ public class SlotSourceArgument implements SerializableArgument<SlotResult>, Val
    private static final Collection<String> EXAMPLES;
    private final RawArgument holderArgument;
 
-   private SlotSourceArgument(final ContextKeySet contextKeySet) {
+   public SlotSourceArgument(final ContextKeySet contextKeySet) {
       super();
       this.holderArgument = new RawArgument(contextKeySet);
    }

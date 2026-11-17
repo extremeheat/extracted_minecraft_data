@@ -912,7 +912,7 @@ public class Hud implements Renderable, Updatable {
       if (this.lastBubblePopSoundPlayed != bubble) {
          float soundVolume = 0.5F + 0.1F * (float)Math.max(0, emptyAirBubbles - 3 + 1);
          float soundPitch = 1.0F + 0.1F * (float)Math.max(0, emptyAirBubbles - 5 + 1);
-         player.playSound(SoundEvents.BUBBLE_POP, soundVolume, soundPitch);
+         player.playSound(SoundEvents.HUD_BUBBLE_POP, soundVolume, soundPitch);
          this.lastBubblePopSoundPlayed = bubble;
       }
 

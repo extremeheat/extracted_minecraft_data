@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -20,11 +21,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class BoatItem extends Item {
-   private final EntityType<? extends AbstractBoat> entityType;
-
-   public BoatItem(final EntityType<? extends AbstractBoat> entityType, final Item.Properties properties) {
+   public BoatItem(final Item.Properties properties) {
       super(properties);
-      this.entityType = entityType;
    }
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
@@ -73,16 +71,24 @@ public class BoatItem extends Item {
    }
 
    private @Nullable AbstractBoat getBoat(final Level level, final HitResult hitResult, final ItemStack itemStack, final Player player) {
-      AbstractBoat boat = (AbstractBoat)this.entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
-      if (boat != null) {
-         Vec3 location = hitResult.getLocation();
-         boat.setInitialPos(location.x, location.y, location.z);
-         if (level instanceof ServerLevel) {
-            ServerLevel serverLevel = (ServerLevel)level;
-            EntityType.createDefaultStackConfig(serverLevel, itemStack, player).apply(boat);
+      EntityType<?> entityType = TypedEntityData.getType(itemStack);
+      if (entityType == null) {
+         return null;
+      } else {
+         Entity var7 = entityType.create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+         if (var7 instanceof AbstractBoat) {
+            AbstractBoat boat = (AbstractBoat)var7;
+            Vec3 location = hitResult.getLocation();
+            boat.setInitialPos(location.x, location.y, location.z);
+            if (level instanceof ServerLevel) {
+               ServerLevel serverLevel = (ServerLevel)level;
+               EntityType.createDefaultStackConfig(serverLevel, itemStack, player).apply(boat);
+            }
+
+            return boat;
+         } else {
+            return null;
          }
       }
-
-      return boat;
    }
 }

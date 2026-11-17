@@ -4,6 +4,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 
 @FunctionalInterface
@@ -20,6 +21,9 @@ public interface LookAt {
             targetPlayer.lookAt(source.getAnchor(), this.entity, this.anchor);
          } else {
             target.lookAt(source.getAnchor(), this.anchor.apply(this.entity));
+            if (target instanceof Mob mob) {
+               mob.disableLookControlThisTick();
+            }
          }
 
       }
@@ -32,6 +36,10 @@ public interface LookAt {
 
       public void perform(final CommandSourceStack source, final Entity target) {
          target.lookAt(source.getAnchor(), this.position);
+         if (target instanceof Mob mob) {
+            mob.disableLookControlThisTick();
+         }
+
       }
    }
 }

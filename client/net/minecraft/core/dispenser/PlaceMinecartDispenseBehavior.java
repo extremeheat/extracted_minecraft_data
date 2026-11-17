@@ -1,11 +1,11 @@
 package net.minecraft.core.dispenser;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
@@ -16,16 +16,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
 
-public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
-   private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   private final EntityType<? extends AbstractMinecart> entityType;
+public class PlaceMinecartDispenseBehavior implements DispenseBehavior {
+   public static final PlaceMinecartDispenseBehavior INSTANCE = new PlaceMinecartDispenseBehavior();
+   public static final MapCodec<PlaceMinecartDispenseBehavior> MAP_CODEC;
 
-   public MinecartDispenseItemBehavior(final EntityType<? extends AbstractMinecart> entityType) {
+   private PlaceMinecartDispenseBehavior() {
       super();
-      this.entityType = entityType;
    }
 
-   public ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+   public DispenseBehavior.DispenseResult execute(final BlockSource source, final ItemStack dispensed) {
       Direction direction = (Direction)source.state().getValue(DispenserBlock.FACING);
       ServerLevel level = source.level();
       Vec3 center = source.center();
@@ -43,12 +42,12 @@ public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
          }
       } else {
          if (!blockFront.isAir()) {
-            return this.defaultDispenseItemBehavior.dispense(source, dispensed);
+            return DispenseBehavior.DispenseResult.failure();
          }
 
          BlockState blockBelow = level.getBlockState(front.below());
          if (!blockBelow.is(BlockTags.RAILS)) {
-            return this.defaultDispenseItemBehavior.dispense(source, dispensed);
+            return DispenseBehavior.DispenseResult.failure();
          }
 
          if (direction != Direction.DOWN && getRailShape(blockBelow).isSlope()) {
@@ -59,13 +58,14 @@ public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
       }
 
       Vec3 spawnPos = new Vec3(spawnX, spawnY + yOffset, spawnZ);
-      AbstractMinecart minecart = AbstractMinecart.createMinecart(level, spawnPos.x, spawnPos.y, spawnPos.z, this.entityType, EntitySpawnReason.DISPENSER, dispensed, (Player)null);
+      AbstractMinecart minecart = AbstractMinecart.createMinecart(level, spawnPos.x, spawnPos.y, spawnPos.z, EntitySpawnReason.DISPENSER, dispensed, (Player)null);
       if (minecart != null) {
          level.addFreshEntity(minecart);
          dispensed.shrink(1);
+         return DispenseBehavior.DispenseResult.success(dispensed);
+      } else {
+         return DispenseBehavior.DispenseResult.failure();
       }
-
-      return dispensed;
    }
 
    private static RailShape getRailShape(final BlockState blockFront) {
@@ -80,7 +80,11 @@ public class MinecartDispenseItemBehavior extends DefaultDispenseItemBehavior {
       return var10000;
    }
 
-   protected void playSound(final BlockSource source) {
-      source.level().levelEvent(1000, source.pos(), 0);
+   public MapCodec<PlaceMinecartDispenseBehavior> codec() {
+      return MAP_CODEC;
+   }
+
+   static {
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

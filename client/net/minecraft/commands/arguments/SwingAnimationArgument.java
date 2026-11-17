@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.SwingAnimationType;
 
 public class SwingAnimationArgument implements SerializableArgument.ContextFree<SwingAnimationType> {
-   private static final SwingAnimationArgument INSTANCE = new SwingAnimationArgument();
+   public static final SwingAnimationArgument INSTANCE = new SwingAnimationArgument();
    public static final SerializableArgument.Type<SwingAnimationArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final SwingAnimationType[] VALUES;

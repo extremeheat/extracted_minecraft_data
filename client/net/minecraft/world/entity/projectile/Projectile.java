@@ -19,7 +19,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoveSimulationType;
@@ -148,7 +147,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       Entity owner = this.getOwner();
       if (owner != null) {
          AABB aabb = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
-         return owner.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((entity) -> aabb.intersects(entity.getBoundingBox()));
+         return owner.getRootVehicle().getSelfAndPassengers().noneMatch((entity) -> aabb.intersects(entity.getBoundingBox()));
       } else {
          return true;
       }
@@ -345,7 +344,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
          return false;
       } else {
          Entity owner = this.getOwner();
-         return owner == null || this.leftOwner || !owner.isPassengerOfSameVehicle(entity);
+         return owner == null || this.leftOwner || !owner.isPartOfSameEntityGraph(entity);
       }
    }
 

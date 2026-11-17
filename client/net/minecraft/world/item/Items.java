@@ -8,6 +8,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.DispenseBehaviorIds;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.references.BlockItemId;
@@ -25,6 +26,8 @@ import net.minecraft.world.entity.EntityTypeIds;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.chicken.ChickenVariants;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.Bees;
@@ -1359,7 +1362,19 @@ public class Items {
    }
 
    private static Item registerSpawnEgg(final ResourceKey<Item> id, final EntityType<?> type) {
-      return registerItem(id, SpawnEggItem::new, (new Item.Properties()).spawnEgg(type));
+      return registerItem(id, SpawnEggItem::new, (new Item.Properties()).spawns(type).dispensed(DispenseBehaviorIds.SPAWN_EGG));
+   }
+
+   private static Item registerMinecart(final ResourceKey<Item> id, final EntityType<? extends AbstractMinecart> type, final UnaryOperator<Item.Properties> extraProperties) {
+      return registerItem(id, MinecartItem::new, (Item.Properties)extraProperties.apply((new Item.Properties()).stacksTo(1).spawns(type).dispensed(DispenseBehaviorIds.MINECART)));
+   }
+
+   private static Item registerMinecart(final ResourceKey<Item> id, final EntityType<? extends AbstractMinecart> type) {
+      return registerMinecart(id, type, (p) -> p);
+   }
+
+   private static Item registerBoat(final ResourceKey<Item> id, final EntityType<? extends AbstractBoat> type) {
+      return registerItem(id, BoatItem::new, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1).spawns(type).dispensed(DispenseBehaviorIds.BOAT));
    }
 
    private static Item registerBlock(final BlockItemId id, final Block block) {
@@ -1772,7 +1787,7 @@ public class Items {
       PURPUR_STAIRS = registerBlock(BlockItemIds.PURPUR_STAIRS, Blocks.PURPUR_STAIRS);
       SPAWNER = registerBlock(BlockItemIds.SPAWNER, Blocks.SPAWNER);
       CREAKING_HEART = registerBlock(BlockItemIds.CREAKING_HEART, Blocks.CREAKING_HEART);
-      CHEST = registerBlock(BlockItemIds.CHEST, Blocks.CHEST, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS)));
+      CHEST = registerBlock(BlockItemIds.CHEST, Blocks.CHEST, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS).dispensed(DispenseBehaviorIds.CHEST)));
       CRAFTING_TABLE = registerBlock(BlockItemIds.CRAFTING_TABLE, Blocks.CRAFTING_TABLE, (UnaryOperator)((p) -> p.cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS)));
       FARMLAND = registerBlock(BlockItemIds.FARMLAND, Blocks.FARMLAND);
       FURNACE = registerBlock(BlockItemIds.FURNACE, Blocks.FURNACE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
@@ -1803,7 +1818,7 @@ public class Items {
       CRIMSON_FENCE = registerBlock(BlockItemIds.CRIMSON_FENCE, Blocks.CRIMSON_FENCE);
       WARPED_FENCE = registerBlock(BlockItemIds.WARPED_FENCE, Blocks.WARPED_FENCE);
       PUMPKIN = registerBlock(BlockItemIds.PUMPKIN, Blocks.PUMPKIN, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
-      CARVED_PUMPKIN = registerBlock(BlockItemIds.CARVED_PUMPKIN, Blocks.CARVED_PUMPKIN, (UnaryOperator)((p) -> Waypoint.addHideAttribute(p).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(Identifier.withDefaultNamespace("misc/pumpkinblur")).build()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM)));
+      CARVED_PUMPKIN = registerBlock(BlockItemIds.CARVED_PUMPKIN, Blocks.CARVED_PUMPKIN, (UnaryOperator)((p) -> Waypoint.addHideAttribute(p).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.HEAD).setSwappable(false).setCameraOverlay(Identifier.withDefaultNamespace("misc/pumpkinblur")).build()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM).dispensed(DispenseBehaviorIds.CARVED_PUMPKIN)));
       JACK_O_LANTERN = registerBlock(BlockItemIds.JACK_O_LANTERN, Blocks.JACK_O_LANTERN);
       NETHERRACK = registerBlock(BlockItemIds.NETHERRACK, Blocks.NETHERRACK);
       SOUL_SAND = registerBlock(BlockItemIds.SOUL_SAND, Blocks.SOUL_SAND);
@@ -1813,7 +1828,7 @@ public class Items {
       SMOOTH_BASALT = registerBlock(BlockItemIds.SMOOTH_BASALT, Blocks.SMOOTH_BASALT);
       SOUL_TORCH = registerBlock(BlockItemIds.SOUL_TORCH, Blocks.SOUL_TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.SOUL_WALL_TORCH, Direction.DOWN, p)));
       COPPER_TORCH = registerBlock(BlockItemIds.COPPER_TORCH, Blocks.COPPER_TORCH, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.COPPER_WALL_TORCH, Direction.DOWN, p)));
-      GLOWSTONE = registerBlock(BlockItemIds.GLOWSTONE, Blocks.GLOWSTONE);
+      GLOWSTONE = registerBlock(BlockItemIds.GLOWSTONE, Blocks.GLOWSTONE, (new Item.Properties()).dispensed(DispenseBehaviorIds.GLOWSTONE));
       INFESTED_STONE = registerBlock(BlockItemIds.INFESTED_STONE, Blocks.INFESTED_STONE);
       INFESTED_COBBLESTONE = registerBlock(BlockItemIds.INFESTED_COBBLESTONE, Blocks.INFESTED_COBBLESTONE);
       INFESTED_STONE_BRICKS = registerBlock(BlockItemIds.INFESTED_STONE_BRICKS, Blocks.INFESTED_STONE_BRICKS);
@@ -1924,7 +1939,7 @@ public class Items {
       BARRIER = registerBlock(BlockItemIds.BARRIER, Blocks.BARRIER, (new Item.Properties()).rarity(Rarity.EPIC));
       LIGHT = registerBlock(BlockItemIds.LIGHT, Blocks.LIGHT, (UnaryOperator)((p) -> p.rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LightBlock.LEVEL, 15))));
       HAY_BLOCK = registerBlock(BlockItemIds.HAY_BLOCK, Blocks.HAY_BLOCK, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM_HIGH));
-      CARPET = ColorCollection.registerBlockItems(BlockItemIds.CARPET, Blocks.CARPET, (id, block, color) -> registerBlock(id, block, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(color)).cookingFuel(ContextIntProviders.COOKING_TIME_WOOL_CARPETS))));
+      CARPET = ColorCollection.registerBlockItems(BlockItemIds.CARPET, Blocks.CARPET, (id, block, color) -> registerBlock(id, block, (UnaryOperator)((p) -> p.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(color)).dispensed(DispenseBehaviorIds.EQUIPMENT).cookingFuel(ContextIntProviders.COOKING_TIME_WOOL_CARPETS))));
       TERRACOTTA = registerBlock(BlockItemIds.TERRACOTTA, Blocks.TERRACOTTA);
       PACKED_ICE = registerBlock(BlockItemIds.PACKED_ICE, Blocks.PACKED_ICE);
       PACKED_ICE_BRICKS = registerBlock(BlockItemIds.PACKED_ICE_BRICKS, Blocks.PACKED_ICE_BRICKS);
@@ -1960,8 +1975,8 @@ public class Items {
       RED_NETHER_BRICKS = registerBlock(BlockItemIds.RED_NETHER_BRICKS, Blocks.RED_NETHER_BRICKS);
       BONE_BLOCK = registerBlock(BlockItemIds.BONE_BLOCK, Blocks.BONE_BLOCK);
       STRUCTURE_VOID = registerBlock(BlockItemIds.STRUCTURE_VOID, Blocks.STRUCTURE_VOID, (new Item.Properties()).rarity(Rarity.EPIC));
-      SHULKER_BOX = registerBlock(BlockItemIds.SHULKER_BOX, Blocks.SHULKER_BOX, (new Item.Properties()).stacksTo(1).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
-      DYED_SHULKER_BOX = ColorCollection.registerBlockItems(BlockItemIds.DYED_SHULKER_BOX, Blocks.DYED_SHULKER_BOX, (id, block, var2) -> registerBlock(id, block, (new Item.Properties()).stacksTo(1).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
+      SHULKER_BOX = registerBlock(BlockItemIds.SHULKER_BOX, Blocks.SHULKER_BOX, (new Item.Properties()).stacksTo(1).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY).dispensed(DispenseBehaviorIds.SHULKER_BOX));
+      DYED_SHULKER_BOX = ColorCollection.registerBlockItems(BlockItemIds.DYED_SHULKER_BOX, Blocks.DYED_SHULKER_BOX, (id, block, var2) -> registerBlock(id, block, (new Item.Properties()).stacksTo(1).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY).dispensed(DispenseBehaviorIds.SHULKER_BOX)));
       GLAZED_TERRACOTTA = ColorCollection.registerBlockItems(BlockItemIds.GLAZED_TERRACOTTA, Blocks.GLAZED_TERRACOTTA, (id, block, var2) -> registerBlock(id, block));
       CONCRETE = ColorCollection.registerBlockItems(BlockItemIds.CONCRETE, Blocks.CONCRETE, (id, block, var2) -> registerBlock(id, block));
       CONCRETE_STAIRS = ColorCollection.registerBlockItems(BlockItemIds.CONCRETE_STAIRS, Blocks.CONCRETE_STAIRS, (id, block, var2) -> registerBlock(id, block));
@@ -2061,7 +2076,7 @@ public class Items {
       CALIBRATED_SCULK_SENSOR = registerBlock(BlockItemIds.CALIBRATED_SCULK_SENSOR, Blocks.CALIBRATED_SCULK_SENSOR);
       TRIPWIRE_HOOK = registerBlock(BlockItemIds.TRIPWIRE_HOOK, Blocks.TRIPWIRE_HOOK);
       TRAPPED_CHEST = registerBlock(BlockItemIds.TRAPPED_CHEST, Blocks.TRAPPED_CHEST, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS)));
-      TNT = registerBlock(BlockItemIds.TNT, Blocks.TNT);
+      TNT = registerBlock(BlockItemIds.TNT, Blocks.TNT, (new Item.Properties()).dispensed(DispenseBehaviorIds.TNT));
       REDSTONE_LAMP = registerBlock(BlockItemIds.REDSTONE_LAMP, Blocks.REDSTONE_LAMP);
       NOTE_BLOCK = registerBlock(BlockItemIds.NOTE_BLOCK, Blocks.NOTE_BLOCK, (UnaryOperator)((p) -> p.cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS)));
       STONE_BUTTON = registerBlock(BlockItemIds.STONE_BUTTON, Blocks.STONE_BUTTON);
@@ -2143,39 +2158,39 @@ public class Items {
       DETECTOR_RAIL = registerBlock(BlockItemIds.DETECTOR_RAIL, Blocks.DETECTOR_RAIL);
       RAIL = registerBlock(BlockItemIds.RAIL, Blocks.RAIL);
       ACTIVATOR_RAIL = registerBlock(BlockItemIds.ACTIVATOR_RAIL, Blocks.ACTIVATOR_RAIL);
-      SADDLE = registerItem(ItemIds.SADDLE, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, Equippable::saddle));
-      HARNESS = ColorCollection.registerItems(ItemIds.HARNESS, (name, color) -> registerItem(name, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.harness(context, color))));
-      MINECART = registerItem((ResourceKey)ItemIds.MINECART, (p) -> new MinecartItem(EntityTypes.MINECART, p), (new Item.Properties()).stacksTo(1));
-      CHEST_MINECART = registerItem((ResourceKey)ItemIds.CHEST_MINECART, (p) -> new MinecartItem(EntityTypes.CHEST_MINECART, p), (new Item.Properties()).stacksTo(1));
-      FURNACE_MINECART = registerItem((ResourceKey)ItemIds.FURNACE_MINECART, (p) -> new MinecartItem(EntityTypes.FURNACE_MINECART, p), (new Item.Properties()).stacksTo(1));
-      TNT_MINECART = registerItem((ResourceKey)ItemIds.TNT_MINECART, (p) -> new MinecartItem(EntityTypes.TNT_MINECART, p), (new Item.Properties()).stacksTo(1));
-      HOPPER_MINECART = registerItem((ResourceKey)ItemIds.HOPPER_MINECART, (p) -> new MinecartItem(EntityTypes.HOPPER_MINECART, p), (new Item.Properties()).stacksTo(1));
+      SADDLE = registerItem(ItemIds.SADDLE, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, Equippable::saddle).dispensed(DispenseBehaviorIds.EQUIPMENT));
+      HARNESS = ColorCollection.registerItems(ItemIds.HARNESS, (name, color) -> registerItem(name, (new Item.Properties()).stacksTo(1).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.harness(context, color)).dispensed(DispenseBehaviorIds.EQUIPMENT)));
+      MINECART = registerMinecart(ItemIds.MINECART, EntityTypes.MINECART);
+      CHEST_MINECART = registerMinecart(ItemIds.CHEST_MINECART, EntityTypes.CHEST_MINECART);
+      FURNACE_MINECART = registerMinecart(ItemIds.FURNACE_MINECART, EntityTypes.FURNACE_MINECART);
+      TNT_MINECART = registerMinecart(ItemIds.TNT_MINECART, EntityTypes.TNT_MINECART);
+      HOPPER_MINECART = registerMinecart(ItemIds.HOPPER_MINECART, EntityTypes.HOPPER_MINECART);
       CARROT_ON_A_STICK = registerItem((ResourceKey)ItemIds.CARROT_ON_A_STICK, (p) -> new FoodOnAStickItem(EntityTypes.PIG, 7, p), (new Item.Properties()).durability(25));
       WARPED_FUNGUS_ON_A_STICK = registerItem((ResourceKey)ItemIds.WARPED_FUNGUS_ON_A_STICK, (p) -> new FoodOnAStickItem(EntityTypes.STRIDER, 1, p), (new Item.Properties()).durability(100));
       PHANTOM_MEMBRANE = registerItem(ItemIds.PHANTOM_MEMBRANE);
-      ELYTRA = registerItem(ItemIds.ELYTRA, (new Item.Properties()).durability(432).rarity(Rarity.EPIC).component(DataComponents.GLIDER, Unit.INSTANCE).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST).setEquipSound(SoundEvents.ARMOR_EQUIP_ELYTRA).setAsset(EquipmentAssets.ELYTRA).setDamageOnHurt(false).build()).repairable(PHANTOM_MEMBRANE));
-      OAK_BOAT = registerItem((ResourceKey)ItemIds.OAK_BOAT, (p) -> new BoatItem(EntityTypes.OAK_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      OAK_CHEST_BOAT = registerItem((ResourceKey)ItemIds.OAK_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.OAK_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      SPRUCE_BOAT = registerItem((ResourceKey)ItemIds.SPRUCE_BOAT, (p) -> new BoatItem(EntityTypes.SPRUCE_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      SPRUCE_CHEST_BOAT = registerItem((ResourceKey)ItemIds.SPRUCE_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.SPRUCE_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      BIRCH_BOAT = registerItem((ResourceKey)ItemIds.BIRCH_BOAT, (p) -> new BoatItem(EntityTypes.BIRCH_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      BIRCH_CHEST_BOAT = registerItem((ResourceKey)ItemIds.BIRCH_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.BIRCH_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      JUNGLE_BOAT = registerItem((ResourceKey)ItemIds.JUNGLE_BOAT, (p) -> new BoatItem(EntityTypes.JUNGLE_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      JUNGLE_CHEST_BOAT = registerItem((ResourceKey)ItemIds.JUNGLE_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.JUNGLE_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      ACACIA_BOAT = registerItem((ResourceKey)ItemIds.ACACIA_BOAT, (p) -> new BoatItem(EntityTypes.ACACIA_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      ACACIA_CHEST_BOAT = registerItem((ResourceKey)ItemIds.ACACIA_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.ACACIA_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      CHERRY_BOAT = registerItem((ResourceKey)ItemIds.CHERRY_BOAT, (p) -> new BoatItem(EntityTypes.CHERRY_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      CHERRY_CHEST_BOAT = registerItem((ResourceKey)ItemIds.CHERRY_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.CHERRY_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      DARK_OAK_BOAT = registerItem((ResourceKey)ItemIds.DARK_OAK_BOAT, (p) -> new BoatItem(EntityTypes.DARK_OAK_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      DARK_OAK_CHEST_BOAT = registerItem((ResourceKey)ItemIds.DARK_OAK_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.DARK_OAK_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      PALE_OAK_BOAT = registerItem((ResourceKey)ItemIds.PALE_OAK_BOAT, (p) -> new BoatItem(EntityTypes.PALE_OAK_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      PALE_OAK_CHEST_BOAT = registerItem((ResourceKey)ItemIds.PALE_OAK_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.PALE_OAK_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      MANGROVE_BOAT = registerItem((ResourceKey)ItemIds.MANGROVE_BOAT, (p) -> new BoatItem(EntityTypes.MANGROVE_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      MANGROVE_CHEST_BOAT = registerItem((ResourceKey)ItemIds.MANGROVE_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.MANGROVE_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      POPLAR_BOAT = registerItem((ResourceKey)ItemIds.POPLAR_BOAT, (p) -> new BoatItem(EntityTypes.POPLAR_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      POPLAR_CHEST_BOAT = registerItem((ResourceKey)ItemIds.POPLAR_CHEST_BOAT, (p) -> new BoatItem(EntityTypes.POPLAR_CHEST_BOAT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      BAMBOO_RAFT = registerItem((ResourceKey)ItemIds.BAMBOO_RAFT, (p) -> new BoatItem(EntityTypes.BAMBOO_RAFT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
-      BAMBOO_CHEST_RAFT = registerItem((ResourceKey)ItemIds.BAMBOO_CHEST_RAFT, (p) -> new BoatItem(EntityTypes.BAMBOO_CHEST_RAFT, p), (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_BOATS).stacksTo(1));
+      ELYTRA = registerItem(ItemIds.ELYTRA, (new Item.Properties()).durability(432).rarity(Rarity.EPIC).component(DataComponents.GLIDER, Unit.INSTANCE).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST).setEquipSound(SoundEvents.ARMOR_EQUIP_ELYTRA).setAsset(EquipmentAssets.ELYTRA).setDamageOnHurt(false).build()).dispensed(DispenseBehaviorIds.EQUIPMENT).repairable(PHANTOM_MEMBRANE));
+      OAK_BOAT = registerBoat(ItemIds.OAK_BOAT, EntityTypes.OAK_BOAT);
+      OAK_CHEST_BOAT = registerBoat(ItemIds.OAK_CHEST_BOAT, EntityTypes.OAK_CHEST_BOAT);
+      SPRUCE_BOAT = registerBoat(ItemIds.SPRUCE_BOAT, EntityTypes.SPRUCE_BOAT);
+      SPRUCE_CHEST_BOAT = registerBoat(ItemIds.SPRUCE_CHEST_BOAT, EntityTypes.SPRUCE_CHEST_BOAT);
+      BIRCH_BOAT = registerBoat(ItemIds.BIRCH_BOAT, EntityTypes.BIRCH_BOAT);
+      BIRCH_CHEST_BOAT = registerBoat(ItemIds.BIRCH_CHEST_BOAT, EntityTypes.BIRCH_CHEST_BOAT);
+      JUNGLE_BOAT = registerBoat(ItemIds.JUNGLE_BOAT, EntityTypes.JUNGLE_BOAT);
+      JUNGLE_CHEST_BOAT = registerBoat(ItemIds.JUNGLE_CHEST_BOAT, EntityTypes.JUNGLE_CHEST_BOAT);
+      ACACIA_BOAT = registerBoat(ItemIds.ACACIA_BOAT, EntityTypes.ACACIA_BOAT);
+      ACACIA_CHEST_BOAT = registerBoat(ItemIds.ACACIA_CHEST_BOAT, EntityTypes.ACACIA_CHEST_BOAT);
+      CHERRY_BOAT = registerBoat(ItemIds.CHERRY_BOAT, EntityTypes.CHERRY_BOAT);
+      CHERRY_CHEST_BOAT = registerBoat(ItemIds.CHERRY_CHEST_BOAT, EntityTypes.CHERRY_CHEST_BOAT);
+      DARK_OAK_BOAT = registerBoat(ItemIds.DARK_OAK_BOAT, EntityTypes.DARK_OAK_BOAT);
+      DARK_OAK_CHEST_BOAT = registerBoat(ItemIds.DARK_OAK_CHEST_BOAT, EntityTypes.DARK_OAK_CHEST_BOAT);
+      PALE_OAK_BOAT = registerBoat(ItemIds.PALE_OAK_BOAT, EntityTypes.PALE_OAK_BOAT);
+      PALE_OAK_CHEST_BOAT = registerBoat(ItemIds.PALE_OAK_CHEST_BOAT, EntityTypes.PALE_OAK_CHEST_BOAT);
+      MANGROVE_BOAT = registerBoat(ItemIds.MANGROVE_BOAT, EntityTypes.MANGROVE_BOAT);
+      MANGROVE_CHEST_BOAT = registerBoat(ItemIds.MANGROVE_CHEST_BOAT, EntityTypes.MANGROVE_CHEST_BOAT);
+      POPLAR_BOAT = registerBoat(ItemIds.POPLAR_BOAT, EntityTypes.POPLAR_BOAT);
+      POPLAR_CHEST_BOAT = registerBoat(ItemIds.POPLAR_CHEST_BOAT, EntityTypes.POPLAR_CHEST_BOAT);
+      BAMBOO_RAFT = registerBoat(ItemIds.BAMBOO_RAFT, EntityTypes.BAMBOO_RAFT);
+      BAMBOO_CHEST_RAFT = registerBoat(ItemIds.BAMBOO_CHEST_RAFT, EntityTypes.BAMBOO_CHEST_RAFT);
       STRUCTURE_BLOCK = registerBlock(BlockItemIds.STRUCTURE_BLOCK, Blocks.STRUCTURE_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       JIGSAW = registerBlock(BlockItemIds.JIGSAW, Blocks.JIGSAW, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       TEST_BLOCK = registerBlock(BlockItemIds.TEST_BLOCK, Blocks.TEST_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(TestBlock.MODE, TestBlockMode.START)));
@@ -2184,11 +2199,11 @@ public class Items {
       TURTLE_SCUTE = registerItem(ItemIds.TURTLE_SCUTE);
       ARMADILLO_SCUTE = registerItem(ItemIds.ARMADILLO_SCUTE);
       WOLF_ARMOR = registerItem(ItemIds.WOLF_ARMOR, (new Item.Properties()).wolfArmor(ArmorMaterials.ARMADILLO_SCUTE));
-      FLINT_AND_STEEL = registerItem(ItemIds.FLINT_AND_STEEL, FlintAndSteelItem::new, (new Item.Properties()).durability(64));
+      FLINT_AND_STEEL = registerItem(ItemIds.FLINT_AND_STEEL, FlintAndSteelItem::new, (new Item.Properties()).durability(64).dispensed(DispenseBehaviorIds.FLINT_AND_STEEL));
       BOWL = registerItem(ItemIds.BOWL, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_ITEMS_EXTRA_SMALL));
       APPLE = registerItem(ItemIds.APPLE, (new Item.Properties()).food(Foods.APPLE).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
       BOW = registerItem(ItemIds.BOW, BowItem::new, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_ITEMS_SMALL).durability(384).enchantable(1));
-      ARROW = registerItem(ItemIds.ARROW, ArrowItem::new);
+      ARROW = registerItem(ItemIds.ARROW, ArrowItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
       COAL = registerItem(ItemIds.COAL, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_COAL));
       CHARCOAL = registerItem(ItemIds.CHARCOAL, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_COAL));
       DIAMOND = registerItem(ItemIds.DIAMOND, (new Item.Properties()).trimMaterial(TrimMaterials.DIAMOND));
@@ -2307,30 +2322,30 @@ public class Items {
       BAMBOO_HANGING_SIGN = registerBlock(BlockItemIds.BAMBOO_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN, (BiFunction)((b, p) -> new HangingSignItem(b, Blocks.BAMBOO_WALL_HANGING_SIGN, p)), (Item.Properties)(new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_HANGING_SIGNS).stacksTo(16).signText());
       CRIMSON_HANGING_SIGN = registerBlock(BlockItemIds.CRIMSON_HANGING_SIGN, Blocks.CRIMSON_HANGING_SIGN, (BiFunction)((b, p) -> new HangingSignItem(b, Blocks.CRIMSON_WALL_HANGING_SIGN, p)), (Item.Properties)(new Item.Properties()).stacksTo(16).signText());
       WARPED_HANGING_SIGN = registerBlock(BlockItemIds.WARPED_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN, (BiFunction)((b, p) -> new HangingSignItem(b, Blocks.WARPED_WALL_HANGING_SIGN, p)), (Item.Properties)(new Item.Properties()).stacksTo(16).signText());
-      BUCKET = registerItem((ResourceKey)ItemIds.BUCKET, (p) -> new BucketItem(Fluids.EMPTY, p), (new Item.Properties()).stacksTo(16));
-      WATER_BUCKET = registerItem((ResourceKey)ItemIds.WATER_BUCKET, (p) -> new BucketItem(Fluids.WATER, p), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1));
-      LAVA_BUCKET = registerItem((ResourceKey)ItemIds.LAVA_BUCKET, (p) -> new BucketItem(Fluids.LAVA, p), (new Item.Properties()).craftRemainder(BUCKET).cookingFuel(ContextIntProviders.COOKING_TIME_LAVA_BUCKET).stacksTo(1));
-      POWDER_SNOW_BUCKET = registerItem(BlockItemIds.POWDER_SNOW, (p) -> new SolidBucketItem(Blocks.POWDER_SNOW, SoundEvents.BUCKET_EMPTY_POWDER_SNOW, p), (new Item.Properties()).stacksTo(1).useItemDescriptionPrefix());
-      SNOWBALL = registerItem(ItemIds.SNOWBALL, SnowballItem::new, (new Item.Properties()).stacksTo(16));
-      ICE_BALL = registerItem(ItemIds.ICE_BALL, IceBallItem::new, (new Item.Properties()).stacksTo(16));
+      BUCKET = registerItem((ResourceKey)ItemIds.BUCKET, (p) -> new BucketItem(Fluids.EMPTY, p), (new Item.Properties()).stacksTo(16).dispensed(DispenseBehaviorIds.EMPTY_BUCKET));
+      WATER_BUCKET = registerItem((ResourceKey)ItemIds.WATER_BUCKET, (p) -> new BucketItem(Fluids.WATER, p), (new Item.Properties()).craftRemainder(BUCKET).stacksTo(1).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      LAVA_BUCKET = registerItem((ResourceKey)ItemIds.LAVA_BUCKET, (p) -> new BucketItem(Fluids.LAVA, p), (new Item.Properties()).craftRemainder(BUCKET).cookingFuel(ContextIntProviders.COOKING_TIME_LAVA_BUCKET).stacksTo(1).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      POWDER_SNOW_BUCKET = registerItem(BlockItemIds.POWDER_SNOW, (p) -> new SolidBucketItem(Blocks.POWDER_SNOW, SoundEvents.BUCKET_EMPTY_POWDER_SNOW, p), (new Item.Properties()).stacksTo(1).useItemDescriptionPrefix().dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      SNOWBALL = registerItem(ItemIds.SNOWBALL, SnowballItem::new, (new Item.Properties()).stacksTo(16).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
+      ICE_BALL = registerItem(ItemIds.ICE_BALL, IceBallItem::new, (new Item.Properties()).stacksTo(16).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
       LEATHER = registerItem(ItemIds.LEATHER);
       MILK_BUCKET = registerItem(ItemIds.MILK_BUCKET, (new Item.Properties()).craftRemainder(BUCKET).component(DataComponents.CONSUMABLE, Consumables.MILK_BUCKET).usingConvertsTo(BUCKET).stacksTo(1));
-      PUFFERFISH_BUCKET = registerItem((ResourceKey)ItemIds.PUFFERFISH_BUCKET, (p) -> new MobBucketItem(EntityTypes.PUFFERFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.PUFFERFISH));
-      SALMON_BUCKET = registerItem((ResourceKey)ItemIds.SALMON_BUCKET, (p) -> new MobBucketItem(EntityTypes.SALMON, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.SALMON));
-      COD_BUCKET = registerItem((ResourceKey)ItemIds.COD_BUCKET, (p) -> new MobBucketItem(EntityTypes.COD, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.COD));
-      TROPICAL_FISH_BUCKET = registerItem((ResourceKey)ItemIds.TROPICAL_FISH_BUCKET, (p) -> new MobBucketItem(EntityTypes.TROPICAL_FISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.TROPICAL_FISH));
-      AXOLOTL_BUCKET = registerItem((ResourceKey)ItemIds.AXOLOTL_BUCKET, (p) -> new MobBucketItem(EntityTypes.AXOLOTL, Fluids.WATER, SoundEvents.BUCKET_EMPTY_AXOLOTL, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
-      SULFUR_CUBE_BUCKET = registerItem((ResourceKey)ItemIds.SULFUR_CUBE_BUCKET, (p) -> new MobBucketItem(EntityTypes.SULFUR_CUBE, Fluids.EMPTY, SoundEvents.BUCKET_EMPTY_SULFUR_CUBE, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
-      TADPOLE_BUCKET = registerItem((ResourceKey)ItemIds.TADPOLE_BUCKET, (p) -> new MobBucketItem(EntityTypes.TADPOLE, Fluids.WATER, SoundEvents.BUCKET_EMPTY_TADPOLE, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY));
+      PUFFERFISH_BUCKET = registerItem((ResourceKey)ItemIds.PUFFERFISH_BUCKET, (p) -> new MobBucketItem(EntityTypes.PUFFERFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.PUFFERFISH).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      SALMON_BUCKET = registerItem((ResourceKey)ItemIds.SALMON_BUCKET, (p) -> new MobBucketItem(EntityTypes.SALMON, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.SALMON).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      COD_BUCKET = registerItem((ResourceKey)ItemIds.COD_BUCKET, (p) -> new MobBucketItem(EntityTypes.COD, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.COD).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      TROPICAL_FISH_BUCKET = registerItem((ResourceKey)ItemIds.TROPICAL_FISH_BUCKET, (p) -> new MobBucketItem(EntityTypes.TROPICAL_FISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).component(DataComponents.FOOD, Foods.TROPICAL_FISH).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      AXOLOTL_BUCKET = registerItem((ResourceKey)ItemIds.AXOLOTL_BUCKET, (p) -> new MobBucketItem(EntityTypes.AXOLOTL, Fluids.WATER, SoundEvents.BUCKET_EMPTY_AXOLOTL, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      SULFUR_CUBE_BUCKET = registerItem((ResourceKey)ItemIds.SULFUR_CUBE_BUCKET, (p) -> new MobBucketItem(EntityTypes.SULFUR_CUBE, Fluids.EMPTY, SoundEvents.BUCKET_EMPTY_SULFUR_CUBE, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
+      TADPOLE_BUCKET = registerItem((ResourceKey)ItemIds.TADPOLE_BUCKET, (p) -> new MobBucketItem(EntityTypes.TADPOLE, Fluids.WATER, SoundEvents.BUCKET_EMPTY_TADPOLE, p), (new Item.Properties()).stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY).dispensed(DispenseBehaviorIds.FILLED_BUCKET));
       BRICK = registerItem(ItemIds.BRICK);
       CLAY_BALL = registerItem(ItemIds.CLAY_BALL);
       DRIED_KELP_BLOCK = registerBlock(BlockItemIds.DRIED_KELP_BLOCK, Blocks.DRIED_KELP_BLOCK, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW_MEDIUM).cookingFuel(ContextIntProviders.COOKING_TIME_DRIED_KELP_BLOCK));
       PAPER = registerItem(ItemIds.PAPER);
       BOOK = registerItem(ItemIds.BOOK, (new Item.Properties()).enchantable(1));
       SLIME_BALL = registerItem(ItemIds.SLIME_BALL);
-      EGG = registerItem(ItemIds.EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.TEMPERATE));
-      BLUE_EGG = registerItem(ItemIds.BLUE_EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.COLD));
-      BROWN_EGG = registerItem(ItemIds.BROWN_EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.WARM));
+      EGG = registerItem(ItemIds.EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.TEMPERATE).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
+      BLUE_EGG = registerItem(ItemIds.BLUE_EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.COLD).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
+      BROWN_EGG = registerItem(ItemIds.BROWN_EGG, EggItem::new, (new Item.Properties()).stacksTo(16).delayedHolderComponent(DataComponents.CHICKEN_VARIANT, ChickenVariants.WARM).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
       COMPASS = registerItem(ItemIds.COMPASS, CompassItem::new);
       RECOVERY_COMPASS = registerItem(ItemIds.RECOVERY_COMPASS, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       BUNDLE = registerItem(ItemIds.BUNDLE, BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
@@ -2350,7 +2365,7 @@ public class Items {
       GLOW_INK_SAC = registerItem(ItemIds.GLOW_INK_SAC, GlowInkSacItem::new);
       COCOA_BEANS = registerItem(BlockItemIds.COCOA_CROP, createBlockItemWithCustomItemName(Blocks.COCOA), (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
       DYE = ColorCollection.registerItems(ItemIds.DYE, (id, color) -> registerItem(id, DyeItem::new, (new Item.Properties()).component(DataComponents.DYE, color)));
-      BONE_MEAL = registerItem(ItemIds.BONE_MEAL, BoneMealItem::new);
+      BONE_MEAL = registerItem(ItemIds.BONE_MEAL, BoneMealItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.BONE_MEAL));
       BONE = registerItem(ItemIds.BONE);
       SUGAR = registerItem(ItemIds.SUGAR);
       CAKE = registerBlock(BlockItemIds.CAKE, Blocks.CAKE, (new Item.Properties()).stacksTo(1).compostable(ContextIntProviders.COMPOSTABLE_ALWAYS_ADD_ONE));
@@ -2375,7 +2390,7 @@ public class Items {
       DESERT_PYRAMID_MAP = registerItem(ItemIds.DESERT_PYRAMID_MAP, MapItem::new, mapProperties());
       ABANDONED_CAMP_MAP = registerItem(ItemIds.ABANDONED_CAMP_MAP, MapItem::new, mapProperties());
       WARM_OCEAN_RUINS_MAP = registerItem(ItemIds.WARM_OCEAN_RUINS_MAP, MapItem::new, mapProperties());
-      SHEARS = registerItem(ItemIds.SHEARS, ShearsItem::new, (new Item.Properties()).durability(238).delayedComponent(DataComponents.TOOL, ShearsItem::createToolProperties));
+      SHEARS = registerItem(ItemIds.SHEARS, ShearsItem::new, (new Item.Properties()).durability(238).delayedComponent(DataComponents.TOOL, ShearsItem::createToolProperties).dispensed(DispenseBehaviorIds.SHEARS));
       MELON_SLICE = registerItem(ItemIds.MELON_SLICE, (new Item.Properties()).food(Foods.MELON_SLICE).compostable(ContextIntProviders.COMPOSTABLE_LOW_MEDIUM));
       DRIED_KELP = registerItem(ItemIds.DRIED_KELP, (new Item.Properties()).food(Foods.DRIED_KELP, Consumables.DRIED_KELP).compostable(ContextIntProviders.COMPOSTABLE_LOW));
       PUMPKIN_SEEDS = registerItem(BlockItemIds.PUMPKIN_CROP.item(), createBlockItemWithCustomItemName(Blocks.PUMPKIN_STEM), (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW));
@@ -2390,8 +2405,8 @@ public class Items {
       GHAST_TEAR = registerItem(ItemIds.GHAST_TEAR);
       GOLD_NUGGET = registerItem(ItemIds.GOLD_NUGGET);
       NETHER_WART = registerItem(BlockItemIds.NETHER_WART, createBlockItemWithCustomItemName(Blocks.NETHER_WART), (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
-      GLASS_BOTTLE = registerItem(ItemIds.GLASS_BOTTLE, BottleItem::new);
-      POTION = registerItem(ItemIds.POTION, PotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.CONSUMABLE, Consumables.DEFAULT_DRINK).usingConvertsTo(GLASS_BOTTLE));
+      GLASS_BOTTLE = registerItem(ItemIds.GLASS_BOTTLE, BottleItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.GLASS_BOTTLE));
+      POTION = registerItem(ItemIds.POTION, PotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.CONSUMABLE, Consumables.DEFAULT_DRINK).usingConvertsTo(GLASS_BOTTLE).dispensed(DispenseBehaviorIds.POTION));
       SPIDER_EYE = registerItem(ItemIds.SPIDER_EYE, (new Item.Properties()).food(Foods.SPIDER_EYE, Consumables.SPIDER_EYE));
       FERMENTED_SPIDER_EYE = registerItem(ItemIds.FERMENTED_SPIDER_EYE);
       BLAZE_POWDER = registerItem(ItemIds.BLAZE_POWDER, (new Item.Properties()).brewingFuel(ContextIntProviders.BREWING_DEFAULT_USES));
@@ -2489,9 +2504,9 @@ public class Items {
       ENDERMAN_SPAWN_EGG = registerSpawnEgg(ItemIds.ENDERMAN_SPAWN_EGG, EntityTypes.ENDERMAN);
       ENDERMITE_SPAWN_EGG = registerSpawnEgg(ItemIds.ENDERMITE_SPAWN_EGG, EntityTypes.ENDERMITE);
       SHULKER_SPAWN_EGG = registerSpawnEgg(ItemIds.SHULKER_SPAWN_EGG, EntityTypes.SHULKER);
-      EXPERIENCE_BOTTLE = registerItem(ItemIds.EXPERIENCE_BOTTLE, ExperienceBottleItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
-      FIRE_CHARGE = registerItem(ItemIds.FIRE_CHARGE, FireChargeItem::new);
-      WIND_CHARGE = registerItem(ItemIds.WIND_CHARGE, WindChargeItem::new, (new Item.Properties()).useCooldown(0.5F));
+      EXPERIENCE_BOTTLE = registerItem(ItemIds.EXPERIENCE_BOTTLE, ExperienceBottleItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).dispensed(DispenseBehaviorIds.THROWN_POTION));
+      FIRE_CHARGE = registerItem(ItemIds.FIRE_CHARGE, FireChargeItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.FIRE_CHARGE));
+      WIND_CHARGE = registerItem(ItemIds.WIND_CHARGE, WindChargeItem::new, (new Item.Properties()).useCooldown(0.5F).dispensed(DispenseBehaviorIds.WIND_CHARGE));
       WRITABLE_BOOK = registerItem(ItemIds.WRITABLE_BOOK, WritableBookItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.WRITABLE_BOOK_CONTENT, WritableBookContent.EMPTY));
       WRITTEN_BOOK = registerItem(ItemIds.WRITTEN_BOOK, WrittenBookItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       BREEZE_ROD = registerItem(ItemIds.BREEZE_ROD);
@@ -2505,16 +2520,16 @@ public class Items {
       POISONOUS_POTATO = registerItem(ItemIds.POISONOUS_POTATO, (new Item.Properties()).food(Foods.POISONOUS_POTATO, Consumables.POISONOUS_POTATO));
       MAP = registerItem(ItemIds.MAP, EmptyMapItem::new);
       GOLDEN_CARROT = registerItem(ItemIds.GOLDEN_CARROT, (new Item.Properties()).food(Foods.GOLDEN_CARROT));
-      SKELETON_SKULL = registerBlock(BlockItemIds.SKELETON_SKULL, Blocks.SKELETON_SKULL, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).loweredMobVisibility(EntityTypeIds.SKELETON));
-      WITHER_SKELETON_SKULL = registerBlock(BlockItemIds.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_SKULL, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.WITHER_SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.RARE).equippableUnswappable(EquipmentSlot.HEAD));
-      PLAYER_HEAD = registerBlock(BlockItemIds.PLAYER_HEAD, Blocks.PLAYER_HEAD, (BiFunction)((b, p) -> new PlayerHeadItem(b, Blocks.PLAYER_WALL_HEAD, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD));
-      ZOMBIE_HEAD = registerBlock(BlockItemIds.ZOMBIE_HEAD, Blocks.ZOMBIE_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.ZOMBIE_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).loweredMobVisibility(EntityTypeIds.ZOMBIE));
-      CREEPER_HEAD = registerBlock(BlockItemIds.CREEPER_HEAD, Blocks.CREEPER_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.CREEPER_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).loweredMobVisibility(EntityTypeIds.CREEPER));
-      DRAGON_HEAD = registerBlock(BlockItemIds.DRAGON_HEAD, Blocks.DRAGON_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DRAGON_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.EPIC).equippableUnswappable(EquipmentSlot.HEAD));
-      PIGLIN_HEAD = registerBlock(BlockItemIds.PIGLIN_HEAD, Blocks.PIGLIN_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.PIGLIN_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).loweredMobVisibility(EntityTypeIds.PIGLIN, EntityTypeIds.PIGLIN_BRUTE));
+      SKELETON_SKULL = registerBlock(BlockItemIds.SKELETON_SKULL, Blocks.SKELETON_SKULL, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT).loweredMobVisibility(EntityTypeIds.SKELETON));
+      WITHER_SKELETON_SKULL = registerBlock(BlockItemIds.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_SKULL, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.WITHER_SKELETON_WALL_SKULL, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.RARE).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.WITHER_SKELETON_SKULL));
+      PLAYER_HEAD = registerBlock(BlockItemIds.PLAYER_HEAD, Blocks.PLAYER_HEAD, (BiFunction)((b, p) -> new PlayerHeadItem(b, Blocks.PLAYER_WALL_HEAD, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT));
+      ZOMBIE_HEAD = registerBlock(BlockItemIds.ZOMBIE_HEAD, Blocks.ZOMBIE_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.ZOMBIE_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT).loweredMobVisibility(EntityTypeIds.ZOMBIE));
+      CREEPER_HEAD = registerBlock(BlockItemIds.CREEPER_HEAD, Blocks.CREEPER_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.CREEPER_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT).loweredMobVisibility(EntityTypeIds.CREEPER));
+      DRAGON_HEAD = registerBlock(BlockItemIds.DRAGON_HEAD, Blocks.DRAGON_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.DRAGON_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.EPIC).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT));
+      PIGLIN_HEAD = registerBlock(BlockItemIds.PIGLIN_HEAD, Blocks.PIGLIN_HEAD, (BiFunction)((b, p) -> new StandingAndWallBlockItem(b, Blocks.PIGLIN_WALL_HEAD, Direction.DOWN, Waypoint.addHideAttribute(p))), (Item.Properties)(new Item.Properties()).rarity(Rarity.UNCOMMON).equippableUnswappable(EquipmentSlot.HEAD).dispensed(DispenseBehaviorIds.EQUIPMENT).loweredMobVisibility(EntityTypeIds.PIGLIN, EntityTypeIds.PIGLIN_BRUTE));
       NETHER_STAR = registerItem(ItemIds.NETHER_STAR, (new Item.Properties()).rarity(Rarity.RARE).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).delayedComponent(DataComponents.DAMAGE_RESISTANT, (context) -> new DamageResistant(context.getOrThrow(DamageTypeTags.IS_EXPLOSION))));
       PUMPKIN_PIE = registerItem(ItemIds.PUMPKIN_PIE, (new Item.Properties()).food(Foods.PUMPKIN_PIE).compostable(ContextIntProviders.COMPOSTABLE_ALWAYS_ADD_ONE));
-      FIREWORK_ROCKET = registerItem(ItemIds.FIREWORK_ROCKET, FireworkRocketItem::new, (new Item.Properties()).component(DataComponents.FIREWORKS, new Fireworks(1, List.of())));
+      FIREWORK_ROCKET = registerItem(ItemIds.FIREWORK_ROCKET, FireworkRocketItem::new, (new Item.Properties()).component(DataComponents.FIREWORKS, new Fireworks(1, List.of())).dispensed(DispenseBehaviorIds.FIREWORK_ROCKET));
       FIREWORK_STAR = registerItem(ItemIds.FIREWORK_STAR);
       ENCHANTED_BOOK = registerItem(ItemIds.ENCHANTED_BOOK, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).component(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       NETHER_BRICK = registerItem(ItemIds.NETHER_BRICK);
@@ -2526,7 +2541,7 @@ public class Items {
       RABBIT_STEW = registerItem(ItemIds.RABBIT_STEW, (new Item.Properties()).stacksTo(1).food(Foods.RABBIT_STEW).usingConvertsTo(BOWL));
       RABBIT_FOOT = registerItem(ItemIds.RABBIT_FOOT);
       RABBIT_HIDE = registerItem(ItemIds.RABBIT_HIDE);
-      ARMOR_STAND = registerItem(ItemIds.ARMOR_STAND, ArmorStandItem::new, (new Item.Properties()).stacksTo(16));
+      ARMOR_STAND = registerItem(ItemIds.ARMOR_STAND, ArmorStandItem::new, (new Item.Properties()).stacksTo(16).dispensed(DispenseBehaviorIds.ARMOR_STAND));
       COPPER_HORSE_ARMOR = registerItem(ItemIds.COPPER_HORSE_ARMOR, (new Item.Properties()).horseArmor(ArmorMaterials.COPPER));
       IRON_HORSE_ARMOR = registerItem(ItemIds.IRON_HORSE_ARMOR, (new Item.Properties()).horseArmor(ArmorMaterials.IRON));
       GOLDEN_HORSE_ARMOR = registerItem(ItemIds.GOLDEN_HORSE_ARMOR, (new Item.Properties()).horseArmor(ArmorMaterials.GOLD));
@@ -2535,7 +2550,7 @@ public class Items {
       LEATHER_HORSE_ARMOR = registerItem(ItemIds.LEATHER_HORSE_ARMOR, (new Item.Properties()).horseArmor(ArmorMaterials.LEATHER));
       LEAD = registerItem(ItemIds.LEAD, LeadItem::new);
       NAME_TAG = registerItem(ItemIds.NAME_TAG, NameTagItem::new);
-      COMMAND_BLOCK_MINECART = registerItem((ResourceKey)ItemIds.COMMAND_BLOCK_MINECART, (p) -> new MinecartItem(EntityTypes.COMMAND_BLOCK_MINECART, p), (new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC));
+      COMMAND_BLOCK_MINECART = registerMinecart(ItemIds.COMMAND_BLOCK_MINECART, EntityTypes.COMMAND_BLOCK_MINECART, (p) -> p.rarity(Rarity.EPIC));
       MUTTON = registerItem(ItemIds.MUTTON, (new Item.Properties()).food(Foods.MUTTON));
       COOKED_MUTTON = registerItem(ItemIds.COOKED_MUTTON, (new Item.Properties()).food(Foods.COOKED_MUTTON));
       BANNER = ColorCollection.registerBlockItems(BlockItemIds.BANNER, Blocks.BANNER, (id, block, color) -> registerBlock(id, block, (BiFunction)((b, p) -> new BannerItem(b, Blocks.WALL_BANNER.pick(color), p)), (Item.Properties)(new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS).stacksTo(16).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)));
@@ -2548,11 +2563,11 @@ public class Items {
       BEETROOT_SEEDS = registerItem(BlockItemIds.BEETROOT_CROP, createBlockItemWithCustomItemName(Blocks.BEETROOTS), (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_LOW));
       BEETROOT_SOUP = registerItem(ItemIds.BEETROOT_SOUP, (new Item.Properties()).stacksTo(1).food(Foods.BEETROOT_SOUP).usingConvertsTo(BOWL));
       DRAGON_BREATH = registerItem(ItemIds.DRAGON_BREATH, (new Item.Properties()).craftRemainder(GLASS_BOTTLE).rarity(Rarity.UNCOMMON));
-      SPLASH_POTION = registerItem(ItemIds.SPLASH_POTION, SplashPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY));
-      SPECTRAL_ARROW = registerItem(ItemIds.SPECTRAL_ARROW, SpectralArrowItem::new);
-      TIPPED_ARROW = registerItem(ItemIds.TIPPED_ARROW, TippedArrowItem::new, (new Item.Properties()).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.125F));
-      LINGERING_POTION = registerItem(ItemIds.LINGERING_POTION, LingeringPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.25F));
-      SHIELD = registerItem(ItemIds.SHIELD, ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).delayedComponent(DataComponents.BLOCKS_ATTACKS, (context) -> new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(context.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
+      SPLASH_POTION = registerItem(ItemIds.SPLASH_POTION, SplashPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).dispensed(DispenseBehaviorIds.THROWN_POTION));
+      SPECTRAL_ARROW = registerItem(ItemIds.SPECTRAL_ARROW, SpectralArrowItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
+      TIPPED_ARROW = registerItem(ItemIds.TIPPED_ARROW, TippedArrowItem::new, (new Item.Properties()).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.125F).dispensed(DispenseBehaviorIds.DEFAULT_PROJECTILE));
+      LINGERING_POTION = registerItem(ItemIds.LINGERING_POTION, LingeringPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.25F).dispensed(DispenseBehaviorIds.THROWN_POTION));
+      SHIELD = registerItem(ItemIds.SHIELD, ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).dispensed(DispenseBehaviorIds.EQUIPMENT).delayedComponent(DataComponents.BLOCKS_ATTACKS, (context) -> new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(context.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
       WOODEN_SPEAR = registerItem(ItemIds.WOODEN_SPEAR, (new Item.Properties()).cookingFuel(ContextIntProviders.COOKING_TIME_WOOD_ITEMS_LARGE).spear(ToolMaterial.WOOD, 0.65F, 0.7F, 0.75F, 5.0F, 14.0F, 10.0F, 5.1F, 15.0F, 4.6F));
       STONE_SPEAR = registerItem(ItemIds.STONE_SPEAR, (new Item.Properties()).spear(ToolMaterial.STONE, 0.75F, 0.82F, 0.7F, 4.5F, 13.0F, 9.0F, 5.1F, 13.75F, 4.6F));
       COPPER_SPEAR = registerItem(ItemIds.COPPER_SPEAR, (new Item.Properties()).spear(ToolMaterial.COPPER, 0.85F, 0.82F, 0.65F, 4.0F, 12.0F, 8.25F, 5.1F, 12.5F, 4.6F));
@@ -2630,7 +2645,7 @@ public class Items {
       CAMPFIRE = registerBlock(BlockItemIds.CAMPFIRE, Blocks.CAMPFIRE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       SOUL_CAMPFIRE = registerBlock(BlockItemIds.SOUL_CAMPFIRE, Blocks.SOUL_CAMPFIRE, (UnaryOperator)((p) -> p.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY)));
       SHROOMLIGHT = registerBlock(BlockItemIds.SHROOMLIGHT, Blocks.SHROOMLIGHT, (new Item.Properties()).compostable(ContextIntProviders.COMPOSTABLE_MEDIUM));
-      HONEYCOMB = registerItem(ItemIds.HONEYCOMB, HoneycombItem::new);
+      HONEYCOMB = registerItem(ItemIds.HONEYCOMB, HoneycombItem::new, (new Item.Properties()).dispensed(DispenseBehaviorIds.HONEYCOMB));
       BEE_NEST = registerBlock(BlockItemIds.BEE_NEST, Blocks.BEE_NEST, (new Item.Properties()).component(DataComponents.BEES, Bees.EMPTY).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BeehiveBlock.HONEY_LEVEL, 0)));
       BEEHIVE = registerBlock(BlockItemIds.BEEHIVE, Blocks.BEEHIVE, (new Item.Properties()).component(DataComponents.BEES, Bees.EMPTY).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(BeehiveBlock.HONEY_LEVEL, 0)));
       HONEY_BOTTLE = registerItem(ItemIds.HONEY_BOTTLE, (new Item.Properties()).craftRemainder(GLASS_BOTTLE).food(Foods.HONEY_BOTTLE, Consumables.HONEY_BOTTLE).usingConvertsTo(GLASS_BOTTLE).stacksTo(16));
@@ -2665,7 +2680,7 @@ public class Items {
       PEARLESCENT_FROGLIGHT = registerBlock(BlockItemIds.PEARLESCENT_FROGLIGHT, Blocks.PEARLESCENT_FROGLIGHT);
       FROGSPAWN = registerBlock(BlockItemIds.FROGSPAWN, Blocks.FROGSPAWN, PlaceOnFluidBlockItem::new);
       ECHO_SHARD = registerItem(ItemIds.ECHO_SHARD, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      BRUSH = registerItem(ItemIds.BRUSH, BrushItem::new, (new Item.Properties()).durability(64));
+      BRUSH = registerItem(ItemIds.BRUSH, BrushItem::new, (new Item.Properties()).durability(64).dispensed(DispenseBehaviorIds.BRUSH));
       NETHERITE_UPGRADE_SMITHING_TEMPLATE = registerItem(ItemIds.NETHERITE_UPGRADE_SMITHING_TEMPLATE, SmithingTemplateItem::createNetheriteUpgradeTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(ItemIds.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, SmithingTemplateItem::createArmorTrimTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));
       DUNE_ARMOR_TRIM_SMITHING_TEMPLATE = registerItem(ItemIds.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, SmithingTemplateItem::createArmorTrimTemplate, (new Item.Properties()).rarity(Rarity.UNCOMMON));

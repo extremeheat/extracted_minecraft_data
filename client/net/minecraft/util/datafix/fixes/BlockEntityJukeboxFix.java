@@ -20,7 +20,7 @@ public class BlockEntityJukeboxFix extends NamedEntityFix {
       Dynamic<?> tag = (Dynamic)entity.get(DSL.remainderFinder());
       int recordId = tag.get("Record").asInt(0);
       if (recordId > 0) {
-         tag.remove("Record");
+         tag = tag.remove("Record");
          String id = ItemStackTheFlatteningFix.updateItem(ItemIdFix.getItem(recordId), 0);
          if (id != null) {
             Dynamic<?> itemTag = tag.emptyMap();

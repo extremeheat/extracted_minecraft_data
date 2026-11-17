@@ -713,9 +713,6 @@ public class ChunkPalettedStorageFix extends DataFix {
                                  key = type + entity.get("Rot").asInt(0);
                               }
 
-                              entity.remove("SkullType");
-                              entity.remove("facing");
-                              entity.remove("Rot");
                               this.setBlock(pos, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.getOrDefault(key, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.get("0north")));
                            }
                         }

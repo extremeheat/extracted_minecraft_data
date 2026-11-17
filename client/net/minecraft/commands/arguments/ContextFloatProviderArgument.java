@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFlo
 public class ContextFloatProviderArgument extends ValidatableResourceOrIdArgument<ContextFloatProvider> {
    public static final SerializableArgument.Type<ContextFloatProviderArgument> TYPE = ValidatableArgument.codecWithValidation(ContextFloatProviderArgument::new);
 
-   private ContextFloatProviderArgument(final ContextKeySet contextKeySet) {
+   public ContextFloatProviderArgument(final ContextKeySet contextKeySet) {
       super(Registries.CONTEXT_FLOAT_PROVIDER, ContextFloatProviders.DIRECT_CODEC, contextKeySet);
    }
 

@@ -15,7 +15,6 @@ import net.minecraft.SystemReport;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.core.cauldron.CauldronInteractions;
-import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.util.DevUtil;
@@ -61,7 +60,6 @@ public class Bootstrap {
                throw new IllegalStateException("Failed loading EntityTypes");
             } else {
                EntitySelectorOptions.bootStrap();
-               DispenseItemBehavior.bootStrap();
                CauldronInteractions.bootStrap();
                BuiltInRegistries.bootStrap();
                CreativeModeTabs.validate();

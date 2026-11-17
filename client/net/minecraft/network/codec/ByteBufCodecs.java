@@ -14,8 +14,10 @@ import com.mojang.serialization.DynamicOps;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
-import java.security.Key;
+import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -54,8 +56,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.Crypt;
-import net.minecraft.util.CryptException;
 import net.minecraft.util.LenientJsonParser;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionfc;
@@ -264,16 +264,9 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, Instant> INSTANT = LONG.map(Instant::ofEpochMilli, Instant::toEpochMilli);
-   int PUBLIC_KEY_SIZE = 256;
    int MAX_PUBLIC_KEY_HEADER_SIZE = 256;
-   int MAX_PUBLIC_KEY_LENGTH = 512;
-   StreamCodec<ByteBuf, PublicKey> PUBLIC_KEY = byteArray(512).map((bytes) -> {
-      try {
-         return Crypt.byteToPublicKey(bytes);
-      } catch (CryptException e) {
-         throw new DecoderException("Malformed public key bytes", e);
-      }
-   }, Key::getEncoded);
+   StreamCodec<ByteBuf, PublicKey> X509_RSA_PUBLIC_KEY = x590PublicKeyCodec("RSA", 256);
+   StreamCodec<ByteBuf, PublicKey> X509_XDH_PUBLIC_KEY = x590PublicKeyCodec("XDH", 128);
    StreamCodec<ByteBuf, Pattern> PATTERN = STRING_UTF8.map((pattern) -> {
       try {
          return Pattern.compile(pattern);
@@ -367,10 +360,6 @@ public interface ByteBufCodecs {
 
    static <T> StreamCodec<ByteBuf, T> fromCodecTrusted(final Codec<T> codec) {
       return fromCodec(codec, NbtAccounter::unlimitedHeap);
-   }
-
-   static <T> StreamCodec<ByteBuf, T> fromCodec(final Codec<T> codec) {
-      return fromCodec(codec, NbtAccounter::defaultQuota);
    }
 
    static <T, B extends ByteBuf, V> StreamCodec.CodecOperation<B, T, V> fromCodec(final DynamicOps<T> ops, final Codec<V> codec) {
@@ -535,6 +524,22 @@ public interface ByteBufCodecs {
       return map(constructor, keyCodec, valueCodec, 2147483647);
    }
 
+   static StreamCodec<ByteBuf, byte[]> fixedSizeByteArray(final int size) {
+      return new StreamCodec<ByteBuf, byte[]>() {
+         public byte[] decode(final ByteBuf input) {
+            return FriendlyByteBuf.readFixedSizeByteArray(input, size);
+         }
+
+         public void encode(final ByteBuf output, final byte[] value) {
+            if (value.length != size) {
+               throw new EncoderException("Invalid array size, expected " + size + ", but got " + value.length);
+            } else {
+               output.writeBytes(value);
+            }
+         }
+      };
+   }
+
    static <B extends ByteBuf, K, V, M extends Map<K, V>> StreamCodec<B, M> map(final IntFunction<? extends M> constructor, final StreamCodec<? super B, K> keyCodec, final StreamCodec<? super B, V> valueCodec, final int maxSize) {
       return new StreamCodec<B, M>() {
          public void encode(final B output, final M map) {
@@ -613,7 +618,7 @@ public interface ByteBufCodecs {
    }
 
    static <V> StreamCodec.CodecOperation<ByteBuf, V, V> lengthPrefixed(final int maxSize) {
-      return lengthPrefixed(maxSize, (parent, child) -> child);
+      return lengthPrefixed(maxSize, (var0, child) -> child);
    }
 
    static <V> StreamCodec.CodecOperation<RegistryFriendlyByteBuf, V, V> registryFriendlyLengthPrefixed(final int maxSize) {
@@ -647,7 +652,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> registry(final ResourceKey<? extends Registry<T>> registryKey) {
-      return new RegistryEntryStreamCodec<Object, T>() {
+      return new RegistryEntryStreamCodec<T>() {
          protected IdMap<T> getRegistryOrThrow(final IdMapProvider input) {
             return input.<T>idMapOrThrow(registryKey);
          }
@@ -655,7 +660,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, Holder<T>> holderRegistry(final ResourceKey<? extends Registry<T>> registryKey) {
-      return new RegistryEntryStreamCodec<Object, Holder<T>>() {
+      return new RegistryEntryStreamCodec<Holder<T>>() {
          protected IdMap<Holder<T>> getRegistryOrThrow(final IdMapProvider input) {
             return input.idHolderMapOrThrow(registryKey);
          }
@@ -749,19 +754,50 @@ public interface ByteBufCodecs {
       };
    }
 
-   public abstract static class RegistryEntryStreamCodec<T, R> implements StreamCodec<RegistryFriendlyByteBuf, R> {
+   private static StreamCodec<ByteBuf, PublicKey> x590PublicKeyCodec(final String algorithm, final int maxKeySize) {
+      KeyFactory keyFactory;
+      try {
+         keyFactory = KeyFactory.getInstance(algorithm);
+      } catch (Exception e) {
+         throw new UnsupportedOperationException(e);
+      }
+
+      return byteArray(256 + maxKeySize).map((bytes) -> {
+         try {
+            EncodedKeySpec keySpec = new X509EncodedKeySpec(bytes);
+            return keyFactory.generatePublic(keySpec);
+         } catch (Exception e) {
+            throw new DecoderException("Malformed public " + keyFactory.getAlgorithm() + " key bytes", e);
+         }
+      }, (key) -> {
+         String supportedAlgorithm = keyFactory.getAlgorithm();
+         String actualAlgorithm = key.getAlgorithm();
+         if (!actualAlgorithm.equals(supportedAlgorithm)) {
+            throw new EncoderException("Expected " + supportedAlgorithm + " key, but got " + actualAlgorithm);
+         } else {
+            String actualFormat = key.getFormat();
+            if (!actualFormat.equals("X.509")) {
+               throw new EncoderException("Expected X.509-encoded key, but got " + actualFormat);
+            } else {
+               return key.getEncoded();
+            }
+         }
+      });
+   }
+
+   public abstract static class RegistryEntryStreamCodec<T> implements StreamCodec<RegistryFriendlyByteBuf, T> {
       public RegistryEntryStreamCodec() {
          super();
       }
 
-      protected abstract IdMap<R> getRegistryOrThrow(final IdMapProvider input);
+      protected abstract IdMap<T> getRegistryOrThrow(final IdMapProvider input);
 
-      public R decode(final RegistryFriendlyByteBuf input) {
+      public T decode(final RegistryFriendlyByteBuf input) {
          int id = VarInt.read(input);
-         return (R)this.getRegistryOrThrow(input.ids()).byIdOrThrow(id);
+         return (T)this.getRegistryOrThrow(input.ids()).byIdOrThrow(id);
       }
 
-      public void encode(final RegistryFriendlyByteBuf output, final R value) {
+      public void encode(final RegistryFriendlyByteBuf output, final T value) {
          int id = this.getRegistryOrThrow(output.ids()).getIdOrThrow(value);
          VarInt.write(output, id);
       }

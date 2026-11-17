@@ -178,11 +178,11 @@ public class SuggestionBox extends CommandBox<SuggestionContext> {
       }
 
       protected SuggestionProvider<SuggestionContext> convert(final SuggestionProvider<CommandSourceStack> customSuggestions) {
-         return CustomSuggestion.unwrapOrThrow(customSuggestions).<SuggestionContext>cast();
+         return CustomSuggestion.<SuggestionContext>castOrThrow(customSuggestions).<SuggestionContext>cast();
       }
 
       protected ArgumentType<?> convert(final ArgumentType<?> type) {
-         return SerializableArgument.unwrapOrThrow(type);
+         return SerializableArgument.castOrThrow(type);
       }
    }
 

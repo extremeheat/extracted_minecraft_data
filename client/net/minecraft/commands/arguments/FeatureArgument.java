@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 
 public class FeatureArgument extends ResourceOrIdArgument.Simple<Feature> {
-   private static final FeatureArgument INSTANCE = new FeatureArgument();
+   public static final FeatureArgument INSTANCE = new FeatureArgument();
    public static final SerializableArgument.Type<FeatureArgument> TYPE;
 
    private FeatureArgument() {

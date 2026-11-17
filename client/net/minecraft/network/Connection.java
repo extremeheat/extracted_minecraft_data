@@ -8,6 +8,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -86,6 +87,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       this.disconnectPacketType = Connection.ClientboundDisconnectPacketType.NONE;
       this.pendingActions = new ConcurrentLinkedQueue();
       this.receiving = receiving;
+   }
+
+   public ChannelId channelId() {
+      return this.channel.id();
    }
 
    public void channelActive(final ChannelHandlerContext ctx) throws Exception {

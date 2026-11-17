@@ -48,7 +48,7 @@ public class ItemBannerColorFix extends DataFix {
                         }
                      }
 
-                     blockEntityRest.remove("Base");
+                     blockEntityRest = blockEntityRest.remove("Base");
                      return input.set(DSL.remainderFinder(), rest).set(tagF, tag.set(blockEntityF, blockEntity.set(DSL.remainderFinder(), blockEntityRest)));
                   }
                }

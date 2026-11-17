@@ -1,5 +1,6 @@
 package net.minecraft.client;
 
+import java.util.Arrays;
 import net.minecraft.client.entity.ClientAvatarState;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -470,22 +471,30 @@ public class Camera implements TrackedWaypoint.Camera {
    }
 
    private FogType calculateFogType() {
-      NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
-      Vec3 offsetPos = this.position.add(plane.forward);
-      BlockPos checkPos = BlockPos.containing(offsetPos);
-      FluidState fluidState = this.level.getFluidState(checkPos);
-      if (!fluidState.isEmpty()) {
-         if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
-            return fluidState.getType().getFogType();
-         }
+      FluidState cameraFluidState = this.level.getFluidState(this.blockPosition);
+      if (cameraFluidState.getType().getUseCameraPositionForFogDetection() && this.position.y < (double)((float)this.blockPosition.getY() + cameraFluidState.getHeightForCamera(this.level, this.blockPosition))) {
+         return cameraFluidState.getType().getFogType();
       } else {
-         BlockState state = this.level.getBlockState(checkPos);
-         if (state.is(Blocks.POWDER_SNOW)) {
-            return FogType.POWDER_SNOW;
-         }
-      }
+         NearPlane plane = this.getNearPlane((float)(Integer)this.minecraft.options.fov().get());
 
-      return FogType.NONE;
+         for(Vec3 point : Arrays.asList(plane.forward, plane.getTopLeft(), plane.getTopRight(), plane.getBottomLeft(), plane.getBottomRight())) {
+            Vec3 offsetPos = this.position.add(point);
+            BlockPos checkPos = BlockPos.containing(offsetPos);
+            FluidState fluidState = this.level.getFluidState(checkPos);
+            if (!fluidState.isEmpty() && !fluidState.getType().getUseCameraPositionForFogDetection()) {
+               if (offsetPos.y <= (double)(fluidState.getHeightForCamera(this.level, checkPos) + (float)checkPos.getY())) {
+                  return fluidState.getType().getFogType();
+               }
+            } else {
+               BlockState state = this.level.getBlockState(checkPos);
+               if (state.is(Blocks.POWDER_SNOW)) {
+                  return FogType.POWDER_SNOW;
+               }
+            }
+         }
+
+         return FogType.NONE;
+      }
    }
 
    public Vector3fc forwardVector() {

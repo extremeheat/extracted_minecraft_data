@@ -37,8 +37,4 @@ public abstract class ThrowablePotionItem extends PotionItem implements Projecti
    public Projectile asProjectile(final Level level, final Position position, final ItemStack itemStack, final Direction direction) {
       return this.createPotion(level, position, itemStack);
    }
-
-   public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().uncertainty(ProjectileItem.DispenseConfig.DEFAULT.uncertainty() * 0.5F).power(ProjectileItem.DispenseConfig.DEFAULT.power() * 1.25F).build();
-   }
 }

@@ -205,7 +205,7 @@ public interface SuggestionContext extends ParseContext {
       return suggest(result, builder);
    }
 
-   static CompletableFuture<Suggestions> suggest2DCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
+   static CompletableFuture<Suggestions> suggestXZCoordinates(final String currentInput, final Collection<TextCoordinates> allSuggestions, final SuggestionsBuilder builder, final Predicate<String> validator) {
       List<String> result = new ArrayList();
       if (Strings.isNullOrEmpty(currentInput)) {
          for(TextCoordinates coordinate : allSuggestions) {

@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class FunctionArgument implements SerializableArgument.ContextFree<Result> {
-   private static final FunctionArgument INSTANCE = new FunctionArgument();
+   public static final FunctionArgument INSTANCE = new FunctionArgument();
    public static final SerializableArgument.Type<FunctionArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG;

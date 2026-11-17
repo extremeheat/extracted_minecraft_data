@@ -13,7 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 
 public class SwizzleArgument implements SerializableArgument.ContextFree<EnumSet<Direction.Axis>> {
-   private static final SwizzleArgument INSTANCE = new SwizzleArgument();
+   public static final SwizzleArgument INSTANCE = new SwizzleArgument();
    public static final SerializableArgument.Type<SwizzleArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final SimpleCommandExceptionType ERROR_INVALID;

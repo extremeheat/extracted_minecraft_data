@@ -73,7 +73,7 @@ public class IntegratedServer extends MinecraftServer {
    private boolean forceGameMode;
 
    public IntegratedServer(final Thread serverThread, final Minecraft minecraft, final LevelStorageSource.LevelStorageAccess levelStorageAccess, final PackRepository packRepository, final WorldStem worldStem, final Optional<GameRules> gameRules, final Services services, final LevelLoadListener levelLoadListener) {
-      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false, new NotificationManager());
+      super(serverThread, levelStorageAccess, packRepository, worldStem, gameRules, minecraft.getProxy(), minecraft.getFixerUpper(), services, levelLoadListener, false, new NotificationManager(), DEFAULT_MIN_REKEY_TIME_MS);
       this.multiplayerScope = MinecraftServer.MultiplayerScope.OFF;
       this.guestCommandAccess = false;
       this.forceGameMode = true;
@@ -86,7 +86,6 @@ public class IntegratedServer extends MinecraftServer {
    protected boolean initServer() {
       LOGGER.info("Starting integrated minecraft server version {}", SharedConstants.getCurrentVersion().name());
       this.setUsesAuthentication(true);
-      this.initializeKeyPair();
       this.loadLevel();
       GameProfile host = this.getSingleplayerProfile();
       String levelName = this.getWorldData().getLevelName();
@@ -100,7 +99,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    protected void processPacketsAndTick(final boolean sprinting) {
-      try (Gizmos.TemporaryCollection ignored = Gizmos.withCollector(this.gizmoCollector)) {
+      try (Gizmos.TemporaryCollection var2 = Gizmos.withCollector(this.gizmoCollector)) {
          super.processPacketsAndTick(sprinting);
       }
 
@@ -147,6 +146,13 @@ public class IntegratedServer extends MinecraftServer {
 
    protected LocalSampleLogger getTickTimeLogger() {
       return this.minecraft.getDebugOverlay().getTickTimeLogger();
+   }
+
+   protected void waitUntilNextTick() {
+      try (Gizmos.TemporaryCollection var1 = Gizmos.withCollector(this.gizmoCollector)) {
+         super.waitUntilNextTick();
+      }
+
    }
 
    public boolean isTickTimeLoggingEnabled() {

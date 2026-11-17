@@ -5,6 +5,7 @@ import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
 import net.minecraft.client.gui.components.AbstractScrollArea;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ScrollableLayout;
 import net.minecraft.client.gui.layouts.Layout;
@@ -12,6 +13,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -57,6 +59,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private static final Component TRADES_LABEL = Component.translatable("merchant.trades");
    private static final Component DEPRECATED_TOOLTIP = Component.translatable("merchant.deprecated");
    private int selectedOfferIndex;
+   private boolean hasSelectedTrade;
    private @Nullable ScrollableLayout tradeArea;
 
    public MerchantScreen(final MerchantMenu menu, final Inventory inventory, final Component title) {
@@ -100,9 +103,20 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
    private void selectTrade(final int index) {
       this.selectedOfferIndex = index;
+      this.hasSelectedTrade = true;
       ((MerchantMenu)this.menu).setSelectionHint(this.selectedOfferIndex);
       ((MerchantMenu)this.menu).tryMoveItems(this.selectedOfferIndex);
       this.minecraft.getConnection().send(new ServerboundSelectTradePacket(this.selectedOfferIndex));
+   }
+
+   public boolean keyPressed(final KeyEvent event) {
+      if (this.minecraft.options.keyRepeatRecipeOrTrade.matches(event) && !this.isInputCaptured() && this.hasSelectedTrade) {
+         AbstractWidget.playButtonClickSound(this.minecraft.getSoundManager());
+         this.selectTrade(this.selectedOfferIndex);
+         return true;
+      } else {
+         return super.keyPressed(event);
+      }
    }
 
    protected void extractLabels(final GuiGraphicsExtractor graphics) {

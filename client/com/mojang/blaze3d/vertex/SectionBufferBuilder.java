@@ -99,8 +99,12 @@ public class SectionBufferBuilder {
       this.addQuad(quad, x, y, z, color, brightnessPacked, lightCoordsPacked);
    }
 
-   private static int packPositionChannel(final float f) {
-      return Math.round(f * 15.0F) + 7;
+   public static int packPositionChannel(final float f) {
+      return Math.round(f * 15.0F) + 7 & 255;
+   }
+
+   public static float unpackPositionChannel(final int x) {
+      return (float)((x & 255) - 7) / 15.0F;
    }
 
    private void addQuad(final BakedQuad quad, final float x, final float y, final float z, final int color, final int brightnessPacked, final long lightCoordsPacked) {
@@ -111,13 +115,13 @@ public class SectionBufferBuilder {
          this.vertices += 4;
          int bakedQuadIndex = this.getOrRegisterBakedQuad(quad);
          long pointer = this.buffer.reserve(this.layer.vertexBufferFaceSize());
-         int positionPacked = (packPositionChannel(z) & 255) << 16 | (packPositionChannel(y) & 255) << 8 | packPositionChannel(x) & 255;
-         MemoryUtil.memPutInt(pointer, positionPacked);
-         MemoryUtil.memPutShort(pointer + 3L, (short)bakedQuadIndex);
+         int positionPacked = packPositionChannel(z) << 16 | packPositionChannel(y) << 8 | packPositionChannel(x);
+         MemoryUtil.memPutInt(pointer + 0L, positionPacked);
          int abgr = ARGB.toABGR(color);
          MemoryUtil.memPutInt(pointer + 5L, abgr);
          MemoryUtil.memPutInt(pointer + 8L, brightnessPacked);
          MemoryUtil.memPutLong(pointer + 12L, lightCoordsPacked);
+         MemoryUtil.memPutInt(pointer + 20L, bakedQuadIndex);
       }
    }
 
@@ -128,7 +132,7 @@ public class SectionBufferBuilder {
 
       for(int i = 0; i < 4; ++i) {
          Vector3fc pos = bakedQuad.position(i);
-         MemoryUtil.memPutFloat(pointer, pos.x());
+         MemoryUtil.memPutFloat(pointer + 0L, pos.x());
          MemoryUtil.memPutFloat(pointer + 4L, pos.y());
          MemoryUtil.memPutFloat(pointer + 8L, pos.z());
          MemoryUtil.memPutLong(pointer + 12L, bakedQuad.packedUV(i));

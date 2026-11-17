@@ -4,10 +4,13 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public interface Tab {
-   Component getTabExtraNarration();
+   default Component getTabExtraNarration() {
+      return CommonComponents.EMPTY;
+   }
 
    void visitChildren(final Consumer<AbstractWidget> childrenConsumer);
 

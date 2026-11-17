@@ -22,6 +22,8 @@ import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.dispenser.DispenseBehavior;
+import net.minecraft.core.dispenser.DispenseBehaviorIds;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -405,7 +407,7 @@ public class Item implements ItemLike, FeatureElement {
    public static class Properties {
       private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("block", id.identifier());
       private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (id) -> Util.makeDescriptionId("item", id.identifier());
-      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, var1, var2) -> builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+      private DataComponentInitializers.Initializer<Item> componentInitializer = (builder, context, var2) -> initDefault(builder, context);
       private @Nullable ItemStackTemplate craftingRemainingItem;
       private FeatureFlagSet requiredFeatures;
       private @Nullable ResourceKey<Item> id;
@@ -417,6 +419,11 @@ public class Item implements ItemLike, FeatureElement {
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
          this.descriptionId = ITEM_DESCRIPTION_ID;
          this.model = ResourceKey::identifier;
+      }
+
+      private static void initDefault(final DataComponentMap.Builder builder, final HolderLookup.Provider context) {
+         builder.addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+         builder.set(DataComponents.DISPENSE_BEHAVIOR, context.getOrThrow(DispenseBehaviorIds.DEFAULT));
       }
 
       public Properties food(final FoodProperties foodProperties) {
@@ -523,24 +530,24 @@ public class Item implements ItemLike, FeatureElement {
          return this.durability(material.durability()).repairable(material.repairItems()).enchantable(material.enchantmentValue()).delayedHolderComponent(DataComponents.DAMAGE_TYPE, DamageTypes.SPEAR).component(DataComponents.KINETIC_WEAPON, new KineticWeapon(10, (int)(delay * 20.0F), KineticWeapon.Condition.ofAttackerSpeed((int)(dismountTime * 20.0F), dismountThreshold), KineticWeapon.Condition.ofAttackerSpeed((int)(knockbackTime * 20.0F), knockbackThreshold), KineticWeapon.Condition.ofRelativeSpeed((int)(damageTime * 20.0F), damageThreshold), 0.38F, damageMultiplier, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_USE : SoundEvents.SPEAR_USE), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.PIERCING_WEAPON, new PiercingWeapon(true, false, Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_ATTACK : SoundEvents.SPEAR_ATTACK), Optional.of(material == ToolMaterial.WOOD ? SoundEvents.SPEAR_WOOD_HIT : SoundEvents.SPEAR_HIT))).component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 4.5F, 2.0F, 6.5F, 0.125F, 0.5F)).component(DataComponents.MINIMUM_ATTACK_CHARGE, 1.0F).component(DataComponents.ATTACK_ANIMATION, new SwingAnimation(SwingAnimationType.STAB, (int)(attackDuration * 20.0F))).attributes(ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(0.0F + material.attackDamageBonus()), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)(1.0F / attackDuration) - 4.0, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build()).component(DataComponents.USE_EFFECTS, new UseEffects(true, false, 1.0F)).component(DataComponents.WEAPON, new Weapon(1));
       }
 
-      public Properties spawnEgg(final EntityType<?> type) {
+      public Properties spawns(final EntityType<?> type) {
          return this.component(DataComponents.ENTITY_DATA, TypedEntityData.of(type, new CompoundTag())).requiredFeatures(type.requiredFeatures());
       }
 
       public Properties humanoidArmor(final ArmorMaterial material, final ArmorType type) {
-         return this.durability(type.getDurability(material.durability())).attributes(material.createAttributes(type)).enchantable(material.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(type.getSlot()).setEquipSound(material.equipSound()).setAsset(material.assetId()).build()).repairable(material.repairIngredient());
+         return this.durability(type.getDurability(material.durability())).attributes(material.createAttributes(type)).enchantable(material.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(type.getSlot()).setEquipSound(material.equipSound()).setAsset(material.assetId()).build()).dispensed(DispenseBehaviorIds.EQUIPMENT).repairable(material.repairIngredient());
       }
 
       public Properties wolfArmor(final ArmorMaterial material) {
-         return this.durability(ArmorType.BODY.getDurability(material.durability())).attributes(material.createAttributes(ArmorType.BODY)).repairable(material.repairIngredient()).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(material.equipSound()).setAsset(material.assetId()).setAllowedEntities(HolderSet.direct(context.getOrThrow(EntityTypeIds.WOLF))).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_WOLF).build()).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
+         return this.durability(ArmorType.BODY.getDurability(material.durability())).attributes(material.createAttributes(ArmorType.BODY)).repairable(material.repairIngredient()).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(material.equipSound()).setAsset(material.assetId()).setAllowedEntities(HolderSet.direct(context.getOrThrow(EntityTypeIds.WOLF))).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_WOLF).build()).dispensed(DispenseBehaviorIds.EQUIPMENT).component(DataComponents.BREAK_SOUND, SoundEvents.WOLF_ARMOR_BREAK).stacksTo(1);
       }
 
       public Properties horseArmor(final ArmorMaterial material) {
-         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).stacksTo(1);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.HORSE_ARMOR).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)).setDamageOnHurt(false).setCanBeSheared(true).setShearingSound(SoundEvents.HORSE_ARMOR_UNEQUIP).build()).dispensed(DispenseBehaviorIds.EQUIPMENT).stacksTo(1);
       }
 
       public Properties nautilusArmor(final ArmorMaterial material) {
-         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).stacksTo(1);
+         return this.attributes(material.createAttributes(ArmorType.BODY)).delayedComponent(DataComponents.EQUIPPABLE, (context) -> Equippable.builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.ARMOR_EQUIP_NAUTILUS).setAsset(material.assetId()).setAllowedEntities(context.getOrThrow(EntityTypeTags.CAN_WEAR_NAUTILUS_ARMOR)).setDamageOnHurt(false).setEquipOnInteract(true).setCanBeSheared(true).setShearingSound(SoundEvents.ARMOR_UNEQUIP_NAUTILUS).build()).dispensed(DispenseBehaviorIds.EQUIPMENT).stacksTo(1);
       }
 
       public Properties trimMaterial(final ResourceKey<TrimMaterial> material) {
@@ -620,6 +627,10 @@ public class Item implements ItemLike, FeatureElement {
 
       public Properties compostable(final ResourceKey<ContextIntProvider> layers) {
          return this.component(DataComponents.COMPOSTABLE, new Compostable(layers));
+      }
+
+      public Properties dispensed(final ResourceKey<List<DispenseBehavior>> behaviors) {
+         return this.delayedComponent(DataComponents.DISPENSE_BEHAVIOR, (context) -> context.getOrThrow(behaviors));
       }
 
       @SafeVarargs

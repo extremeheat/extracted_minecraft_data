@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandSourceStack;
@@ -70,19 +69,12 @@ public class BlockPosArgument implements SerializableArgument.ContextFree<Coordi
    }
 
    public Coordinates parse(final StringReader reader) throws CommandSyntaxException {
-      return (Coordinates)(reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parse(reader) : WorldCoordinates.parseInt(reader));
+      return Coordinates.parseXYZ(reader, WorldCoordinate.INT_PARSER);
    }
 
    public CompletableFuture<Suggestions> listSuggestions(final CommandContext<? extends SuggestionContext> context, final SuggestionsBuilder builder) {
       String remainder = builder.getRemaining();
-      Collection<SuggestionContext.TextCoordinates> suggestedCoordinates;
-      if (!remainder.isEmpty() && remainder.charAt(0) == '^') {
-         suggestedCoordinates = Collections.singleton(SuggestionContext.TextCoordinates.DEFAULT_LOCAL);
-      } else {
-         suggestedCoordinates = ((SuggestionContext)context.getSource()).relevantCoordinates();
-      }
-
-      return SuggestionContext.suggestCoordinates(remainder, suggestedCoordinates, builder, Commands.createValidator(this::parse));
+      return SuggestionContext.suggestCoordinates(remainder, Coordinates.suggestRelevantCoordinates(context, remainder), builder, Commands.createValidator(this::parse));
    }
 
    public Collection<String> getExamples() {

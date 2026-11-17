@@ -50,6 +50,7 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -530,7 +531,7 @@ public class RealmsClient {
          DownloadSessionResponseDto responseDto = (DownloadSessionResponseDto)GSON.fromJson(json, DownloadSessionResponseDto.class);
          DownloadSessionResponseDto.Result result = responseDto == null ? null : responseDto.result();
          if (result != null && "Ready".equals(result.status()) && result.downloadUrl() != null) {
-            return new WorldDownload(result.downloadUrl(), "", "");
+            return new WorldDownload(result.downloadUrl(), (String)Objects.requireNonNullElse(result.resourcePackUrl(), ""), (String)Objects.requireNonNullElse(result.resourcePackHash(), ""));
          }
 
          LOGGER.error("Realms download session was not ready: {}", result == null ? null : result.status());

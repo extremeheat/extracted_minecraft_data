@@ -40,7 +40,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemPredicateArgument extends ParserBasedArgument<Context, Result> {
-   private static final ItemPredicateArgument INSTANCE = new ItemPredicateArgument();
+   public static final ItemPredicateArgument INSTANCE = new ItemPredicateArgument();
    public static final SerializableArgument.Type<ItemPredicateArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM;
@@ -85,7 +85,7 @@ public class ItemPredicateArgument extends ParserBasedArgument<Context, Result> 
 
    static {
       TYPE = SerializableArgument.<ItemPredicateArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("stick", "minecraft:stick", "#stick", "#stick{foo:'bar'}");
+      EXAMPLES = List.of("*", "stick", "stick", "minecraft:stick", "stick[custom_data={foo:bar}]", "stick[custom_data]", "stick[!custom_data]", "#stick", "#stick[custom_data={foo:bar}]", "#stick[custom_data~{foo:bar}]");
       ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((id) -> Component.translatableEscape("argument.item.id.invalid", id));
       ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((tag) -> Component.translatableEscape("arguments.item.tag.unknown", tag));
       ERROR_UNKNOWN_COMPONENT = new DynamicCommandExceptionType((id) -> Component.translatableEscape("arguments.item.component.unknown", id));

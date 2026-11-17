@@ -13,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public class AngleArgument implements SerializableArgument.ContextFree<SingleAngle> {
-   private static final AngleArgument INSTANCE = new AngleArgument();
+   public static final AngleArgument INSTANCE = new AngleArgument();
    public static final SerializableArgument.Type<AngleArgument> TYPE;
    private static final Collection<String> EXAMPLES;
    public static final SimpleCommandExceptionType ERROR_NOT_COMPLETE;

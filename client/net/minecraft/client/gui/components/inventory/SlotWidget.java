@@ -188,7 +188,7 @@ public class SlotWidget extends AbstractWidget {
       }
    }
 
-   private Component createNarrationTitle(final @Nullable Component groupName, final @Nullable Component location) {
+   protected Component createNarrationTitle(final @Nullable Component groupName, final @Nullable Component location) {
       Component contents = this.createNarrationContents();
       Component slotName = this.slot.getNarrationName();
       Component name = slotName != null ? slotName : groupName;
@@ -213,7 +213,7 @@ public class SlotWidget extends AbstractWidget {
       }
    }
 
-   private static Component getItemNarration(final ItemStack itemStack) {
+   protected static Component getItemNarration(final ItemStack itemStack) {
       int count = itemStack.getCount();
       return (Component)(count == 1 ? itemStack.getHoverName() : Component.translatable("narration.count_and_item", count, itemStack.getHoverName()));
    }

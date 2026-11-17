@@ -20,7 +20,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -255,7 +254,7 @@ public class GameTestInfo {
       if (this.error == null) {
          this.finish();
          AABB bounds = this.getStructureBounds();
-         List<Entity> entities = this.getLevel().getEntitiesOfClass(Entity.class, bounds.inflate(1.0), (mob) -> !(mob instanceof Player));
+         List<Entity> entities = this.getLevel().getEntitiesOfClass(Entity.class, bounds.inflate(1.0), GameTestHelper::isNonPlayerEntity);
          entities.forEach((e) -> e.remove(Entity.RemovalReason.DISCARDED));
       }
 

@@ -1,5 +1,6 @@
 package net.minecraft.core.dispenser;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,25 +22,27 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 
-public class FlintAndSteelDispenseItemBehavior extends OptionalDispenseItemBehavior {
-   public FlintAndSteelDispenseItemBehavior() {
+public class IgniteDispenseBehavior implements DispenseBehavior {
+   public static final IgniteDispenseBehavior INSTANCE = new IgniteDispenseBehavior();
+   public static final MapCodec<IgniteDispenseBehavior> MAP_CODEC;
+
+   private IgniteDispenseBehavior() {
       super();
    }
 
-   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
+   public DispenseBehavior.DispenseResult execute(final BlockSource source, final ItemStack dispensed) {
       ServerLevel level = source.level();
       Direction facing = (Direction)source.state().getValue(DispenserBlock.FACING);
       BlockPos targetPos = source.pos().relative(facing);
       BlockState target = level.getBlockState(targetPos);
-      boolean ignited = tryIgnite(dispensed, level, targetPos, facing, target);
-      this.setSuccess(ignited);
-      if (this.isSuccess()) {
+      if (tryIgnite(dispensed, level, targetPos, facing, target)) {
          FlintAndSteelItem.playSound(level, targetPos);
          dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (var0) -> {
          });
+         return DispenseBehavior.DispenseResult.success(dispensed);
+      } else {
+         return DispenseBehavior.DispenseResult.failure();
       }
-
-      return dispensed;
    }
 
    private static boolean tryIgnite(final ItemStack dispensed, final ServerLevel level, final BlockPos targetPos, final Direction facing, final BlockState target) {
@@ -71,5 +74,13 @@ public class FlintAndSteelDispenseItemBehavior extends OptionalDispenseItemBehav
          ((SulfurCube)entities.getFirst()).primeTime(false);
          return true;
       }
+   }
+
+   public MapCodec<IgniteDispenseBehavior> codec() {
+      return MAP_CODEC;
+   }
+
+   static {
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

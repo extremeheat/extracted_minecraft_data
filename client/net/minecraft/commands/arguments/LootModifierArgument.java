@@ -10,7 +10,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 public class LootModifierArgument extends ValidatableResourceOrIdArgument<LootItemFunction> {
    public static final SerializableArgument.Type<LootModifierArgument> TYPE = ValidatableArgument.codecWithValidation(LootModifierArgument::new);
 
-   private LootModifierArgument(final ContextKeySet contextKeySet) {
+   public LootModifierArgument(final ContextKeySet contextKeySet) {
       super(Registries.ITEM_MODIFIER, LootItemFunctions.DIRECT_CODEC, contextKeySet);
    }
 

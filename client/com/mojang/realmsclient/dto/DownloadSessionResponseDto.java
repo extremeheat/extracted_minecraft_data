@@ -13,7 +13,7 @@ public record DownloadSessionResponseDto(@Nullable Result result) implements Ref
       return this.result;
    }
 
-   public static record Result(@Nullable String downloadUrl, @Nullable String status) implements ReflectionBasedSerialization {
+   public static record Result(@Nullable String downloadUrl, @Nullable String status, @Nullable String resourcePackUrl, @Nullable String resourcePackHash) implements ReflectionBasedSerialization {
       public Result {
          super();
       }
@@ -26,6 +26,16 @@ public record DownloadSessionResponseDto(@Nullable Result result) implements Ref
       @SerializedName("status")
       public @Nullable String status() {
          return this.status;
+      }
+
+      @SerializedName("resourcePackUrl")
+      public @Nullable String resourcePackUrl() {
+         return this.resourcePackUrl;
+      }
+
+      @SerializedName("resourcePackHash")
+      public @Nullable String resourcePackHash() {
+         return this.resourcePackHash;
       }
    }
 }

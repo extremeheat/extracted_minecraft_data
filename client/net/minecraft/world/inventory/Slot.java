@@ -188,14 +188,15 @@ public class Slot {
       FUEL,
       RESULT,
       INVENTORY,
-      HOTBAR;
+      HOTBAR,
+      DESTROY_ITEM;
 
       private Section() {
       }
 
       // $FF: synthetic method
       private static Section[] $values() {
-         return new Section[]{EQUIPMENT, CONTAINER, INPUT, SECOND_INPUT, FUEL, RESULT, INVENTORY, HOTBAR};
+         return new Section[]{EQUIPMENT, CONTAINER, INPUT, SECOND_INPUT, FUEL, RESULT, INVENTORY, HOTBAR, DESTROY_ITEM};
       }
    }
 }

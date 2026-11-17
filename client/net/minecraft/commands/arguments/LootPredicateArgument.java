@@ -9,7 +9,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class LootPredicateArgument extends ValidatableResourceOrIdArgument<LootItemCondition> {
    public static final SerializableArgument.Type<LootPredicateArgument> TYPE = ValidatableArgument.codecWithValidation(LootPredicateArgument::new);
 
-   private LootPredicateArgument(final ContextKeySet contextKeySet) {
+   public LootPredicateArgument(final ContextKeySet contextKeySet) {
       super(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, contextKeySet);
    }
 

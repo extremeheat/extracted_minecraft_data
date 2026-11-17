@@ -18,7 +18,7 @@ public class FloatArgument extends BrigadierWrapperArgument<Float, FloatArgument
    public static final SerializableArgument.Type<FloatArgument> TYPE;
    private final MinMaxBounds.Bounds<Float> bounds;
 
-   private FloatArgument(final MinMaxBounds.Bounds<Float> bounds) {
+   public FloatArgument(final MinMaxBounds.Bounds<Float> bounds) {
       super(FloatArgumentType.floatArg((Float)bounds.min().orElse(MIN), (Float)bounds.max().orElse(MAX)));
       this.bounds = bounds;
    }

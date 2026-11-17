@@ -49,20 +49,31 @@ public class SculkSpreader {
    private final int noGrowthRadius;
    private final int chargeDecayRate;
    private final int additionalDecayRate;
-   private List<ChargeCursor> cursors = new ArrayList();
+   private final boolean canPlaceShriekers;
+   private List<ChargeCursor> cursors;
 
    public SculkSpreader(final boolean isWorldGeneration, final TagKey<Block> replaceableBlocks, final int growthSpawnCost, final int noGrowthRadius, final int chargeDecayRate, final int additionalDecayRate) {
+      this(isWorldGeneration, replaceableBlocks, growthSpawnCost, noGrowthRadius, chargeDecayRate, additionalDecayRate, true);
+   }
+
+   public SculkSpreader(final boolean isWorldGeneration, final TagKey<Block> replaceableBlocks, final int growthSpawnCost, final int noGrowthRadius, final int chargeDecayRate, final int additionalDecayRate, final boolean canPlaceShriekers) {
       super();
+      this.cursors = new ArrayList();
       this.isWorldGeneration = isWorldGeneration;
       this.replaceableBlocks = replaceableBlocks;
       this.growthSpawnCost = growthSpawnCost;
       this.noGrowthRadius = noGrowthRadius;
       this.chargeDecayRate = chargeDecayRate;
       this.additionalDecayRate = additionalDecayRate;
+      this.canPlaceShriekers = canPlaceShriekers;
    }
 
    public static SculkSpreader createLevelSpreader() {
-      return new SculkSpreader(false, BlockTags.SCULK_REPLACEABLE, 10, 4, 10, 5);
+      return createLevelSpreader(true);
+   }
+
+   public static SculkSpreader createLevelSpreader(final boolean canPlaceShriekers) {
+      return new SculkSpreader(false, BlockTags.SCULK_REPLACEABLE, 10, 4, 10, 5, canPlaceShriekers);
    }
 
    public static SculkSpreader createWorldGenSpreader() {
@@ -91,6 +102,10 @@ public class SculkSpreader {
 
    public boolean isWorldGeneration() {
       return this.isWorldGeneration;
+   }
+
+   public boolean canPlaceShriekers() {
+      return this.canPlaceShriekers;
    }
 
    @VisibleForTesting

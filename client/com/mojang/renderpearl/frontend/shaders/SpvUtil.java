@@ -100,4 +100,36 @@ public class SpvUtil {
 
       return var10000;
    }
+
+   public static String validationErrorString(final int result) {
+      String var10000;
+      switch (result) {
+         case -17 -> var10000 = "SPV_ERROR_FNVAR";
+         case -16 -> var10000 = "SPV_ERROR_WRONG_VERSION";
+         case -15 -> var10000 = "SPV_ERROR_MISSING_EXTENSION";
+         case -14 -> var10000 = "SPV_ERROR_INVALID_DATA";
+         case -13 -> var10000 = "SPV_ERROR_INVALID_CAPABILITY";
+         case -12 -> var10000 = "SPV_ERROR_INVALID_LAYOUT";
+         case -11 -> var10000 = "SPV_ERROR_INVALID_CFG";
+         case -10 -> var10000 = "SPV_ERROR_INVALID_ID";
+         case -9 -> var10000 = "SPV_ERROR_INVALID_LOOKUP";
+         case -8 -> var10000 = "SPV_ERROR_INVALID_DIAGNOSTIC";
+         case -7 -> var10000 = "SPV_ERROR_INVALID_VALUE";
+         case -6 -> var10000 = "SPV_ERROR_INVALID_TABLE";
+         case -5 -> var10000 = "SPV_ERROR_INVALID_TEXT";
+         case -4 -> var10000 = "SPV_ERROR_INVALID_BINARY";
+         case -3 -> var10000 = "SPV_ERROR_INVALID_POINTER";
+         case -2 -> var10000 = "SPV_ERROR_OUT_OF_MEMORY";
+         case -1 -> var10000 = "SPV_ERROR_INTERNAL";
+         case 0 -> var10000 = "SPV_SUCCESS";
+         case 1 -> var10000 = "SPV_UNSUPPORTED";
+         case 2 -> var10000 = "SPV_END_OF_STREAM";
+         case 3 -> var10000 = "SPV_WARNING";
+         case 4 -> var10000 = "SPV_FAILED_MATCH";
+         case 5 -> var10000 = "SPV_REQUESTED_TERMINATION";
+         default -> var10000 = "Unknown(" + result + ")";
+      }
+
+      return var10000;
+   }
 }

@@ -161,7 +161,7 @@ public class NbtPathArgument implements SerializableArgument.ContextFree<NbtPath
 
    static {
       TYPE = SerializableArgument.<NbtPathArgument>singletonType(INSTANCE);
-      EXAMPLES = List.of("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
+      EXAMPLES = List.of("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo:bar}");
       ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
       ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
       ERROR_NOTHING_FOUND = new DynamicCommandExceptionType((path) -> Component.translatableEscape("arguments.nbtpath.nothing_found", path));

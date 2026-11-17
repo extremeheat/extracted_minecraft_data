@@ -2,13 +2,12 @@ package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
-import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
-import net.minecraft.util.datafix.schemas.NamespacedSchema;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import org.jspecify.annotations.Nullable;
 
 public abstract class DataComponentRemainderFix extends DataFix {
@@ -32,9 +31,10 @@ public abstract class DataComponentRemainderFix extends DataFix {
    }
 
    public final TypeRewriteRule makeRule() {
+      ExtraDataFixUtils.ComponentIdManipulator componentRenamer = ExtraDataFixUtils.ComponentIdManipulator.rename(this.componentId, this.newComponentId);
       Type<?> dataComponentsType = this.getInputSchema().getType(References.DATA_COMPONENTS);
       return this.fixTypeEverywhereTyped(this.name, dataComponentsType, (components) -> components.update(DSL.remainderFinder(), (remainder) -> {
-            remainder = remainder.update("minecraft:tooltip_display", this::fixTooltipDisplay);
+            remainder = ExtraDataFixUtils.fixComponentsIds(remainder, componentRenamer, false);
             Optional<? extends Dynamic<?>> component = remainder.get(this.componentId).result();
             if (component.isEmpty()) {
                return remainder;
@@ -43,14 +43,6 @@ public abstract class DataComponentRemainderFix extends DataFix {
                return remainder.remove(this.componentId).setFieldIfPresent(this.newComponentId, Optional.ofNullable(newComponent));
             }
          }));
-   }
-
-   private Dynamic<?> fixTooltipDisplay(final Dynamic<?> tooltipDisplay) {
-      return tooltipDisplay.update("hidden_components", (hiddenComponents) -> (Dynamic)DataFixUtils.orElse(hiddenComponents.asStreamOpt().result().map((stream) -> hiddenComponents.createList(stream.map(this::fixComponentId))), hiddenComponents));
-   }
-
-   private Dynamic<?> fixComponentId(final Dynamic<?> component) {
-      return NamespacedSchema.namespacedIdMatches(component, this.componentId) ? component.createString(this.newComponentId) : component;
    }
 
    protected abstract <T> @Nullable Dynamic<T> fixComponent(Dynamic<T> input);

@@ -8,6 +8,7 @@ import net.minecraft.client.TextureFilteringMethod;
 public class OptionsRenderState {
    public int cloudRange;
    public boolean cutoutLeaves;
+   public boolean improvedFog;
    public boolean improvedTransparency;
    public boolean ambientOcclusion;
    public int menuBackgroundBlurriness;

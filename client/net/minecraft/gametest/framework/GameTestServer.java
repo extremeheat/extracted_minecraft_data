@@ -122,7 +122,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(final Thread serverThread, final LevelStorageSource.LevelStorageAccess levelStorageSource, final PackRepository packRepository, final WorldStem worldStem, final Optional<String> testSelection, final boolean verify, final int repeatCount) {
-      super(serverThread, levelStorageSource, packRepository, worldStem, Optional.of(new GameRules(ENABLED_FEATURES)), Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer(), false, new NotificationManager());
+      super(serverThread, levelStorageSource, packRepository, worldStem, Optional.of(new GameRules(ENABLED_FEATURES)), Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggingLevelLoadListener.forDedicatedServer(), false, new NotificationManager(), DEFAULT_MIN_REKEY_TIME_MS);
       this.testSelection = testSelection;
       this.repeatCount = repeatCount;
       this.verify = verify;

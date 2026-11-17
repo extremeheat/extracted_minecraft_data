@@ -279,7 +279,8 @@ public abstract class FlowingFluid extends Fluid {
 
    }
 
-   protected abstract void beforeDestroyingBlock(LevelAccessor level, BlockPos pos, BlockState state);
+   protected void beforeDestroyingBlock(final LevelAccessor level, final BlockPos pos, final BlockState state) {
+   }
 
    protected int getSlopeDistance(final LevelReader level, final BlockPos pos, final int pass, final Direction from, final BlockState state, final SpreadContext context) {
       int lowest = 1000;

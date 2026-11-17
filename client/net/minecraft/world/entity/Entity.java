@@ -1732,18 +1732,19 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.playSound(this.getSwimHighSpeedSplashSound(), speed, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
       }
 
-      float yt = (float)Mth.floor(this.getY());
+      float width = this.dimensions.width();
+      float yt = (float)Mth.floor(this.getY()) + this.level.getFluidState(this.blockPosition).getHeight(this.level, this.blockPosition);
 
-      for(int i = 0; (float)i < 1.0F + this.dimensions.width() * 20.0F; ++i) {
-         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + xo, (double)(yt + 1.0F), this.getZ() + zo, movement.x, movement.y - this.random.nextDouble() * 0.20000000298023224, movement.z);
+      for(int i = 0; (float)i < 1.0F + width * 20.0F; ++i) {
+         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)width;
+         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)width;
+         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + xo, (double)yt, this.getZ() + zo, movement.x, movement.y - this.random.nextDouble() * 0.20000000298023224, movement.z);
       }
 
-      for(int i = 0; (float)i < 1.0F + this.dimensions.width() * 20.0F; ++i) {
-         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)this.dimensions.width();
-         this.level().addParticle(ParticleTypes.SPLASH, this.getX() + xo, (double)(yt + 1.0F), this.getZ() + zo, movement.x, movement.y, movement.z);
+      for(int i = 0; (float)i < 1.0F + width * 20.0F; ++i) {
+         double xo = (this.random.nextDouble() * 2.0 - 1.0) * (double)width;
+         double zo = (this.random.nextDouble() * 2.0 - 1.0) * (double)width;
+         this.level().addParticle(ParticleTypes.SPLASH, this.getX() + xo, (double)yt, this.getZ() + zo, movement.x, movement.y, movement.z);
       }
 
       this.gameEvent(GameEvent.SPLASH);
@@ -2513,34 +2514,36 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    public boolean startRiding(final Entity entityToRide, final boolean force, final boolean sendEventAndTriggers) {
       if (entityToRide == this.vehicle) {
          return false;
-      } else if (!entityToRide.couldAcceptPassenger()) {
-         return false;
-      } else if (!this.level().isClientSide() && !entityToRide.type.canSerialize()) {
-         return false;
-      } else {
-         for(Entity vehicleEntity = entityToRide; vehicleEntity.vehicle != null; vehicleEntity = vehicleEntity.vehicle) {
-            if (vehicleEntity.vehicle == this) {
+      } else if (entityToRide.couldAcceptPassenger() && !this.getSelfAndPassengers().anyMatch((e) -> e == entityToRide)) {
+         if (!this.level().isClientSide() && !entityToRide.type.canSerialize()) {
+            return false;
+         } else {
+            for(Entity vehicleEntity = entityToRide; vehicleEntity.vehicle != null; vehicleEntity = vehicleEntity.vehicle) {
+               if (vehicleEntity.vehicle == this) {
+                  return false;
+               }
+            }
+
+            if (force || this.canRide(entityToRide) && entityToRide.canAddPassenger(this)) {
+               if (this.isPassenger()) {
+                  this.stopRiding();
+               }
+
+               this.setPose(Pose.STANDING);
+               this.vehicle = entityToRide;
+               this.vehicle.addPassenger(this);
+               if (sendEventAndTriggers) {
+                  this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
+                  entityToRide.getIndirectPassengersStream().filter((e) -> e instanceof ServerPlayer).forEach((player) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)player));
+               }
+
+               return true;
+            } else {
                return false;
             }
          }
-
-         if (force || this.canRide(entityToRide) && entityToRide.canAddPassenger(this)) {
-            if (this.isPassenger()) {
-               this.stopRiding();
-            }
-
-            this.setPose(Pose.STANDING);
-            this.vehicle = entityToRide;
-            this.vehicle.addPassenger(this);
-            if (sendEventAndTriggers) {
-               this.level().gameEvent(this, GameEvent.ENTITY_MOUNT, this.vehicle.position);
-               entityToRide.getIndirectPassengersStream().filter((e) -> e instanceof ServerPlayer).forEach((player) -> CriteriaTriggers.START_RIDING_TRIGGER.trigger((ServerPlayer)player));
-            }
-
-            return true;
-         } else {
-            return false;
-         }
+      } else {
+         return false;
       }
    }
 
@@ -3098,10 +3101,6 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    protected Component getTypeName() {
       return this.type.getDescription();
-   }
-
-   public boolean is(final Entity other) {
-      return this == other;
    }
 
    public float getYHeadRot() {
@@ -3684,6 +3683,14 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
 
    public boolean hasExactlyOnePlayerPassenger() {
       return this.countPlayerPassengers() == 1;
+   }
+
+   public boolean isPartOfSameEntityGraph(final Entity other) {
+      return this.getGraphRoot() == other.getGraphRoot();
+   }
+
+   public Entity getGraphRoot() {
+      return this.getRootVehicle();
    }
 
    public Entity getRootVehicle() {

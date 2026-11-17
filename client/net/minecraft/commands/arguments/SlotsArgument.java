@@ -14,7 +14,7 @@ import net.minecraft.world.inventory.SlotRange;
 import net.minecraft.world.inventory.SlotRanges;
 
 public class SlotsArgument implements SerializableArgument.ContextFree<SlotRange> {
-   private static final SlotsArgument INSTANCE = new SlotsArgument();
+   public static final SlotsArgument INSTANCE = new SlotsArgument();
    public static final SerializableArgument.Type<SlotsArgument> TYPE;
    static final Collection<String> EXAMPLES;
 

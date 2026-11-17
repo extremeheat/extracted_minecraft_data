@@ -42,7 +42,7 @@ public class ScoreHolderArgument implements SerializableArgument<Result> {
    private static final SimpleCommandExceptionType ERROR_NO_RESULTS;
    private final boolean multiple;
 
-   private ScoreHolderArgument(final boolean multiple) {
+   public ScoreHolderArgument(final boolean multiple) {
       super();
       this.multiple = multiple;
    }

@@ -62,7 +62,7 @@ public class EntityArgument implements SerializableArgument<EntitySelector> {
    private final boolean singleResult;
    private final boolean playersOnly;
 
-   protected EntityArgument(final boolean singleResult, final boolean playersOnly) {
+   public EntityArgument(final boolean singleResult, final boolean playersOnly) {
       super();
       this.singleResult = singleResult;
       this.playersOnly = playersOnly;
@@ -174,7 +174,7 @@ public class EntityArgument implements SerializableArgument<EntitySelector> {
 
    static {
       TYPE = new SerializableArgument.Type<EntityArgument>(MAP_CODEC, STREAM_CODEC);
-      EXAMPLES = List.of("Player", "0123", "@e", "@e[type=foo]", "dd12be42-52a9-4a91-a8a1-11c01849e498");
+      EXAMPLES = List.of("Player", "0123", "@e", "@e[type=creeper]", "dd12be42-52a9-4a91-a8a1-11c01849e498");
       ERROR_NOT_SINGLE_ENTITY = new SimpleCommandExceptionType(Component.translatable("argument.entity.toomany"));
       ERROR_NOT_SINGLE_PLAYER = new SimpleCommandExceptionType(Component.translatable("argument.player.toomany"));
       ERROR_ONLY_PLAYERS_ALLOWED = new SimpleCommandExceptionType(Component.translatable("argument.player.entities"));

@@ -11,17 +11,17 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMaps;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
+import java.util.function.ToIntFunction;
 import net.minecraft.commands.arguments.SerializableArgument;
 import net.minecraft.commands.arguments.SerializableArgumentTypes;
 import net.minecraft.commands.suggestions.CustomSuggestion;
@@ -55,7 +55,7 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
 
    public <S, T extends S> ClientboundCommandsPacket(final RootCommandNode<T> root, final NodeInspector<S> inspector) {
       super();
-      Object2IntMap<CommandNode<T>> nodeToId = enumerateNodes(root);
+      Reference2IntMap<CommandNode<T>> nodeToId = enumerateNodes(root);
       this.entries = createEntries(nodeToId, inspector);
       this.rootIndex = nodeToId.getInt(root);
    }
@@ -84,8 +84,8 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
       validateEntries(entries, Entry::canResolve);
    }
 
-   private static <S> Object2IntMap<CommandNode<S>> enumerateNodes(final RootCommandNode<S> root) {
-      Object2IntMap<CommandNode<S>> nodeToId = new Object2IntOpenHashMap();
+   private static <S> Reference2IntMap<CommandNode<S>> enumerateNodes(final RootCommandNode<S> root) {
+      Reference2IntMap<CommandNode<S>> nodeToId = new Reference2IntOpenHashMap();
       Queue<CommandNode<S>> queue = new ArrayDeque();
       queue.add(root);
 
@@ -104,13 +104,13 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
       return nodeToId;
    }
 
-   private static <S> List<Entry> createEntries(final Object2IntMap<? extends CommandNode<? extends S>> nodeToId, final NodeInspector<S> inspector) {
+   private static <S, T extends S> List<Entry> createEntries(final Reference2IntMap<CommandNode<T>> nodeToId, final NodeInspector<S> inspector) {
       ObjectArrayList<Entry> result = new ObjectArrayList(nodeToId.size());
       result.size(nodeToId.size());
-      ObjectIterator var3 = Object2IntMaps.fastIterable(nodeToId).iterator();
+      ObjectIterator var3 = Reference2IntMaps.fastIterable(nodeToId).iterator();
 
       while(var3.hasNext()) {
-         Object2IntMap.Entry<? extends CommandNode<? extends S>> entry = (Object2IntMap.Entry)var3.next();
+         Reference2IntMap.Entry<CommandNode<T>> entry = (Reference2IntMap.Entry)var3.next();
          result.set(entry.getIntValue(), createEntry((CommandNode)entry.getKey(), inspector, nodeToId));
       }
 
@@ -135,12 +135,12 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
       }
    }
 
-   private static <S> Entry createEntry(final CommandNode<? extends S> node, final NodeInspector<S> inspector, final Object2IntMap<? extends CommandNode<? extends S>> ids) {
+   private static <S> Entry createEntry(final CommandNode<S> node, final NodeInspector<? super S> inspector, final ToIntFunction<CommandNode<S>> ids) {
       int flags = 0;
       int redirect;
       if (node.getRedirect() != null) {
          flags |= 8;
-         redirect = ids.getInt(node.getRedirect());
+         redirect = ids.applyAsInt(node.getRedirect());
       } else {
          redirect = 0;
       }
@@ -169,14 +169,14 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
          case 1:
             ArgumentCommandNode<? extends S, ?> arg = (ArgumentCommandNode)node;
             String id = arg.getName();
-            SerializableArgument.BrigadierWrapper<?> type = SerializableArgument.unwrapOrThrow(arg.getType());
+            SerializableArgument<?> type = SerializableArgument.unwrapOrThrow(arg.getType());
             flags |= 2;
             SuggestionProvider<? extends S> customSuggestions = arg.getCustomSuggestions();
             if (customSuggestions != null) {
-               nodeStub = new ArgumentNodeStubWithSuggestion(id, type.argument(), CustomSuggestion.unwrapOrThrow(customSuggestions).suggestion().serializable());
+               nodeStub = new ArgumentNodeStubWithSuggestion(id, type, CustomSuggestion.unwrapOrThrow(customSuggestions).serializable());
                flags |= 16;
             } else {
-               nodeStub = new ArgumentNodeStubWithoutSuggestion(id, type.argument());
+               nodeStub = new ArgumentNodeStubWithoutSuggestion(id, type);
             }
             break;
          case 2:
@@ -188,9 +188,7 @@ public class ClientboundCommandsPacket implements Packet<ClientCommonPacketListe
             throw new UnsupportedOperationException("Unknown node type " + String.valueOf(node));
       }
 
-      Stream var10000 = node.getChildren().stream();
-      Objects.requireNonNull(ids);
-      int[] childrenIds = var10000.mapToInt(ids::getInt).toArray();
+      int[] childrenIds = node.getChildren().stream().mapToInt(ids).toArray();
       return new Entry(nodeStub, flags, redirect, childrenIds);
    }
 

@@ -1,5 +1,7 @@
 package com.mojang.renderpearl.frontend.shaders;
 
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.renderpearl.api.GpuFormat;
 import com.mojang.renderpearl.api.device.DeviceInfo;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
@@ -16,15 +18,50 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceMap;
 import it.unimi.dsi.fastutil.ints.Int2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.util.shaderc.SPV;
 
 public class PipelineValidator {
    public PipelineValidator() {
       super();
+   }
+
+   public static void validateSPIRV(final String name, final ByteBuffer spv, final ShaderType type) throws ShaderCompileException {
+      long context = SPV.spvContextCreate(23);
+
+      try {
+         Zone var5 = TracyClient.beginZone("SPIR-V validation", false);
+
+         try {
+            int result = SPV.spvValidateBinary(context, spv.asIntBuffer(), (PointerBuffer)null);
+            if (result != 0) {
+               throw new ShaderCompileException(String.format(Locale.ROOT, "%s shader (%s) SPIR-V failed validation with error: %s", type, name, SpvUtil.validationErrorString(result)));
+            }
+         } catch (Throwable var13) {
+            if (var5 != null) {
+               try {
+                  var5.close();
+               } catch (Throwable var12) {
+                  var13.addSuppressed(var12);
+               }
+            }
+
+            throw var13;
+         }
+
+         if (var5 != null) {
+            var5.close();
+         }
+      } finally {
+         SPV.spvContextDestroy(context);
+      }
+
    }
 
    public static void validatePipelineCreateInfo(final DeviceInfo deviceInfo, final CompiledRenderPipeline.CreateInfo createInfo) throws ShaderCompileException {

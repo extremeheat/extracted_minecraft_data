@@ -3,15 +3,16 @@ package net.minecraft.client.particle;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.core.particles.WaterCurrentDownParticleOptions;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class WaterCurrentDownParticle extends SingleQuadParticle {
+   private final float radius;
    private float angle;
 
-   private WaterCurrentDownParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite) {
+   private WaterCurrentDownParticle(final ClientLevel level, final double x, final double y, final double z, final TextureAtlasSprite sprite, final float radius) {
       super(level, x, y, z, sprite);
       this.lifetime = (int)(this.random.nextFloat() * 60.0F) + 30;
       this.hasPhysics = false;
@@ -21,6 +22,7 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
       this.setSize(0.02F, 0.02F);
       this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
       this.gravity = 0.002F;
+      this.radius = radius;
    }
 
    public SingleQuadParticle.Layer getLayer() {
@@ -34,9 +36,8 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
       if (this.age++ >= this.lifetime) {
          this.remove();
       } else {
-         float radius = 0.6F;
-         this.xd += (double)(0.6F * Mth.cos((double)this.angle));
-         this.zd += (double)(0.6F * Mth.sin((double)this.angle));
+         this.xd += (double)(this.radius * Mth.cos((double)this.angle));
+         this.zd += (double)(this.radius * Mth.sin((double)this.angle));
          this.xd *= 0.07;
          this.zd *= 0.07;
          this.move(this.xd, this.yd, this.zd);
@@ -48,7 +49,7 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
       }
    }
 
-   public static class Provider implements ParticleProvider<SimpleParticleType> {
+   public static class Provider implements ParticleProvider<WaterCurrentDownParticleOptions> {
       private final SpriteSet sprite;
 
       public Provider(final SpriteSet sprite) {
@@ -56,8 +57,8 @@ public class WaterCurrentDownParticle extends SingleQuadParticle {
          this.sprite = sprite;
       }
 
-      public Particle createParticle(final SimpleParticleType options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
-         return new WaterCurrentDownParticle(level, x, y, z, this.sprite.get(random));
+      public Particle createParticle(final WaterCurrentDownParticleOptions options, final ClientLevel level, final double x, final double y, final double z, final double xAux, final double yAux, final double zAux, final RandomSource random) {
+         return new WaterCurrentDownParticle(level, x, y, z, this.sprite.get(random), options.radius());
       }
    }
 }

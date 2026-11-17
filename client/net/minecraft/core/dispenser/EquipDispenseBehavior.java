@@ -1,5 +1,6 @@
 package net.minecraft.core.dispenser;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,22 +11,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.AABB;
 
-public class EquipmentDispenseItemBehavior extends DefaultDispenseItemBehavior {
-   public static final EquipmentDispenseItemBehavior INSTANCE = new EquipmentDispenseItemBehavior();
+public class EquipDispenseBehavior implements DispenseBehavior {
+   public static final EquipDispenseBehavior INSTANCE = new EquipDispenseBehavior();
+   public static final MapCodec<EquipDispenseBehavior> MAP_CODEC;
 
-   public EquipmentDispenseItemBehavior() {
+   private EquipDispenseBehavior() {
       super();
    }
 
-   protected ItemStack execute(final BlockSource source, final ItemStack dispensed) {
-      return dispenseEquipment(source, dispensed) ? dispensed : super.execute(source, dispensed);
-   }
-
-   public static boolean dispenseEquipment(final BlockSource source, final ItemStack dispensed) {
+   public DispenseBehavior.DispenseResult execute(final BlockSource source, final ItemStack dispensed) {
       BlockPos pos = source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING));
       List<LivingEntity> entities = source.level().getEntitiesOfClass(LivingEntity.class, new AABB(pos), (entity) -> entity.canEquipWithDispenser(dispensed));
       if (entities.isEmpty()) {
-         return false;
+         return DispenseBehavior.DispenseResult.failure();
       } else {
          LivingEntity target = (LivingEntity)entities.getFirst();
          EquipmentSlot slot = target.getEquipmentSlotForItem(dispensed);
@@ -37,7 +35,15 @@ public class EquipmentDispenseItemBehavior extends DefaultDispenseItemBehavior {
             targetMob.setPersistenceRequired();
          }
 
-         return true;
+         return DispenseBehavior.DispenseResult.success(dispensed);
       }
+   }
+
+   public MapCodec<EquipDispenseBehavior> codec() {
+      return MAP_CODEC;
+   }
+
+   static {
+      MAP_CODEC = MapCodec.unit(INSTANCE);
    }
 }

@@ -31,7 +31,7 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
             int xpPerGrowthSpawn = spreader.growthSpawnCost();
             if (random.nextInt(xpPerGrowthSpawn) < charge) {
                BlockPos growthPlacement = chargePos.above();
-               BlockState growthState = this.getRandomGrowthState(level, growthPlacement, random, spreader.isWorldGeneration());
+               BlockState growthState = this.getRandomGrowthState(level, growthPlacement, random, spreader);
                BlockSoundSet blockSoundSet = growthState.getSounds(level);
                level.setBlockAndUpdate(growthPlacement, growthState);
                blockSoundSet.placeSound().ifPresent((placeSound) -> level.playSound((Entity)null, chargePos, (Holder)placeSound, SoundSource.BLOCKS, 1.0F, 1.0F));
@@ -54,10 +54,10 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
       return Math.max(1, (int)((float)charge * distanceFactor * 0.5F));
    }
 
-   private BlockState getRandomGrowthState(final LevelAccessor level, final BlockPos pos, final RandomSource random, final boolean isWorldGen) {
+   private BlockState getRandomGrowthState(final LevelAccessor level, final BlockPos pos, final RandomSource random, final SculkSpreader spreader) {
       BlockState state;
-      if (random.nextInt(11) == 0) {
-         state = (BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, isWorldGen);
+      if (spreader.canPlaceShriekers() && random.nextInt(11) == 0) {
+         state = (BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, spreader.isWorldGeneration());
       } else {
          state = Blocks.SCULK_SENSOR.defaultBlockState();
       }

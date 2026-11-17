@@ -2,12 +2,14 @@ package net.minecraft.client.gui.screens.recipebook;
 
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import java.util.Collection;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.Identifier;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -63,14 +65,14 @@ public class GhostSlots {
       });
    }
 
-   public void extractTooltip(final GuiGraphicsExtractor graphics, final Minecraft minecraft, final @Nullable Slot hoveredSlot) {
-      if (hoveredSlot != null) {
-         GhostSlot hoveredGhostSlot = (GhostSlot)this.ingredients.get(hoveredSlot);
-         if (hoveredGhostSlot != null) {
-            ItemStack hoveredItem = hoveredGhostSlot.getItem(this.slotSelectTime.currentIndex());
-            graphics.setComponentTooltipForNextFrame(minecraft.font, Screen.getTooltipFromItem(minecraft, hoveredItem), graphics.mouseX(), graphics.mouseY(), (Identifier)hoveredItem.get(DataComponents.TOOLTIP_STYLE));
-         }
-
+   public @Nullable Tooltip getTooltip(final Minecraft minecraft, final Slot slot) {
+      GhostSlot ghostSlot = (GhostSlot)this.ingredients.get(slot);
+      if (ghostSlot == null) {
+         return null;
+      } else {
+         ItemStack item = ghostSlot.getItem(this.slotSelectTime.currentIndex());
+         List<Component> lines = Screen.getTooltipFromItem(minecraft, item);
+         return Tooltip.createForItem(lines, CommonComponents.joinLines((Collection)lines), item);
       }
    }
 
