@@ -1,9 +1,16 @@
 {
   "latest": {
     "release": "26.3",
-    "snapshot": "26.4-snapshot-9"
+    "snapshot": "26.4-snapshot-10"
   },
   "versions": [
+    {
+      "id": "26.4-snapshot-10",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/e354ebe86afe36bfcc699d571def29655066d3df/26.4-snapshot-10.json",
+      "time": "2026-11-17T16:09:29+00:00",
+      "releaseTime": "2026-11-17T16:02:02+00:00"
+    },
     {
       "id": "26.4-snapshot-9",
       "type": "snapshot",
@@ -5717,17 +5724,17 @@
       "releaseTime": "2013-09-19T15:52:37+00:00"
     },
     {
-      "id": "13w37b",
-      "type": "snapshot",
-      "url": "https://piston-meta.mojang.com/v1/packages/b8d28154ee056af6af3c8c37815418fe0e9f34f8/13w37b.json",
-      "time": "2019-06-28T07:08:08+00:00",
-      "releaseTime": "2013-09-13T10:54:41+00:00"
-    },
-    {
       "id": "1.6.3",
       "type": "snapshot",
       "url": "https://piston-meta.mojang.com/v1/packages/903d6ba1bc87c301d88fa418f8b33446201c7d4e/1.6.3.json",
       "time": "2019-06-28T07:07:47+00:00",
+      "releaseTime": "2013-09-13T10:54:41+00:00"
+    },
+    {
+      "id": "13w37b",
+      "type": "snapshot",
+      "url": "https://piston-meta.mojang.com/v1/packages/b8d28154ee056af6af3c8c37815418fe0e9f34f8/13w37b.json",
+      "time": "2019-06-28T07:08:08+00:00",
       "releaseTime": "2013-09-13T10:54:41+00:00"
     },
     {
