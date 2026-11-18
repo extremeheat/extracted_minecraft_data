@@ -329,15 +329,17 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
 
       public void extractContent(final GuiGraphicsExtractor graphics, final boolean hovered) {
          graphics.text(this.minecraft.font, (String)this.serverData.name, this.getContentX() + 32 + 3, this.getContentY() + 1, -1);
-         List<FormattedCharSequence> lines = this.minecraft.font.split(this.serverData.motd, this.getContentWidth() - 32 - 2);
+         if (this.serverData.motd != null) {
+            List<FormattedCharSequence> lines = this.minecraft.font.split(this.serverData.motd, this.getContentWidth() - 32 - 2);
 
-         for(int i = 0; i < Math.min(lines.size(), 2); ++i) {
-            Font var10001 = this.minecraft.font;
-            FormattedCharSequence var10002 = (FormattedCharSequence)lines.get(i);
-            int var10003 = this.getContentX() + 32 + 3;
-            int var10004 = this.getContentY() + 12;
-            Objects.requireNonNull(this.minecraft.font);
-            graphics.text(var10001, var10002, var10003, var10004 + 9 * i, -8355712);
+            for(int i = 0; i < Math.min(lines.size(), 2); ++i) {
+               Font var10001 = this.minecraft.font;
+               FormattedCharSequence var10002 = (FormattedCharSequence)lines.get(i);
+               int var10003 = this.getContentX() + 32 + 3;
+               int var10004 = this.getContentY() + 12;
+               Objects.requireNonNull(this.minecraft.font);
+               graphics.text(var10001, var10002, var10003, var10004 + 9 * i, -8355712);
+            }
          }
 
          this.extractIcon(graphics, this.getContentX(), this.getContentY(), this.icon.textureLocation());
@@ -366,17 +368,19 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          }
 
          Component status = (Component)(this.serverData.state() == ServerData.State.INCOMPATIBLE ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status);
-         int statusWidth = this.minecraft.font.width((FormattedText)status);
-         int statusX = statusIconX - statusWidth - 5;
-         graphics.text(this.minecraft.font, status, statusX, this.getContentY() + 1, -8355712);
-         if (this.statusIconTooltip != null && graphics.mouseX() >= statusIconX && graphics.mouseX() <= statusIconX + 10 && graphics.mouseY() >= this.getContentY() && graphics.mouseY() <= this.getContentY() + 8) {
-            graphics.setTooltipForNextFrame(this.statusIconTooltip, graphics.mouseX(), graphics.mouseY());
-         } else if (this.onlinePlayersTooltip != null && graphics.mouseX() >= statusX && graphics.mouseX() <= statusX + statusWidth && graphics.mouseY() >= this.getContentY()) {
-            int var10000 = graphics.mouseY();
-            int var14 = this.getContentY() - 1;
-            Objects.requireNonNull(this.minecraft.font);
-            if (var10000 <= var14 + 9) {
-               graphics.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), graphics.mouseX(), graphics.mouseY());
+         if (status != null) {
+            int statusWidth = this.minecraft.font.width((FormattedText)status);
+            int statusX = statusIconX - statusWidth - 5;
+            graphics.text(this.minecraft.font, status, statusX, this.getContentY() + 1, -8355712);
+            if (this.statusIconTooltip != null && graphics.mouseX() >= statusIconX && graphics.mouseX() <= statusIconX + 10 && graphics.mouseY() >= this.getContentY() && graphics.mouseY() <= this.getContentY() + 8) {
+               graphics.setTooltipForNextFrame(this.statusIconTooltip, graphics.mouseX(), graphics.mouseY());
+            } else if (this.onlinePlayersTooltip != null && graphics.mouseX() >= statusX && graphics.mouseX() <= statusX + statusWidth && graphics.mouseY() >= this.getContentY()) {
+               int var10000 = graphics.mouseY();
+               int var14 = this.getContentY() - 1;
+               Objects.requireNonNull(this.minecraft.font);
+               if (var10000 <= var14 + 9) {
+                  graphics.setTooltipForNextFrame(Lists.transform(this.onlinePlayersTooltip, Component::getVisualOrderText), graphics.mouseX(), graphics.mouseY());
+               }
             }
          }
 

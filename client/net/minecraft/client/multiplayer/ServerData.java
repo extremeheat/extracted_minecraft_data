@@ -21,8 +21,8 @@ public class ServerData {
    private static final int MAX_ICON_SIZE = 1024;
    public String name;
    public String ip;
-   public Component status;
-   public Component motd;
+   public @Nullable Component status;
+   public @Nullable Component motd;
    public ServerStatus.@Nullable Players players;
    public long ping;
    public int protocol = SharedConstants.getCurrentVersion().protocolVersion();
