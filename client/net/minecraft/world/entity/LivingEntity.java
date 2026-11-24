@@ -1313,11 +1313,9 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
                angle = 3.1415927410125732;
             }
 
-            ItemStack weapon = source.getWeaponItem();
-            if (weapon != null && weapon.is(ItemTags.KNOCKS_BACK_PLAYERS_EVEN_WITH_ZERO_DAMAGE)) {
-               return blocksAttacks.resolveBlockedDamage(source, 1.0F, angle).map((var0) -> 0.0F);
-            } else if (damage <= 0.0F) {
-               return Optional.empty();
+            if (damage <= 0.0F) {
+               ItemStack weapon = source.getWeaponItem();
+               return weapon != null && weapon.is(ItemTags.KNOCKS_BACK_PLAYERS_EVEN_WITH_ZERO_DAMAGE) ? blocksAttacks.resolveBlockedDamage(source, 1.0F, angle).map((var0) -> 0.0F) : Optional.empty();
             } else {
                Optional<Float> damageBlocked = blocksAttacks.resolveBlockedDamage(source, damage, angle);
                blocksAttacks.hurtBlockingItem(this.level(), blockingWith, this, this.getUsedItemHand(), (Float)damageBlocked.orElse(0.0F));
@@ -1338,7 +1336,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    private void playSecondaryHurtSound(final DamageSource source) {
-      if (source.is(DamageTypes.THORNS)) {
+      if (!this.isSilent() && source.is(DamageTypes.THORNS)) {
          SoundSource soundSource = this instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
          this.level().playSound((Entity)null, this.position().x, this.position().y, this.position().z, SoundEvents.THORNS_HIT, soundSource);
       }
@@ -1444,6 +1442,13 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
    }
 
    public void makeSound(final @Nullable SoundEvent sound) {
+      if (sound != null) {
+         this.playSound(sound, this.getSoundVolume(), this.getVoicePitch());
+      }
+
+   }
+
+   public void makeSound(final @Nullable Holder<SoundEvent> sound) {
       if (sound != null) {
          this.playSound(sound, this.getSoundVolume(), this.getVoicePitch());
       }
@@ -1760,7 +1765,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
       int dmg = this.calculateFallDamage(effectiveFallDistance, damageModifier);
       if (dmg > 0) {
          this.resetCurrentImpulseContext();
-         this.playSound(this.getFallDamageSound(dmg), 1.0F, 1.0F);
+         this.playSound(this.getFallDamageSound(dmg));
          this.playBlockFallSound();
          this.hurt(damageSource, (float)dmg);
          return true;
@@ -2559,7 +2564,7 @@ public abstract class LivingEntity extends Entity implements Attackable, Waypoin
          double diff = moveHorLength - newMoveHorLength;
          float dmg = (float)(diff * 10.0 - 3.0);
          if (dmg > 0.0F) {
-            this.playSound(this.getFallDamageSound((int)dmg), 1.0F, 1.0F);
+            this.playSound(this.getFallDamageSound((int)dmg));
             this.hurt(this.damageSources().flyIntoWall(), dmg);
          }
       }

@@ -47,7 +47,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    }
 
    public void fallOn(final Level level, final BlockState state, final BlockPos pos, final Entity entity, final double fallDistance) {
-      entity.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
+      entity.playSound(SoundEvents.HONEY_BLOCK_SLIDE);
       if (!level.isClientSide()) {
          level.broadcastEntityEvent(entity, (byte)54);
       }
@@ -117,7 +117,7 @@ public class HoneyBlock extends HalfTransparentBlock {
       if (doesEntityDoHoneyBlockSlideEffects(entity)) {
          RandomSource random = level.getRandom();
          if (random.nextInt(5) == 0) {
-            entity.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
+            entity.playSound(SoundEvents.HONEY_BLOCK_SLIDE);
          }
 
          if (!level.isClientSide() && random.nextInt(5) == 0) {

@@ -82,7 +82,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       if (!(fallDistance < 4.0) && entity instanceof LivingEntity livingEntity) {
          LivingEntity.Fallsounds entityFallsounds = livingEntity.getFallSounds();
          SoundEvent fallSound = fallDistance < 7.0 ? entityFallsounds.small() : entityFallsounds.big();
-         entity.playSound(fallSound, 1.0F, 1.0F);
+         entity.playSound(fallSound);
       }
    }
 

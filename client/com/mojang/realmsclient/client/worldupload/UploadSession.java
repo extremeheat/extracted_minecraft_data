@@ -10,10 +10,10 @@ import java.time.format.DateTimeParseException;
 import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
-public record UploadSession(String token, URI uploadUrl, URI statusUrl, URI completeUrl, URI cancelUrl, URI renewUrl, Instant expiresAt, boolean supportsBlockUpload, long maxSinglePutSizeBytes, long recommendedBlockSizeBytes, long maxBlockCount, long maxUploadSizeBytes, Set<String> acceptedArchiveFormats) {
+public record UploadSession(String token, URI uploadUrl, URI statusUrl, URI completeUrl, URI cancelUrl, URI renewUrl, Instant expiresAt, boolean supportsBlockUpload, long maxSinglePutSizeBytes, long recommendedBlockSizeBytes, long maxBlockCount, long maxUploadSizeBytes, long maxParallelPuts, Set<String> acceptedArchiveFormats) {
    private static final GuardedSerializer SERIALIZER = new GuardedSerializer();
 
-   public UploadSession(String token, URI uploadUrl, URI statusUrl, URI completeUrl, URI cancelUrl, URI renewUrl, Instant expiresAt, boolean supportsBlockUpload, long maxSinglePutSizeBytes, long recommendedBlockSizeBytes, long maxBlockCount, long maxUploadSizeBytes, Set<String> acceptedArchiveFormats) {
+   public UploadSession(String token, URI uploadUrl, URI statusUrl, URI completeUrl, URI cancelUrl, URI renewUrl, Instant expiresAt, boolean supportsBlockUpload, long maxSinglePutSizeBytes, long recommendedBlockSizeBytes, long maxBlockCount, long maxUploadSizeBytes, long maxParallelPuts, Set<String> acceptedArchiveFormats) {
       super();
       acceptedArchiveFormats = Set.copyOf(acceptedArchiveFormats);
       this.token = token;
@@ -28,6 +28,7 @@ public record UploadSession(String token, URI uploadUrl, URI statusUrl, URI comp
       this.recommendedBlockSizeBytes = recommendedBlockSizeBytes;
       this.maxBlockCount = maxBlockCount;
       this.maxUploadSizeBytes = maxUploadSizeBytes;
+      this.maxParallelPuts = maxParallelPuts;
       this.acceptedArchiveFormats = acceptedArchiveFormats;
    }
 
@@ -39,7 +40,7 @@ public record UploadSession(String token, URI uploadUrl, URI statusUrl, URI comp
       UploadSessionResponseDto.Result result = parseResponse(response);
       URI renewedUploadUrl = requiredUri(result.uploadUrl(), "uploadUrl", allowInsecureUrls);
       Instant renewedExpiresAt = requiredInstant(result.expiresAtUtc(), "expiresAtUtc");
-      return new UploadSession(this.token, renewedUploadUrl, this.statusUrl, this.completeUrl, this.cancelUrl, this.renewUrl, renewedExpiresAt, this.supportsBlockUpload, this.maxSinglePutSizeBytes, this.recommendedBlockSizeBytes, this.maxBlockCount, this.maxUploadSizeBytes, this.acceptedArchiveFormats);
+      return new UploadSession(this.token, renewedUploadUrl, this.statusUrl, this.completeUrl, this.cancelUrl, this.renewUrl, renewedExpiresAt, this.supportsBlockUpload, this.maxSinglePutSizeBytes, this.recommendedBlockSizeBytes, this.maxBlockCount, this.maxUploadSizeBytes, this.maxParallelPuts, this.acceptedArchiveFormats);
    }
 
    private static UploadSession parseCompleteSession(final UploadSessionResponseDto.Result response, final boolean allowInsecureUrls) {
@@ -55,8 +56,9 @@ public record UploadSession(String token, URI uploadUrl, URI statusUrl, URI comp
       long recommendedBlockSizeBytes = supportsBlockUpload ? requiredPositiveLong(response.recommendedBlockSizeBytes(), "recommendedBlockSizeBytes") : 0L;
       long maxBlockCount = supportsBlockUpload ? requiredPositiveLong(response.maxBlockCount(), "maxBlockCount") : 0L;
       long maxUploadSizeBytes = requiredLong(response.maxUploadSizeBytes(), "maxUploadSizeBytes");
+      long maxParallelPuts = response.maxParallelPuts() == null ? 1L : requiredPositiveLong(response.maxParallelPuts(), "maxParallelPuts");
       Set<String> acceptedArchiveFormats = requiredFormats(response.acceptedArchiveFormats());
-      return new UploadSession(token, uploadUrl, statusUrl, completeUrl, cancelUrl, renewUrl, expiresAt, supportsBlockUpload, maxSinglePutSizeBytes, recommendedBlockSizeBytes, maxBlockCount, maxUploadSizeBytes, acceptedArchiveFormats);
+      return new UploadSession(token, uploadUrl, statusUrl, completeUrl, cancelUrl, renewUrl, expiresAt, supportsBlockUpload, maxSinglePutSizeBytes, recommendedBlockSizeBytes, maxBlockCount, maxUploadSizeBytes, maxParallelPuts, acceptedArchiveFormats);
    }
 
    private static URI requiredUri(final @Nullable String value, final String name, final boolean allowInsecureUrls) {

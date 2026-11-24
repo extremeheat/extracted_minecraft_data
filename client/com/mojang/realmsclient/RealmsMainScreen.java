@@ -1019,7 +1019,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void addSnapshotRealm() {
-         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
          RealmsMainScreen.this.minecraft.gui.setScreen((new PopupScreen.Builder(RealmsMainScreen.this, Component.translatable("mco.snapshot.createSnapshotPopup.title"))).addMessage(Component.translatable("mco.snapshot.createSnapshotPopup.text")).addButton(Component.translatable("mco.selectServer.create"), (var1) -> RealmsMainScreen.this.minecraft.gui.setScreen(new RealmsCreateRealmScreen(RealmsMainScreen.this, this.parent, true))).addButton(CommonComponents.GUI_CANCEL, PopupScreen::onClose).build());
       }
 
@@ -1137,12 +1137,12 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       private void playRealm() {
-         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
          RealmsMainScreen.play(this.serverData, RealmsMainScreen.this);
       }
 
       private void createUninitializedRealm() {
-         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         RealmsMainScreen.this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
          RealmsCreateRealmScreen createScreen = new RealmsCreateRealmScreen(RealmsMainScreen.this, this.serverData, this.serverData.isSnapshotRealm());
          RealmsMainScreen.this.minecraft.gui.setScreen(createScreen);
       }

@@ -64,7 +64,7 @@ public class BrushableBlock extends BaseEntityBlock implements Fallable {
 
    public void onBrokenAfterFall(final Level level, final BlockPos pos, final FallingBlockEntity entity) {
       Vec3 centerOfEntity = entity.getBoundingBox().getCenter();
-      level.levelEvent(2001, BlockPos.containing(centerOfEntity), Block.getId(entity.getBlockState()));
+      LevelEvent.playParticlesAndSoundDestroyBlock(entity, level, BlockPos.containing(centerOfEntity), entity.getBlockState());
       level.gameEvent(entity, GameEvent.BLOCK_DESTROY, centerOfEntity);
    }
 

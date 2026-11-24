@@ -109,19 +109,11 @@ public record SliceFunction(Direction.Axis axis, int coordinate, DensityFunction
             this.input.sampleVolume(context, outputBuffer, volume);
          } else {
             DensityVolume inputVolume = new DensityVolume(1, volume.sizeY(), volume.sizeZ(), this.x, volume.minBlockY(), volume.minBlockZ(), volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
+            int sliceSize = inputVolume.size();
+            this.input.sampleVolume(context, outputBuffer.slice(sliceSize), inputVolume);
 
-            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
-               this.input.sampleVolume(context, inputBuffer, inputVolume);
-               int outputIndex = 0;
-
-               for(int z = 0; z < volume.sizeZ(); ++z) {
-                  int inputIndex = z * volume.sizeY();
-
-                  for(int x = 0; x < volume.sizeX(); ++x) {
-                     outputBuffer.copyFrom(inputBuffer, inputIndex, outputIndex, volume.sizeY());
-                     outputIndex += volume.sizeY();
-                  }
-               }
+            for(int i = sliceSize; i < volume.size(); i += sliceSize) {
+               outputBuffer.copyFrom(outputBuffer, 0, i, sliceSize);
             }
 
          }
@@ -170,11 +162,19 @@ public record SliceFunction(Direction.Axis axis, int coordinate, DensityFunction
             this.input.sampleVolume(context, outputBuffer, volume);
          } else {
             DensityVolume inputVolume = new DensityVolume(volume.sizeX(), volume.sizeY(), 1, volume.minBlockX(), volume.minBlockY(), this.z, volume.stepBlockX(), volume.stepBlockY(), volume.stepBlockZ());
-            int sliceSize = inputVolume.size();
-            this.input.sampleVolume(context, outputBuffer.slice(sliceSize), inputVolume);
 
-            for(int i = sliceSize; i < volume.size(); i += sliceSize) {
-               outputBuffer.copyFrom(outputBuffer, 0, i, sliceSize);
+            try (ScopedDensityBuffer inputBuffer = context.acquireBuffer(inputVolume)) {
+               this.input.sampleVolume(context, inputBuffer, inputVolume);
+               int outputIndex = 0;
+
+               for(int x = 0; x < volume.sizeX(); ++x) {
+                  int inputIndex = x * volume.sizeY();
+
+                  for(int z = 0; z < volume.sizeZ(); ++z) {
+                     outputBuffer.copyFrom(inputBuffer, inputIndex, outputIndex, volume.sizeY());
+                     outputIndex += volume.sizeY();
+                  }
+               }
             }
 
          }

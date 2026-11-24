@@ -50,7 +50,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void randomTick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (this.tryChangingState(state, level, pos, random)) {
-         level.playSound((Entity)null, pos, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, pos, this.type.transform().longSwitchSound, SoundSource.BLOCKS);
       }
 
       super.randomTick(state, level, pos, random);
@@ -58,7 +58,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if (this.tryChangingState(state, level, pos, random)) {
-         level.playSound((Entity)null, pos, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, pos, this.type.transform().shortSwitchSound, SoundSource.BLOCKS);
       }
 
       super.tick(state, level, pos, random);

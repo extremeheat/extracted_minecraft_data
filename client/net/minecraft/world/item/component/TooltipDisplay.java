@@ -11,7 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public record TooltipDisplay(boolean hideTooltip, SequencedSet<DataComponentType<?>> hiddenComponents) {
+public record TooltipDisplay(boolean splitLines, boolean hideTooltip, SequencedSet<DataComponentType<?>> hiddenComponents) {
    private static final Codec<SequencedSet<DataComponentType<?>>> COMPONENT_SET_CODEC;
    public static final Codec<TooltipDisplay> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, TooltipDisplay> STREAM_CODEC;
@@ -32,7 +32,7 @@ public record TooltipDisplay(boolean hideTooltip, SequencedSet<DataComponentType
             newHiddenComponents.remove(component);
          }
 
-         return new TooltipDisplay(this.hideTooltip, newHiddenComponents);
+         return new TooltipDisplay(this.splitLines, this.hideTooltip, newHiddenComponents);
       }
    }
 
@@ -42,8 +42,8 @@ public record TooltipDisplay(boolean hideTooltip, SequencedSet<DataComponentType
 
    static {
       COMPONENT_SET_CODEC = DataComponentType.CODEC.listOf().xmap(ReferenceLinkedOpenHashSet::new, List::copyOf);
-      CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("hide_tooltip", false).forGetter(TooltipDisplay::hideTooltip), COMPONENT_SET_CODEC.optionalFieldOf("hidden_components", ReferenceSortedSets.emptySet()).forGetter(TooltipDisplay::hiddenComponents)).apply(i, TooltipDisplay::new));
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, TooltipDisplay::hideTooltip, DataComponentType.STREAM_CODEC.apply(ByteBufCodecs.collection(ReferenceLinkedOpenHashSet::new)), TooltipDisplay::hiddenComponents, TooltipDisplay::new);
-      DEFAULT = new TooltipDisplay(false, ReferenceSortedSets.emptySet());
+      CODEC = RecordCodecBuilder.create((i) -> i.group(Codec.BOOL.optionalFieldOf("split_lines", true).forGetter(TooltipDisplay::splitLines), Codec.BOOL.optionalFieldOf("hide_tooltip", false).forGetter(TooltipDisplay::hideTooltip), COMPONENT_SET_CODEC.optionalFieldOf("hidden_components", ReferenceSortedSets.emptySet()).forGetter(TooltipDisplay::hiddenComponents)).apply(i, TooltipDisplay::new));
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, TooltipDisplay::splitLines, ByteBufCodecs.BOOL, TooltipDisplay::hideTooltip, DataComponentType.STREAM_CODEC.apply(ByteBufCodecs.collection(ReferenceLinkedOpenHashSet::new)), TooltipDisplay::hiddenComponents, TooltipDisplay::new);
+      DEFAULT = new TooltipDisplay(true, false, ReferenceSortedSets.emptySet());
    }
 }

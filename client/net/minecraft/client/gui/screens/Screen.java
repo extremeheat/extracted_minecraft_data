@@ -651,7 +651,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected void updateNarratedWidget(final NarrationElementOutput output) {
       List<? extends NarratableEntry> activeNarratables = this.narratables.stream().flatMap((narratableEntry) -> narratableEntry.getNarratables().stream()).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
-      NarratableSearchResult result = findNarratableWidget(activeNarratables, output.narrationTrigger() == NarrationTrigger.KEYBOARD ? null : this.lastNarratable);
+      NarratableSearchResult result = findNarratableWidget(activeNarratables, output.narrationTrigger() == NarrationTrigger.KEYBOARD ? null : this.lastNarratable, output.narrationTrigger());
       if (result != null) {
          if (result.priority.isTerminal()) {
             this.lastNarratable = result.entry;
@@ -675,14 +675,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       return Component.translatable("narration.component_list.usage");
    }
 
-   public static @Nullable NarratableSearchResult findNarratableWidget(final List<? extends NarratableEntry> narratableEntries, final @Nullable NarratableEntry lastNarratable) {
+   public static @Nullable NarratableSearchResult findNarratableWidget(final List<? extends NarratableEntry> narratableEntries, final @Nullable NarratableEntry lastNarratable, final NarrationTrigger narrationTrigger) {
       NarratableSearchResult result = null;
       NarratableSearchResult lowPrioNarratable = null;
       int i = 0;
 
       for(int narratablesSize = narratableEntries.size(); i < narratablesSize; ++i) {
          NarratableEntry narratable = (NarratableEntry)narratableEntries.get(i);
-         NarratableEntry.NarrationPriority priority = narratable.narrationPriority();
+         NarratableEntry.NarrationPriority priority = narratable.narrationPriority(narrationTrigger);
          if (priority.isTerminal()) {
             if (narratable != lastNarratable) {
                return new NarratableSearchResult(narratable, i, priority);

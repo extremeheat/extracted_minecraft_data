@@ -20,7 +20,7 @@ public class EmptyMapItem extends Item {
       if (level instanceof ServerLevel serverLevel) {
          itemStack.consume(1, player);
          player.awardStat(Stats.ITEM_USED.get(this));
-         serverLevel.playSound((Entity)null, player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, player.getSoundSource(), 1.0F, 1.0F);
+         serverLevel.playSound((Entity)null, player, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, player.getSoundSource());
          ItemStack map = MapItem.create(serverLevel, player.getBlockX(), player.getBlockZ(), (byte)0, true, false);
          if (itemStack.isEmpty()) {
             return InteractionResult.SUCCESS.heldItemTransformedTo(map);

@@ -942,11 +942,11 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.finalMovementsThisTick.add(new Movement(((Movement)this.finalMovementsThisTick.getLast()).to, this.position()));
       }
 
-      this.applyEffectsFromBlocks(this.finalMovementsThisTick);
+      this.applyEffectsFromBlocks(this.finalMovementsThisTick, true);
    }
 
    protected void applyEffectsFromBlocksForLastMovements() {
-      this.applyEffectsFromBlocks(this.finalMovementsThisTick);
+      this.applyEffectsFromBlocks(this.finalMovementsThisTick, true);
    }
 
    private void addMovementThisTick(final Movement movement) {
@@ -976,10 +976,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    }
 
    public void applyEffectsFromBlocks(final Vec3 from, final Vec3 to) {
-      this.applyEffectsFromBlocks(List.of(new Movement(from, to)));
+      this.applyEffectsFromBlocks(List.of(new Movement(from, to)), true);
    }
 
-   private void applyEffectsFromBlocks(final List<Movement> movements) {
+   protected void applyEffectsFromBlocks(final List<Movement> movements, final boolean accumulateFallDistace) {
       if (this.isAffectedByBlocks()) {
          BlockPos effectPos = this.getOnPosLegacy();
          BlockState effectState = this.level().getBlockState(effectPos);
@@ -992,7 +992,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          int previousRemainingFireTicks = this.getRemainingFireTicks();
          this.checkInsideBlocks(movements, this.insideEffectCollector);
          this.insideEffectCollector.applyAndClear(this);
-         if (this.isLocalInstanceAuthoritative()) {
+         if (this.isLocalInstanceAuthoritative() && accumulateFallDistace) {
             double y = 0.0;
 
             for(Movement movementPart : movements) {
@@ -1054,7 +1054,9 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
    protected void playEntityOnFireExtinguishedSound() {
       if (!this.level.isClientSide() && this.extinguishSoundCooldown <= 0) {
          this.extinguishSoundCooldown = 20;
-         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXTINGUISH_FIRE, this.getSoundSource(), 0.7F, 1.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+         if (!this.isSilent()) {
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXTINGUISH_FIRE, this.getSoundSource(), 0.7F, 1.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
+         }
       }
 
    }
@@ -1594,7 +1596,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       }
    }
 
-   protected void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
+   protected final void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
       if (movementY < 0.0) {
          this.fallDistance -= movementY;
       }
@@ -1951,6 +1953,10 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this.push(impulse.x, impulse.y, impulse.z);
       }
 
+   }
+
+   public void pushFromExplosion(final Vec3 impulse) {
+      this.push(impulse);
    }
 
    public void push(final double xa, final double ya, final double za) {
@@ -2426,7 +2432,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          Level var4 = this.level();
          if (var4 instanceof ServerLevel) {
             ServerLevel serverLevel = (ServerLevel)var4;
-            serverLevel.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource(), 1.0F, 1.0F);
+            serverLevel.playSound((Entity)null, this.blockPosition(), SoundEvents.SHEARS_SNIP, player != null ? player.getSoundSource() : this.getSoundSource());
          }
       }
 
@@ -4287,7 +4293,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
       DATA_TICKS_FROZEN = SynchedEntityData.<Integer>defineId(Entity.class, EntityDataSerializers.INT);
    }
 
-   private static record Movement(Vec3 from, Vec3 to, Optional<Vec3> axisDependentOriginalMovement) {
+   protected static record Movement(Vec3 from, Vec3 to, Optional<Vec3> axisDependentOriginalMovement) {
       public Movement(final Vec3 from, final Vec3 to, final Vec3 axisDependentOriginalMovement) {
          this(from, to, Optional.of(axisDependentOriginalMovement));
       }
@@ -4296,7 +4302,7 @@ public abstract class Entity implements Nameable, EntityAccess, ScoreHolder, Syn
          this(from, to, Optional.empty());
       }
 
-      private Movement {
+      protected Movement {
          super();
       }
    }

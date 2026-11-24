@@ -88,7 +88,10 @@ public abstract class AgeableMob extends PathfinderMob {
          mob.setPersistenceRequired();
       }
 
-      mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), isAgeLocked ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS, 1.0F, 1.0F);
+      if (!mob.isSilent()) {
+         mob.level().playSound((Entity)null, (BlockPos)mob.blockPosition(), isAgeLocked ? SoundEvents.GOLDEN_DANDELION_USE : SoundEvents.GOLDEN_DANDELION_UNUSE, SoundSource.PLAYERS);
+      }
+
    }
 
    protected void defineSynchedData(final SynchedEntityData.Builder entityData) {

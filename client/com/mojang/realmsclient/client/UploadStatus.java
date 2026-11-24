@@ -35,7 +35,7 @@ public class UploadStatus {
       this.onProgress(bytesWritten);
    }
 
-   public void onProgress(final long bytesTransferred) {
+   public synchronized void onProgress(final long bytesTransferred) {
       this.bytesTransferred = Math.max(this.bytesTransferred, bytesTransferred);
    }
 

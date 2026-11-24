@@ -143,7 +143,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       }
 
       BlockState emptyState = empty(sourceEntity, state, level, pos);
-      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS);
       return emptyState;
    }
 
@@ -176,7 +176,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    protected void tick(final BlockState state, final ServerLevel level, final BlockPos pos, final RandomSource random) {
       if ((Integer)state.getValue(LEVEL) == 7) {
          level.setBlockAndUpdate(pos, (BlockState)state.cycle(LEVEL));
-         level.playSound((Entity)null, pos, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, pos, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS);
       }
 
    }

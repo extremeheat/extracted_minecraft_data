@@ -428,6 +428,18 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
 
    }
 
+   public void disconnectNonBlocking(final DisconnectionDetails details) {
+      if (this.channel == null) {
+         this.delayedDisconnect = details;
+      }
+
+      if (this.isConnected()) {
+         this.channel.close();
+         this.disconnectionDetails = details;
+      }
+
+   }
+
    public boolean isMemoryConnection() {
       return this.channel instanceof LocalChannel || this.channel instanceof LocalServerChannel;
    }
@@ -607,7 +619,15 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    public void handleDisconnection() {
-      if (this.channel != null && !this.channel.isOpen()) {
+      this.handleDisconnection(true);
+   }
+
+   public void handleDisconnectionOnShutdown() {
+      this.handleDisconnection(false);
+   }
+
+   private void handleDisconnection(final boolean returnIfChannelIsOpen) {
+      if (this.channel != null && (!returnIfChannelIsOpen || !this.channel.isOpen())) {
          if (this.disconnectionHandled) {
             LOGGER.warn("handleDisconnection() called twice");
          } else {

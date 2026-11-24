@@ -41,15 +41,15 @@ public record WorldCoordinates(WorldCoordinate x, WorldCoordinate y, WorldCoordi
       return this.z.isRelative();
    }
 
-   public static WorldCoordinates parseXYZ(final StringReader reader, final WorldCoordinate.Parser parser) throws CommandSyntaxException {
+   public static WorldCoordinates parseXYZ(final StringReader reader, final WorldCoordinate.Parser parserXZ, final WorldCoordinate.Parser parserY) throws CommandSyntaxException {
       int start = reader.getCursor();
-      WorldCoordinate x = parser.parse(reader);
+      WorldCoordinate x = parserXZ.parse(reader);
       if (reader.canRead() && reader.peek() == ' ') {
          reader.skip();
-         WorldCoordinate y = parser.parse(reader);
+         WorldCoordinate y = parserY.parse(reader);
          if (reader.canRead() && reader.peek() == ' ') {
             reader.skip();
-            WorldCoordinate z = parser.parse(reader);
+            WorldCoordinate z = parserXZ.parse(reader);
             return new WorldCoordinates(x, y, z);
          } else {
             reader.setCursor(start);

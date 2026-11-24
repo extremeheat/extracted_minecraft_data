@@ -103,7 +103,7 @@ public class ShelfBlock extends BaseEntityBlock implements SelectableSlotContain
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()))).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 

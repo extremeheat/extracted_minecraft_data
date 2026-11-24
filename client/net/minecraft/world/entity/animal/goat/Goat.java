@@ -197,7 +197,7 @@ public class Goat extends Animal {
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack heldItem = player.getItemInHand(hand);
       if (heldItem.is(Items.BUCKET) && !this.isBaby()) {
-         player.playSound(this.getMilkingSound(), 1.0F, 1.0F);
+         player.playSound(this.getMilkingSound());
          ItemStack bucketOrMilkBucket = ItemUtils.createFilledResult(heldItem, player, Items.MILK_BUCKET.getDefaultInstance());
          player.setItemInHand(hand, bucketOrMilkBucket);
          return InteractionResult.SUCCESS;

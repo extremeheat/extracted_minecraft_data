@@ -115,7 +115,7 @@ public class FlowerPotBlock extends Block {
             level.setBlockAndUpdate(pos, this.opposite(state));
             EyeblossomBlock.Type newType = EyeblossomBlock.Type.fromBoolean(isOpen).transform();
             newType.spawnTransformParticle(level, pos, random);
-            level.playSound((Entity)null, pos, newType.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, pos, newType.longSwitchSound(), SoundSource.BLOCKS);
          }
       }
 

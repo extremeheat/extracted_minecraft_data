@@ -6,6 +6,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -40,6 +42,14 @@ public class UseOnContext {
 
    public BlockPos getClickedPos() {
       return this.hitResult.getBlockPos();
+   }
+
+   public BlockState getClickedBlockState() {
+      return this.getLevel().getBlockState(this.getClickedPos());
+   }
+
+   public FluidState getClickedFluidState() {
+      return this.getLevel().getFluidState(this.getClickedPos());
    }
 
    public Direction getClickedFace() {

@@ -24,15 +24,22 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.StringJoiner;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.LongConsumer;
 import java.util.function.Supplier;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import net.minecraft.util.Util;
 import org.apache.commons.io.function.IOSupplier;
 import org.apache.commons.io.input.CountingInputStream;
 
@@ -61,20 +68,61 @@ final class AzureBlobUploader {
    }
 
    private void uploadSingle(final UploadPlan plan, final Supplier<UploadSession> sessionSupplier, final UploadStatus progress, final UploadCancellation cancellation) {
-      this.sendWithRetry(() -> openSegment(plan.archive(), 0L, plan.fileSize(), plan.fileSize(), progress), plan.fileSize(), (body) -> blobRequest(((UploadSession)sessionSupplier.get()).uploadUrl(), body).header("x-ms-blob-type", "BlockBlob").build(), ContentV2UploadException.Error.SINGLE_UPLOAD_FAILED, cancellation);
+      this.sendWithRetry(() -> {
+         Path var10000 = plan.archive();
+         long var10002 = plan.fileSize();
+         long var10003 = plan.fileSize();
+         Objects.requireNonNull(progress);
+         return openSegment(var10000, 0L, var10002, var10003, progress::onProgress);
+      }, plan.fileSize(), (body) -> blobRequest(((UploadSession)sessionSupplier.get()).uploadUrl(), body).header("x-ms-blob-type", "BlockBlob").build(), ContentV2UploadException.Error.SINGLE_UPLOAD_FAILED, cancellation);
       progress.onWrite(plan.fileSize());
    }
 
    private void uploadBlocks(final UploadPlan plan, final Supplier<UploadSession> sessionSupplier, final UploadStatus progress, final UploadCancellation cancellation, final Runnable beforeBlockCommit) {
       List<Block> blocks = blocks(plan.fileSize(), plan.blockSize());
-      long acknowledgedBytes = 0L;
+      Queue<Block> pendingBlocks = new ConcurrentLinkedQueue(blocks);
+      AtomicLong transferredBytes = new AtomicLong();
+      UploadCancellation blockCancellation = new UploadCancellation();
+      CompletableFuture<?>[] workers = new CompletableFuture[(int)Math.min(plan.maxParallelPuts(), (long)blocks.size())];
 
-      for(Block block : blocks) {
-         this.sendWithRetry(() -> openSegment(plan.archive(), block.offset(), block.length(), plan.fileSize(), progress), block.length(), (body) -> blobRequest(appendQuery(((UploadSession)sessionSupplier.get()).uploadUrl(), Map.of("comp", "block", "blockid", block.id())), body).build(), ContentV2UploadException.Error.BLOCK_UPLOAD_FAILED, cancellation);
-         acknowledgedBytes += block.length();
-         progress.onWrite(acknowledgedBytes);
+      for(int i = 0; i < workers.length; ++i) {
+         workers[i] = CompletableFuture.runAsync(() -> {
+            try {
+               for(Block block = (Block)pendingBlocks.poll(); block != null; block = (Block)pendingBlocks.poll()) {
+                  Map<String, String> blockQuery = Map.of("comp", "block", "blockid", block.id());
+                  AtomicLong blockBytesRead = new AtomicLong();
+                  this.sendWithRetry(() -> openSegment(plan.archive(), block.offset(), block.length(), plan.fileSize(), (bytesRead) -> {
+                        long previousBytesRead = blockBytesRead.getAndAccumulate(bytesRead, Math::max);
+                        if (bytesRead > previousBytesRead) {
+                           progress.onProgress(transferredBytes.addAndGet(bytesRead - previousBytesRead));
+                        }
+
+                     }), block.length(), (body) -> blobRequest(appendQuery(((UploadSession)sessionSupplier.get()).uploadUrl(), blockQuery), body).build(), ContentV2UploadException.Error.BLOCK_UPLOAD_FAILED, blockCancellation);
+               }
+
+            } catch (RuntimeException e) {
+               if (!blockCancellation.isCancelled()) {
+                  blockCancellation.cancel();
+                  throw e;
+               }
+            }
+         }, Util.nonCriticalIoPool());
       }
 
+      try {
+         cancellation.join(CompletableFuture.allOf(workers));
+      } catch (CompletionException e) {
+         Throwable var13 = e.getCause();
+         if (var13 instanceof RuntimeException cause) {
+            throw cause;
+         }
+
+         throw e;
+      } finally {
+         blockCancellation.cancel();
+      }
+
+      progress.onWrite(plan.fileSize());
       cancellation.throwIfCancelled();
       beforeBlockCommit.run();
       cancellation.throwIfCancelled();
@@ -236,7 +284,7 @@ final class AzureBlobUploader {
       return URI.create(var10000 + (base.getRawQuery() == null ? "?" : "&") + String.valueOf(query));
    }
 
-   private static InputStream openSegment(final Path path, final long offset, final long length, final long expectedFileSize, final UploadStatus progress) throws IOException {
+   private static InputStream openSegment(final Path path, final long offset, final long length, final long expectedFileSize, final LongConsumer onRead) throws IOException {
       if (offset >= 0L && length > 0L && length <= expectedFileSize && offset <= expectedFileSize - length) {
          FileChannel channel = FileChannel.open(path, StandardOpenOption.READ);
 
@@ -259,7 +307,7 @@ final class AzureBlobUploader {
          return new CountingInputStream(ByteStreams.limit(Channels.newInputStream(channel), length)) {
             protected void afterRead(final int count) throws IOException {
                super.afterRead(count);
-               progress.onProgress(offset + this.getByteCount());
+               onRead.accept(this.getByteCount());
             }
          };
       } else {

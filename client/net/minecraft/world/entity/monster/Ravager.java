@@ -165,7 +165,7 @@ public class Ravager extends Raider {
             --this.stunnedTick;
             this.stunEffect();
             if (this.stunnedTick == 0) {
-               this.playSound(SoundEvents.RAVAGER_ROAR, 1.0F, 1.0F);
+               this.playSound(SoundEvents.RAVAGER_ROAR);
                this.roarTick = 20;
             }
          }
@@ -195,7 +195,7 @@ public class Ravager extends Raider {
       if (this.roarTick == 0) {
          if (this.random.nextDouble() < 0.5) {
             this.stunnedTick = 40;
-            this.playSound(SoundEvents.RAVAGER_STUNNED, 1.0F, 1.0F);
+            this.playSound(SoundEvents.RAVAGER_STUNNED);
             this.level().broadcastEntityEvent(this, (byte)39);
             defender.push(this);
          } else {
@@ -248,7 +248,7 @@ public class Ravager extends Raider {
    public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.attackTick = 10;
-         this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
+         this.playSound(SoundEvents.RAVAGER_ATTACK);
       } else if (id == 39) {
          this.stunnedTick = 40;
       } else if (id == 69) {
@@ -286,7 +286,7 @@ public class Ravager extends Raider {
    public boolean doHurtTarget(final ServerLevel level, final Entity target) {
       this.attackTick = 10;
       level.broadcastEntityEvent(this, (byte)4);
-      this.playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 1.0F);
+      this.playSound(SoundEvents.RAVAGER_ATTACK);
       return super.doHurtTarget(level, target);
    }
 

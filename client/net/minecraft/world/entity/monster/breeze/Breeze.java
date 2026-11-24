@@ -240,7 +240,7 @@ public class Breeze extends Monster {
 
    public boolean causeFallDamage(final double fallDistance, final float damageModifier, final DamageSource damageSource) {
       if (fallDistance > 3.0) {
-         this.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
+         this.playSound(SoundEvents.BREEZE_LAND);
       }
 
       return super.causeFallDamage(fallDistance, damageModifier, damageSource);
@@ -262,7 +262,7 @@ public class Breeze extends Monster {
    static {
       BRAIN_PROVIDER = Brain.<Breeze>provider(List.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.BREEZE_ATTACK_ENTITY_SENSOR), BreezeAi::getActivities);
       PROJECTILE_DEFLECTION = (projectile, entity, random, power) -> {
-         entity.level().playSound((Entity)null, (Entity)entity, SoundEvents.BREEZE_DEFLECT, entity.getSoundSource(), 1.0F, 1.0F);
+         entity.level().playSound((Entity)null, entity, SoundEvents.BREEZE_DEFLECT, entity.getSoundSource());
          ProjectileDeflection.REVERSE.deflect(projectile, entity, random, power);
       };
    }

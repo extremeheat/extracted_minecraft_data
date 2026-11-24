@@ -25,7 +25,11 @@ public class EntryGroup extends CompositeEntryBase {
             var10000 = ALWAYS_TRUE;
             break;
          case 1:
-            var10000 = (ComposableEntryContainer)entries.get(0);
+            ComposableEntryContainer entry = (ComposableEntryContainer)entries.get(0);
+            var10000 = (context, output) -> {
+               entry.expand(context, output);
+               return true;
+            };
             break;
          case 2:
             ComposableEntryContainer first = (ComposableEntryContainer)entries.get(0);

@@ -35,8 +35,8 @@ public class CombatTracker {
 
    public void recordDamage(final DamageSource source, final float damage) {
       this.recheckStatus();
-      FallLocation fallLocation = FallLocation.getCurrentFallLocation(this.mob);
-      CombatEntry entry = new CombatEntry(source, damage, fallLocation, (float)this.mob.fallDistance);
+      FellFromLocation fellFromLocation = FellFromLocation.getCurrentFellFromLocation(this.mob);
+      CombatEntry entry = new CombatEntry(source, damage, fellFromLocation, (float)this.mob.fallDistance);
       this.entries.add(entry);
       this.lastDamageTime = this.mob.tickCount;
       this.takingDamage = true;
@@ -77,8 +77,8 @@ public class CombatTracker {
             return (Component)(killerName != null ? this.getMessageForAssistedFall(killingEntity, killerName, "death.fell.finish.item", "death.fell.finish") : Component.translatable("death.fell.killer", this.mob.getDisplayName()));
          }
       } else {
-         FallLocation fallLocation = (FallLocation)Objects.requireNonNullElse(knockOffEntry.fallLocation(), FallLocation.GENERIC);
-         return Component.translatable(fallLocation.languageKey(), this.mob.getDisplayName());
+         FellFromLocation fellFromLocation = (FellFromLocation)Objects.requireNonNullElse(knockOffEntry.fellFromLocation(), FellFromLocation.GENERIC);
+         return Component.translatable(fellFromLocation.languageKey(), this.mob.getDisplayName());
       }
    }
 
@@ -128,7 +128,7 @@ public class CombatTracker {
             bestFall = fallDistance;
          }
 
-         if (entry.fallLocation() != null && (alternative == null || entry.damage() > altDamage)) {
+         if (entry.fellFromLocation() != null && (alternative == null || entry.damage() > altDamage)) {
             alternative = entry;
             altDamage = entry.damage();
          }

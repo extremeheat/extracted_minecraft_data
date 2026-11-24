@@ -66,10 +66,14 @@ public interface LevelAccessor extends CommonLevelAccessor, ScheduledTickAccess 
       this.playSound(except, pos, soundEvent, source, 1.0F, 1.0F);
    }
 
-   void playSound(final @Nullable Entity except, final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch);
+   void playSound(@Nullable Entity except, BlockPos pos, SoundEvent sound, SoundSource source, float volume, float pitch);
 
    default void playSound(final @Nullable Entity except, final BlockPos pos, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch) {
       this.playSound(except, pos, sound.value(), source, volume, pitch);
+   }
+
+   default void playSound(final @Nullable Entity except, final BlockPos pos, final Holder<SoundEvent> sound, final SoundSource source) {
+      this.playSound(except, pos, sound, source, 1.0F, 1.0F);
    }
 
    void addParticle(final ParticleOptions particle, final double x, final double y, final double z, final double xd, final double yd, final double zd);

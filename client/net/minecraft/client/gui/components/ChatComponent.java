@@ -54,8 +54,6 @@ public class ChatComponent {
    public static final Identifier QUEUE_EXPAND_ID;
    private static final Style QUEUE_EXPAND_TEXT_STYLE;
    public static final Identifier GO_TO_RESTRICTIONS_SCREEN;
-   private static final Component RESTRICTED_CHAT_MESSAGE;
-   private static final Component RESTRICTED_CHAT_MESSAGE_WITH_HOVER;
    private final Minecraft minecraft;
    private final CommandHistory commandHistory;
    private final ArrayListDeque<String> recentChat = new ArrayListDeque<String>(100);
@@ -116,9 +114,9 @@ public class ChatComponent {
 
    private void extractRenderState(final ChatGraphicsAccess graphics, final int screenHeight, final int ticks, final DisplayMode displayMode) {
       boolean isForeground = displayMode.foreground;
-      boolean isRestricted = displayMode.showRestrictedPrompt;
+      RestrictedPrompt restrictedPrompt = displayMode.restrictedPrompt;
       int total = this.trimmedMessages.size();
-      if (total > 0 || isRestricted) {
+      if (total != 0 || restrictedPrompt != null) {
          ProfilerFiller profiler = Profiler.get();
          profiler.push("chat");
          float scale = (float)this.getScale();
@@ -148,7 +146,7 @@ public class ChatComponent {
             graphics.fill(-2, chatBottom, maxWidth + 4, chatBottom + messageHeight, ARGB.black(backgroundOpacity));
          }
 
-         if (isRestricted) {
+         if (restrictedPrompt != null) {
             graphics.fill(-2, lineAboveMessagesY, maxWidth + 4 + 4, lineAboveMessagesY + entryHeight, ARGB.black(backgroundOpacity));
          }
 
@@ -191,9 +189,9 @@ public class ChatComponent {
             graphics.handleMessage(queueLineBottom - 8, 0.5F * textOpacity, queueMessage.getVisualOrderText());
          }
 
-         if (isRestricted) {
-            int restrictedMessageWidth = this.minecraft.font.width((FormattedText)RESTRICTED_CHAT_MESSAGE);
-            FormattedCharSequence restrictedMessage = restrictedMessageWidth > maxWidth ? ComponentRenderUtils.clipText(RESTRICTED_CHAT_MESSAGE_WITH_HOVER, this.minecraft.font, maxWidth) : RESTRICTED_CHAT_MESSAGE.getVisualOrderText();
+         if (restrictedPrompt != null) {
+            int restrictedMessageWidth = this.minecraft.font.width((FormattedText)restrictedPrompt.message);
+            FormattedCharSequence restrictedMessage = restrictedMessageWidth > maxWidth ? ComponentRenderUtils.clipText(restrictedPrompt.messageWithHover, this.minecraft.font, maxWidth) : restrictedPrompt.message.getVisualOrderText();
             graphics.handleMessage(lineAboveMessagesY + entryHeight - entryBottomToMessageY - 1, textOpacity, restrictedMessage);
          }
 
@@ -482,8 +480,6 @@ public class ChatComponent {
       QUEUE_EXPAND_ID = Identifier.withDefaultNamespace("internal/expand_chat_queue");
       QUEUE_EXPAND_TEXT_STYLE = Style.EMPTY.withClickEvent(new ClickEvent.Custom(QUEUE_EXPAND_ID, Optional.empty())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.queue.tooltip")));
       GO_TO_RESTRICTIONS_SCREEN = Identifier.withDefaultNamespace("internal/go_to_restrictions_screen");
-      RESTRICTED_CHAT_MESSAGE = Component.translatable("chat_screen.restricted").withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withUnderlined(true).withClickEvent(new ClickEvent.Custom(GO_TO_RESTRICTIONS_SCREEN, Optional.empty())));
-      RESTRICTED_CHAT_MESSAGE_WITH_HOVER = ComponentUtils.mergeStyles(RESTRICTED_CHAT_MESSAGE, Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat_screen.restricted"))));
    }
 
    private static record DelayedMessageDeletion(MessageSignature signature, int deletableAfter) {
@@ -712,21 +708,33 @@ public class ChatComponent {
    }
 
    public static enum DisplayMode {
-      BACKGROUND(false, false),
-      FOREGROUND(true, false),
-      FOREGROUND_RESTRICTED(true, true);
+      BACKGROUND(false, (RestrictedPrompt)null),
+      FOREGROUND(true, (RestrictedPrompt)null),
+      FOREGROUND_RESTRICTED(true, new RestrictedPrompt(Component.translatable("chat_screen.restricted"), Component.translatable("chat_screen.restricted.narration"))),
+      FOREGROUND_RESTRICTED_FRIENDS_ONLY(true, new RestrictedPrompt(Component.translatable("chat_screen.restricted_friends_only"), Component.translatable("chat_screen.restricted_friends_only.narration")));
 
       public final boolean foreground;
-      public final boolean showRestrictedPrompt;
+      public final @Nullable RestrictedPrompt restrictedPrompt;
 
-      private DisplayMode(final boolean foreground, final boolean showRestrictedPrompt) {
+      private DisplayMode(final boolean foreground, final RestrictedPrompt restrictedPrompt) {
          this.foreground = foreground;
-         this.showRestrictedPrompt = showRestrictedPrompt;
+         this.restrictedPrompt = restrictedPrompt;
       }
 
       // $FF: synthetic method
       private static DisplayMode[] $values() {
-         return new DisplayMode[]{BACKGROUND, FOREGROUND, FOREGROUND_RESTRICTED};
+         return new DisplayMode[]{BACKGROUND, FOREGROUND, FOREGROUND_RESTRICTED, FOREGROUND_RESTRICTED_FRIENDS_ONLY};
+      }
+   }
+
+   public static record RestrictedPrompt(Component message, Component messageWithHover, Component narration) {
+      public RestrictedPrompt(final Component message, final Component narration) {
+         Component styledMessage = message.copy().withStyle(Style.EMPTY.withColor(ChatFormatting.RED).withUnderlined(true).withClickEvent(new ClickEvent.Custom(ChatComponent.GO_TO_RESTRICTIONS_SCREEN, Optional.empty())));
+         this(styledMessage, ComponentUtils.mergeStyles(styledMessage.copy(), Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(message))), narration);
+      }
+
+      public RestrictedPrompt {
+         super();
       }
    }
 

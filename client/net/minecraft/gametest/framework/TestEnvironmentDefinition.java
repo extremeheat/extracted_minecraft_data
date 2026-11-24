@@ -212,7 +212,7 @@ public interface TestEnvironmentDefinition<SavedDataType> {
          ServerFunctionManager functions = server.getFunctions();
          Optional<CommandFunction<CommandSourceStack>> function = functions.get(functionId);
          if (function.isPresent()) {
-            CommandSourceStack source = server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput().withLevel(level);
+            CommandSourceStack source = server.createCommandSourceStack(level).withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
             ServerFunctionManager.execute((CommandFunction)function.get(), source);
          } else {
             LOGGER.error("Test Batch failed for non-existent function {}", functionId);

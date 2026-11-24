@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.PresenceSharing;
@@ -24,26 +23,24 @@ import org.slf4j.Logger;
 
 public class PresenceHandler {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Duration PRESENCE_UPDATE_INTERVAL = Duration.ofMinutes(1L);
-   private static final long MAX_PRESENCE_INTERVAL_MULTIPLIER = 5L;
+   private static final Duration BACKUP_POLL_INTERVAL = Duration.ofMinutes(5L);
+   private static final Duration MIN_PRESENCE_POST_INTERVAL = Duration.ofSeconds(5L);
    private final Minecraft minecraft;
    private final FriendsService friendsService;
    private PresenceResponse latestPresence = new PresenceResponse(new ArrayList());
    private Instant lastPresencePost;
-   private boolean updatePresence;
+   private @Nullable PresenceStatus lastPostedStatus;
 
    public PresenceHandler(final Minecraft minecraft, final FriendsService friendsService) {
       super();
       this.lastPresencePost = Instant.EPOCH;
       this.minecraft = minecraft;
       this.friendsService = friendsService;
-      this.updatePresence = true;
    }
 
-   private void updatePresence() {
-      this.updatePresence = false;
+   private void updatePresence(final PresenceStatus publicPresenceStatus) {
       this.lastPresencePost = Instant.now();
-      PresenceStatus publicPresenceStatus = this.getPublicPresenceStatus();
+      this.lastPostedStatus = publicPresenceStatus;
       CompletableFuture.runAsync(() -> {
          PresenceResponse newPresence = this.postPresence(publicPresenceStatus);
          if (newPresence != null) {
@@ -99,27 +96,20 @@ public class PresenceHandler {
       return !socialManager.isFriendListEnabled() || socialManager.getFriends().isEmpty();
    }
 
-   private boolean shouldRefreshPresence() {
-      if (this.isPresenceSharingDisabled()) {
-         return false;
-      } else {
-         Duration sinceLastPresence = Duration.between(this.lastPresencePost, Instant.now());
-         Optional<Duration> presencePollInterval = this.friendsService.getPresencePollInterval();
-         Duration interval = !presencePollInterval.isEmpty() && ((Duration)presencePollInterval.get()).isPositive() ? (Duration)presencePollInterval.get() : PRESENCE_UPDATE_INTERVAL;
-         Duration maxInterval = interval.multipliedBy(5L);
-         return this.updatePresence && sinceLastPresence.compareTo(interval) >= 0 || sinceLastPresence.compareTo(maxInterval) >= 0;
-      }
-   }
-
    public void tick() {
-      if (this.shouldRefreshPresence()) {
-         this.updatePresence();
+      if (!this.isPresenceSharingDisabled()) {
+         Duration sinceLastPresencePost = Duration.between(this.lastPresencePost, Instant.now());
+         if (sinceLastPresencePost.compareTo(MIN_PRESENCE_POST_INTERVAL) >= 0) {
+            PresenceStatus publicPresenceStatus = this.getPublicPresenceStatus();
+            boolean ownPresenceChanged = publicPresenceStatus != this.lastPostedStatus;
+            Duration pollInterval = (Duration)this.friendsService.getPresencePollInterval().orElse(BACKUP_POLL_INTERVAL);
+            boolean backupPollDue = sinceLastPresencePost.compareTo(pollInterval) >= 0;
+            if (ownPresenceChanged || backupPollDue) {
+               this.updatePresence(publicPresenceStatus);
+            }
+
+         }
       }
-
-   }
-
-   public void tryUpdatePresence() {
-      this.updatePresence = true;
    }
 
    public void sendOfflinePresence() {

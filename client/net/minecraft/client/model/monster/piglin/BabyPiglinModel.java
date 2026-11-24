@@ -8,6 +8,8 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 
 public class BabyPiglinModel extends PiglinModel {
+   private static final float CUSTOM_HEAD_LAYER_SCALE = 0.9F;
+
    public BabyPiglinModel(final ModelPart root) {
       super(root);
    }
@@ -31,5 +33,9 @@ public class BabyPiglinModel extends PiglinModel {
 
    protected float getDefaultEarAngleInDegrees() {
       return 5.0F;
+   }
+
+   public float getCustomHeadLayerScale() {
+      return 0.9F;
    }
 }

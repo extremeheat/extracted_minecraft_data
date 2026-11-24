@@ -240,7 +240,7 @@ public class ServerPlayer extends Player {
    public final ServerPlayerGameMode gameMode;
    private final PlayerAdvancements advancements;
    private final ServerStatsCounter stats;
-   private float lastRecordedHealthAndAbsorption = 1.4E-45F;
+   private float lastRecordedHealthAndAbsorption = 0.0F / 0.0F;
    private int lastRecordedFoodLevel = -2147483648;
    private int lastRecordedAirLevel = -2147483648;
    private int lastRecordedArmor = -2147483648;
@@ -1100,7 +1100,7 @@ public class ServerPlayer extends Player {
 
    public void sendPostEffects() {
       this.postEffectsDirty = false;
-      this.connection.send(new ClientboundPostEffectsPacket(this.postEffects));
+      this.connection.send(new ClientboundPostEffectsPacket(List.copyOf(this.postEffects)));
    }
 
    public boolean addPostEffect(final Identifier postEffect) {
@@ -1914,6 +1914,11 @@ public class ServerPlayer extends Player {
 
    public PermissionSet permissions() {
       return this.server.getProfilePermissions(this.nameAndId());
+   }
+
+   public void cancelUsingItem() {
+      super.cancelUsingItem();
+      this.resetLastActionTime();
    }
 
    public void resetLastActionTime() {

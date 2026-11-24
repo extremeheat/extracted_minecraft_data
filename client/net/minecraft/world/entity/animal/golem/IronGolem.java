@@ -186,7 +186,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          EnchantmentHelper.doPostAttackEffects(level, target, damageSource);
       }
 
-      this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);
+      this.playSound(SoundEvents.IRON_GOLEM_ATTACK);
       return hurt;
    }
 
@@ -194,7 +194,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       Crackiness.Level previousCrackiness = this.getCrackiness();
       boolean wasHurt = super.hurtServer(level, source, damage);
       if (wasHurt && this.getCrackiness() != previousCrackiness) {
-         this.playSound(SoundEvents.IRON_GOLEM_DAMAGE, 1.0F, 1.0F);
+         this.playSound(SoundEvents.IRON_GOLEM_DAMAGE);
       }
 
       return wasHurt;
@@ -207,7 +207,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    public void handleEntityEvent(final @EntityEvent.Value byte id) {
       if (id == 4) {
          this.attackAnimationTick = 10;
-         this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.0F);
+         this.playSound(SoundEvents.IRON_GOLEM_ATTACK);
       } else if (id == 11) {
          this.offerFlowerTick = 400;
       } else if (id == 34) {
@@ -260,7 +260,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound(SoundEvents.IRON_GOLEM_STEP, 1.0F, 1.0F);
+      this.playSound(SoundEvents.IRON_GOLEM_STEP);
    }
 
    public int getOfferFlowerTick() {

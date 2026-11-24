@@ -126,7 +126,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       List<SlotWidget> widgets = new ArrayList();
 
       for(Slot slot : this.menu.slots) {
-         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos));
+         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, SlotWidget.defaultTooltip(this.minecraft)));
       }
 
       this.setSlotWidgets(widgets);

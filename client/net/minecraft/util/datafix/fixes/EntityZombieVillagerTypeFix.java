@@ -4,10 +4,9 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
-import java.util.Random;
 
 public class EntityZombieVillagerTypeFix extends NamedEntityFix {
-   private static final int PROFESSION_MAX = 6;
+   private static final int PROFESSION_MAX = 4;
 
    public EntityZombieVillagerTypeFix(final Schema outputSchema, final boolean changesType) {
       super(outputSchema, changesType, "EntityZombieVillagerTypeFix", References.ENTITY, "Zombie");
@@ -16,12 +15,8 @@ public class EntityZombieVillagerTypeFix extends NamedEntityFix {
    public Dynamic<?> fixTag(Dynamic<?> input) {
       if (input.get("IsVillager").asBoolean(false)) {
          if (input.get("ZombieType").result().isEmpty()) {
-            int type = this.getVillagerProfession(input.get("VillagerProfession").asInt(-1));
-            if (type == -1) {
-               type = this.getVillagerProfession((new Random()).nextInt(6));
-            }
-
-            input = input.set("ZombieType", input.createInt(type));
+            int profession = this.getVillagerProfession(input.get("VillagerProfession").asInt(0));
+            input = input.set("ZombieType", input.createInt(profession + 1));
          }
 
          input = input.remove("IsVillager");
@@ -31,7 +26,7 @@ public class EntityZombieVillagerTypeFix extends NamedEntityFix {
    }
 
    private int getVillagerProfession(final int profession) {
-      return profession >= 0 && profession < 6 ? profession : -1;
+      return profession >= 0 && profession <= 4 ? profession : -1;
    }
 
    protected Typed<?> fix(final Typed<?> entity) {

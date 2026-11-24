@@ -667,9 +667,9 @@ public abstract class PlayerList {
       return this.server;
    }
 
-   public void removeAll() {
-      for(int i = 0; i < this.players.size(); ++i) {
-         ((ServerPlayer)this.players.get(i)).connection.disconnect(Component.translatable("multiplayer.disconnect.server_shutdown"));
+   public void removeAllForShutdown() {
+      for(ServerPlayer player : List.copyOf(this.players)) {
+         player.connection.disconnectForShutdown();
       }
 
    }

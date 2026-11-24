@@ -334,14 +334,18 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
             InteractionResult.Success success = (InteractionResult.Success)result;
             if (success.wasItemInteraction()) {
                player.awardStat(Stats.ITEM_USED.get(usedItem));
-               ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
-               ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
-               return success.heldItemTransformedTo(resultItemStack);
+               return this.transformAfterSuccessfulInteraction(success, player, stackBeforeUse);
             }
          }
 
          return result;
       }
+   }
+
+   public InteractionResult.Success transformAfterSuccessfulInteraction(final InteractionResult.Success success, final Player player, final ItemStack stackBeforeUse) {
+      ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
+      ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
+      return success.heldItemTransformedTo(resultItemStack);
    }
 
    public float getDestroySpeed(final BlockState state) {
@@ -353,9 +357,7 @@ public final class ItemStack implements DataComponentHolder, ItemInstance {
       boolean isInstantlyUsed = this.getUseDuration(player) <= 0;
       InteractionResult result = this.getItem().use(level, player, hand);
       if (isInstantlyUsed && result instanceof InteractionResult.Success success) {
-         ItemStack transformTo = success.heldItemTransformedTo() == null ? this : success.heldItemTransformedTo();
-         ItemStack resultItemStack = transformTo.applyAfterUseComponentSideEffects(player, stackBeforeUse);
-         return success.heldItemTransformedTo(resultItemStack);
+         return this.transformAfterSuccessfulInteraction(success, player, stackBeforeUse);
       } else {
          return result;
       }

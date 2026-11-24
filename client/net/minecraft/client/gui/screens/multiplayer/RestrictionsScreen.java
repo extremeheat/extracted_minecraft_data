@@ -12,6 +12,7 @@ import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.screens.PrivacyConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatAbilities;
 import net.minecraft.network.chat.CommonComponents;
@@ -20,6 +21,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.Permissions;
+import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
 
 public class RestrictionsScreen extends Screen {
@@ -59,7 +61,8 @@ public class RestrictionsScreen extends Screen {
       this.bodyScroll = new ScrollableLayout(this.minecraft, body, this.layout.getContentHeight());
       this.layout.addToContents(this.bodyScroll);
       LinearLayout footer = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).width(200).build());
+      footer.addChild(Button.builder(CommonComponents.XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build());
+      footer.addChild(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).build());
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.repositionElements();
    }

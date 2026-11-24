@@ -47,7 +47,7 @@ public class CompassItem extends Item {
       if (!level.getBlockState(blockPos).is(Blocks.LODESTONE)) {
          return super.useOn(context);
       } else {
-         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)blockPos, SoundEvents.LODESTONE_COMPASS_LOCK, SoundSource.PLAYERS);
          Player player = context.getPlayer();
          ItemStack itemStack = context.getItemInHand();
          boolean replaceExistingStack = !player.hasInfiniteMaterials() && itemStack.getCount() == 1;

@@ -2,6 +2,7 @@ package net.minecraft.core.dispenser;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -27,7 +28,11 @@ public record TransformBlockDispenseBehavior(Holder<BlockTransformer> transforme
       BlockHitResult hitResult = new BlockHitResult(positionAtEdgeOfBlock, direction, pos, false);
       UseOnContext context = UseOnContext.nonPlayer(source.level(), dispensed, hitResult);
       InteractionResult result = ((BlockTransformer)this.transformer.value()).transformBlock(context);
-      return (DispenseBehavior.DispenseResult)(result.consumesAction() ? DispenseBehavior.DispenseResult.success(dispensed) : DispenseBehavior.DispenseResult.failure());
+      if (result instanceof InteractionResult.Success success) {
+         return DispenseBehavior.DispenseResult.success((ItemStack)Objects.requireNonNullElse(success.heldItemTransformedTo(), dispensed));
+      } else {
+         return DispenseBehavior.DispenseResult.failure();
+      }
    }
 
    public MapCodec<TransformBlockDispenseBehavior> codec() {

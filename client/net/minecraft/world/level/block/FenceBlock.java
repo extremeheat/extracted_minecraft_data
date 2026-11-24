@@ -64,7 +64,7 @@ public class FenceBlock extends CrossCollisionBlock {
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       BlockGetter level = context.getLevel();
       BlockPos pos = context.getClickedPos();
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       BlockPos north = pos.north();
       BlockPos east = pos.east();
       BlockPos south = pos.south();

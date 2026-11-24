@@ -51,7 +51,7 @@ public class MouseHandler {
    private double accumulatedDX;
    private double accumulatedDY;
    private final ScrollWheelHandler scrollWheelHandler;
-   private double lastHandleMovementTime = 4.9E-324;
+   private double lastHandleMovementTime = 0.0;
    private double inputTypeAnchorX;
    private double inputTypeAnchorY;
    private boolean cursorHidden;

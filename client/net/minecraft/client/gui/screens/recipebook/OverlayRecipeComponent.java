@@ -15,6 +15,7 @@ import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -145,8 +146,8 @@ public class OverlayRecipeComponent extends AbstractContainerWidget {
 
    }
 
-   public NarratableEntry.NarrationPriority narrationPriority() {
-      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredButton() != null);
+   public NarratableEntry.NarrationPriority narrationPriority(final NarrationTrigger narrationTrigger) {
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredButton() != null, narrationTrigger);
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {

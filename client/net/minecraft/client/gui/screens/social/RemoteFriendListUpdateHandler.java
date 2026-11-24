@@ -4,9 +4,12 @@ import com.mojang.authlib.services.FriendsService;
 import com.mojang.authlib.services.FriendsService.ResultCode;
 import com.mojang.authlib.services.response.FriendData;
 import com.mojang.authlib.services.response.FriendDto;
+import com.mojang.authlib.services.response.FriendUpdateType;
 import com.mojang.logging.LogUtils;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -230,6 +233,46 @@ public final class RemoteFriendListUpdateHandler {
 
    private void emitToastWithSkin(final UUID playerId, final String playerName, final FriendToast.SkinToastEmitter emitter) {
       this.minecraft.execute(() -> emitter.emit(this.minecraft, playerName, playerId));
+   }
+
+   public void applyFriendUpdate(final FriendUpdateType updateType, final FriendDto friend) {
+      if (this.enabled.get() && !this.scheduler.isShutdown()) {
+         this.scheduler.execute(() -> this.applyFriendUpdateInternal(updateType, friend));
+      }
+   }
+
+   void applyFriendUpdateInternal(final FriendUpdateType updateType, final FriendDto friend) {
+      if (this.state == RemoteFriendListUpdateHandler.State.SUCCESS) {
+         FriendData data = this.latestFriendData;
+         UUID id = friend.profileId();
+         FriendData var10000;
+         switch (updateType) {
+            case ADD -> var10000 = data.friends().stream().anyMatch((f) -> f.profileId().equals(id)) ? data : new FriendData(data.friends(), this.friendsWith(data.incomingRequests(), friend), data.outgoingRequests());
+            case ACCEPT -> var10000 = new FriendData(this.friendsWith(data.friends(), friend), this.friendsWithout(data.incomingRequests(), id), this.friendsWithout(data.outgoingRequests(), id));
+            case REJECT -> var10000 = new FriendData(data.friends(), data.incomingRequests(), this.friendsWithout(data.outgoingRequests(), id));
+            case REMOVE -> var10000 = new FriendData(this.friendsWithout(data.friends(), id), this.friendsWithout(data.incomingRequests(), id), this.friendsWithout(data.outgoingRequests(), id));
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         FriendData updated = var10000;
+         if (!updated.equals(data)) {
+            this.latestFriendData = updated;
+            if (this.detectChangesAndShowToast(updated, RemoteFriendListUpdateHandler.State.SUCCESS)) {
+               this.notifyListeners();
+            }
+
+         }
+      }
+   }
+
+   private List<FriendDto> friendsWithout(final List<FriendDto> friends, final UUID exclude) {
+      return friends.stream().filter((friend) -> !friend.profileId().equals(exclude)).toList();
+   }
+
+   private List<FriendDto> friendsWith(final List<FriendDto> friends, final FriendDto addition) {
+      List<FriendDto> updated = new ArrayList(this.friendsWithout(friends, addition.profileId()));
+      updated.add(addition);
+      return updated;
    }
 
    public CompletableFuture<Void> forceUpdate() {

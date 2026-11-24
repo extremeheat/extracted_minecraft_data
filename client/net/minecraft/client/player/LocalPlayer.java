@@ -45,6 +45,7 @@ import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
@@ -568,6 +569,11 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.startedUsingItem = false;
    }
 
+   public void cancelUsingItem() {
+      super.cancelUsingItem();
+      this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.CANCEL_USE_ITEM, BlockPos.ZERO, Direction.DOWN));
+   }
+
    public InteractionHand getUsedItemHand() {
       return (InteractionHand)Objects.requireNonNullElse(this.usingItemHand, InteractionHand.MAIN_HAND);
    }
@@ -1050,7 +1056,7 @@ public class LocalPlayer extends AbstractClientPlayer {
                   Vec3 rightSegEnd = segEnd.add(rightOffset);
                   Iterable<VoxelShape> collisions = this.level().getCollisions(this, testBox);
                   Iterator<AABB> shape = StreamSupport.stream(collisions.spliterator(), false).flatMap((s) -> s.toAabbs().stream()).iterator();
-                  float obstacleHeight = 1.4E-45F;
+                  float obstacleHeight = -1.0F / 0.0F;
 
                   while(shape.hasNext()) {
                      AABB box = (AABB)shape.next();
@@ -1082,7 +1088,7 @@ public class LocalPlayer extends AbstractClientPlayer {
                      }
                   }
 
-                  if (obstacleHeight != 1.4E-45F) {
+                  if (obstacleHeight != -1.0F / 0.0F) {
                      float ydelta = (float)((double)obstacleHeight - this.getY());
                      if (!(ydelta <= 0.5F) && !(ydelta > jumpHeight)) {
                         this.autoJumpTime = 1;

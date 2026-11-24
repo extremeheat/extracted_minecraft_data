@@ -322,7 +322,7 @@ public class MapItem extends Item {
    }
 
    public InteractionResult useOn(final UseOnContext context) {
-      BlockState clicked = context.getLevel().getBlockState(context.getClickedPos());
+      BlockState clicked = context.getClickedBlockState();
       if (clicked.is(BlockTags.BANNERS)) {
          if (!context.getLevel().isClientSide()) {
             MapItemSavedData data = getSavedData(context.getItemInHand(), context.getLevel());

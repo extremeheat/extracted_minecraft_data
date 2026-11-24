@@ -54,7 +54,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void dropItem(final ServerLevel level, final @Nullable Entity causedBy) {
-      this.playSound(SoundEvents.LEAD_UNTIED, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_UNTIED);
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -142,7 +142,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
    }
 
    public void playPlacementSound() {
-      this.playSound(SoundEvents.LEAD_TIED, 1.0F, 1.0F);
+      this.playSound(SoundEvents.LEAD_TIED);
    }
 
    public Packet<ClientGamePacketListener> getAddEntityPacket(final ServerEntity serverEntity) {

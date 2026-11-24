@@ -117,7 +117,7 @@ public class LecternBlock extends BaseEntityBlock {
       if (entity instanceof LecternBlockEntity lectern) {
          lectern.setBook(book.consumeAndReturn(1, sourceEntity));
          resetBookState(sourceEntity, level, pos, state, true);
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOOK_PUT, SoundSource.BLOCKS);
       }
 
    }

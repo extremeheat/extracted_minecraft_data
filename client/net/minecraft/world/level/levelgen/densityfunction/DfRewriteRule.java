@@ -1,24 +1,14 @@
 package net.minecraft.world.level.levelgen.densityfunction;
 
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.world.level.levelgen.densityfunction.generator.ConstantFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.SliceFunction;
 
 @FunctionalInterface
 public interface DfRewriteRule {
    DfRewriteRule INLINE_REFERENCE = (function) -> {
-      if (function instanceof DensityFunctions.HolderHolder $b$0) {
-         DensityFunctions.HolderHolder var10000 = $b$0;
-
-         try {
-            var5 = var10000.function();
-         } catch (Throwable var4) {
-            throw new MatchException(var4.toString(), var4);
-         }
-
-         Holder patt1$temp = var5;
-         return (DensityFunction)patt1$temp.value();
+      if (function instanceof DensityFunctions.HolderHolder holder) {
+         return (DensityFunction)holder.function().value();
       } else {
          return function;
       }

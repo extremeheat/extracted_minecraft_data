@@ -23,7 +23,6 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.PresenceAwareScreen;
-import net.minecraft.client.gui.screens.social.PresenceHandler;
 import net.minecraft.client.gui.screens.social.RemoteFriendListUpdateHandler;
 import net.minecraft.client.gui.screens.social.SocialInteractionsPlayerList;
 import net.minecraft.client.input.KeyEvent;
@@ -134,10 +133,8 @@ public class FriendsOverlayScreen extends Screen implements PresenceAwareScreen 
 
    public void tick() {
       super.tick();
-      PresenceHandler presenceHandler = this.minecraft.getPlayerSocialManager().getPresenceHandler();
-      presenceHandler.tryUpdatePresence();
       if (this.friendsTab != null) {
-         this.friendsTab.applyOwnPresence(presenceHandler.getPublicPresenceStatus());
+         this.friendsTab.applyOwnPresence(this.minecraft.getPlayerSocialManager().getPresenceHandler().getPublicPresenceStatus());
       }
 
    }

@@ -77,7 +77,7 @@ public class DolphinJumpGoal extends JumpGoal {
       }
 
       if (this.breached && !alreadyBreached) {
-         this.dolphin.playSound(SoundEvents.DOLPHIN_JUMP, 1.0F, 1.0F);
+         this.dolphin.playSound(SoundEvents.DOLPHIN_JUMP);
       }
 
       Vec3 movement = this.dolphin.getDeltaMovement();

@@ -341,7 +341,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.playSound(except, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, sound, source, volume, pitch);
    }
 
-   public abstract void playSeededSound(final @Nullable Entity except, final double x, final double y, final double z, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch, final long seed);
+   public abstract void playSeededSound(@Nullable Entity except, double x, double y, double z, Holder<SoundEvent> sound, SoundSource source, float volume, float pitch, long seed);
 
    public void playSeededSound(final @Nullable Entity except, final double x, final double y, final double z, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final long seed) {
       this.playSeededSound(except, x, y, z, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, seed);
@@ -365,8 +365,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.playSeededSound(except, sourceEntity, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound), source, volume, pitch, this.soundSeedGenerator.nextLong());
    }
 
+   public void playSound(final @Nullable Entity except, final Entity sourceEntity, final SoundEvent sound, final SoundSource source) {
+      this.playSound(except, sourceEntity, sound, source, 1.0F, 1.0F);
+   }
+
    public void playSound(final @Nullable Entity except, final Entity sourceEntity, final Holder<SoundEvent> sound, final SoundSource source, final float volume, final float pitch) {
       this.playSeededSound(except, sourceEntity, sound, source, volume, pitch, this.soundSeedGenerator.nextLong());
+   }
+
+   public void playSound(final @Nullable Entity except, final Entity sourceEntity, final Holder<SoundEvent> sound, final SoundSource source) {
+      this.playSound(except, sourceEntity, sound, source, 1.0F, 1.0F);
    }
 
    public void playLocalSound(final BlockPos pos, final SoundEvent sound, final SoundSource source, final float volume, final float pitch, final boolean distanceDelay) {

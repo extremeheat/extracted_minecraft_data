@@ -17,7 +17,7 @@ public record Quotient(Holder<ContextIntProvider> left, Holder<ContextIntProvide
    }
 
    public int getIntUnsafe(final LootContext context) throws ArithmeticException {
-      return ((ContextIntProvider)this.left().value()).getIntUnsafe(context) / ((ContextIntProvider)this.right().value()).getIntUnsafe(context);
+      return Math.divideExact(((ContextIntProvider)this.left().value()).getIntUnsafe(context), ((ContextIntProvider)this.right().value()).getIntUnsafe(context));
    }
 
    static {

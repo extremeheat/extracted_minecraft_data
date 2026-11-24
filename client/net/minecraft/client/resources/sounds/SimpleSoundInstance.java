@@ -17,20 +17,12 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
       this(sound.value(), source, volume, pitch, random, pos);
    }
 
-   public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch) {
-      return forUI(sound, pitch, 0.25F);
-   }
-
-   public static SimpleSoundInstance forUI(final Holder<SoundEvent> sound, final float pitch) {
-      return forUI(sound.value(), pitch);
+   public static SimpleSoundInstance forUI(final Holder<SoundEvent> sound) {
+      return forUI(sound, 1.0F, 0.25F);
    }
 
    public static SimpleSoundInstance forUI(final Holder<SoundEvent> sound, final float pitch, final float volume) {
-      return forUI(sound.value(), pitch, volume);
-   }
-
-   public static SimpleSoundInstance forUI(final SoundEvent sound, final float pitch, final float volume) {
-      return new SimpleSoundInstance(sound.location(), SoundSource.UI, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+      return new SimpleSoundInstance(((SoundEvent)sound.value()).location(), SoundSource.UI, volume, pitch, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forPreview(final Holder<SoundEvent> sound, final SoundSource source, final float volume) {

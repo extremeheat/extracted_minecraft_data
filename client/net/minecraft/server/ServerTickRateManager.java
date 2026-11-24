@@ -1,12 +1,15 @@
 package net.minecraft.server;
 
 import java.util.Locale;
+import java.util.function.Supplier;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
 import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.world.TickRateManager;
+import org.jspecify.annotations.Nullable;
 
 public class ServerTickRateManager extends TickRateManager {
    private long remainingSprintTicks = 0L;
@@ -58,9 +61,9 @@ public class ServerTickRateManager extends TickRateManager {
       }
    }
 
-   public boolean stopSprinting() {
+   public boolean stopSprinting(final CommandSourceStack source) {
       if (this.remainingSprintTicks > 0L) {
-         this.finishTickSprint();
+         this.finishTickSprint(source);
          return true;
       } else {
          return false;
@@ -77,14 +80,20 @@ public class ServerTickRateManager extends TickRateManager {
       return interrupted;
    }
 
-   private void finishTickSprint() {
+   private void finishTickSprint(final @Nullable CommandSourceStack source) {
       long completedTicks = this.scheduledCurrentSprintTicks - this.remainingSprintTicks;
       double millisecondsToComplete = Math.max(1.0, (double)this.sprintTimeSpend) / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
       int ticksPerSecond = (int)((double)(TimeUtil.MILLISECONDS_PER_SECOND * completedTicks) / millisecondsToComplete);
       String millisecondsPerTick = String.format(Locale.ROOT, "%.2f", completedTicks == 0L ? (double)this.millisecondsPerTick() : millisecondsToComplete / (double)completedTicks);
       this.scheduledCurrentSprintTicks = 0L;
       this.sprintTimeSpend = 0L;
-      this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", ticksPerSecond, millisecondsPerTick), true);
+      Supplier<Component> message = () -> Component.translatable("commands.tick.sprint.report", ticksPerSecond, millisecondsPerTick);
+      if (source == null) {
+         CommandSourceStack.sendSuccessAsServer(this.server, message, true);
+      } else {
+         source.sendSuccess(message, true);
+      }
+
       this.remainingSprintTicks = 0L;
       this.setFrozen(this.previousIsFrozen);
       this.server.onTickRateChanged();
@@ -98,7 +107,7 @@ public class ServerTickRateManager extends TickRateManager {
          --this.remainingSprintTicks;
          return true;
       } else {
-         this.finishTickSprint();
+         this.finishTickSprint((CommandSourceStack)null);
          return false;
       }
    }

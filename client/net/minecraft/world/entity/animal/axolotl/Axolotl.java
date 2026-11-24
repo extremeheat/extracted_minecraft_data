@@ -380,7 +380,7 @@ public class Axolotl extends Animal implements Bucketable {
    }
 
    public void playAttackSound() {
-      this.playSound(SoundEvents.AXOLOTL_ATTACK, 1.0F, 1.0F);
+      this.playSound(SoundEvents.AXOLOTL_ATTACK);
    }
 
    public boolean hurtServer(final ServerLevel level, final DamageSource source, final float damage) {

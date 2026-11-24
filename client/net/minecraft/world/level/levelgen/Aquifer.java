@@ -144,8 +144,8 @@ public interface Aquifer {
          try (ScopedDensityBuffer buffer = this.surfaceLevel.sampleVolume(volume)) {
             int maxY = -2147483648;
 
-            for(int z = 0; z < volume.sizeZ(); ++z) {
-               for(int x = 0; x < volume.sizeX(); ++x) {
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               for(int z = 0; z < volume.sizeZ(); ++z) {
                   int surfaceLevel = Mth.floor(buffer.get(volume.indexUnchecked(x, 0, z)));
                   this.surfaceLevelCache.put(ChunkPos.pack(volume.blockX(x), volume.blockZ(z)), surfaceLevel);
                   if (surfaceLevel > maxY) {

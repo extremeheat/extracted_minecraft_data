@@ -13,7 +13,11 @@ import net.minecraft.world.phys.Vec3;
 
 public interface Coordinates {
    static Coordinates parseXYZ(final StringReader reader, final WorldCoordinate.Parser parser) throws CommandSyntaxException {
-      return (Coordinates)(reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parseXYZ(reader) : WorldCoordinates.parseXYZ(reader, parser));
+      return parseXYZ(reader, parser, parser);
+   }
+
+   static Coordinates parseXYZ(final StringReader reader, final WorldCoordinate.Parser parserXZ, final WorldCoordinate.Parser parserY) throws CommandSyntaxException {
+      return (Coordinates)(reader.canRead() && reader.peek() == '^' ? LocalCoordinates.parseXYZ(reader) : WorldCoordinates.parseXYZ(reader, parserXZ, parserY));
    }
 
    static Coordinates parseXZ(final StringReader reader, final WorldCoordinate.Parser parser) throws CommandSyntaxException {

@@ -4,11 +4,12 @@ import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BottleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
 
 public class FillBottleDispenseBehavior implements DispenseBehavior {
    public static final FillBottleDispenseBehavior INSTANCE = new FillBottleDispenseBehavior();
@@ -29,10 +31,13 @@ public class FillBottleDispenseBehavior implements DispenseBehavior {
 
    private DispenseBehavior.DispenseResult takeLiquid(final BlockSource source, final ItemStack dispensed, final ItemStack filledItemStack) {
       ServerLevel level = source.level();
-      BlockPos pos = source.pos();
-      BottleItem.playGlassBottleFillSound(level, (Player)null, (double)pos.getX(), (double)pos.getY(), (double)pos.getZ());
-      level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, pos);
+      level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, source.pos());
       return DispenseBehavior.consumeWithRemainder(source, dispensed, filledItemStack);
+   }
+
+   public void playSuccessSound(final BlockSource source) {
+      Vec3 pos = source.center().relative((Direction)source.state().getValue(DispenserBlock.FACING), 0.5);
+      source.level().playSound((Entity)null, pos.x(), pos.y(), pos.z(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS);
    }
 
    public DispenseBehavior.DispenseResult execute(final BlockSource source, final ItemStack dispensed) {

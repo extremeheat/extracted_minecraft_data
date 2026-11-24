@@ -108,11 +108,11 @@ public class Beardifier implements DensitySampler {
          int maxY = Math.min(volume.sizeY() - 1, Math.floorDiv(this.affectedBox.maxY() - volume.minBlockY(), volume.stepBlockY()));
          int maxZ = Math.min(volume.sizeZ() - 1, Math.floorDiv(this.affectedBox.maxZ() - volume.minBlockZ(), volume.stepBlockZ()));
 
-         for(int z = minZ; z <= maxZ; ++z) {
-            int blockZ = volume.blockZ(z);
+         for(int x = minX; x <= maxX; ++x) {
+            int blockX = volume.blockX(x);
 
-            for(int x = minX; x <= maxX; ++x) {
-               int blockX = volume.blockX(x);
+            for(int z = minZ; z <= maxZ; ++z) {
+               int blockZ = volume.blockZ(z);
 
                for(int y = minY; y <= maxY; ++y) {
                   int index = volume.indexUnchecked(x, y, z);

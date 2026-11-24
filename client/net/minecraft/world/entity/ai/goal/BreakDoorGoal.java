@@ -3,7 +3,7 @@ package net.minecraft.world.entity.ai.goal;
 import java.util.function.Predicate;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 
 public class BreakDoorGoal extends DoorInteractGoal {
@@ -71,8 +71,11 @@ public class BreakDoorGoal extends DoorInteractGoal {
 
       if (this.breakTime == this.getDoorBreakTime() && this.isValidDifficulty(this.mob.level().getDifficulty())) {
          this.mob.level().removeBlock(this.doorPos, false);
-         this.mob.level().levelEvent(1021, this.doorPos, 0);
-         this.mob.level().levelEvent(2001, this.doorPos, Block.getId(this.mob.level().getBlockState(this.doorPos)));
+         if (!this.mob.isSilent()) {
+            this.mob.level().levelEvent(1021, this.doorPos, 0);
+         }
+
+         LevelEvent.playParticlesAndSoundDestroyBlock(this.mob, this.mob.level(), this.doorPos, this.mob.level().getBlockState(this.doorPos));
       }
 
    }

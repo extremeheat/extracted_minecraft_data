@@ -35,7 +35,7 @@ public class StrawBedBlock extends AbstractBedBlock {
    }
 
    private void destroyBed(final Level level, final BlockPos pos) {
-      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.STRAW_BED_BREAK_LEAVE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.STRAW_BED_BREAK_LEAVE, SoundSource.BLOCKS);
       level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
    }
 

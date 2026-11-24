@@ -16,6 +16,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
 
    public InventoryScreen(final Player player) {
       super(player.inventoryMenu, new CraftingRecipeBookComponent(player.inventoryMenu), player.getInventory(), Component.translatable("container.crafting"));
+      player.containerMenu = player.inventoryMenu;
       this.titleLabelX = 97;
       this.effects = new EffectsInInventory(this);
    }

@@ -91,7 +91,7 @@ public class TntBlock extends Block {
 
             PrimedTnt tnt = new PrimedTnt(level, (double)pos.getX() + 0.5, (double)pos.getY(), (double)pos.getZ() + 0.5, source);
             level.addFreshEntity(tnt);
-            level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, tnt.getX(), tnt.getY(), tnt.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS);
             level.gameEvent(source, GameEvent.PRIME_FUSE, pos);
             return true;
          }
@@ -108,7 +108,7 @@ public class TntBlock extends Block {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), 11);
             Item item = itemStack.getItem();
             if (itemStack.is(Items.FLINT_AND_STEEL)) {
-               FlintAndSteelItem.playSound(level, pos);
+               FlintAndSteelItem.playSound(level, pos, player.getSoundSource());
                itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
             } else {
                FireChargeItem.playSound(level, pos);

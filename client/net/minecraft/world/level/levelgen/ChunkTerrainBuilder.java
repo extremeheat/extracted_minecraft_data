@@ -53,19 +53,19 @@ public class ChunkTerrainBuilder {
       try {
          var20 = true;
 
-         for(int var22 = 0; var22 < volume.sizeZ(); ++var22) {
-            int blockZ = volume.blockZ(var22);
+         for(int var22 = 0; var22 < volume.sizeX(); ++var22) {
+            int blockX = volume.blockX(var22);
 
-            for(int x = 0; x < volume.sizeX(); ++x) {
-               int blockX = volume.blockX(x);
-               NoiseColumn column = noiseChunk.prepareColumn(x, var22);
+            for(int z = 0; z < volume.sizeZ(); ++z) {
+               int blockZ = volume.blockZ(z);
+               NoiseColumn column = noiseChunk.prepareColumn(var22, z);
                int initialHeight = column.topBlockY() + 1;
                Holder<Biome> surfaceBiome = chunk.getBiome(blockX, initialHeight, blockZ);
                if (surfaceBiome.is(Biomes.ERODED_BADLANDS)) {
                   this.surfaceExtensions.extendErodedBadlands(column, blockX, blockZ);
                }
 
-               CarvingMask.Column carvingColumn = carvingMask != null ? carvingMask.getColumn(x, var22) : null;
+               CarvingMask.Column carvingColumn = carvingMask != null ? carvingMask.getColumn(var22, z) : null;
                this.fillColumn(chunk, column, blockX, blockZ, carvingColumn, noiseChunk.aquifer());
                if (surfaceBiome.is(Biomes.FROZEN_OCEAN) || surfaceBiome.is(Biomes.DEEP_FROZEN_OCEAN)) {
                   BlockColumn blockColumn = this.createBlockColumn(chunk, blockX, blockZ, carvingColumn);

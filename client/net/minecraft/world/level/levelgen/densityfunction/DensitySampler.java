@@ -6,11 +6,11 @@ public interface DensitySampler {
    static void sampleVolumeNaive(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume, final DensitySampler sampler) {
       int index = 0;
 
-      for(int z = 0; z < volume.sizeZ(); ++z) {
-         int blockZ = volume.blockZ(z);
+      for(int x = 0; x < volume.sizeX(); ++x) {
+         int blockX = volume.blockX(x);
 
-         for(int x = 0; x < volume.sizeX(); ++x) {
-            int blockX = volume.blockX(x);
+         for(int z = 0; z < volume.sizeZ(); ++z) {
+            int blockZ = volume.blockZ(z);
 
             for(int y = 0; y < volume.sizeY(); ++y) {
                int blockY = volume.blockY(y);

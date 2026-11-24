@@ -230,12 +230,12 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
       } else if (itemStack.is(Items.HONEYCOMB) && !this.isWaxed()) {
          BlockPos pos = this.blockPosition();
          level.levelEvent(this, 3003, pos, 0);
-         level.playSound((Entity)null, (BlockPos)pos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, (Holder)SoundEvents.HONEYCOMB_WAX_ON, SoundSource.BLOCKS);
          this.setWaxed(true);
          this.usePlayerItem(player, hand, itemStack);
          return InteractionResult.SUCCESS_SERVER;
       } else if (itemStack.is(ItemTags.AXES) && this.isWaxed()) {
-         level.playSound((Entity)null, (Entity)this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+         level.playSound((Entity)null, this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource());
          level.levelEvent(this, 3004, this.blockPosition(), 0);
          this.setWaxed(false);
          itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
@@ -244,7 +244,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
          if (itemStack.is(ItemTags.AXES)) {
             WeatheringCopper.WeatherState weatherState = this.getWeatherState();
             if (weatherState != WeatheringCopper.WeatherState.UNAFFECTED) {
-               level.playSound((Entity)null, (Entity)this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource(), 1.0F, 1.0F);
+               level.playSound((Entity)null, this, (Holder)SoundEvents.AXE_SCRAPE, this.getSoundSource());
                level.levelEvent(this, 3005, this.blockPosition(), 0);
                this.nextWeatheringTick = -1L;
                this.entityData.set(DATA_WEATHER_STATE, weatherState.previous(), true);
@@ -386,7 +386,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.playSound(CopperGolemOxidationLevels.getOxidationLevel(this.getWeatherState()).stepSound(), 1.0F, 1.0F);
+      this.playSound(CopperGolemOxidationLevels.getOxidationLevel(this.getWeatherState()).stepSound());
    }
 
    private SoundEvent getSpinHeadSound() {
@@ -411,7 +411,7 @@ public class CopperGolem extends AbstractGolem implements ContainerUser, Shearab
    }
 
    public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool) {
-      level.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, soundSource, 1.0F, 1.0F);
+      level.playSound((Entity)null, this, SoundEvents.COPPER_GOLEM_SHEAR, soundSource);
       ItemStack itemStack = this.getItemBySlot(EQUIPMENT_SLOT_ANTENNA);
       this.setItemSlot(EQUIPMENT_SLOT_ANTENNA, ItemStack.EMPTY);
       this.spawnAtLocation(level, itemStack, 1.5F);

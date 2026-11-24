@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.cubemob.SulfurCube;
@@ -36,13 +37,16 @@ public class IgniteDispenseBehavior implements DispenseBehavior {
       BlockPos targetPos = source.pos().relative(facing);
       BlockState target = level.getBlockState(targetPos);
       if (tryIgnite(dispensed, level, targetPos, facing, target)) {
-         FlintAndSteelItem.playSound(level, targetPos);
          dispensed.hurtAndBreak(1, level, (ServerPlayer)null, (var0) -> {
          });
          return DispenseBehavior.DispenseResult.success(dispensed);
       } else {
          return DispenseBehavior.DispenseResult.failure();
       }
+   }
+
+   public void playSuccessSound(final BlockSource source) {
+      FlintAndSteelItem.playSound(source.level(), source.pos().relative((Direction)source.state().getValue(DispenserBlock.FACING)), SoundSource.BLOCKS);
    }
 
    private static boolean tryIgnite(final ItemStack dispensed, final ServerLevel level, final BlockPos targetPos, final Direction facing, final BlockState target) {
@@ -68,12 +72,7 @@ public class IgniteDispenseBehavior implements DispenseBehavior {
 
    private static boolean tryIgniteExplosiveEntities(final ServerLevel level, final BlockPos pos) {
       List<SulfurCube> entities = level.getEntitiesOfClass(SulfurCube.class, new AABB(pos), SulfurCube::canExplode);
-      if (entities.isEmpty()) {
-         return false;
-      } else {
-         ((SulfurCube)entities.getFirst()).primeTime(false);
-         return true;
-      }
+      return entities.isEmpty() ? false : ((SulfurCube)entities.getFirst()).primeTime(false);
    }
 
    public MapCodec<IgniteDispenseBehavior> codec() {

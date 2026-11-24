@@ -110,11 +110,11 @@ public record NoiseFunction(Holder<NormalNoise> noise, double xzScale, double yS
             this.shiftZ.sampleVolume(context, shiftZBuffer, volume);
             int index = 0;
 
-            for(int z = 0; z < volume.sizeZ(); ++z) {
-               double baseNoiseZ = (double)volume.blockZ(z) * this.xzScale;
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               double baseNoiseX = (double)volume.blockX(x) * this.xzScale;
 
-               for(int x = 0; x < volume.sizeX(); ++x) {
-                  double baseNoiseX = (double)volume.blockX(x) * this.xzScale;
+               for(int z = 0; z < volume.sizeZ(); ++z) {
+                  double baseNoiseZ = (double)volume.blockZ(z) * this.xzScale;
 
                   for(int y = 0; y < volume.sizeY(); ++y) {
                      double noiseX = baseNoiseX + (double)outputBuffer.get(index);
@@ -152,11 +152,11 @@ public record NoiseFunction(Holder<NormalNoise> noise, double xzScale, double yS
                this.shiftZ.sampleVolume(context, shiftZBuffer, volume);
                int index = 0;
 
-               for(int z = 0; z < volume.sizeZ(); ++z) {
-                  double baseNoiseZ = (double)volume.blockZ(z) * this.xzScale;
+               for(int x = 0; x < volume.sizeX(); ++x) {
+                  double baseNoiseX = (double)volume.blockX(x) * this.xzScale;
 
-                  for(int x = 0; x < volume.sizeX(); ++x) {
-                     double baseNoiseX = (double)volume.blockX(x) * this.xzScale;
+                  for(int z = 0; z < volume.sizeZ(); ++z) {
+                     double baseNoiseZ = (double)volume.blockZ(z) * this.xzScale;
 
                      for(int y = 0; y < volume.sizeY(); ++y) {
                         double noiseX = baseNoiseX + (double)outputBuffer.get(index);

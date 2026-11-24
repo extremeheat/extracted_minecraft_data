@@ -15,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Util;
@@ -28,7 +29,7 @@ public class ToastManager implements Renderable {
    private final List<ToastInstance<?>> visibleToasts = new ArrayList();
    private final BitSet occupiedSlots = new BitSet(5);
    private final Deque<Toast> queued = new ArrayDeque();
-   private final Set<SoundEvent> playedToastSounds = new HashSet();
+   private final Set<Holder<SoundEvent>> playedToastSounds = new HashSet();
    private @Nullable ToastInstance<NowPlayingToast> nowPlayingToast;
 
    public ToastManager(final Minecraft minecraft, final Options options) {
@@ -63,7 +64,7 @@ public class ToastManager implements Renderable {
             } else {
                this.visibleToasts.add(new ToastInstance(toast, firstSlotIndex, occcupiedSlotCount));
                this.occupiedSlots.set(firstSlotIndex, firstSlotIndex + occcupiedSlotCount);
-               SoundEvent toastSound = toast.getSoundEvent();
+               Holder<SoundEvent> toastSound = toast.getSoundEvent();
                if (toastSound != null && this.playedToastSounds.add(toastSound)) {
                   this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(toastSound, 1.0F, 1.0F));
                }

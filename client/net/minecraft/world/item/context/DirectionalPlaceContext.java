@@ -22,11 +22,7 @@ public class DirectionalPlaceContext extends BlockPlaceContext {
    }
 
    public boolean canPlace() {
-      return this.getLevel().getBlockState(this.getHitResult().getBlockPos()).canBeReplaced(this);
-   }
-
-   public boolean replacingClickedOnBlock() {
-      return this.canPlace();
+      return this.getClickedBlockState().canBeReplaced(this);
    }
 
    public Direction getNearestLookingDirection() {

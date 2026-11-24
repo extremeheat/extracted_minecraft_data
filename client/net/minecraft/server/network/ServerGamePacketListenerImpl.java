@@ -1297,19 +1297,18 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             case STAB:
                if (this.player.isSpectator()) {
                   return;
-               } else {
-                  ItemStack itemInHand = this.player.getItemInHand(InteractionHand.MAIN_HAND);
-                  if (this.player.cannotAttackWithItem(itemInHand, 5)) {
-                     return;
-                  }
+               }
 
-                  PiercingWeapon piercingWeapon = (PiercingWeapon)itemInHand.get(DataComponents.PIERCING_WEAPON);
-                  if (piercingWeapon != null) {
-                     piercingWeapon.attack(this.player, EquipmentSlot.MAINHAND);
-                  }
-
+               ItemStack itemInHand = this.player.getItemInHand(InteractionHand.MAIN_HAND);
+               if (this.player.cannotAttackWithItem(itemInHand, 5)) {
                   return;
                }
+
+               PiercingWeapon piercingWeapon = (PiercingWeapon)itemInHand.get(DataComponents.PIERCING_WEAPON);
+               if (piercingWeapon != null) {
+                  piercingWeapon.attack(this.player, EquipmentSlot.MAINHAND);
+               }
+               break;
             case SWAP_ITEM_WITH_OFFHAND:
                if (!this.player.isSpectator()) {
                   ItemStack swap = this.player.getItemInHand(InteractionHand.OFF_HAND);
@@ -1317,33 +1316,34 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                   this.player.setItemInHand(InteractionHand.MAIN_HAND, swap);
                   this.player.stopUsingItem();
                }
-
-               return;
+               break;
             case DROP_ITEM:
                if (!this.player.isSpectator()) {
                   this.player.drop(false);
                }
-
-               return;
+               break;
             case DROP_ALL_ITEMS:
                if (!this.player.isSpectator()) {
                   this.player.drop(true);
                }
-
-               return;
+               break;
             case RELEASE_USE_ITEM:
                this.player.releaseUsingItem();
-               return;
+               break;
+            case CANCEL_USE_ITEM:
+               this.player.cancelUsingItem();
+               break;
             case START_DESTROY_BLOCK:
             case CHANGE_DESTROY_DIRECTION:
             case ABORT_DESTROY_BLOCK:
             case STOP_DESTROY_BLOCK:
                this.player.gameMode.handleBlockBreakAction(pos, action, packet.getDirection(), this.player.level().getMaxY(), packet.getSequence());
                this.ackBlockChangesUpTo(packet.getSequence());
-               return;
+               break;
             default:
                throw new IllegalArgumentException("Invalid player action");
          }
+
       }
    }
 

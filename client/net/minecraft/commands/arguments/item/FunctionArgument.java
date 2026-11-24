@@ -45,15 +45,15 @@ public class FunctionArgument implements SerializableArgument.ContextFree<Result
                Objects.requireNonNull(FunctionArgument.this);
             }
 
-            public Collection<CommandFunction<CommandSourceStack>> create(final CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-               return FunctionArgument.getFunctionTag(c, id);
+            public Collection<CommandFunction<CommandSourceStack>> create(final CommandSourceStack source) throws CommandSyntaxException {
+               return FunctionArgument.getFunctionTag(source, id);
             }
 
-            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandSourceStack context) throws CommandSyntaxException {
                return Pair.of(id, Either.right(FunctionArgument.getFunctionTag(context, id)));
             }
 
-            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandSourceStack context) throws CommandSyntaxException {
                return Pair.of(id, FunctionArgument.getFunctionTag(context, id));
             }
          };
@@ -64,44 +64,43 @@ public class FunctionArgument implements SerializableArgument.ContextFree<Result
                Objects.requireNonNull(FunctionArgument.this);
             }
 
-            public Collection<CommandFunction<CommandSourceStack>> create(final CommandContext<CommandSourceStack> c) throws CommandSyntaxException {
-               return Collections.singleton(FunctionArgument.getFunction(c, id));
+            public Collection<CommandFunction<CommandSourceStack>> create(final CommandSourceStack context) throws CommandSyntaxException {
+               return Collections.singleton(FunctionArgument.getFunction(context, id));
             }
 
-            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            public Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(final CommandSourceStack context) throws CommandSyntaxException {
                return Pair.of(id, Either.left(FunctionArgument.getFunction(context, id)));
             }
 
-            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+            public Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(final CommandSourceStack context) throws CommandSyntaxException {
                return Pair.of(id, Collections.singleton(FunctionArgument.getFunction(context, id)));
             }
          };
       }
    }
 
-   private static CommandFunction<CommandSourceStack> getFunction(final CommandContext<CommandSourceStack> c, final Identifier id) throws CommandSyntaxException {
-      return (CommandFunction)((CommandSourceStack)c.getSource()).getServer().getFunctions().get(id).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(id.toString()));
+   private static CommandFunction<CommandSourceStack> getFunction(final CommandSourceStack context, final Identifier id) throws CommandSyntaxException {
+      return (CommandFunction)context.getServer().getFunctions().get(id).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(id.toString()));
    }
 
-   private static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(final CommandContext<CommandSourceStack> c, final Identifier id) throws CommandSyntaxException {
-      Collection<CommandFunction<CommandSourceStack>> tag = ((CommandSourceStack)c.getSource()).getServer().getFunctions().getTag(id);
-      if (tag == null) {
-         throw ERROR_UNKNOWN_TAG.create(id.toString());
-      } else {
-         return tag;
-      }
+   private static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(final CommandSourceStack context, final Identifier id) throws CommandSyntaxException {
+      return (Collection)context.getServer().getFunctions().getTag(id).orElseThrow(() -> ERROR_UNKNOWN_TAG.create(id.toString()));
+   }
+
+   public static Result getRawFunction(final CommandContext<?> context, final String name) {
+      return (Result)context.getArgument(name, Result.class);
    }
 
    public static Collection<CommandFunction<CommandSourceStack>> getFunctions(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return ((Result)context.getArgument(name, Result.class)).create(context);
+      return getRawFunction(context, name).create((CommandSourceStack)context.getSource());
    }
 
    public static Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> getFunctionOrTag(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return ((Result)context.getArgument(name, Result.class)).unwrap(context);
+      return getRawFunction(context, name).unwrap((CommandSourceStack)context.getSource());
    }
 
    public static Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> getFunctionCollection(final CommandContext<CommandSourceStack> context, final String name) throws CommandSyntaxException {
-      return ((Result)context.getArgument(name, Result.class)).unwrapToCollection(context);
+      return getRawFunction(context, name).unwrapToCollection((CommandSourceStack)context.getSource());
    }
 
    public Collection<String> getExamples() {
@@ -116,10 +115,10 @@ public class FunctionArgument implements SerializableArgument.ContextFree<Result
    }
 
    public interface Result {
-      Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
+      Collection<CommandFunction<CommandSourceStack>> create(CommandSourceStack context) throws CommandSyntaxException;
 
-      Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
+      Pair<Identifier, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandSourceStack context) throws CommandSyntaxException;
 
-      Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> context) throws CommandSyntaxException;
+      Pair<Identifier, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandSourceStack context) throws CommandSyntaxException;
    }
 }

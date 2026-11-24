@@ -152,7 +152,7 @@ public class MinecartTNT extends AbstractMinecart {
 
          this.level().broadcastEntityEvent(this, (byte)70);
          if (!this.isSilent()) {
-            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS);
          }
       }
 

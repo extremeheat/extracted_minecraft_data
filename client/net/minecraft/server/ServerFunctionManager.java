@@ -41,7 +41,7 @@ public class ServerFunctionManager {
       if (this.server.tickRateManager().runsNormally()) {
          if (this.postReload) {
             this.postReload = false;
-            Collection<CommandFunction<CommandSourceStack>> functions = this.library.getTag(LOAD_FUNCTION_TAG);
+            Collection<CommandFunction<CommandSourceStack>> functions = (Collection)this.library.getTag(LOAD_FUNCTION_TAG).orElse(List.of());
             this.executeTagFunctions(functions, LOAD_FUNCTION_TAG);
          }
 
@@ -83,19 +83,19 @@ public class ServerFunctionManager {
    }
 
    private void postReload(final ServerFunctionLibrary library) {
-      this.ticking = List.copyOf(library.getTag(TICK_FUNCTION_TAG));
+      this.ticking = (List)library.getTag(TICK_FUNCTION_TAG).map(List::copyOf).orElse(List.of());
       this.postReload = true;
    }
 
    public CommandSourceStack getGameLoopSender() {
-      return this.server.createCommandSourceStack().withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
+      return ((CommandSourceStack)Objects.requireNonNull(this.server.createCommandSourceStack(), "server not started")).withPermission(LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
    }
 
    public Optional<CommandFunction<CommandSourceStack>> get(final Identifier id) {
       return this.library.getFunction(id);
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(final Identifier id) {
+   public Optional<List<CommandFunction<CommandSourceStack>>> getTag(final Identifier id) {
       return this.library.getTag(id);
    }
 

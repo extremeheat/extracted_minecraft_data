@@ -38,7 +38,7 @@ public class FlintAndSteelItem extends Item {
             ItemStack itemStack = context.getItemInHand();
             if (player instanceof ServerPlayer) {
                ServerPlayer serverPlayer = (ServerPlayer)player;
-               playSound(level, relativePos);
+               playSound(level, relativePos, player.getSoundSource());
                CriteriaTriggers.PLACED_BLOCK.trigger(serverPlayer, relativePos, itemStack);
                itemStack.hurtAndBreak(1, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
             }
@@ -49,7 +49,7 @@ public class FlintAndSteelItem extends Item {
          }
       } else {
          if (!level.isClientSide()) {
-            playSound(level, pos);
+            playSound(level, pos, player != null ? player.getSoundSource() : SoundSource.BLOCKS);
          }
 
          level.setBlock(pos, (BlockState)state.setValue(BlockStateProperties.LIT, true), 11);
@@ -62,7 +62,7 @@ public class FlintAndSteelItem extends Item {
       }
    }
 
-   public static void playSound(final Level level, final BlockPos pos) {
-      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
+   public static void playSound(final Level level, final BlockPos pos, final SoundSource source) {
+      level.playSound((Entity)null, (BlockPos)pos, SoundEvents.FLINTANDSTEEL_USE, source, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
    }
 }

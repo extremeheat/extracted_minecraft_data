@@ -29,9 +29,11 @@ import net.minecraft.util.Util;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.damagesource.FellFromLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.flag.FeatureElement;
@@ -348,6 +350,10 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected void entityInside(final BlockState state, final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
+   }
+
+   protected FellFromLocation getFellFromLocation(final BlockState state, final Level level, final BlockPos pos, final LivingEntity mob) {
+      return FellFromLocation.OTHER_CLIMBABLE;
    }
 
    protected int getDirectSignal(final BlockState state, final BlockGetter level, final BlockPos pos, final Direction direction) {
@@ -1114,6 +1120,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public void entityInside(final Level level, final BlockPos pos, final Entity entity, final InsideBlockEffectApplier effectApplier, final boolean isPrecise) {
          this.getBlock().entityInside(this.asState(), level, pos, entity, effectApplier, isPrecise);
+      }
+
+      public FellFromLocation getFellFromLocation(final Level level, final BlockPos pos, final LivingEntity mob) {
+         return this.getBlock().getFellFromLocation(this.asState(), level, pos, mob);
       }
 
       public void spawnAfterBreak(final ServerLevel level, final BlockPos pos, final ItemStack tool, final boolean dropExperience, final @Nullable Entity breaker) {

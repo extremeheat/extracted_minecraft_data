@@ -10,6 +10,8 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 
 public class BabyZombieModel<S extends ZombieRenderState> extends ZombieModel<S> {
+   private static final float CUSTOM_HEAD_LAYER_SCALE = 0.75F;
+
    public BabyZombieModel(final ModelPart root) {
       super(root);
    }
@@ -25,5 +27,9 @@ public class BabyZombieModel<S extends ZombieRenderState> extends ZombieModel<S>
       root.addOrReplaceChild("right_leg", CubeListBuilder.create().texOffs(8, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 4.0F, 2.0F, g), PartPose.offset(-1.0F, 20.0F, 0.0F));
       root.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(0, 16).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 4.0F, 2.0F, g), PartPose.offset(1.0F, 20.0F, 0.0F));
       return LayerDefinition.create(mesh, 64, 64);
+   }
+
+   public float getCustomHeadLayerScale() {
+      return 0.75F;
    }
 }

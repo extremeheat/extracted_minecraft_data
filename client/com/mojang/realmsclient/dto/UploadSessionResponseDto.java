@@ -15,7 +15,7 @@ public record UploadSessionResponseDto(@Nullable Result result) implements Refle
       return this.result;
    }
 
-   public static record Result(@Nullable String token, @Nullable String uploadUrl, @Nullable String statusUrl, @Nullable String completeUrl, @Nullable String cancelUrl, @Nullable String renewUrl, @Nullable String expiresAtUtc, @Nullable Boolean supportsBlockUpload, @Nullable BigDecimal maxSinglePutSizeBytes, @Nullable BigDecimal recommendedBlockSizeBytes, @Nullable BigDecimal maxBlockCount, @Nullable BigDecimal maxUploadSizeBytes, @Nullable Set<String> acceptedArchiveFormats) implements ReflectionBasedSerialization {
+   public static record Result(@Nullable String token, @Nullable String uploadUrl, @Nullable String statusUrl, @Nullable String completeUrl, @Nullable String cancelUrl, @Nullable String renewUrl, @Nullable String expiresAtUtc, @Nullable Boolean supportsBlockUpload, @Nullable BigDecimal maxSinglePutSizeBytes, @Nullable BigDecimal recommendedBlockSizeBytes, @Nullable BigDecimal maxBlockCount, @Nullable BigDecimal maxUploadSizeBytes, @Nullable BigDecimal maxParallelPuts, @Nullable Set<String> acceptedArchiveFormats) implements ReflectionBasedSerialization {
       public Result {
          super();
       }
@@ -78,6 +78,11 @@ public record UploadSessionResponseDto(@Nullable Result result) implements Refle
       @SerializedName("maxUploadSizeBytes")
       public @Nullable BigDecimal maxUploadSizeBytes() {
          return this.maxUploadSizeBytes;
+      }
+
+      @SerializedName("maxParallelPuts")
+      public @Nullable BigDecimal maxParallelPuts() {
+         return this.maxParallelPuts;
       }
 
       @SerializedName("acceptedArchiveFormats")

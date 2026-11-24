@@ -61,7 +61,7 @@ public class ShearsItem extends Item {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, itemInHand);
             }
 
-            level.playSound(player, (BlockPos)pos, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound(player, (BlockPos)pos, SoundEvents.GROWING_PLANT_CROP, SoundSource.BLOCKS);
             BlockState newState = plantBlock.getMaxAgeState(state);
             level.setBlockAndUpdate(pos, newState);
             level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(context.getPlayer(), newState));

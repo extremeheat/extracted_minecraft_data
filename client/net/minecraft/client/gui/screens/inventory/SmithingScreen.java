@@ -78,7 +78,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       List<SlotWidget> widgets = new ArrayList();
 
       for(Slot slot : (this.menu).slots) {
-         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, () -> this.createEmptySlotTooltip(slot)));
+         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, SlotWidget.defaultTooltipWithCustomEmpty(this.minecraft, this::createEmptySlotTooltip)));
       }
 
       this.setSlotWidgets(widgets);

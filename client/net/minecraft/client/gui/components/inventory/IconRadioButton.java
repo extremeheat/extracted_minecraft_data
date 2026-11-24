@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvent;
@@ -23,11 +24,11 @@ import net.minecraft.world.item.ItemStack;
 public final class IconRadioButton extends Button {
    private final WidgetSprites sprites;
    private final Icon icon;
-   private final SoundEvent selectSound;
+   private final Holder<SoundEvent> selectSound;
    private final Supplier<Tooltip> tooltip;
    private final BooleanSupplier selected;
 
-   public IconRadioButton(final int width, final int height, final Component message, final WidgetSprites sprites, final Icon icon, final SoundEvent selectSound, final Button.OnPress onPress, final Button.CreateNarration createNarration, final Supplier<Tooltip> tooltip, final BooleanSupplier selected) {
+   public IconRadioButton(final int width, final int height, final Component message, final WidgetSprites sprites, final Icon icon, final Holder<SoundEvent> selectSound, final Button.OnPress onPress, final Button.CreateNarration createNarration, final Supplier<Tooltip> tooltip, final BooleanSupplier selected) {
       super(0, 0, width, height, message, onPress, createNarration);
       this.sprites = sprites;
       this.icon = icon;
@@ -79,7 +80,7 @@ public final class IconRadioButton extends Button {
 
    public void playDownSound(final SoundManager soundManager) {
       if (!this.selected.getAsBoolean()) {
-         soundManager.play(SimpleSoundInstance.forUI(this.selectSound, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(this.selectSound));
       }
 
    }

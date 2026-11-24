@@ -40,6 +40,7 @@ import net.minecraft.world.level.levelgen.densityfunction.op.UnaryFunction;
 import net.minecraft.world.level.levelgen.densityfunction.op.upscale.UpscaleFunction;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
+import org.jspecify.annotations.Nullable;
 
 public final class DensityFunctions {
    public static final float MAX_REASONABLE_NOISE_VALUE = 1000000.0F;
@@ -414,9 +415,15 @@ public final class DensityFunctions {
       ZERO = new ConstantFunction(0.0F);
    }
 
-   public static record HolderHolder(Holder<DensityFunction> function) implements DensityFunction {
-      public HolderHolder {
+   public static final class HolderHolder implements DensityFunction {
+      private static final int UNCOMPUTED_DOMAIN_AXES = -1;
+      private final Holder<DensityFunction> function;
+      private @Nullable Interval range;
+      private int domainAxes = -1;
+
+      public HolderHolder(final Holder<DensityFunction> function) {
          super();
+         this.function = function;
       }
 
       public DensitySampler compileSampler(final DensityFunction.CompileContext context) {
@@ -429,11 +436,19 @@ public final class DensityFunctions {
       }
 
       public Interval range() {
-         return ((DensityFunction)this.function.value()).range();
+         if (this.range == null) {
+            this.range = ((DensityFunction)this.function.value()).range();
+         }
+
+         return this.range;
       }
 
       public @DensityFunction.Axes int domainAxes() {
-         return ((DensityFunction)this.function.value()).domainAxes();
+         if (this.domainAxes == -1) {
+            this.domainAxes = ((DensityFunction)this.function.value()).domainAxes();
+         }
+
+         return this.domainAxes;
       }
 
       public MapCodec<HolderHolder> codec() {
@@ -442,6 +457,36 @@ public final class DensityFunctions {
 
       public String getDebugName() {
          return DensityFunction.idShortString(this.function);
+      }
+
+      public Holder<DensityFunction> function() {
+         return this.function;
+      }
+
+      public boolean equals(final Object obj) {
+         if (obj == this) {
+            return true;
+         } else {
+            boolean var10000;
+            if (obj instanceof HolderHolder) {
+               HolderHolder holderHolder = (HolderHolder)obj;
+               if (this.function.equals(holderHolder.function)) {
+                  var10000 = true;
+                  return var10000;
+               }
+            }
+
+            var10000 = false;
+            return var10000;
+         }
+      }
+
+      public int hashCode() {
+         return this.function.hashCode();
+      }
+
+      public String toString() {
+         return "HolderHolder[" + String.valueOf(this.function) + "]";
       }
    }
 }

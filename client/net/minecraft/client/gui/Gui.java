@@ -274,7 +274,7 @@ public class Gui {
          this.minecraft.textInputManager().stopTextInput();
          oldScreen.removed();
       } else {
-         this.minecraft.setLastInputType(InputType.NONE);
+         this.minecraft.setLastInputType(InputType.MOUSE);
       }
 
       if (newScreen == null) {

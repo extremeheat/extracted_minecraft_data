@@ -186,8 +186,8 @@ public record UpscaleFunction(DensityFunction input, Axis x, Axis y, Axis z) imp
          try (ScopedDensityBuffer blockBuffer = context.acquireBuffer(blockVolume)) {
             this.sampleAndUpscale(context, blockBuffer, blockVolume, (Upscaler.AxisPlan)Objects.requireNonNull(this.x.planUpsample(blockVolume.minBlockX(), blockVolume.sizeX(), 1)), (Upscaler.AxisPlan)Objects.requireNonNull(this.y.planUpsample(blockVolume.minBlockY(), blockVolume.sizeY(), 1)), (Upscaler.AxisPlan)Objects.requireNonNull(this.z.planUpsample(blockVolume.minBlockZ(), blockVolume.sizeZ(), 1)));
 
-            for(int z = 0; z < volume.sizeZ(); ++z) {
-               for(int x = 0; x < volume.sizeX(); ++x) {
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               for(int z = 0; z < volume.sizeZ(); ++z) {
                   for(int y = 0; y < volume.sizeY(); ++y) {
                      float value = blockBuffer.get(blockVolume.indexUnchecked(x * volume.stepBlockX(), y * volume.stepBlockY(), z * volume.stepBlockZ()));
                      outputBuffer.set(volume.indexUnchecked(x, y, z), value);
@@ -299,14 +299,14 @@ public record UpscaleFunction(DensityFunction input, Axis x, Axis y, Axis z) imp
          int firstYInCell = Math.floorMod(volume.minBlockY(), this.cellSizeY);
          int firstZInCell = Math.floorMod(volume.minBlockZ(), this.cellSizeZ);
          int index = 0;
-         int cellZ = 0;
-         int zInCell = firstZInCell;
+         int cellX = 0;
+         int xInCell = firstXInCell;
 
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            int cellX = 0;
-            int xInCell = firstXInCell;
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            int cellZ = 0;
+            int zInCell = firstZInCell;
 
-            for(int x = 0; x < volume.sizeX(); ++x) {
+            for(int z = 0; z < volume.sizeZ(); ++z) {
                int yInCell = firstYInCell;
                int cellIndex = cellVolume.indexUnchecked(cellX, 0, cellZ);
                float cellValue = cellBuffer.get(cellIndex);
@@ -323,19 +323,19 @@ public record UpscaleFunction(DensityFunction input, Axis x, Axis y, Axis z) imp
                   yInCell += volume.stepBlockY();
                }
 
-               xInCell += volume.stepBlockX();
-               if (xInCell >= this.cellSizeX) {
-                  int step = xInCell / this.cellSizeX;
-                  cellX += step;
-                  xInCell -= step * this.cellSizeX;
+               zInCell += volume.stepBlockZ();
+               if (zInCell >= this.cellSizeZ) {
+                  int step = zInCell / this.cellSizeZ;
+                  cellZ += step;
+                  zInCell -= step * this.cellSizeZ;
                }
             }
 
-            zInCell += volume.stepBlockZ();
-            if (zInCell >= this.cellSizeZ) {
-               int step = zInCell / this.cellSizeZ;
-               cellZ += step;
-               zInCell -= step * this.cellSizeZ;
+            xInCell += volume.stepBlockX();
+            if (xInCell >= this.cellSizeX) {
+               int step = xInCell / this.cellSizeX;
+               cellX += step;
+               xInCell -= step * this.cellSizeX;
             }
          }
 

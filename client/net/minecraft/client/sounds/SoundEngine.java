@@ -327,7 +327,7 @@ public class SoundEngine {
       float range = getRange(instance.isRelative(), instance.getAttenuation(), attenuationDistance);
 
       for(SoundEventListener listener : this.listeners) {
-         listener.onPlaySound(instance, soundEvent, range);
+         listener.onPlaySound(instance, soundEvent, range, this.loaded);
       }
 
    }
@@ -374,9 +374,7 @@ public class SoundEngine {
    }
 
    public PlayResult play(final SoundInstance instance) {
-      if (!this.loaded) {
-         return SoundEngine.PlayResult.NOT_STARTED;
-      } else if (!instance.canPlaySound()) {
+      if (!instance.canPlaySound()) {
          return SoundEngine.PlayResult.NOT_STARTED;
       } else {
          Identifier eventLocation = instance.getIdentifier();
@@ -395,66 +393,70 @@ public class SoundEngine {
                this.notifyListeners(instance, soundEvent, attenuationDistance);
             }
 
-            SoundSource soundSource = instance.getSource();
-            float volume = this.calculateVolume(instanceVolume, soundSource);
-            boolean startedSilently = false;
-            if (volume == 0.0F) {
-               if (!instance.canStartSilent() && soundSource != SoundSource.MUSIC) {
-                  LOGGER.debug(MARKER, "Skipped playing sound {}, volume was zero.", sound.getLocation());
-                  return SoundEngine.PlayResult.NOT_STARTED;
-               }
-
-               startedSilently = true;
-            }
-
-            Vec3 position = new Vec3(instance.getX(), instance.getY(), instance.getZ());
-            boolean isLooping = shouldLoopAutomatically(instance);
-            boolean isStreaming = sound.shouldStream();
-            CompletableFuture<ChannelAccess.ChannelHandle> handleFuture = this.channelAccess.createHandle(sound.shouldStream() ? Library.Pool.STREAMING : Library.Pool.STATIC);
-            ChannelAccess.ChannelHandle handle = (ChannelAccess.ChannelHandle)handleFuture.join();
-            if (handle == null) {
-               if (DevUtil.IS_RUNNING_IN_IDE) {
-                  LOGGER.warn("Failed to create new sound handle");
-               }
-
+            if (!this.loaded) {
                return SoundEngine.PlayResult.NOT_STARTED;
             } else {
-               LOGGER.debug(MARKER, "Playing sound {} for event {}", sound.getLocation(), eventLocation);
-               this.soundDeleteTime.put(instance, this.tickCount + 20);
-               this.instanceToChannel.put(instance, handle);
-               this.instanceBySource.put(soundSource, instance);
-               float pitch = this.calculatePitch(instance);
-               handle.execute((channel) -> {
-                  channel.setPitch(pitch);
-                  channel.setVolume(volume);
-                  if (instance.getAttenuation() == SoundInstance.Attenuation.LINEAR) {
-                     channel.linearAttenuation(attenuationDistance);
-                  } else {
-                     channel.disableAttenuation();
+               SoundSource soundSource = instance.getSource();
+               float volume = this.calculateVolume(instanceVolume, soundSource);
+               boolean startedSilently = false;
+               if (volume == 0.0F) {
+                  if (!instance.canStartSilent() && soundSource != SoundSource.MUSIC) {
+                     LOGGER.debug(MARKER, "Skipped playing sound {}, volume was zero.", sound.getLocation());
+                     return SoundEngine.PlayResult.NOT_STARTED;
                   }
 
-                  channel.setLooping(isLooping && !isStreaming);
-                  channel.setSelfPosition(position);
-                  channel.setRelative(instance.isRelative());
-               });
-               if (!isStreaming) {
-                  this.soundBuffers.getCompleteBuffer(sound.getPath()).thenAccept((soundBuffer) -> handle.execute((channel) -> {
-                        channel.attachStaticBuffer(soundBuffer);
-                        channel.play();
-                     }));
+                  startedSilently = true;
+               }
+
+               Vec3 position = new Vec3(instance.getX(), instance.getY(), instance.getZ());
+               boolean isLooping = shouldLoopAutomatically(instance);
+               boolean isStreaming = sound.shouldStream();
+               CompletableFuture<ChannelAccess.ChannelHandle> handleFuture = this.channelAccess.createHandle(sound.shouldStream() ? Library.Pool.STREAMING : Library.Pool.STATIC);
+               ChannelAccess.ChannelHandle handle = (ChannelAccess.ChannelHandle)handleFuture.join();
+               if (handle == null) {
+                  if (DevUtil.IS_RUNNING_IN_IDE) {
+                     LOGGER.warn("Failed to create new sound handle");
+                  }
+
+                  return SoundEngine.PlayResult.NOT_STARTED;
                } else {
-                  this.soundBuffers.getStream(sound.getPath(), isLooping).thenAccept((stream) -> handle.execute((channel) -> {
-                        channel.attachBufferStream(stream);
-                        channel.play();
-                     }));
-               }
+                  LOGGER.debug(MARKER, "Playing sound {} for event {}", sound.getLocation(), eventLocation);
+                  this.soundDeleteTime.put(instance, this.tickCount + 20);
+                  this.instanceToChannel.put(instance, handle);
+                  this.instanceBySource.put(soundSource, instance);
+                  float pitch = this.calculatePitch(instance);
+                  handle.execute((channel) -> {
+                     channel.setPitch(pitch);
+                     channel.setVolume(volume);
+                     if (instance.getAttenuation() == SoundInstance.Attenuation.LINEAR) {
+                        channel.linearAttenuation(attenuationDistance);
+                     } else {
+                        channel.disableAttenuation();
+                     }
 
-               if (instance instanceof TickableSoundInstance) {
-                  TickableSoundInstance tickableSoundInstance = (TickableSoundInstance)instance;
-                  this.tickingSounds.add(tickableSoundInstance);
-               }
+                     channel.setLooping(isLooping && !isStreaming);
+                     channel.setSelfPosition(position);
+                     channel.setRelative(instance.isRelative());
+                  });
+                  if (!isStreaming) {
+                     this.soundBuffers.getCompleteBuffer(sound.getPath()).thenAccept((soundBuffer) -> handle.execute((channel) -> {
+                           channel.attachStaticBuffer(soundBuffer);
+                           channel.play();
+                        }));
+                  } else {
+                     this.soundBuffers.getStream(sound.getPath(), isLooping).thenAccept((stream) -> handle.execute((channel) -> {
+                           channel.attachBufferStream(stream);
+                           channel.play();
+                        }));
+                  }
 
-               return startedSilently ? SoundEngine.PlayResult.STARTED_SILENTLY : SoundEngine.PlayResult.STARTED;
+                  if (instance instanceof TickableSoundInstance) {
+                     TickableSoundInstance tickableSoundInstance = (TickableSoundInstance)instance;
+                     this.tickingSounds.add(tickableSoundInstance);
+                  }
+
+                  return startedSilently ? SoundEngine.PlayResult.STARTED_SILENTLY : SoundEngine.PlayResult.STARTED;
+               }
             }
          }
       }
@@ -503,9 +505,15 @@ public class SoundEngine {
    }
 
    public void updateSource(final Camera camera) {
-      if (this.loaded && camera.isInitialized()) {
+      if (camera.isInitialized()) {
          ListenerTransform transform = new ListenerTransform(camera.position(), new Vec3(camera.forwardVector()), new Vec3(camera.upVector()));
-         this.executor.execute(() -> this.listener.setTransform(transform));
+         this.executor.execute(() -> {
+            this.listener.setTransform(transform);
+            if (this.loaded) {
+               this.listener.update();
+            }
+
+         });
       }
    }
 

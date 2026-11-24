@@ -137,7 +137,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       ChestType type = ChestType.SINGLE;
       Direction facingDirection = context.getHorizontalDirection().getOpposite();
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       boolean secondaryUse = context.isSecondaryUseActive();
       Direction clickedFace = context.getClickedFace();
       if (clickedFace.getAxis().isHorizontal() && secondaryUse) {

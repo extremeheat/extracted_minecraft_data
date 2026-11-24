@@ -8,6 +8,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.FellFromLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -66,6 +68,10 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       return var10000;
    }
 
+   protected FellFromLocation getFellFromLocation(final BlockState state, final Level level, final BlockPos pos, final LivingEntity mob) {
+      return FellFromLocation.LADDER;
+   }
+
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       if (!this.type.canOpenByHand()) {
          return InteractionResult.PASS;
@@ -118,7 +124,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       BlockState state = this.defaultBlockState();
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       Direction clickedFace = context.getClickedFace();
       if (!context.replacingClickedOnBlock() && clickedFace.getAxis().isHorizontal()) {
          state = (BlockState)((BlockState)state.setValue(FACING, clickedFace)).setValue(HALF, context.getClickLocation().y - (double)context.getClickedPos().getY() > 0.5 ? Half.TOP : Half.BOTTOM);

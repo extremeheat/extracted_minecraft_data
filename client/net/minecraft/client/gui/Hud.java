@@ -131,7 +131,7 @@ public class Hud implements Renderable, Updatable {
    private static final int HEART_SEPARATION = 8;
    private static final int NUM_AIR_BUBBLES = 10;
    private static final int AIR_BUBBLE_SIZE = 9;
-   private static final int AIR_BUBBLE_SEPERATION = 8;
+   private static final int AIR_BUBBLE_SEPARATION = 8;
    private static final int AIR_BUBBLE_POPPING_DURATION = 2;
    private static final int EMPTY_AIR_BUBBLE_DELAY_DURATION = 1;
    private static final float AIR_BUBBLE_POP_SOUND_VOLUME_BASE = 0.5F;
@@ -1308,7 +1308,7 @@ public class Hud implements Renderable, Updatable {
    private static enum HeartType {
       CONTAINER(Identifier.withDefaultNamespace("hud/heart/container"), Identifier.withDefaultNamespace("hud/heart/container_blinking"), Identifier.withDefaultNamespace("hud/heart/container"), Identifier.withDefaultNamespace("hud/heart/container_blinking"), Identifier.withDefaultNamespace("hud/heart/container_hardcore"), Identifier.withDefaultNamespace("hud/heart/container_hardcore_blinking"), Identifier.withDefaultNamespace("hud/heart/container_hardcore"), Identifier.withDefaultNamespace("hud/heart/container_hardcore_blinking")),
       NORMAL(Identifier.withDefaultNamespace("hud/heart/full"), Identifier.withDefaultNamespace("hud/heart/full_blinking"), Identifier.withDefaultNamespace("hud/heart/half"), Identifier.withDefaultNamespace("hud/heart/half_blinking"), Identifier.withDefaultNamespace("hud/heart/hardcore_full"), Identifier.withDefaultNamespace("hud/heart/hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/hardcore_half"), Identifier.withDefaultNamespace("hud/heart/hardcore_half_blinking")),
-      POISIONED(Identifier.withDefaultNamespace("hud/heart/poisoned_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_half_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")),
+      POISONED(Identifier.withDefaultNamespace("hud/heart/poisoned_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_half_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")),
       WITHERED(Identifier.withDefaultNamespace("hud/heart/withered_full"), Identifier.withDefaultNamespace("hud/heart/withered_full_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_half"), Identifier.withDefaultNamespace("hud/heart/withered_half_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/withered_hardcore_half_blinking")),
       ABSORBING(Identifier.withDefaultNamespace("hud/heart/absorbing_full"), Identifier.withDefaultNamespace("hud/heart/absorbing_full_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_half"), Identifier.withDefaultNamespace("hud/heart/absorbing_half_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/absorbing_hardcore_half_blinking")),
       FROZEN(Identifier.withDefaultNamespace("hud/heart/frozen_full"), Identifier.withDefaultNamespace("hud/heart/frozen_full_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_half"), Identifier.withDefaultNamespace("hud/heart/frozen_half_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_full"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_full_blinking"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_half"), Identifier.withDefaultNamespace("hud/heart/frozen_hardcore_half_blinking"));
@@ -1350,7 +1350,7 @@ public class Hud implements Renderable, Updatable {
       private static HeartType forPlayer(final Player player) {
          HeartType type;
          if (player.hasEffect(MobEffects.POISON)) {
-            type = POISIONED;
+            type = POISONED;
          } else if (player.hasEffect(MobEffects.WITHER)) {
             type = WITHERED;
          } else if (player.isFullyFrozen()) {
@@ -1364,7 +1364,7 @@ public class Hud implements Renderable, Updatable {
 
       // $FF: synthetic method
       private static HeartType[] $values() {
-         return new HeartType[]{CONTAINER, NORMAL, POISIONED, WITHERED, ABSORBING, FROZEN};
+         return new HeartType[]{CONTAINER, NORMAL, POISONED, WITHERED, ABSORBING, FROZEN};
       }
    }
 

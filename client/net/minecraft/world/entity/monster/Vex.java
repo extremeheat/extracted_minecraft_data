@@ -267,7 +267,7 @@ public class Vex extends Monster implements TraceableEntity, OwnableEntity {
          }
 
          Vex.this.setIsCharging(true);
-         Vex.this.playSound(SoundEvents.VEX_CHARGE, 1.0F, 1.0F);
+         Vex.this.playSound(SoundEvents.VEX_CHARGE);
       }
 
       public void stop() {

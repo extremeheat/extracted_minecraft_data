@@ -6,8 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gamerules.GameRules;
 
@@ -70,7 +70,7 @@ public class EatBlockGoal extends Goal {
             BlockPos below = pos.below();
             if (this.level.getBlockState(below).is(Blocks.GRASS_BLOCK)) {
                if ((Boolean)getServerLevel(this.level).getGameRules().get(GameRules.MOB_GRIEFING)) {
-                  this.level.levelEvent(2001, below, Block.getId(Blocks.GRASS_BLOCK.defaultBlockState()));
+                  LevelEvent.playParticlesAndSoundDestroyBlock(this.mob, this.level, below, Blocks.GRASS_BLOCK.defaultBlockState());
                   this.level.setBlock(below, Blocks.DIRT.defaultBlockState(), 2);
                }
 

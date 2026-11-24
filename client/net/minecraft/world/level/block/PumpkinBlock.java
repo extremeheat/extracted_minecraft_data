@@ -40,7 +40,7 @@ public class PumpkinBlock extends Block {
             entity.setDeltaMovement(0.05 * (double)direction.getStepX() + random.nextDouble() * 0.02, 0.05, 0.05 * (double)direction.getStepZ() + random.nextDouble() * 0.02);
             level.addFreshEntity(entity);
          });
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.PUMPKIN_CARVE, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.PUMPKIN_CARVE, SoundSource.BLOCKS);
          level.setBlock(pos, (BlockState)Blocks.CARVED_PUMPKIN.defaultBlockState().setValue(CarvedPumpkinBlock.FACING, direction), 11);
          itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
          level.gameEvent(player, GameEvent.SHEAR, pos);

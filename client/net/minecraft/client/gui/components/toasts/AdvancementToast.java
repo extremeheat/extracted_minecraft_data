@@ -9,6 +9,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.GuiPipeline;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
@@ -46,7 +47,7 @@ public class AdvancementToast implements Toast {
       }
    }
 
-   public @Nullable SoundEvent getSoundEvent() {
+   public @Nullable Holder<SoundEvent> getSoundEvent() {
       return this.isChallengeAdvancement() ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : null;
    }
 

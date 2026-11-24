@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -15,31 +16,37 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TooltipDisplay;
 import org.jspecify.annotations.Nullable;
 
 public class Tooltip implements NarrationSupplier {
    private static final int MAX_WIDTH = 170;
-   private final Component message;
+   private final @Nullable Component title;
+   private final List<Component> messages;
    private @Nullable List<FormattedCharSequence> cachedTooltip;
+   private int cachedTitleLineCount;
    private @Nullable Language splitWithLanguage;
    private final @Nullable Identifier style;
    private final @Nullable Component narration;
    private final Optional<TooltipComponent> component;
-   private final boolean extraSpaceAfterFirstLine;
+   private final boolean extraSpaceAfterTitle;
    private final boolean besideCursor;
+   private final boolean splitLines;
 
    private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style) {
-      this(message, narration, component, style, false, false);
+      this((Component)null, List.of(message), narration, component, style, false, false, true);
    }
 
-   private Tooltip(final Component message, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style, final boolean extraSpaceAfterFirstLine, final boolean besideCursor) {
+   private Tooltip(final @Nullable Component title, final List<Component> messages, final @Nullable Component narration, final Optional<TooltipComponent> component, final @Nullable Identifier style, final boolean extraSpaceAfterTitle, final boolean besideCursor, final boolean splitLines) {
       super();
-      this.message = message;
+      this.title = title;
+      this.messages = messages;
       this.narration = narration;
       this.component = component;
       this.style = style;
-      this.extraSpaceAfterFirstLine = extraSpaceAfterFirstLine;
+      this.extraSpaceAfterTitle = extraSpaceAfterTitle;
       this.besideCursor = besideCursor;
+      this.splitLines = splitLines;
    }
 
    public static Tooltip create(final Component message) {
@@ -60,7 +67,11 @@ public class Tooltip implements NarrationSupplier {
    }
 
    public static Tooltip createForItem(final List<Component> lines, final @Nullable Component narration, final ItemStack item) {
-      return new Tooltip(CommonComponents.joinLines((Collection)lines), narration, item.getTooltipImage(), (Identifier)item.get(DataComponents.TOOLTIP_STYLE), false, true);
+      Component title = lines.isEmpty() ? null : (Component)lines.getFirst();
+      List<Component> messages = lines.isEmpty() ? List.of() : lines.subList(1, lines.size());
+      Identifier tooltipStyle = (Identifier)item.get(DataComponents.TOOLTIP_STYLE);
+      TooltipDisplay tooltipDisplay = (TooltipDisplay)item.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      return new Tooltip(title, messages, narration, item.getTooltipImage(), tooltipStyle, true, true, tooltipDisplay.splitLines());
    }
 
    public Optional<TooltipComponent> component() {
@@ -71,8 +82,13 @@ public class Tooltip implements NarrationSupplier {
       return this.style;
    }
 
-   public boolean extraSpaceAfterFirstLine() {
-      return this.extraSpaceAfterFirstLine;
+   public int linesBeforeExtraSpace(final Minecraft minecraft) {
+      if (!this.extraSpaceAfterTitle) {
+         return 0;
+      } else {
+         this.toCharSequence(minecraft);
+         return this.cachedTitleLineCount;
+      }
    }
 
    public boolean besideCursor() {
@@ -89,7 +105,27 @@ public class Tooltip implements NarrationSupplier {
    public List<FormattedCharSequence> toCharSequence(final Minecraft minecraft) {
       Language currentLanguage = Language.getInstance();
       if (this.cachedTooltip == null || currentLanguage != this.splitWithLanguage) {
-         this.cachedTooltip = splitTooltip(minecraft, this.message);
+         List<FormattedCharSequence> lines = new ArrayList();
+         if (this.splitLines) {
+            if (this.title != null) {
+               lines.addAll(splitTooltip(minecraft, this.title));
+            }
+
+            this.cachedTitleLineCount = lines.size();
+            lines.addAll(splitTooltip(minecraft, CommonComponents.joinLines((Collection)this.messages)));
+         } else {
+            if (this.title != null) {
+               lines.add(this.title.getVisualOrderText());
+            }
+
+            this.cachedTitleLineCount = 1;
+
+            for(Component message : this.messages) {
+               lines.add(message.getVisualOrderText());
+            }
+         }
+
+         this.cachedTooltip = lines;
          this.splitWithLanguage = currentLanguage;
       }
 

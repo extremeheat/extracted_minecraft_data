@@ -116,6 +116,11 @@ public final class RetroGen {
       return this.hasBelowZeroRetroGen;
    }
 
+   public String toString() {
+      String var10000 = String.valueOf(this.targetStatus);
+      return "RetroGen{targetStatus=" + var10000 + ", missingBedrock=" + String.valueOf(this.missingBedrock) + ", statusesToRerun=" + String.valueOf(this.statusesToRerun) + ", hasBelowZeroRetroGen=" + this.hasBelowZeroRetroGen + "}";
+   }
+
    static {
       BITSET_CODEC = Codec.LONG_STREAM.xmap((longStream) -> BitSet.valueOf(longStream.toArray()), (bitSet) -> LongStream.of(bitSet.toLongArray()));
       NON_EMPTY_CHUNK_STATUS = BuiltInRegistries.CHUNK_STATUS.byNameCodec().comapFlatMap((status) -> status == ChunkStatus.EMPTY ? DataResult.error(() -> "target_status cannot be empty") : DataResult.success(status), Function.identity());

@@ -99,8 +99,8 @@ public interface ShiftNoiseFunction extends DensityFunction {
                   transposedBuffer.fill(0.0F);
                   noise.addToVolume(transposedBuffer, transposedVolume, 0.25, 0.25, 4.0F);
 
-                  for(int z = 0; z < volume.sizeZ(); ++z) {
-                     for(int x = 0; x < volume.sizeX(); ++x) {
+                  for(int x = 0; x < volume.sizeX(); ++x) {
+                     for(int z = 0; z < volume.sizeZ(); ++z) {
                         float value = transposedBuffer.get(transposedVolume.indexUnchecked(z, x, 0));
                         outputBuffer.setRange(volume.indexUnchecked(x, 0, z), volume.sizeY(), value);
                      }

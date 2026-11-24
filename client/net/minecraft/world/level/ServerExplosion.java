@@ -193,8 +193,11 @@ public class ServerExplosion implements Explosion {
                      if (var24 instanceof ServerPlayer) {
                         ServerPlayer serverPlayer = (ServerPlayer)var24;
                         serverPlayer.connection.send(new ClientboundAddEntityMotionPacket(entity.getId(), knockback));
+                        if (entity.canSimulateMovement()) {
+                           entity.pushFromExplosion(knockback);
+                        }
                      } else {
-                        entity.push(knockback);
+                        entity.pushFromExplosion(knockback);
                      }
                   }
 

@@ -1033,7 +1033,7 @@ public class Options {
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (value) -> value ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
          SoundManager soundManager = Minecraft.getInstance().getSoundManager();
          soundManager.reload();
-         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
       });
       this.backgroundForChatOnly = new OptionInstance<Boolean>("options.accessibility.text_background", OptionInstance.noTooltip(), (caption, value) -> value ? Component.translatable("options.accessibility.text_background.chat") : Component.translatable("options.accessibility.text_background.everywhere"), OptionInstance.BOOLEAN_VALUES, true, OptionInstance.NO_ACTION);
       this.fullscreen = OptionInstance.createBoolean("options.fullscreen", false, (value) -> {
@@ -1193,7 +1193,7 @@ public class Options {
       }, new OptionInstance.LazyEnum(() -> Stream.concat(Stream.of(""), Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().stream()).toList(), (device) -> Minecraft.getInstance().isRunning() && !isSoundDeviceDefault(device) && !Minecraft.getInstance().getSoundManager().getAvailableSoundDevices().contains(device) ? Optional.empty() : Optional.of(device), Codec.STRING), "", (var0) -> {
          SoundManager soundManager = Minecraft.getInstance().getSoundManager();
          soundManager.reload();
-         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
       });
       this.onboardAccessibility = true;
       this.musicFrequency = new OptionInstance<MusicManager.MusicFrequency>("options.music_frequency", OptionInstance.cachedConstantTooltip(MUSIC_FREQUENCY_TOOLTIP), (caption, value) -> value.caption(), new OptionInstance.Enum(Arrays.asList(MusicManager.MusicFrequency.values()), MusicManager.MusicFrequency.CODEC), MusicManager.MusicFrequency.DEFAULT, (value) -> Minecraft.getInstance().getMusicManager().setMinutesBetweenSongs(value));

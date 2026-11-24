@@ -134,9 +134,9 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
       state.decorations = blockEntity.getDecorations();
       state.direction = blockEntity.getDirection();
-      DecoratedPotBlockEntity.WobbleStyle wobbleStyle = blockEntity.lastWobbleStyle;
-      if (wobbleStyle != null && blockEntity.getLevel() != null) {
-         state.wobbleProgress = ((float)(blockEntity.getLevel().getGameTime() - blockEntity.wobbleStartedAtTick) + partialTicks) / (float)wobbleStyle.duration;
+      state.wobbleStyle = blockEntity.lastWobbleStyle;
+      if (state.wobbleStyle != null && blockEntity.getLevel() != null) {
+         state.wobbleProgress = ((float)(blockEntity.getLevel().getGameTime() - blockEntity.wobbleStartedAtTick) + partialTicks) / (float)state.wobbleStyle.duration;
       } else {
          state.wobbleProgress = 0.0F;
       }
@@ -146,18 +146,20 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    public void submit(final DecoratedPotRenderState state, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final CameraRenderState camera) {
       poseStack.pushPose();
       poseStack.mulPose(modelTransformation(state.direction));
-      if (state.wobbleProgress >= 0.0F && state.wobbleProgress <= 1.0F) {
-         if (state.wobbleStyle == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
-            float amplitude = 0.015625F;
-            float deltaTime = state.wobbleProgress * 6.2831855F;
-            float tiltX = -1.5F * (Mth.cos((double)deltaTime) + 0.5F) * Mth.sin((double)(deltaTime / 2.0F));
-            poseStack.rotateAround(Axis.XP.rotation(tiltX * 0.015625F), 0.5F, 0.0F, 0.5F);
-            float tiltZ = Mth.sin((double)deltaTime);
-            poseStack.rotateAround(Axis.ZP.rotation(tiltZ * 0.015625F), 0.5F, 0.0F, 0.5F);
-         } else {
-            float turnAngle = Mth.sin((double)(-state.wobbleProgress * 3.0F * 3.1415927F)) * 0.125F;
-            float linearDecayFactor = 1.0F - state.wobbleProgress;
-            poseStack.rotateAround(Axis.YP.rotation(turnAngle * linearDecayFactor), 0.5F, 0.0F, 0.5F);
+      if (state.wobbleStyle != null && state.wobbleProgress >= 0.0F && state.wobbleProgress <= 1.0F) {
+         switch (state.wobbleStyle) {
+            case POSITIVE:
+               float amplitude = 0.015625F;
+               float deltaTime = state.wobbleProgress * 6.2831855F;
+               float tiltX = 1.5F * (Mth.cos((double)deltaTime) + 0.5F) * Mth.sin((double)(deltaTime / 2.0F));
+               poseStack.rotateAround(Axis.XP.rotation(tiltX * 0.015625F), 0.5F, 0.0F, 0.5F);
+               float tiltZ = Mth.sin((double)deltaTime);
+               poseStack.rotateAround(Axis.ZP.rotation(tiltZ * 0.015625F), 0.5F, 0.0F, 0.5F);
+               break;
+            case NEGATIVE:
+               float turnAngle = Mth.sin((double)(state.wobbleProgress * 3.0F * 3.1415927F)) * 0.125F;
+               float linearDecayFactor = 1.0F - state.wobbleProgress;
+               poseStack.rotateAround(Axis.YP.rotation(turnAngle * linearDecayFactor), 0.5F, 0.0F, 0.5F);
          }
       }
 

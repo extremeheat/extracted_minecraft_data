@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.GroupNarration;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.ScreenAxis;
 import net.minecraft.network.chat.Component;
 import org.jspecify.annotations.Nullable;
@@ -86,8 +87,8 @@ public final class SlotGroup extends AbstractContainerWidget {
       return var10000;
    }
 
-   public NarratableEntry.NarrationPriority narrationPriority() {
-      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredSlot() != null);
+   public NarratableEntry.NarrationPriority narrationPriority(final NarrationTrigger narrationTrigger) {
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.getHoveredSlot() != null, narrationTrigger);
    }
 
    protected void updateWidgetNarration(final NarrationElementOutput output) {

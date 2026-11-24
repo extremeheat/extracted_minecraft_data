@@ -151,11 +151,11 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    protected void playEatingSound() {
-      this.getSoundSet().eatSound().ifPresent((s) -> this.makeSound((SoundEvent)s.value()));
+      this.getSoundSet().eatSound().ifPresent(this::makeSound);
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.15F, 1.0F));
+      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound(s, 0.15F, 1.0F));
    }
 
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {

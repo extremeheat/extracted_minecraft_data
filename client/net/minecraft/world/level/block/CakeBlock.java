@@ -52,7 +52,7 @@ public class CakeBlock extends Block {
          if (var10 instanceof CandleBlock) {
             CandleBlock candleBlock = (CandleBlock)var10;
             itemStack.consume(1, player);
-            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS);
             level.setBlockAndUpdate(pos, CandleCakeBlock.byCandle(candleBlock));
             level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
             player.awardStat(Stats.ITEM_USED.get(item));

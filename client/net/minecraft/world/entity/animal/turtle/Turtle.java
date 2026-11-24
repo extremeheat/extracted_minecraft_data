@@ -52,8 +52,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.TurtleEggBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -225,7 +225,7 @@ public class Turtle extends Animal {
       if (this.isAlive() && this.isLayingEgg() && this.layEggCounter >= 1 && this.layEggCounter % 5 == 0) {
          BlockPos pos = this.blockPosition();
          if (TurtleEggBlock.onSand(this.level(), pos)) {
-            this.level().levelEvent(2001, pos, Block.getId(this.level().getBlockState(pos.below())));
+            LevelEvent.playParticlesAndSoundDestroyBlock(this, this.level(), pos, this.level().getBlockState(pos.below()));
             this.gameEvent(GameEvent.ENTITY_ACTION);
          }
       }

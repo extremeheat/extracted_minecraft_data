@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
@@ -90,7 +91,14 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
       List<SlotWidget> widgets = new ArrayList();
 
       for(Slot slot : (this.menu).slots) {
-         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, () -> this.recipeBookComponent.getGhostSlotTooltip(slot)));
+         Minecraft var10004 = this.minecraft;
+         int var10005 = this.imageWidth;
+         int var10006 = this.leftPos;
+         int var10007 = this.topPos;
+         Minecraft var10008 = this.minecraft;
+         RecipeBookComponent var10009 = this.recipeBookComponent;
+         Objects.requireNonNull(var10009);
+         widgets.add(new SlotWidget(slot, var10004, var10005, var10006, var10007, SlotWidget.defaultTooltipWithCustomEmpty(var10008, var10009::getGhostSlotTooltip)));
       }
 
       this.setSlotWidgets(widgets);
@@ -120,13 +128,13 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
             this.setFocused(this.recipeBookComponent);
             return true;
          }
-
-         if (this.minecraft.options.keyRepeatRecipeOrTrade.matches(event) && !this.isInputCaptured() && this.recipeBookComponent.repeatLastRecipe(event.hasShiftDown())) {
-            return true;
-         }
       }
 
-      return super.keyPressed(event);
+      return this.minecraft.options.keyRepeatRecipeOrTrade.matches(event) && !this.isInputCaptured() && this.tryRepeatLastRecipe(event.hasShiftDown()) ? true : super.keyPressed(event);
+   }
+
+   private boolean tryRepeatLastRecipe(final boolean useMaxItems) {
+      return this.recipeBookComponent.isVisible() && !this.minecraft.player.isSpectator() && this.recipeBookComponent.repeatLastRecipe(useMaxItems);
    }
 
    public boolean isInputCaptured() {
@@ -134,7 +142,9 @@ public abstract class AbstractRecipeBookScreen<T extends RecipeBookMenu> extends
    }
 
    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
-      if (this.recipeBookComponent.mouseClicked(event, doubleClick)) {
+      if (this.minecraft.options.keyRepeatRecipeOrTrade.matchesMouse(event) && this.tryRepeatLastRecipe(event.hasShiftDown())) {
+         return true;
+      } else if (this.recipeBookComponent.mouseClicked(event, doubleClick)) {
          this.setFocused(this.recipeBookComponent);
          return true;
       } else {

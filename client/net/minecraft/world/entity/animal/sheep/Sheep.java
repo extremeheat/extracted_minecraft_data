@@ -156,7 +156,7 @@ public class Sheep extends Animal implements Shearable {
       } else if (itemStack.is(ItemTags.SHEEP_WOOL_DYES) && this.isAlive() && !this.isSheared()) {
          DyeColor dyeColor = (DyeColor)itemStack.get(DataComponents.DYE);
          if (dyeColor != null && this.getColor() != dyeColor) {
-            this.level().playSound(player, (Entity)this, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+            this.level().playSound(player, this, SoundEvents.DYE_USE, SoundSource.PLAYERS);
             if (!this.level().isClientSide()) {
                this.setColor(dyeColor);
                itemStack.shrink(1);
@@ -172,7 +172,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public void shear(final ServerLevel level, final SoundSource soundSource, final ItemStack tool) {
-      level.playSound((Entity)null, this, SoundEvents.SHEEP_SHEAR, soundSource, 1.0F, 1.0F);
+      level.playSound((Entity)null, this, SoundEvents.SHEEP_SHEAR, soundSource);
       this.dropFromShearingLootTable(level, BuiltInLootTables.SHEAR_SHEEP, tool, (l, drop) -> {
          for(int i = 0; i < drop.getCount(); ++i) {
             ItemEntity entity = this.spawnAtLocation(l, drop.copyWithCount(1), 1.0F);

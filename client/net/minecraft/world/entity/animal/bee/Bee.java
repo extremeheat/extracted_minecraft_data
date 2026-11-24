@@ -242,7 +242,7 @@ public class Bee extends Animal implements NeutralMob {
 
          this.setHasStung(true);
          this.stopBeingAngry();
-         this.playSound(SoundEvents.BEE_STING, 1.0F, 1.0F);
+         this.playSound(SoundEvents.BEE_STING);
       }
 
       return wasHurt;
@@ -1082,7 +1082,7 @@ public class Bee extends Animal implements NeutralMob {
                      ++this.successfulPollinatingTicks;
                      if (Bee.this.random.nextFloat() < 0.05F && this.successfulPollinatingTicks > this.lastSoundPlayedTick + 60) {
                         this.lastSoundPlayedTick = this.successfulPollinatingTicks;
-                        Bee.this.playSound(SoundEvents.BEE_POLLINATE, 1.0F, 1.0F);
+                        Bee.this.playSound(SoundEvents.BEE_POLLINATE);
                      }
 
                   }

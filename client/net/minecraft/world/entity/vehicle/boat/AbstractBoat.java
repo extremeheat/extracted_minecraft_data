@@ -234,7 +234,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       }
 
       this.applyEffectsFromBlocks();
-      this.applyEffectsFromBlocks();
+      this.applyEffectsFromBlocks(List.of(new Entity.Movement(this.oldPosition(), this.position())), false);
       this.tickBubbleColumn();
 
       for(int i = 0; i <= 1; ++i) {

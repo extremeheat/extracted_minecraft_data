@@ -260,8 +260,8 @@ public class Enderman extends Monster implements NeutralMob {
                BlockPos oldBlockPos = BlockPos.containing(oldPos);
                int packedDiff = BlockUtil.clampedPackDifferenceInPosition(oldBlockPos, this.blockPosition(), 127, 127, 127);
                level.levelEvent(2018, oldBlockPos, packedDiff);
-               level.playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
-               this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
+               level.playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource());
+               this.playSound(SoundEvents.ENDERMAN_TELEPORT);
             }
          }
 

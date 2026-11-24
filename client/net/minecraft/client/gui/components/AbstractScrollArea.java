@@ -23,11 +23,11 @@ public abstract class AbstractScrollArea extends AbstractWidget {
    }
 
    public boolean mouseScrolled(final double mx, final double my, final double scrollX, final double scrollY) {
-      if (!this.isVisible()) {
-         return false;
-      } else {
+      if (this.isVisible() && this.scrollable()) {
          this.setScrollAmount(this.scrollAmount() - scrollY * this.scrollRate());
          return true;
+      } else {
+         return false;
       }
    }
 

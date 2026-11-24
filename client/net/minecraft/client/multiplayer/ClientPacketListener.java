@@ -897,10 +897,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleTakeItemEntity(final ClientboundTakeItemEntityPacket packet) {
       PacketUtils.ensureRunningOnSameThread(packet, this, (PacketProcessor)this.minecraft.packetProcessor());
-      Entity from = this.level.getEntity(packet.getItemId());
-      LivingEntity to = (LivingEntity)this.level.getEntity(packet.getPlayerId());
+      Entity from = this.level.getEntity(packet.itemId());
+      LivingEntity to = (LivingEntity)this.level.getEntity(packet.playerId());
       if (from != null) {
-         if (!from.isSilent()) {
+         if (!from.isSilent() && (to == null || !to.isSilent())) {
             if (from instanceof ExperienceOrb) {
                this.level.playLocalSound(from.getX(), from.getY(), from.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.35F + 0.9F, false);
             } else {
@@ -917,14 +917,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             ItemEntity itemEntity = (ItemEntity)from;
             ItemStack itemStack = itemEntity.getItem();
             if (!itemStack.isEmpty()) {
-               itemStack.shrink(packet.getAmount());
+               itemStack.shrink(packet.amount());
             }
 
             if (itemStack.isEmpty()) {
-               this.level.removeEntity(packet.getItemId(), Entity.RemovalReason.DISCARDED);
+               this.level.removeEntity(packet.itemId(), Entity.RemovalReason.DISCARDED);
             }
          } else if (!(from instanceof ExperienceOrb)) {
-            this.level.removeEntity(packet.getItemId(), Entity.RemovalReason.DISCARDED);
+            this.level.removeEntity(packet.itemId(), Entity.RemovalReason.DISCARDED);
          }
       }
 
@@ -1117,7 +1117,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             case 35:
                int tickLength = 40;
                this.minecraft.particleEngine.createTrackingEmitter(entity, ParticleTypes.TOTEM_OF_UNDYING, 30);
-               this.level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.TOTEM_USE, entity.getSoundSource(), 1.0F, 1.0F, false);
+               if (!entity.isSilent()) {
+                  this.level.playLocalSound(entity.getX(), entity.getY(), entity.getZ(), SoundEvents.TOTEM_USE, entity.getSoundSource(), 1.0F, 1.0F, false);
+               }
+
                if (entity == this.minecraft.player) {
                   this.minecraft.player.displayItemActivation(findTotem(this.minecraft.player));
                }
@@ -1452,11 +1455,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (event == ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE) {
          this.level.setThunderLevel(paramFloat);
       } else if (event == ClientboundGameEventPacket.PUFFER_FISH_STING) {
-         this.level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.PUFFER_FISH_STING, SoundSource.NEUTRAL, 1.0F, 1.0F);
+         this.level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.PUFFER_FISH_STING, SoundSource.NEUTRAL);
       } else if (event == ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT) {
          this.level.addParticle(ParticleTypes.ELDER_GUARDIAN, player.getX(), player.getY(), player.getZ(), 0.0, 0.0, 0.0);
          if (param == 1) {
-            this.level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.HOSTILE, 1.0F, 1.0F);
+            this.level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.ELDER_GUARDIAN_CURSE, SoundSource.HOSTILE);
          }
       } else if (event == ClientboundGameEventPacket.IMMEDIATE_RESPAWN) {
          player.setShowDeathScreen(paramFloat == 0.0F);

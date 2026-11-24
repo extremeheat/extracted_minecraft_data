@@ -503,7 +503,6 @@ public class WorldOptionsScreen extends Screen implements HasGamemasterPermissio
             this.publish(singleplayerServer, this.wantedMultiplayerScope);
          }
 
-         this.minecraft.getPlayerSocialManager().getPresenceHandler().tryUpdatePresence();
       }
    }
 

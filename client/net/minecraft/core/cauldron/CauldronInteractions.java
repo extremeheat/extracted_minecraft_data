@@ -60,7 +60,7 @@ public class CauldronInteractions {
                player.awardStat(Stats.USE_CAULDRON);
                player.awardStat(Stats.ITEM_USED.get(usedItem));
                level.setBlockAndUpdate(pos, Blocks.WATER_CAULDRON.defaultBlockState());
-               level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+               level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS);
                level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
             }
 
@@ -78,7 +78,7 @@ public class CauldronInteractions {
             player.awardStat(Stats.USE_CAULDRON);
             player.awardStat(Stats.ITEM_USED.get(usedItem));
             LayeredCauldronBlock.lowerFillLevel(state, level, pos);
-            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS);
             level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, pos);
          }
 
@@ -95,7 +95,7 @@ public class CauldronInteractions {
                   player.awardStat(Stats.USE_CAULDRON);
                   player.awardStat(Stats.ITEM_USED.get(itemInHand.getItem()));
                   level.setBlockAndUpdate(pos, (BlockState)state.cycle(LayeredCauldronBlock.LEVEL));
-                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS);
                   level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
                }
 
@@ -130,7 +130,7 @@ public class CauldronInteractions {
             player.awardStat(Stats.USE_CAULDRON);
             player.awardStat(Stats.ITEM_USED.get(itemUsed));
             level.setBlockAndUpdate(pos, Blocks.CAULDRON.defaultBlockState());
-            level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS);
             level.gameEvent((Entity)null, GameEvent.FLUID_PICKUP, pos);
          }
 
@@ -145,7 +145,7 @@ public class CauldronInteractions {
          player.awardStat(Stats.FILL_CAULDRON);
          player.awardStat(Stats.ITEM_USED.get(itemUsed));
          level.setBlockAndUpdate(pos, newState);
-         level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, soundEvent, SoundSource.BLOCKS);
          level.gameEvent((Entity)null, GameEvent.FLUID_PLACE, pos);
       }
 

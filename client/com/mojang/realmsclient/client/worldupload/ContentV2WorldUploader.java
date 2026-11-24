@@ -97,7 +97,7 @@ public final class ContentV2WorldUploader implements AutoCloseable {
       return this.state.compareAndSet(ContentV2WorldUploader.State.RUNNING, terminal);
    }
 
-   private UploadSession renewSessionIfRequired() {
+   private synchronized UploadSession renewSessionIfRequired() {
       UploadSession current = this.session;
       if (current == null) {
          throw new IllegalStateException("Upload session has not been created");

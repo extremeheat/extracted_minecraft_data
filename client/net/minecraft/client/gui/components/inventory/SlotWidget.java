@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components.inventory;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.BundleMouseActions;
 import net.minecraft.client.gui.Font;
@@ -31,8 +30,7 @@ public class SlotWidget extends AbstractWidget {
    protected static final Identifier SLOT_HIGHLIGHT_BACK_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_back");
    protected static final Identifier SLOT_HIGHLIGHT_FRONT_SPRITE = Identifier.withDefaultNamespace("container/slot_highlight_front");
    private final Slot slot;
-   private final Function<Slot, Tooltip> tooltipSupplier;
-   private final Supplier<@Nullable Tooltip> emptySlotTooltip;
+   private final TooltipProvider tooltipProvider;
    private final Font font;
    protected final Minecraft minecraft;
    private final int containerWidth;
@@ -40,27 +38,14 @@ public class SlotWidget extends AbstractWidget {
    private @Nullable String overrideItemCount;
    private final ItemSlotMouseAction itemSlotMouseAction;
 
-   public SlotWidget(final Slot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos) {
-      this(slot, minecraft, containerWidth, leftPos, topPos, defaultTooltipSupplier(minecraft), () -> null);
-   }
-
-   public SlotWidget(final Slot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos, final Supplier<@Nullable Tooltip> emptySlotTooltip) {
-      this(slot, minecraft, containerWidth, leftPos, topPos, defaultTooltipSupplier(minecraft), emptySlotTooltip);
-   }
-
-   public SlotWidget(final Slot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos, final Function<Slot, Tooltip> tooltipSupplier, final Supplier<@Nullable Tooltip> emptySlotTooltip) {
+   public SlotWidget(final Slot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos, final TooltipProvider tooltipProvider) {
       super(slot.x + leftPos - 1, slot.y + topPos - 1, 18, 18, CommonComponents.EMPTY);
       this.slot = slot;
       this.minecraft = minecraft;
       this.font = minecraft.font;
       this.containerWidth = containerWidth;
-      this.tooltipSupplier = tooltipSupplier;
-      this.emptySlotTooltip = emptySlotTooltip;
+      this.tooltipProvider = tooltipProvider;
       this.itemSlotMouseAction = new BundleMouseActions(minecraft);
-   }
-
-   private static Function<Slot, Tooltip> defaultTooltipSupplier(final Minecraft minecraft) {
-      return (s) -> Tooltip.createForItem(Screen.getTooltipFromItem(minecraft, s.getItem()), s.getItem());
    }
 
    public Slot slot() {
@@ -129,12 +114,7 @@ public class SlotWidget extends AbstractWidget {
    }
 
    private void updateTooltip() {
-      if (this.slot.hasItem()) {
-         this.setTooltip((Tooltip)this.tooltipSupplier.apply(this.slot));
-      } else {
-         this.setTooltip((Tooltip)this.emptySlotTooltip.get());
-      }
-
+      this.setTooltip(this.tooltipProvider.forSlot(this.slot));
    }
 
    public boolean mouseScrolled(final double x, final double y, final double scrollX, final double scrollY) {
@@ -219,10 +199,56 @@ public class SlotWidget extends AbstractWidget {
    }
 
    protected void updateTooltipNarration(final NarrationElementOutput output) {
-      Tooltip tooltip = this.slot.hasItem() ? (Tooltip)this.tooltipSupplier.apply(this.slot) : (Tooltip)this.emptySlotTooltip.get();
+      Tooltip tooltip = this.tooltipProvider.forSlot(this.slot);
       if (tooltip != null) {
          tooltip.updateNarration(output);
       }
 
+   }
+
+   public static TooltipProvider defaultTooltipWithCustomEmpty(final Minecraft minecraft, final Function<Slot, @Nullable Tooltip> empty) {
+      return new TooltipProvider.WithDefaultFilledSlot(minecraft) {
+         public @Nullable Tooltip forEmptySlot(final Slot slot) {
+            return (Tooltip)empty.apply(slot);
+         }
+      };
+   }
+
+   public static TooltipProvider defaultTooltipWithCustomEmpty(final Minecraft minecraft, final Tooltip empty) {
+      return new TooltipProvider.WithDefaultFilledSlot(minecraft) {
+         public Tooltip forEmptySlot(final Slot slot) {
+            return empty;
+         }
+      };
+   }
+
+   public static TooltipProvider defaultTooltip(final Minecraft minecraft) {
+      return new TooltipProvider.WithDefaultFilledSlot(minecraft);
+   }
+
+   public interface TooltipProvider {
+      Tooltip forFilledSlot(Slot slot, ItemStack contents);
+
+      default @Nullable Tooltip forEmptySlot(final Slot slot) {
+         return null;
+      }
+
+      default @Nullable Tooltip forSlot(final Slot slot) {
+         ItemStack item = slot.getItem();
+         return !item.isEmpty() ? this.forFilledSlot(slot, item) : this.forEmptySlot(slot);
+      }
+
+      public static class WithDefaultFilledSlot implements TooltipProvider {
+         private final Minecraft minecraft;
+
+         protected WithDefaultFilledSlot(final Minecraft minecraft) {
+            super();
+            this.minecraft = minecraft;
+         }
+
+         public Tooltip forFilledSlot(final Slot slot, final ItemStack contents) {
+            return Tooltip.createForItem(Screen.getTooltipFromItem(this.minecraft, contents), contents);
+         }
+      }
    }
 }

@@ -120,7 +120,7 @@ public class MinecraftServerGui extends JComponent {
       chatField.addActionListener((event) -> {
          String text = chatField.getText().trim();
          if (!text.isEmpty()) {
-            this.server.handleConsoleInput(text, this.server.createCommandSourceStack());
+            this.server.handleConsoleInput(text);
          }
 
          chatField.setText("");

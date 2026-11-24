@@ -92,7 +92,7 @@ public class SculkShriekerBlock extends DropExperienceEntityBlock implements Sim
    }
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
-      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getLevel().getFluidState(context.getClickedPos()).isSourceOfType(Fluids.WATER));
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, context.getClickedFluidState().isSourceOfType(Fluids.WATER));
    }
 
    protected FluidState getFluidState(final BlockState state) {

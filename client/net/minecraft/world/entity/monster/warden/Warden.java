@@ -59,6 +59,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.SculkShriekerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.DynamicGameEventListener;
 import net.minecraft.world.level.gameevent.EntityPositionSource;
@@ -576,6 +577,7 @@ public class Warden extends Monster implements VibrationSystem {
             level.broadcastEntityEvent(Warden.this, (byte)61);
             Warden.this.playSound(SoundEvents.WARDEN_TENDRIL_CLICKS, 5.0F, Warden.this.getVoicePitch());
             BlockPos suspiciousPos = pos;
+            Entity responsibleEntity = sourceEntity;
             if (projectileOwner != null) {
                if (Warden.this.closerThan(projectileOwner, 30.0)) {
                   if (Warden.this.getBrain().hasMemoryValue(MemoryModuleType.RECENT_PROJECTILE)) {
@@ -591,12 +593,17 @@ public class Warden extends Monster implements VibrationSystem {
 
                Warden.this.getBrain().setMemoryWithExpiry(MemoryModuleType.RECENT_PROJECTILE, Unit.INSTANCE, 100L);
             } else {
-               Warden.this.increaseAngerAt(sourceEntity);
+               Entity lastDamagingEntity = SculkShriekerBlockEntity.getLastDamagingEntity(sourceEntity);
+               if (lastDamagingEntity != null) {
+                  responsibleEntity = lastDamagingEntity;
+               }
+
+               Warden.this.increaseAngerAt(responsibleEntity);
             }
 
             if (!Warden.this.getAngerLevel().isAngry()) {
                Optional<LivingEntity> activeEntity = Warden.this.angerManagement.getActiveEntity();
-               if (projectileOwner != null || activeEntity.isEmpty() || activeEntity.get() == sourceEntity) {
+               if (projectileOwner != null || activeEntity.isEmpty() || activeEntity.get() == responsibleEntity) {
                   WardenAi.setDisturbanceLocation(Warden.this, suspiciousPos);
                }
             }

@@ -166,7 +166,7 @@ public class ItemFrame extends HangingEntity {
          } else if (this.shouldDamageDropItem(source)) {
             this.dropItem(level, source.getEntity(), false);
             this.gameEvent(GameEvent.BLOCK_CHANGE, source.getEntity());
-            this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
+            this.playSound(this.getRemoveItemSound());
             return true;
          } else {
             return super.hurtServer(level, source, damage);
@@ -187,7 +187,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public void dropItem(final ServerLevel level, final @Nullable Entity causedBy) {
-      this.playSound(this.getBreakSound(), 1.0F, 1.0F);
+      this.playSound(this.getBreakSound());
       this.dropItem(level, causedBy, true);
       this.gameEvent(GameEvent.BLOCK_CHANGE, causedBy);
    }
@@ -197,7 +197,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    public void playPlacementSound() {
-      this.playSound(this.getPlaceSound(), 1.0F, 1.0F);
+      this.playSound(this.getPlaceSound());
    }
 
    public SoundEvent getPlaceSound() {
@@ -274,7 +274,7 @@ public class ItemFrame extends HangingEntity {
       this.onItemChanged(itemStack);
       this.getEntityData().set(DATA_ITEM, itemStack);
       if (!itemStack.isEmpty()) {
-         this.playSound(this.getAddItemSound(), 1.0F, 1.0F);
+         this.playSound(this.getAddItemSound());
       }
 
       if (updateNeighbours && this.pos != null) {
@@ -371,7 +371,7 @@ public class ItemFrame extends HangingEntity {
                return InteractionResult.PASS;
             }
          } else {
-            this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);
+            this.playSound(this.getRotateItemSound());
             this.setRotation(this.getRotation() + 1);
             this.gameEvent(GameEvent.BLOCK_CHANGE, player);
             return InteractionResult.SUCCESS;

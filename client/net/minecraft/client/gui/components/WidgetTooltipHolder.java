@@ -49,8 +49,8 @@ public class WidgetTooltipHolder {
             this.wasDisplayed = shouldDisplay;
          }
 
-         if (shouldDisplay && Util.getMillis() - this.displayStartTime > this.delay.toMillis()) {
-            graphics.setTooltipForNextFrame(minecraft.font, this.tooltip.toCharSequence(minecraft), this.tooltip.component(), this.createTooltipPositioner(screenRectangle, isHovered, isFocused, this.tooltip.besideCursor()), mouseX, mouseY, isFocused, this.tooltip.style(), this.tooltip.extraSpaceAfterFirstLine());
+         if (shouldDisplay && Util.getMillis() - this.displayStartTime >= this.delay.toMillis()) {
+            graphics.setTooltipForNextFrame(minecraft.font, this.tooltip.toCharSequence(minecraft), this.tooltip.component(), this.createTooltipPositioner(screenRectangle, isHovered, isFocused, this.tooltip.besideCursor()), mouseX, mouseY, isFocused, this.tooltip.style(), this.tooltip.linesBeforeExtraSpace(minecraft));
          }
 
       }

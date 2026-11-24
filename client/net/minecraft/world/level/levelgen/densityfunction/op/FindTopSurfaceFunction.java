@@ -56,11 +56,11 @@ public record FindTopSurfaceFunction(DensityFunction density, DensityFunction up
             this.upperBound.sampleVolume(context, outputBuffer, volume);
             int index = 0;
 
-            for(int z = 0; z < volume.sizeZ(); ++z) {
-               int blockZ = volume.blockZ(z);
+            for(int x = 0; x < volume.sizeX(); ++x) {
+               int blockX = volume.blockX(x);
 
-               for(int x = 0; x < volume.sizeX(); ++x) {
-                  int blockX = volume.blockX(x);
+               for(int z = 0; z < volume.sizeZ(); ++z) {
+                  int blockZ = volume.blockZ(z);
                   float upperBound = outputBuffer.get(index);
                   outputBuffer.set(index, (float)this.findSurfaceFrom(context, blockX, blockZ, upperBound));
                   ++index;

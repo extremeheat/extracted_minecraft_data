@@ -46,7 +46,7 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
    }
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
       return (BlockState)((BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource)).setValue(AGE, 4);
    }

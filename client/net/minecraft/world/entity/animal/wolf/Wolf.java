@@ -33,7 +33,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Crackiness;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
@@ -225,7 +224,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    }
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
-      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.15F, 1.0F));
+      this.getSoundSet().stepSound().ifPresent((s) -> this.playSound(s, 0.15F, 1.0F));
    }
 
    protected void addAdditionalSaveData(final ValueOutput output) {
@@ -430,7 +429,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
             if (itemStack.is(ItemTags.WOLF_COLLAR_DYES) && this.isOwnedBy(player)) {
                DyeColor color = (DyeColor)itemStack.get(DataComponents.DYE);
                if (color != null && color != this.getCollarColor()) {
-                  this.level().playSound(player, (Entity)this, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                  this.level().playSound(player, this, SoundEvents.DYE_USE, SoundSource.PLAYERS);
                   this.setCollarColor(color);
                   itemStack.consume(1, player);
                   return InteractionResult.SUCCESS;

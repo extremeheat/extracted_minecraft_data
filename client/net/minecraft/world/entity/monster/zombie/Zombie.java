@@ -548,11 +548,17 @@ public class Zombie extends Monster {
       }
 
       public void playDestroyProgressSound(final LevelAccessor level, final BlockPos pos) {
-         level.playSound((Entity)null, pos, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
+         if (!Zombie.this.isSilent()) {
+            level.playSound((Entity)null, pos, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
+         }
+
       }
 
       public void playBreakSound(final Level level, final BlockPos pos) {
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + level.getRandom().nextFloat() * 0.2F);
+         if (!Zombie.this.isSilent()) {
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + level.getRandom().nextFloat() * 0.2F);
+         }
+
       }
 
       public double acceptedDistance() {

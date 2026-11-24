@@ -77,7 +77,7 @@ public class BrushItem extends Item {
                      brushSound = SoundEvents.BRUSH_GENERIC;
                   }
 
-                  level.playSound(player, pos, brushSound, SoundSource.BLOCKS);
+                  level.playSound(player, (BlockPos)pos, brushSound, SoundSource.BLOCKS);
                   if (level instanceof ServerLevel) {
                      ServerLevel serverLevel = (ServerLevel)level;
                      BlockEntity var16 = level.getBlockEntity(pos);

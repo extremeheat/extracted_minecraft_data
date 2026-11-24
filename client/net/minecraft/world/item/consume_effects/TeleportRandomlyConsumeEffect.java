@@ -51,17 +51,20 @@ public record TeleportRandomlyConsumeEffect(float diameter, boolean directionalP
          Vec3 oldPos = user.position();
          if (user.randomTeleport(xx, yy, zz, true, BlockTags.CONSUMABLE_DOES_NOT_TELEPORT_TO)) {
             level.gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)user));
-            SoundSource soundSource;
-            SoundEvent soundEvent;
-            if (user instanceof Fox) {
-               soundEvent = SoundEvents.FOX_TELEPORT;
-               soundSource = SoundSource.NEUTRAL;
-            } else {
-               soundEvent = SoundEvents.CHORUS_FRUIT_TELEPORT;
-               soundSource = SoundSource.PLAYERS;
+            if (!user.isSilent()) {
+               SoundSource soundSource;
+               SoundEvent soundEvent;
+               if (user instanceof Fox) {
+                  soundEvent = SoundEvents.FOX_TELEPORT;
+                  soundSource = SoundSource.NEUTRAL;
+               } else {
+                  soundEvent = SoundEvents.CHORUS_FRUIT_TELEPORT;
+                  soundSource = SoundSource.PLAYERS;
+               }
+
+               level.playSound((Entity)null, user.getX(), user.getY(), user.getZ(), soundEvent, soundSource);
             }
 
-            level.playSound((Entity)null, user.getX(), user.getY(), user.getZ(), soundEvent, soundSource);
             if (this.directionalParticles) {
                BlockPos origin = BlockPos.containing(oldPos);
                BlockPos target = user.blockPosition();

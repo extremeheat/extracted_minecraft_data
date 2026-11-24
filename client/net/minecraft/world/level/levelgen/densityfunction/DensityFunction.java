@@ -47,29 +47,20 @@ public interface DensityFunction {
       return (DensityFunction)var10000;
    }, (value) -> {
       Objects.requireNonNull(value);
-      int index$2 = 0;
-      Holder var8;
-      //$FF: index$2->value
+      int index$1 = 0;
+      Holder var10000;
+      //$FF: index$1->value
       //0->net/minecraft/world/level/levelgen/densityfunction/DensityFunctions$HolderHolder
-      switch (value.typeSwitch<invokedynamic>(value, index$2)) {
+      switch (value.typeSwitch<invokedynamic>(value, index$1)) {
          case 0:
-            DensityFunctions.HolderHolder $b$0 = (DensityFunctions.HolderHolder)value;
-            DensityFunctions.HolderHolder var10000 = $b$0;
-
-            try {
-               var7 = var10000.function();
-            } catch (Throwable var6) {
-               throw new MatchException(var6.toString(), var6);
-            }
-
-            Holder patt3$temp = var7;
-            var8 = patt3$temp;
+            DensityFunctions.HolderHolder holder = (DensityFunctions.HolderHolder)value;
+            var10000 = holder.function();
             break;
          default:
-            var8 = Holder.direct(value);
+            var10000 = Holder.direct(value);
       }
 
-      return var8;
+      return var10000;
    });
    int AXIS_X = 1;
    int AXIS_Y = 2;

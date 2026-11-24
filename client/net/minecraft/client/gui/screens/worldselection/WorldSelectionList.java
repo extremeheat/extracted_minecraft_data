@@ -507,7 +507,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
                int relX = (int)event.x() - this.getContentX();
                int relY = (int)event.y() - this.getContentY();
                if (doubleClick || this.mouseOverIcon(relX, relY, 32) && this.list.entryType == WorldSelectionList.EntryType.SINGLEPLAYER) {
-                  this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                  this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
                   Consumer<WorldListEntry> onEntryInteract = this.list.onEntryInteract;
                   if (onEntryInteract != null) {
                      onEntryInteract.accept(this);
@@ -521,7 +521,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
 
       public boolean keyPressed(final KeyEvent event) {
          if (event.isSelection() && this.canInteract()) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK));
             Consumer<WorldListEntry> onEntryInteract = this.list.onEntryInteract;
             if (onEntryInteract != null) {
                onEntryInteract.accept(this);

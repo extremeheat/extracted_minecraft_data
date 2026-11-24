@@ -87,7 +87,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
 
    private void tickWaterlogged(final BlockState state, final ServerLevel level, final BlockPos position, final RandomSource random) {
       if (!this.isReadyToSpawn(state)) {
-         level.playSound((Entity)null, position, SoundEvents.DRIED_GHAST_TRANSITION, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, position, SoundEvents.DRIED_GHAST_TRANSITION, SoundSource.BLOCKS);
          level.setBlock(position, (BlockState)state.setValue(HYDRATION_LEVEL, this.getHydrationLevel(state) + 1), 2);
          level.gameEvent(GameEvent.BLOCK_CHANGE, position, GameEvent.Context.of(state));
       } else {
@@ -106,7 +106,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
          ghastling.setYHeadRot(blockRotation);
          ghastling.snapTo(spawnAt.x(), spawnAt.y(), spawnAt.z(), blockRotation, 0.0F);
          level.addFreshEntity(ghastling);
-         level.playSound((Entity)null, ghastling, SoundEvents.GHASTLING_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, ghastling, SoundEvents.GHASTLING_SPAWN, SoundSource.BLOCKS);
       }
 
    }
@@ -143,7 +143,7 @@ public class DriedGhastBlock extends HorizontalDirectionalBlock implements Simpl
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
       return (BlockState)((BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource)).setValue(FACING, context.getHorizontalDirection().getOpposite());
    }

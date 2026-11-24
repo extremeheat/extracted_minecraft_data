@@ -37,6 +37,10 @@ public class BackupConfirmScreen extends Screen {
       this.confirmation = confirmation;
    }
 
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), this.description);
+   }
+
    protected void init() {
       super.init();
       this.message = MultiLineLabel.create(this.font, this.description, this.width - 50);

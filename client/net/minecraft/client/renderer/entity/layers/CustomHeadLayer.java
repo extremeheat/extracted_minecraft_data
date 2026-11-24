@@ -45,6 +45,8 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
          M parentModel = this.getParentModel();
          parentModel.root().translateAndRotate(poseStack);
          ((HeadedModel)parentModel).translateToHead(poseStack);
+         float customHeadLayerScale = ((HeadedModel)parentModel).getCustomHeadLayerScale();
+         poseStack.scale(customHeadLayerScale, customHeadLayerScale, customHeadLayerScale);
          if (state.wornHeadType != null) {
             poseStack.translate(0.0F, this.transforms.skullYOffset(), 0.0F);
             poseStack.scale(1.1875F, 1.1875F, 1.1875F);

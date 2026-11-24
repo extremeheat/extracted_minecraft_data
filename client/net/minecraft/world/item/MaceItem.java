@@ -54,16 +54,20 @@ public class MaceItem extends Item {
             player.connection.send(new ClientboundSetEntityMotionPacket(player));
          }
 
+         SoundEvent sound;
          if (mob.onGround()) {
             if (attacker instanceof ServerPlayer) {
                ServerPlayer player = (ServerPlayer)attacker;
                player.setSpawnExtraParticlesOnFall(true);
             }
 
-            SoundEvent sound = attacker.fallDistance > 5.0 ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-            level.playSound((Entity)null, attacker.getX(), attacker.getY(), attacker.getZ(), sound, attacker.getSoundSource(), 1.0F, 1.0F);
+            sound = attacker.fallDistance > 5.0 ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
          } else {
-            level.playSound((Entity)null, attacker.getX(), attacker.getY(), attacker.getZ(), SoundEvents.MACE_SMASH_AIR, attacker.getSoundSource(), 1.0F, 1.0F);
+            sound = SoundEvents.MACE_SMASH_AIR;
+         }
+
+         if (!attacker.isSilent()) {
+            level.playSound((Entity)null, attacker.getX(), attacker.getY(), attacker.getZ(), sound, attacker.getSoundSource());
          }
 
          knockback(level, attacker, mob);

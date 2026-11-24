@@ -19,6 +19,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationTrigger;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -392,8 +393,8 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return 220;
    }
 
-   public NarratableEntry.NarrationPriority narrationPriority() {
-      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.hovered != null);
+   public NarratableEntry.NarrationPriority narrationPriority(final NarrationTrigger narrationTrigger) {
+      return NarratableEntry.NarrationPriority.of(this.isFocused(), this.hovered != null, narrationTrigger);
    }
 
    protected void removeEntries(final List<E> entries) {

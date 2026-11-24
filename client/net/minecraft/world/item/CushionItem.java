@@ -60,7 +60,10 @@ public class CushionItem extends Item {
                cushion.snapTo(entityPos, Direction.fromYRot((double)placeContext.getRotation()).toYRot(), 0.0F);
                serverLevel.addFreshEntity(cushion);
                cushion.destroyIfInFire(serverLevel);
-               level.playSound((Entity)null, cushion.getX(), cushion.getY(), cushion.getZ(), SoundEvents.CUSHION_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               if (!cushion.isSilent()) {
+                  level.playSound((Entity)null, cushion.getX(), cushion.getY(), cushion.getZ(), SoundEvents.CUSHION_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               }
+
                cushion.gameEvent(GameEvent.ENTITY_PLACE, context.getPlayer());
                itemStack.consume(1, placeContext.getPlayer());
             }

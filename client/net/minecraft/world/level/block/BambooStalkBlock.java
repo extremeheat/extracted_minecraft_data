@@ -67,7 +67,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState fluidState = context.getClickedFluidState();
       if (!fluidState.isEmpty()) {
          return null;
       } else {

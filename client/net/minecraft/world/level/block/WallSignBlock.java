@@ -40,7 +40,7 @@ public class WallSignBlock extends SignBlock implements PlainSignBlock {
 
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       BlockState state = this.defaultBlockState();
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       LevelReader level = context.getLevel();
       BlockPos pos = context.getClickedPos();
       Direction[] directions = context.getNearestLookingDirections();

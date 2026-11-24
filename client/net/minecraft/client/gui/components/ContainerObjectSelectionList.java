@@ -182,7 +182,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
 
       void updateNarration(final NarrationElementOutput output) {
          List<? extends NarratableEntry> narratables = this.narratables();
-         Screen.NarratableSearchResult result = Screen.findNarratableWidget(narratables, this.lastNarratable);
+         Screen.NarratableSearchResult result = Screen.findNarratableWidget(narratables, this.lastNarratable, output.narrationTrigger());
          if (result != null) {
             if (result.priority().isTerminal()) {
                this.lastNarratable = result.entry();

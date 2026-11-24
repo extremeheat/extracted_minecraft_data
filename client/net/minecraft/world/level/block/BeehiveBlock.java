@@ -133,7 +133,7 @@ public class BeehiveBlock extends BaseEntityBlock {
                ServerLevel serverLevel = (ServerLevel)level;
                if (itemStack.is(Items.SHEARS)) {
                   dropHoneycomb(serverLevel, itemStack, state, level.getBlockEntity(pos), player, pos);
-                  level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS);
                   itemStack.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
                   hiveEmptied = true;
                   level.gameEvent(player, GameEvent.SHEAR, pos);
@@ -143,7 +143,7 @@ public class BeehiveBlock extends BaseEntityBlock {
 
             if (itemStack.is(Items.GLASS_BOTTLE)) {
                itemStack.shrink(1);
-               level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+               level.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS);
                if (itemStack.isEmpty()) {
                   player.setItemInHand(hand, new ItemStack(Items.HONEY_BOTTLE));
                } else if (!player.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {

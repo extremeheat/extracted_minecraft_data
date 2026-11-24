@@ -303,7 +303,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       this.extractShadow(state, minecraft, level);
    }
 
-   private void extractShadow(final S state, final Minecraft minecraft, final Level level) {
+   public final void extractShadow(final S state, final Minecraft minecraft, final Level level) {
       state.shadowPieces.clear();
       if ((Boolean)minecraft.options.entityShadows().get() && !state.isInvisible) {
          float shadowRadius = Math.min(this.getShadowRadius(state), 32.0F);

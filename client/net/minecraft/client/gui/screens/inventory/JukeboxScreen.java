@@ -24,14 +24,13 @@ public class JukeboxScreen extends ContainerScreen {
       List<SlotWidget> widgets = new ArrayList();
 
       for(Slot slot : (this.menu).slots) {
-         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, this::createSlotTooltip, () -> null));
+         widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, this::createSlotTooltip));
       }
 
       this.setSlotWidgets(widgets);
    }
 
-   private Tooltip createSlotTooltip(final Slot slot) {
-      ItemStack itemStack = slot.getItem();
+   private Tooltip createSlotTooltip(final Slot slot, final ItemStack itemStack) {
       List<Component> tooltip = new ArrayList(getTooltipFromItem(this.minecraft, itemStack));
       if (this.jukeboxMenu.getPlayingNextPos().isPresent() && slot.index == this.jukeboxMenu.getPlayingNextPos().getAsInt()) {
          tooltip.add(PLAYING_NEXT_TOOLTIP);

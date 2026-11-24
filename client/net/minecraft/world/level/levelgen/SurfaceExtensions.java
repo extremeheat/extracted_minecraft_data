@@ -43,7 +43,7 @@ public class SurfaceExtensions {
          double floorAmplitude = 1.5;
          double pillarFloor = Math.abs((double)this.badlandsPillarRoofNoise.get((double)blockX * 0.75, 0.0, (double)blockZ * 0.75) * 1.5);
          double extensionTop = 64.0 + Math.min(pillarBuffer * pillarBuffer * 2.5, Math.ceil(pillarFloor * 50.0) + 24.0);
-         int startBlockY = Mth.floor(extensionTop);
+         int startBlockY = Math.min(Mth.floor(extensionTop), column.maxBlockY());
          if (column.topBlockY() + 1 <= startBlockY) {
             for(int y = startBlockY; y >= column.minBlockY(); --y) {
                BlockState block = column.getBlock(y);

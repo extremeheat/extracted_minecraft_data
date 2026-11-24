@@ -93,7 +93,7 @@ public class ConduitBlockEntity extends BlockEntity {
          boolean active = updateShape(level, pos, effectBlocks);
          if (active != entity.isActive) {
             SoundEvent event = active ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE;
-            level.playSound((Entity)null, (BlockPos)pos, event, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, event, SoundSource.BLOCKS);
          }
 
          entity.isActive = active;
@@ -106,12 +106,12 @@ public class ConduitBlockEntity extends BlockEntity {
 
       if (entity.isActive()) {
          if (gameTime % 80L == 0L) {
-            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS);
          }
 
          if (gameTime > entity.nextAmbientSoundActivation) {
             entity.nextAmbientSoundActivation = gameTime + 60L + (long)level.getRandom().nextInt(40);
-            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
+            level.playSound((Entity)null, (BlockPos)pos, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS);
          }
       }
 
@@ -177,7 +177,7 @@ public class ConduitBlockEntity extends BlockEntity {
       EntityReference<LivingEntity> newDestroyTarget = updateDestroyTarget(entity.destroyTarget, level, worldPosition, isActive);
       LivingEntity targetEntity = EntityReference.getLivingEntity(newDestroyTarget, level);
       if (targetEntity != null) {
-         level.playSound((Entity)null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, targetEntity.getX(), targetEntity.getY(), targetEntity.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS);
          targetEntity.hurtServer(level, level.damageSources().magic(), 4.0F);
       }
 

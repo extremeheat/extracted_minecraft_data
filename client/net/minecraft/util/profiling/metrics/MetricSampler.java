@@ -162,7 +162,7 @@ public class MetricSampler {
 
    public static class ValueIncreasedByPercentage implements ThresholdTest {
       private final float percentageIncreaseThreshold;
-      private double previousValue = 4.9E-324;
+      private double previousValue = -1.0 / 0.0;
 
       public ValueIncreasedByPercentage(final float percentageIncreaseThreshold) {
          super();
@@ -171,7 +171,7 @@ public class MetricSampler {
 
       public boolean test(final double value) {
          boolean result;
-         if (this.previousValue != 4.9E-324 && !(value <= this.previousValue)) {
+         if (this.previousValue != -1.0 / 0.0 && !(value <= this.previousValue)) {
             result = (value - this.previousValue) / this.previousValue >= (double)this.percentageIncreaseThreshold;
          } else {
             result = false;

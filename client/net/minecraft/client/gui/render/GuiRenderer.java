@@ -328,16 +328,18 @@ public class GuiRenderer implements AutoCloseable {
    private void executeDraw(final Draw draw, final RenderPass renderPass) {
       StagedVertexBuffer.ExecuteInfo executeInfo = this.vertexBuffer.getExecuteInfo(draw.draw);
       if (executeInfo != null) {
-         RenderPipeline pipeline = draw.pipeline();
-         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
-         renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          ScreenRectangle scissorArea = draw.scissorArea();
          if (scissorArea != null) {
-            this.enableScissor(scissorArea, renderPass);
+            if (!this.tryEnableScissor(scissorArea, renderPass)) {
+               return;
+            }
          } else {
             renderPass.disableScissor();
          }
 
+         RenderPipeline pipeline = draw.pipeline();
+         renderPass.setPipeline(RenderSystem.getCompiledPipeline(pipeline, renderPass.activeSubpass()));
+         renderPass.setVertexBuffer(0, executeInfo.vertexBuffer().slice());
          if (draw.textureSetup.texure0() != null) {
             renderPass.setUniform("Sampler0", draw.textureSetup.texure0(), draw.textureSetup.sampler0());
          }
@@ -365,14 +367,21 @@ public class GuiRenderer implements AutoCloseable {
       }
    }
 
-   private void enableScissor(final ScreenRectangle rectangle, final RenderPass renderPass) {
+   private boolean tryEnableScissor(final ScreenRectangle rectangle, final RenderPass renderPass) {
       WindowRenderState window = Minecraft.getInstance().gameRenderer.gameRenderState().windowRenderState;
       int guiScale = window.guiScale;
       double left = (double)(rectangle.left() * guiScale);
       double top = (double)(rectangle.top() * guiScale);
       double right = (double)Math.min(rectangle.right() * guiScale, window.width);
       double bottom = (double)Math.min(rectangle.bottom() * guiScale, window.height);
-      renderPass.enableScissor((int)left, window.height - (int)bottom, Math.max(0, (int)(right - left)), Math.max(0, (int)(bottom - top)));
+      int width = Math.max(0, (int)(right - left));
+      int height = Math.max(0, (int)(bottom - top));
+      if (width != 0 && height != 0) {
+         renderPass.enableScissor((int)left, window.height - (int)bottom, width, height);
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public void registerPanoramaTextures(final TextureManager textureManager) {

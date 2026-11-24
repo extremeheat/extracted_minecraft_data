@@ -262,7 +262,7 @@ public class Cat extends TamableAnimal {
    }
 
    public void hiss() {
-      this.getSoundSet().hissSound().ifPresent((s) -> this.makeSound((SoundEvent)s.value()));
+      this.getSoundSet().hissSound().ifPresent(this::makeSound);
    }
 
    protected @Nullable SoundEvent getHurtSound(final DamageSource source) {
@@ -282,13 +282,13 @@ public class Cat extends TamableAnimal {
    }
 
    protected void playEatingSound() {
-      this.getSoundSet().eatSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 1.0F, 1.0F));
+      this.getSoundSet().eatSound().ifPresent(this::playSound);
    }
 
    public void tick() {
       super.tick();
       if (this.temptGoal != null && this.temptGoal.isRunning() && !this.isTame() && this.tickCount % 100 == 0) {
-         this.getSoundSet().begForFoodSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 1.0F, 1.0F));
+         this.getSoundSet().begForFoodSound().ifPresent(this::playSound);
       }
 
       this.handleLieDown();
@@ -296,7 +296,7 @@ public class Cat extends TamableAnimal {
 
    private void handleLieDown() {
       if ((this.isLying() || this.isRelaxStateOne()) && this.tickCount % 5 == 0) {
-         this.getSoundSet().purrSound().ifPresent((s) -> this.playSound((SoundEvent)s.value(), 0.6F + 0.4F * (this.random.nextFloat() - this.random.nextFloat()), 1.0F));
+         this.getSoundSet().purrSound().ifPresent((s) -> this.playSound(s, 0.6F + 0.4F * (this.random.nextFloat() - this.random.nextFloat()), 1.0F));
       }
 
       this.updateLieDownAmount();
@@ -401,7 +401,7 @@ public class Cat extends TamableAnimal {
                DyeColor color = (DyeColor)itemStack.get(DataComponents.DYE);
                if (color != null && color != this.getCollarColor()) {
                   if (!this.level().isClientSide()) {
-                     this.level().playSound((Entity)null, (Entity)this, SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                     this.level().playSound((Entity)null, this, SoundEvents.DYE_USE, SoundSource.PLAYERS);
                      this.setCollarColor(color);
                      itemStack.consume(1, player);
                      this.setPersistenceRequired();

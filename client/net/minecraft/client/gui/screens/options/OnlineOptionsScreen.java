@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.friends.FriendsListConfirmScreen;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonLinks;
 import org.jspecify.annotations.Nullable;
@@ -24,7 +25,6 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
    private static final Component SERVERS_HEADER;
    private static final Component REALMS_HEADER;
    private static final Component FRIENDS_HEADER;
-   private static final Component XBOX_SETTINGS;
    private static final Component FRIENDS_CONFIRM_TITLE;
    private static final Component MICROSOFT_ACCOUNT_LINK;
    private static final Component FRIENDS_CONFIRM_MESSAGE;
@@ -86,7 +86,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       this.allowFriendRequestsButton = ((CycleButton.Builder)CycleButton.onOffBuilder(playerSocialManager.isAllowFriendRequests()).withTooltip((var0) -> ALLOW_FRIEND_REQUESTS_TOOLTIP)).create(0, 0, 150, 20, ALLOW_FRIEND_REQUESTS_LABEL, (var2, enabled) -> applyFriendSettings(this.minecraft, playerSocialManager.isFriendListEnabled(), enabled, (var1) -> this.updateFriendListDependentButtons()));
       this.list.addSmall(this.friendsListButton, this.allowFriendRequestsButton);
       this.inGameNotificationButton = ((CycleButton.Builder)CycleButton.onOffBuilder((Boolean)inGameNotificationOpt.get()).withTooltip((var0) -> IN_GAME_NOTIFICATIONS_TOOLTIP)).create(0, 0, 150, 20, IN_GAME_NOTIFICATIONS_LABEL, (var1, enabled) -> inGameNotificationOpt.set(enabled));
-      Button xboxSettingsButton = Button.builder(XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build();
+      Button xboxSettingsButton = Button.builder(CommonComponents.XBOX_SETTINGS, (var1) -> PrivacyConfirmLinkScreen.confirmLinkNow(this, CommonLinks.PRIVACY_AND_ONLINE_SETTINGS)).build();
       this.list.addSmall(this.inGameNotificationButton, xboxSettingsButton);
       this.updateFriendListDependentButtons();
       this.list.addHeader(SERVERS_HEADER);
@@ -149,7 +149,6 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       SERVERS_HEADER = Component.translatable("options.online.servers.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
       REALMS_HEADER = Component.translatable("options.online.realms.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
       FRIENDS_HEADER = Component.translatable("options.online.friends.header").withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      XBOX_SETTINGS = Component.translatable("options.online.xboxSettings");
       FRIENDS_CONFIRM_TITLE = Component.translatable("options.friendsList.confirm.title").withStyle(ChatFormatting.UNDERLINE);
       MICROSOFT_ACCOUNT_LINK = Component.translatable("options.friendsList.confirm.message.link").withStyle((UnaryOperator)((style) -> style.withUnderlined(true).withColor(ChatFormatting.BLUE).withClickEvent(new ClickEvent.OpenUrl(CommonLinks.PRIVACY_AND_ONLINE_SETTINGS))));
       FRIENDS_CONFIRM_MESSAGE = Component.translatable("options.friendsList.confirm.message", MICROSOFT_ACCOUNT_LINK);

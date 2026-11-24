@@ -92,7 +92,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             access.execute((level, pos) -> {
                long gameTime = level.getGameTime();
                if (CartographyTableMenu.this.lastSoundTime != gameTime) {
-                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  level.playSound((Entity)null, (BlockPos)pos, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS);
                   CartographyTableMenu.this.lastSoundTime = gameTime;
                }
 

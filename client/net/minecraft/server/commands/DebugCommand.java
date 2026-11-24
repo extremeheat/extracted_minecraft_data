@@ -2,7 +2,6 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -95,8 +94,7 @@ public class DebugCommand {
          } else if (context.tracer() != null) {
             throw DebugCommand.NO_RECURSIVE_TRACES.create();
          } else {
-            CommandContext<CommandSourceStack> currentContext = currentStep.getTopContext();
-            Collection<CommandFunction<CommandSourceStack>> functions = FunctionArgument.getFunctions(currentContext, "name");
+            Collection<CommandFunction<CommandSourceStack>> functions = FunctionArgument.getRawFunction(currentStep.getTopContext(), "name").create(source);
             MinecraftServer server = source.getServer();
             String outputName = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
             CommandResponseTracker<CommandFunction<CommandSourceStack>> tracker = CommandResponseTracker.<CommandFunction<CommandSourceStack>>create();

@@ -45,7 +45,7 @@ public interface SegmentableBlock {
    }
 
    default BlockState getStateForPlacement(final BlockPlaceContext context, final Block block, final IntegerProperty segment, final EnumProperty<Direction> facing) {
-      BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+      BlockState state = context.getClickedBlockState();
       return state.is(block) ? (BlockState)state.setValue(segment, Math.min(4, (Integer)state.getValue(segment) + 1)) : (BlockState)block.defaultBlockState().setValue(facing, context.getHorizontalDirection().getOpposite());
    }
 }

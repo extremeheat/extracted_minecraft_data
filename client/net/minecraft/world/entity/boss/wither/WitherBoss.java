@@ -297,7 +297,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
                   }
                }
 
-               if (destroyed) {
+               if (destroyed && !this.isSilent()) {
                   level.levelEvent((Entity)null, 1022, this.blockPosition(), 0);
                }
             }

@@ -25,7 +25,7 @@ public class SpyglassItem extends Item {
    }
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
-      player.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
+      player.playSound(SoundEvents.SPYGLASS_USE);
       player.awardStat(Stats.ITEM_USED.get(this));
       return ItemUtils.startUsingInstantly(level, player, hand);
    }
@@ -41,6 +41,6 @@ public class SpyglassItem extends Item {
    }
 
    private void stopUsing(final LivingEntity entity) {
-      entity.playSound(SoundEvents.SPYGLASS_STOP_USING, 1.0F, 1.0F);
+      entity.playSound(SoundEvents.SPYGLASS_STOP_USING);
    }
 }

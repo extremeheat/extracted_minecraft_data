@@ -74,11 +74,11 @@ public record EndIslandFunction() implements DensityFunction {
       }
 
       public void sampleVolume(final SamplerContext context, final DensityBuffer outputBuffer, final DensityVolume volume) {
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            int blockZ = volume.blockZ(z);
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            int blockX = volume.blockX(x);
 
-            for(int x = 0; x < volume.sizeX(); ++x) {
-               int blockX = volume.blockX(x);
+            for(int z = 0; z < volume.sizeZ(); ++z) {
+               int blockZ = volume.blockZ(z);
                float value = this.sampleValue(context, blockX, 0, blockZ);
                int index = volume.indexUnchecked(x, 0, z);
                outputBuffer.setRange(index, volume.sizeY(), value);

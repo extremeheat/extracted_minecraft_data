@@ -147,32 +147,33 @@ public record DomainWarpFunction(DensityFunction input, DensityFunction offsetX,
          this.offsetX.sampleVolume(context, outputBuffer, volume);
          int i = 0;
 
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            for(int x = 0; x < volume.sizeX(); ++x) {
-               int blockX = volume.blockX(x);
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            int blockX = volume.blockX(x);
+            int strideX = volume.strideX();
 
-               for(int y = 0; y < volume.sizeY(); ++y) {
-                  int inputX = blockX + (int)outputBuffer.get(i);
-                  minInputX = Math.min(inputX, minInputX);
-                  maxInputX = Math.max(inputX, maxInputX);
-                  inputCoordinates[i * 2] = inputX;
-                  ++i;
-               }
+            for(int zy = 0; zy < strideX; ++zy) {
+               int inputX = blockX + (int)outputBuffer.get(i);
+               minInputX = Math.min(inputX, minInputX);
+               maxInputX = Math.max(inputX, maxInputX);
+               inputCoordinates[i * 2] = inputX;
+               ++i;
             }
          }
 
          this.offsetZ.sampleVolume(context, outputBuffer, volume);
          i = 0;
 
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            int blockZ = volume.blockZ(z);
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            for(int z = 0; z < volume.sizeZ(); ++z) {
+               int blockZ = volume.blockZ(z);
 
-            for(int xy = 0; xy < volume.strideZ(); ++xy) {
-               int inputZ = blockZ + (int)outputBuffer.get(i);
-               minInputZ = Math.min(inputZ, minInputZ);
-               maxInputZ = Math.max(inputZ, maxInputZ);
-               inputCoordinates[i * 2 + 1] = inputZ;
-               ++i;
+               for(int y = 0; y < volume.sizeY(); ++y) {
+                  int inputZ = blockZ + (int)outputBuffer.get(i);
+                  minInputZ = Math.min(inputZ, minInputZ);
+                  maxInputZ = Math.max(inputZ, maxInputZ);
+                  inputCoordinates[i * 2 + 1] = inputZ;
+                  ++i;
+               }
             }
          }
 
@@ -223,17 +224,16 @@ public record DomainWarpFunction(DensityFunction input, DensityFunction offsetX,
          this.offsetX.sampleVolume(context, outputBuffer, volume);
          int i = 0;
 
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            for(int x = 0; x < volume.sizeX(); ++x) {
-               int blockX = volume.blockX(x);
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            int blockX = volume.blockX(x);
+            int strideX = volume.strideX();
 
-               for(int y = 0; y < volume.sizeY(); ++y) {
-                  int inputX = blockX + (int)outputBuffer.get(i);
-                  minInputX = Math.min(inputX, minInputX);
-                  maxInputX = Math.max(inputX, maxInputX);
-                  inputCoordinates[i * 3] = inputX;
-                  ++i;
-               }
+            for(int zy = 0; zy < strideX; ++zy) {
+               int inputX = blockX + (int)outputBuffer.get(i);
+               minInputX = Math.min(inputX, minInputX);
+               maxInputX = Math.max(inputX, maxInputX);
+               inputCoordinates[i * 3] = inputX;
+               ++i;
             }
          }
 
@@ -254,15 +254,17 @@ public record DomainWarpFunction(DensityFunction input, DensityFunction offsetX,
          this.offsetZ.sampleVolume(context, outputBuffer, volume);
          i = 0;
 
-         for(int z = 0; z < volume.sizeZ(); ++z) {
-            int blockZ = volume.blockZ(z);
+         for(int x = 0; x < volume.sizeX(); ++x) {
+            for(int z = 0; z < volume.sizeZ(); ++z) {
+               int blockZ = volume.blockZ(z);
 
-            for(int xy = 0; xy < volume.strideZ(); ++xy) {
-               int inputZ = blockZ + (int)outputBuffer.get(i);
-               minInputZ = Math.min(inputZ, minInputZ);
-               maxInputZ = Math.max(inputZ, maxInputZ);
-               inputCoordinates[i * 3 + 2] = inputZ;
-               ++i;
+               for(int y = 0; y < volume.sizeY(); ++y) {
+                  int inputZ = blockZ + (int)outputBuffer.get(i);
+                  minInputZ = Math.min(inputZ, minInputZ);
+                  maxInputZ = Math.max(inputZ, maxInputZ);
+                  inputCoordinates[i * 3 + 2] = inputZ;
+                  ++i;
+               }
             }
          }
 

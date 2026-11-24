@@ -83,10 +83,10 @@ public abstract class BasePressurePlateBlock extends Block {
       }
 
       if (!isPressed && wasPressed) {
-         level.playSound((Entity)null, pos, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
+         level.playSound((Entity)null, (BlockPos)pos, this.type.pressurePlateClickOff(), SoundSource.BLOCKS);
          level.gameEvent(sourceEntity, GameEvent.BLOCK_DEACTIVATE, pos);
       } else if (isPressed && !wasPressed) {
-         level.playSound((Entity)null, pos, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
+         level.playSound((Entity)null, (BlockPos)pos, this.type.pressurePlateClickOn(), SoundSource.BLOCKS);
          level.gameEvent(sourceEntity, GameEvent.BLOCK_ACTIVATE, pos);
       }
 

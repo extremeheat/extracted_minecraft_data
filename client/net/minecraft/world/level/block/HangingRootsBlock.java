@@ -39,7 +39,7 @@ public class HangingRootsBlock extends Block implements SimpleWaterloggedBlock {
    public @Nullable BlockState getStateForPlacement(final BlockPlaceContext context) {
       BlockState state = super.getStateForPlacement(context);
       if (state != null) {
-         FluidState fluidState = context.getLevel().getFluidState(context.getClickedPos());
+         FluidState fluidState = context.getClickedFluidState();
          return (BlockState)state.setValue(WATERLOGGED, fluidState.isSourceOfType(Fluids.WATER));
       } else {
          return null;

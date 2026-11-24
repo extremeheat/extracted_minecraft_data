@@ -48,6 +48,8 @@ public abstract class RangedZombie extends Zombie implements RangedAttackMob {
 
    protected abstract SoundEvent getRangedAttackSound();
 
+   protected abstract float getMaxRangedAttackDistance();
+
    public void performRangedAttack(final LivingEntity target, final float power) {
       ItemStack mainHandItem = this.getMainHandItem();
       ItemStack itemStack = mainHandItem.is(this.getRangedWeaponType()) ? mainHandItem : new ItemStack(this.getRangedWeaponType());
@@ -70,14 +72,19 @@ public abstract class RangedZombie extends Zombie implements RangedAttackMob {
       } else {
          LivingEntity target = this.getTarget();
          if (target != null && target.isAlive()) {
-            float rangeThreshold = this.isRanged ? 9.0F : 25.0F;
-            if (this.distanceToSqr(target) >= (double)rangeThreshold) {
-               return true;
-            } else if (this.isWithinMeleeAttackRange(target)) {
+            float maxRange = this.getMaxRangedAttackDistance();
+            if (this.distanceToSqr(target) > (double)(maxRange * maxRange)) {
                return false;
             } else {
-               Path path = this.navigation.getPath() != null ? this.navigation.getPath() : this.navigation.createPath(target, 0);
-               return path != null && path.getTarget().equals(target.blockPosition()) && !path.canReach();
+               float rangeThreshold = this.isRanged ? 9.0F : 25.0F;
+               if (this.distanceToSqr(target) >= (double)rangeThreshold) {
+                  return true;
+               } else if (this.isWithinMeleeAttackRange(target)) {
+                  return false;
+               } else {
+                  Path path = this.navigation.getPath() != null ? this.navigation.getPath() : this.navigation.createPath(target, 0);
+                  return path != null && path.getTarget().equals(target.blockPosition()) && !path.canReach();
+               }
             }
          } else {
             return false;

@@ -365,6 +365,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
                   this.activeLocationDependentEffects.add(effect.effect());
                }
             } else if (active) {
+               ((EnchantmentLocationBasedEffect)effect.effect()).onDeactivated(itemInUse, this, this.position(), 1);
                this.activeLocationDependentEffects.remove(effect.effect());
             }
          }
@@ -529,7 +530,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
          this.primeTime(false);
          if (heldItem.is(Items.FLINT_AND_STEEL)) {
-            FlintAndSteelItem.playSound(this.level(), this.blockPosition());
+            FlintAndSteelItem.playSound(this.level(), this.blockPosition(), player.getSoundSource());
             heldItem.hurtAndBreak(1, player, (EquipmentSlot)hand.asEquipmentSlot());
          } else {
             FireChargeItem.playSound(this.level(), this.blockPosition());
@@ -542,9 +543,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public boolean equipItem(final ItemStack heldItem) {
-      if (this.isBaby()) {
-         return false;
-      } else {
+      if (!this.isBaby() && !this.isPrimed()) {
          if (this.hasBodyItem()) {
             Item swallowedItem = this.getItemBySlot(EquipmentSlot.BODY).getItem();
             if (heldItem.is(swallowedItem)) {
@@ -571,6 +570,8 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
 
          this.playSound(this.getAbsorbSound());
          return true;
+      } else {
+         return false;
       }
    }
 
@@ -876,7 +877,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
          verticalPower = Math.clamp(verticalPower, -128.0F, 128.0F);
          Vec3 horizontalKnockback = (new Vec3(xd, 0.0, zd)).normalize().scale((double)horizontalPower);
          this.addDeltaMovement(-horizontalKnockback.x, (double)verticalPower * 1.2, -horizontalKnockback.z);
-         this.soundSettings.hitSound().ifPresent((s) -> this.playSound((SoundEvent)s.value()));
+         this.soundSettings.hitSound().ifPresent(this::playSound);
       } else {
          super.knockback(power, xd, zd, source, damage, comesFromEffect);
       }

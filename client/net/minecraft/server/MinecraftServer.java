@@ -215,6 +215,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public static final Supplier<GameRules> DEFAULT_GAME_RULES;
    public static final NameAndId ANONYMOUS_PLAYER_PROFILE;
    public static final String SERVER_THREAD_NAME = "Server thread";
+   public static final Component SERVER_COMMAND_SENDER_NAME;
    protected final LevelStorageSource.LevelStorageAccess storageSource;
    protected final PlayerDataStorage playerDataStorage;
    private final SavedDataStorage savedDataStorage;
@@ -639,7 +640,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       if (this.playerList != null) {
          LOGGER.info("Saving players");
          this.playerList.saveAll();
-         this.playerList.removeAll();
+         this.playerList.removeAllForShutdown();
       }
 
       LOGGER.info("Saving worlds");
@@ -1665,9 +1666,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.resources.managers.getCommands();
    }
 
-   public CommandSourceStack createCommandSourceStack() {
+   public @Nullable CommandSourceStack createCommandSourceStack() {
       ServerLevel level = this.findRespawnDimension();
-      return new CommandSourceStack(this, Vec3.atLowerCornerOf(this.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, Component.literal("Server"), this);
+      return level == null ? null : this.createCommandSourceStack(level);
+   }
+
+   public CommandSourceStack createCommandSourceStack(final ServerLevel level) {
+      return new CommandSourceStack(this, Vec3.atLowerCornerOf(level.getRespawnData().pos()), Vec2.ZERO, level, LevelBasedPermissionSet.OWNER, SERVER_COMMAND_SENDER_NAME, this);
    }
 
    public ServerLevel findRespawnDimension() {
@@ -2309,6 +2314,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       DEMO_SETTINGS = new LevelSettings("Demo World", GameType.SURVIVAL, LevelSettings.DifficultySettings.DEFAULT, false, WorldDataConfiguration.DEFAULT);
       DEFAULT_GAME_RULES = () -> new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures());
       ANONYMOUS_PLAYER_PROFILE = new NameAndId(Util.NIL_UUID, "Anonymous Player");
+      SERVER_COMMAND_SENDER_NAME = Component.literal("Server");
    }
 
    public static enum MultiplayerScope {

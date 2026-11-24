@@ -88,7 +88,7 @@ public class TickCommand {
       ServerTickRateManager manager = source.getServer().tickRateManager();
       if (freeze) {
          if (manager.isSprinting()) {
-            manager.stopSprinting();
+            manager.stopSprinting(source);
          }
 
          if (manager.isSteppingForward()) {
@@ -125,7 +125,7 @@ public class TickCommand {
    }
 
    private static int stopSprinting(final CommandSourceStack source) throws CommandSyntaxException {
-      if (!source.getServer().tickRateManager().stopSprinting()) {
+      if (!source.getServer().tickRateManager().stopSprinting(source)) {
          throw ERROR_SPRINT_STOP_NOT_SPRINTING.create();
       } else {
          source.sendSuccess(() -> Component.translatable("commands.tick.sprint.stop.success"), true);

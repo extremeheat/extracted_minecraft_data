@@ -262,34 +262,42 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    }
 
    public void sendSuccess(final Supplier<Component> messageSupplier, final boolean broadcast) {
-      boolean shouldSendSystemMessage = this.source.acceptsSuccess() && !this.silent;
-      boolean shouldBroadcast = broadcast && this.source.shouldInformAdmins() && !this.silent;
+      sendSuccess(this.server, this.source, this.silent, this::getDisplayName, messageSupplier, broadcast);
+   }
+
+   public static void sendSuccessAsServer(final MinecraftServer server, final Supplier<Component> messageSupplier, final boolean broadcast) {
+      sendSuccess(server, server, false, () -> MinecraftServer.SERVER_COMMAND_SENDER_NAME, messageSupplier, broadcast);
+   }
+
+   public static void sendSuccess(final MinecraftServer server, final CommandSource source, final boolean silent, final Supplier<Component> nameSupplier, final Supplier<Component> messageSupplier, final boolean broadcast) {
+      boolean shouldSendSystemMessage = source.acceptsSuccess() && !silent;
+      boolean shouldBroadcast = broadcast && source.shouldInformAdmins() && !silent;
       if (shouldSendSystemMessage || shouldBroadcast) {
          Component message = (Component)messageSupplier.get();
          if (shouldSendSystemMessage) {
-            this.source.sendSystemMessage(message);
+            source.sendSystemMessage(message);
          }
 
          if (shouldBroadcast) {
-            this.broadcastToAdmins(message);
+            broadcastToAdmins(server, source, (Component)nameSupplier.get(), message);
          }
 
       }
    }
 
-   private void broadcastToAdmins(final Component message) {
-      Component broadcast = Component.translatable("chat.type.admin", this.getDisplayName(), message).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
-      GameRules gameRules = this.level.getGameRules();
+   private static void broadcastToAdmins(final MinecraftServer server, final CommandSource source, final Component displayName, final Component message) {
+      Component broadcast = Component.translatable("chat.type.admin", displayName, message).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
+      GameRules gameRules = server.getGameRules();
       if ((Boolean)gameRules.get(GameRules.SEND_COMMAND_FEEDBACK)) {
-         for(ServerPlayer player : this.server.getPlayerList().getPlayers()) {
-            if (player.commandSource() != this.source && this.server.getPlayerList().isOp(player.nameAndId())) {
+         for(ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if (player.commandSource() != source && server.getPlayerList().isOp(player.nameAndId())) {
                player.sendSystemMessage(broadcast);
             }
          }
       }
 
-      if (this.source != this.server && (Boolean)gameRules.get(GameRules.LOG_ADMIN_COMMANDS)) {
-         this.server.sendSystemMessage(broadcast);
+      if (source != server && (Boolean)gameRules.get(GameRules.LOG_ADMIN_COMMANDS)) {
+         server.sendSystemMessage(broadcast);
       }
 
    }

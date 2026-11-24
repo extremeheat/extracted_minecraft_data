@@ -47,7 +47,7 @@ public class Shoot extends Behavior<Breeze> {
    protected void start(final ServerLevel level, final Breeze breeze, final long timestamp) {
       breeze.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((target) -> breeze.setPose(Pose.SHOOTING));
       breeze.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT_CHARGING, Unit.INSTANCE, (long)SHOOT_INITIAL_DELAY_TICKS);
-      breeze.playSound(SoundEvents.BREEZE_INHALE, 1.0F, 1.0F);
+      breeze.playSound(SoundEvents.BREEZE_INHALE);
    }
 
    protected void stop(final ServerLevel level, final Breeze breeze, final long timestamp) {

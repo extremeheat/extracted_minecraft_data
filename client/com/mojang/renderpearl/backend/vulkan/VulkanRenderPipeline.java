@@ -328,6 +328,7 @@ public final class VulkanRenderPipeline implements BackendRenderPipeline, Destro
       vkState.failOp(VulkanConst.toVk(face.fail()));
       vkState.passOp(VulkanConst.toVk(face.pass()));
       vkState.depthFailOp(VulkanConst.toVk(face.depthFail()));
+      vkState.compareOp(VulkanConst.toVk(face.compare()));
       vkState.compareMask(face.compareMask());
       vkState.writeMask(face.writeMask());
       vkState.reference(face.reference());

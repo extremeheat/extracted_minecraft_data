@@ -2,19 +2,20 @@ package com.mojang.realmsclient.client.worldupload;
 
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import org.jspecify.annotations.Nullable;
 
 public final class UploadCancellation {
    private final AtomicBoolean cancelled = new AtomicBoolean();
-   private final AtomicReference<@Nullable CompletableFuture<?>> activeRequest = new AtomicReference();
+   private final Set<CompletableFuture<?>> activeRequests = ConcurrentHashMap.newKeySet();
 
    public UploadCancellation() {
       super();
@@ -22,11 +23,7 @@ public final class UploadCancellation {
 
    public void cancel() {
       if (this.cancelled.compareAndSet(false, true)) {
-         CompletableFuture<?> request = (CompletableFuture)this.activeRequest.get();
-         if (request != null) {
-            request.cancel(true);
-         }
-
+         this.activeRequests.forEach((request) -> request.cancel(true));
       }
    }
 
@@ -53,7 +50,7 @@ public final class UploadCancellation {
    }
 
    private <T> T await(final CompletableFuture<T> request, final @Nullable Duration timeout) {
-      this.activeRequest.set(request);
+      this.activeRequests.add(request);
       if (this.isCancelled()) {
          request.cancel(true);
       }
@@ -76,7 +73,7 @@ public final class UploadCancellation {
          timeoutException.initCause(e);
          throw new CompletionException(timeoutException);
       } finally {
-         this.activeRequest.compareAndSet(request, (Object)null);
+         this.activeRequests.remove(request);
       }
 
       return (T)var3;

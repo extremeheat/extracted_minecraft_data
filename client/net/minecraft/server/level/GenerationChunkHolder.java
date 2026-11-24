@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.util.StaticCache2D;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.thread.BlockableEventLoop;
@@ -69,7 +70,17 @@ public abstract class GenerationChunkHolder {
       } else {
          return this.acquireStatusBump(step.targetStatus()) ? chunkMap.applyStep(this, step, cache).handle((chunk, exception) -> {
             if (exception != null) {
+               ChunkAccess latestChunk = this.getLatestChunk();
                CrashReport report = CrashReport.forThrowable(exception, "Exception chunk generation/loading");
+               CrashReportCategory chunkBeingLoaded = report.addCategory("Chunk being loaded");
+               chunkBeingLoaded.setDetail("Position", this.pos);
+               chunkBeingLoaded.setDetail("Target Status", step.targetStatus());
+               if (latestChunk != null) {
+                  chunkBeingLoaded.setDetail("Persisted Status", latestChunk.getPersistedStatus());
+                  chunkBeingLoaded.setDetail("Retrogen", latestChunk.getRetroGen());
+                  chunkBeingLoaded.setDetail("Has BlendingData", latestChunk.isOldNoiseGeneration());
+               }
+
                BlockableEventLoop.relayDelayCrash(report);
             } else {
                this.completeFuture(step.targetStatus(), chunk);

@@ -54,8 +54,8 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       return this.functions;
    }
 
-   public List<CommandFunction<CommandSourceStack>> getTag(final Identifier tag) {
-      return (List)this.tags.getOrDefault(tag, List.of());
+   public Optional<List<CommandFunction<CommandSourceStack>>> getTag(final Identifier tag) {
+      return Optional.ofNullable((List)this.tags.get(tag));
    }
 
    public Iterable<Identifier> getAvailableTags() {

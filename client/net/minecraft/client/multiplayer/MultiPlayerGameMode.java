@@ -444,7 +444,7 @@ public class MultiPlayerGameMode {
       this.ensureHasSentCarriedItem();
       Vec3 location = hitResult.getLocation().subtract(entity.getX(), entity.getY(), entity.getZ());
       this.connection.send(new ServerboundInteractPacket(entity.getId(), hand, location, player.isShiftKeyDown()));
-      return (InteractionResult)(this.localPlayerMode == GameType.SPECTATOR ? InteractionResult.PASS : player.interactOn(entity, hand, location));
+      return (InteractionResult)(this.localPlayerMode != GameType.SPECTATOR && !player.getCooldowns().isOnCooldown(player.getItemInHand(hand)) ? player.interactOn(entity, hand, location) : InteractionResult.PASS);
    }
 
    public void handleContainerInput(final int containerId, final int slotNum, final int buttonNum, final ContainerInput containerInput, final Player player) {

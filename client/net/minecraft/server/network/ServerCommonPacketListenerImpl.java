@@ -42,6 +42,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    public static final int LATENCY_CHECK_INTERVAL = 15000;
    private static final int CLOSED_LISTENER_TIMEOUT = 15000;
    private static final Component TIMEOUT_DISCONNECTION_MESSAGE = Component.translatable("disconnect.timeout");
+   private static final DisconnectionDetails SHUTDOWN_DISCONNECTION_DETAILS = new DisconnectionDetails(Component.translatable("multiplayer.disconnect.server_shutdown"));
    static final Component DISCONNECT_UNEXPECTED_QUERY = Component.translatable("multiplayer.disconnect.unexpected_query_response");
    protected final MinecraftServer server;
    protected final Connection connection;
@@ -224,6 +225,12 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    public void disconnect(final DisconnectionDetails details) {
       this.connection.send(new ClientboundDisconnectPacket(details.reason()), PacketSendListener.thenRun(() -> this.connection.disconnect(details)));
       this.connection.setReadOnly();
+   }
+
+   public void disconnectForShutdown() {
+      this.connection.send(new ClientboundDisconnectPacket(SHUTDOWN_DISCONNECTION_DETAILS.reason()));
+      this.connection.disconnectNonBlocking(SHUTDOWN_DISCONNECTION_DETAILS);
+      this.connection.handleDisconnectionOnShutdown();
    }
 
    protected boolean isSingleplayerOwner() {

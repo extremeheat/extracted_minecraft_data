@@ -165,7 +165,7 @@ public class Camel extends AbstractHorse {
       if (this.dashCooldown > 0) {
          --this.dashCooldown;
          if (this.dashCooldown == 0) {
-            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), this.getDashReadySound(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), this.getDashReadySound(), SoundSource.NEUTRAL);
          }
       }
 
@@ -320,9 +320,9 @@ public class Camel extends AbstractHorse {
 
    protected void playStepSound(final BlockPos pos, final BlockState blockState) {
       if (blockState.is(BlockTags.CAMEL_SAND_STEP_SOUND_BLOCKS)) {
-         this.playSound(SoundEvents.CAMEL_STEP_SAND, 1.0F, 1.0F);
+         this.playSound(SoundEvents.CAMEL_STEP_SAND);
       } else {
-         this.playSound(SoundEvents.CAMEL_STEP, 1.0F, 1.0F);
+         this.playSound(SoundEvents.CAMEL_STEP);
       }
 
    }

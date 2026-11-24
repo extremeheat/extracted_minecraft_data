@@ -84,7 +84,7 @@ public abstract class AbstractCow extends Animal {
    public InteractionResult mobInteract(final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
       if (itemStack.is(Items.BUCKET) && !this.isBaby()) {
-         player.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
+         player.playSound(SoundEvents.COW_MILK);
          ItemStack bucketOrMilkBucket = ItemUtils.createFilledResult(itemStack, player, Items.MILK_BUCKET.getDefaultInstance());
          player.setItemInHand(hand, bucketOrMilkBucket);
          return InteractionResult.SUCCESS;

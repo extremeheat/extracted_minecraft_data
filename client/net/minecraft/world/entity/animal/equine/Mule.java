@@ -40,8 +40,8 @@ public class Mule extends AbstractChestedHorse {
       this.playSound(SoundEvents.MULE_JUMP, 0.4F, 1.0F);
    }
 
-   public void playChestEquipsSound() {
-      this.playSound(SoundEvents.MULE_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+   public SoundEvent getChestEquipSound() {
+      return SoundEvents.MULE_CHEST;
    }
 
    public @Nullable AgeableMob getBreedOffspring(final ServerLevel level, final AgeableMob partner) {

@@ -108,7 +108,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             double lengthWithJumpBoost = orgLength + (double)body.getJumpBoostPower();
             body.setDeltaMovement(this.chosenJump.scale(lengthWithJumpBoost / orgLength));
             body.getBrain().setMemory(MemoryModuleType.LONG_JUMP_MID_JUMP, true);
-            level.playSound((Entity)null, body, (SoundEvent)this.getJumpSound.apply(body), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            level.playSound((Entity)null, body, (SoundEvent)this.getJumpSound.apply(body), SoundSource.NEUTRAL);
          }
       } else {
          --this.findJumpTries;

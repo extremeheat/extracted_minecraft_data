@@ -15,7 +15,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
-   private double lastUpdateTime = 4.9E-324;
+   private double lastUpdateTime = -1.0 / 0.0;
    private List<VoxelShape> shapes = Collections.emptyList();
 
    public CollisionBoxRenderer(final Minecraft minecraft) {

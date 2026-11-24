@@ -90,8 +90,8 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       Direction.Axis axis = (Direction.Axis)state.getValue(AXIS);
 
       for(Direction dir : axis.getDirections()) {
-         BlockState neigbour = level.getBlockState(pos.relative(dir));
-         if (!neigbour.is(BlockTags.PALE_OAK_LOGS) || neigbour.getValue(AXIS) != axis) {
+         BlockState neighbour = level.getBlockState(pos.relative(dir));
+         if (!neighbour.is(BlockTags.PALE_OAK_LOGS) || neighbour.getValueOrElse(AXIS, axis) != axis) {
             return false;
          }
       }

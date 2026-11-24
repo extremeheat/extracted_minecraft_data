@@ -72,7 +72,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       return (BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection())).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER))).setValue(CRACKED, false);
    }
 
@@ -117,7 +117,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    protected InteractionResult useWithoutItem(final BlockState state, final Level level, final BlockPos pos, final Player player, final BlockHitResult hitResult) {
       BlockEntity var7 = level.getBlockEntity(pos);
       if (var7 instanceof DecoratedPotBlockEntity decoratedPot) {
-         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound((Entity)null, (BlockPos)pos, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS);
          decoratedPot.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);
          level.gameEvent(player, GameEvent.BLOCK_CHANGE, pos);
          return InteractionResult.SUCCESS;

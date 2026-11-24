@@ -15,13 +15,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 import net.minecraft.CrashReportDetail;
@@ -34,7 +34,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ServerConnectionDetails;
 import net.minecraft.network.protocol.game.ClientboundLowDiskSpaceWarningPacket;
-import net.minecraft.server.ConsoleInput;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerInterface;
 import net.minecraft.server.ServerLinks;
@@ -81,7 +80,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int CONVERSION_RETRY_DELAY_MS = 5000;
    private static final int CONVERSION_RETRIES = 2;
-   private final List<ConsoleInput> consoleInput = Collections.synchronizedList(new ArrayList());
+   private final Queue<String> consoleInput = new ConcurrentLinkedQueue();
    private @Nullable QueryThreadGs4 queryThreadGs4;
    private final RconConsoleSource rconConsoleSource;
    private @Nullable RconThread rconThread;
@@ -170,7 +169,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
             String line;
             try {
                while(!DedicatedServer.this.isStopped() && DedicatedServer.this.isRunning() && (line = reader.readLine()) != null) {
-                  DedicatedServer.this.handleConsoleInput(line, DedicatedServer.this.createCommandSourceStack());
+                  DedicatedServer.this.handleConsoleInput(line);
                }
             } catch (IOException e) {
                DedicatedServer.LOGGER.error("Exception handling console input", e);
@@ -421,14 +420,19 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
       this.handleConsoleInputs();
    }
 
-   public void handleConsoleInput(final String msg, final CommandSourceStack source) {
-      this.consoleInput.add(new ConsoleInput(msg, source));
+   public void handleConsoleInput(final String msg) {
+      this.consoleInput.add(msg);
    }
 
    public void handleConsoleInputs() {
-      while(!this.consoleInput.isEmpty()) {
-         ConsoleInput input = (ConsoleInput)this.consoleInput.remove(0);
-         this.getCommands().performPrefixedCommand(input.source, input.msg);
+      String input;
+      while((input = (String)this.consoleInput.poll()) != null) {
+         CommandSourceStack source = this.createCommandSourceStack();
+         if (source == null) {
+            LOGGER.warn("Rejecting command '{}', server has not started", input);
+         } else {
+            this.getCommands().performPrefixedCommand(source, input);
+         }
       }
 
    }

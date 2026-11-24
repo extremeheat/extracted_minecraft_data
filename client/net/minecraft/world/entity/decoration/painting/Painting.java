@@ -161,7 +161,7 @@ public class Painting extends HangingEntity {
 
    public void dropItem(final ServerLevel level, final @Nullable Entity causedBy) {
       if ((Boolean)level.getGameRules().get(GameRules.ENTITY_DROPS)) {
-         this.playSound(SoundEvents.PAINTING_BREAK, 1.0F, 1.0F);
+         this.playSound(SoundEvents.PAINTING_BREAK);
          if (causedBy instanceof Player) {
             Player player = (Player)causedBy;
             if (player.hasInfiniteMaterials()) {
@@ -176,7 +176,7 @@ public class Painting extends HangingEntity {
    }
 
    public void playPlacementSound() {
-      this.playSound(SoundEvents.PAINTING_PLACE, 1.0F, 1.0F);
+      this.playSound(SoundEvents.PAINTING_PLACE);
    }
 
    public void snapTo(final double x, final double y, final double z, final float yRot, final float xRot) {

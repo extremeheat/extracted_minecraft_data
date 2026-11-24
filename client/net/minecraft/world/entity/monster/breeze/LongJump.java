@@ -99,7 +99,7 @@ public class LongJump extends Behavior<Breeze> {
       }
 
       breeze.setPose(Pose.INHALING);
-      level.playSound((Entity)null, breeze, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
+      level.playSound((Entity)null, breeze, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE);
       breeze.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((targetPos) -> breeze.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(targetPos)));
    }
 
@@ -120,13 +120,13 @@ public class LongJump extends Behavior<Breeze> {
             breeze.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, Unit.INSTANCE);
          }
 
-         breeze.playSound(SoundEvents.BREEZE_JUMP, 1.0F, 1.0F);
+         breeze.playSound(SoundEvents.BREEZE_JUMP);
          breeze.setPose(Pose.LONG_JUMPING);
          breeze.setYRot(breeze.yBodyRot);
          breeze.setDiscardFriction(true);
          breeze.setDeltaMovement(velocityVector);
       } else if (isFinishedJumping(breeze)) {
-         breeze.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
+         breeze.playSound(SoundEvents.BREEZE_LAND);
          breeze.setPose(Pose.STANDING);
          breeze.setDiscardFriction(false);
          boolean wasHurt = breeze.getBrain().hasMemoryValue(MemoryModuleType.HURT_BY);

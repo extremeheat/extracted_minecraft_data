@@ -250,6 +250,11 @@ public abstract class Mob extends LivingEntity implements Targeting, EquipmentUs
       return !this.overrideLookControl;
    }
 
+   public void forceSetRotation(final float yRot, final boolean relativeY, final float xRot, final boolean relativeX) {
+      super.forceSetRotation(yRot, relativeY, xRot, relativeX);
+      this.disableLookControlThisTick();
+   }
+
    public @Nullable LivingEntity getControllingPassenger() {
       Entity firstPassenger = this.getFirstPassenger();
       Mob var10000;

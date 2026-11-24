@@ -105,34 +105,35 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          }
 
          if (sourceEntity instanceof ItemEntity item) {
-            Entity var13 = item.getOwner();
-            if (var13 instanceof ServerPlayer player) {
+            Entity var11 = item.getOwner();
+            if (var11 instanceof ServerPlayer player) {
                return player;
             }
          }
 
-         if (sourceEntity instanceof BlockAttachedEntity entity) {
-            if (entity.getLastDamageSource() != null) {
-               Entity var14 = entity.getLastDamageSource().getEntity();
-               if (var14 instanceof ServerPlayer) {
-                  ServerPlayer player = (ServerPlayer)var14;
-                  return player;
-               }
-            }
+         Entity player = getLastDamagingEntity(sourceEntity);
+         if (player instanceof ServerPlayer player) {
+            return player;
+         } else {
+            return null;
          }
-
-         if (sourceEntity instanceof ArmorStand armorStand) {
-            if (armorStand.getLastDamageSource() != null) {
-               Entity var15 = armorStand.getLastDamageSource().getEntity();
-               if (var15 instanceof ServerPlayer) {
-                  ServerPlayer player = (ServerPlayer)var15;
-                  return player;
-               }
-            }
-         }
-
-         return null;
       }
+   }
+
+   public static @Nullable Entity getLastDamagingEntity(final @Nullable Entity sourceEntity) {
+      if (sourceEntity instanceof BlockAttachedEntity entity) {
+         if (entity.getLastDamageSource() != null) {
+            return entity.getLastDamageSource().getEntity();
+         }
+      }
+
+      if (sourceEntity instanceof ArmorStand armorStand) {
+         if (armorStand.getLastDamageSource() != null) {
+            return armorStand.getLastDamageSource().getEntity();
+         }
+      }
+
+      return sourceEntity;
    }
 
    public void tryShriek(final ServerLevel level, final @Nullable ServerPlayer player) {

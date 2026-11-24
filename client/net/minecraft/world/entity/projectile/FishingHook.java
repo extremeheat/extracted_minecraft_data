@@ -37,6 +37,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -311,8 +312,8 @@ public class FishingHook extends Projectile {
             double fishX = this.getX() + (double)(angleSin * (float)this.timeUntilHooked * 0.1F);
             double fishY = (double)((float)Mth.floor(this.getY()) + 1.0F);
             double fishZ = this.getZ() + (double)(angleCos * (float)this.timeUntilHooked * 0.1F);
-            BlockState splashBlockState = serverLevel.getBlockState(BlockPos.containing(fishX, fishY - 1.0, fishZ));
-            if (splashBlockState.is(Blocks.WATER)) {
+            FluidState splashFluidState = serverLevel.getFluidState(BlockPos.containing(fishX, fishY - 1.0, fishZ));
+            if (splashFluidState.is(Fluids.WATER)) {
                if (this.random.nextFloat() < 0.15F) {
                   serverLevel.sendParticles(ParticleTypes.BUBBLE, fishX, fishY - 0.10000000149011612, fishZ, 1, (double)angleSin, 0.1, (double)angleCos, 0.0);
                }
@@ -347,8 +348,8 @@ public class FishingHook extends Projectile {
             double fishX = this.getX() + (double)(Mth.sin((double)angle) * dist) * 0.1;
             double fishY = (double)((float)Mth.floor(this.getY()) + 1.0F);
             double fishZ = this.getZ() + (double)(Mth.cos((double)angle) * dist) * 0.1;
-            BlockState splashBlockState = serverLevel.getBlockState(BlockPos.containing(fishX, fishY - 1.0, fishZ));
-            if (splashBlockState.is(Blocks.WATER)) {
+            FluidState splashFluidState = serverLevel.getFluidState(BlockPos.containing(fishX, fishY - 1.0, fishZ));
+            if (splashFluidState.is(Fluids.WATER)) {
                serverLevel.sendParticles(ParticleTypes.SPLASH, fishX, fishY, fishZ, 2 + this.random.nextInt(2), 0.10000000149011612, 0.0, 0.10000000149011612, 0.0);
             }
          }

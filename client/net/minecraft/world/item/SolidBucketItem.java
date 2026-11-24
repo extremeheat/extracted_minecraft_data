@@ -44,7 +44,7 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
          }
 
          level.gameEvent(user, GameEvent.FLUID_PLACE, pos);
-         level.playSound(user, (BlockPos)pos, (Holder)this.placeSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         level.playSound(user, (BlockPos)pos, (Holder)this.placeSound, SoundSource.BLOCKS);
          return true;
       } else {
          return false;

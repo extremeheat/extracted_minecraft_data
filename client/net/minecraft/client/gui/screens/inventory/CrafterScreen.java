@@ -42,7 +42,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
          if (slot instanceof CrafterSlot crafterSlot) {
             widgets.add(new CrafterSlotWidget(crafterSlot, this.minecraft, this.imageWidth, this.leftPos, this.topPos));
          } else {
-            widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos));
+            widgets.add(new SlotWidget(slot, this.minecraft, this.imageWidth, this.leftPos, this.topPos, SlotWidget.defaultTooltip(this.minecraft)));
          }
       }
 

@@ -42,10 +42,11 @@ public record ShootProjectileDispenseBehavior(Vec3 offset, double scale, float u
       Item var7 = dispensed.getItem();
       if (var7 instanceof ProjectileItem projectileItem) {
          Projectile.spawnProjectileUsingShoot(projectileItem.asProjectile(level, position, dispensed, direction), level, dispensed, (double)direction.getStepX(), (double)direction.getStepY(), (double)direction.getStepZ(), this.power, this.uncertainty);
+         dispensed.shrink(1);
+         return DispenseBehavior.DispenseResult.success(dispensed);
+      } else {
+         return DispenseBehavior.DispenseResult.failure();
       }
-
-      dispensed.shrink(1);
-      return DispenseBehavior.DispenseResult.success(dispensed);
    }
 
    public void playSuccessSound(final BlockSource source) {

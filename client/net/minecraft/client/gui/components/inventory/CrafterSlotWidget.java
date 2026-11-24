@@ -16,7 +16,7 @@ public class CrafterSlotWidget extends SlotWidget {
    private final CrafterSlot slot;
 
    public CrafterSlotWidget(final CrafterSlot slot, final Minecraft minecraft, final int containerWidth, final int leftPos, final int topPos) {
-      super(slot, minecraft, containerWidth, leftPos, topPos, () -> TOGGLABLE_SLOT_TOOLTIP);
+      super(slot, minecraft, containerWidth, leftPos, topPos, defaultTooltipWithCustomEmpty(minecraft, TOGGLABLE_SLOT_TOOLTIP));
       this.slot = slot;
    }
 

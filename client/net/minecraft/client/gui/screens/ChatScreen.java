@@ -27,7 +27,6 @@ import org.jspecify.annotations.Nullable;
 public class ChatScreen extends Screen {
    public static final double MOUSE_SCROLL_SPEED = 7.0;
    private static final Component USAGE_TEXT = Component.translatable("chat_screen.usage");
-   private static final Component RESTRICTED_NARRATION_TEXT = Component.translatable("chat_screen.restricted.narration");
    public static final int USAGE_BACKGROUND_COLOR = -805306368;
    private final boolean closeOnSubmit;
    private String historyBuffer;
@@ -76,7 +75,14 @@ public class ChatScreen extends Screen {
       this.commandSuggestions.setAllowHiding(false);
       this.commandSuggestions.setAllowSuggestions(false);
       ChatAbilities chatAbilities = this.minecraft.player.chatAbilities();
-      this.displayMode = chatAbilities.hasAnyRestrictions() ? ChatComponent.DisplayMode.FOREGROUND_RESTRICTED : ChatComponent.DisplayMode.FOREGROUND;
+      if (chatAbilities.hasAnyRestrictions()) {
+         this.displayMode = ChatComponent.DisplayMode.FOREGROUND_RESTRICTED;
+      } else if (this.minecraft.allowChatOnlyWithFriend()) {
+         this.displayMode = ChatComponent.DisplayMode.FOREGROUND_RESTRICTED_FRIENDS_ONLY;
+      } else {
+         this.displayMode = ChatComponent.DisplayMode.FOREGROUND;
+      }
+
       this.commandSuggestions.setRestrictions(chatAbilities.canSendMessages(), chatAbilities.canSendCommands());
       this.commandSuggestions.updateCommandInfo();
    }
@@ -305,8 +311,8 @@ public class ChatScreen extends Screen {
 
    protected void updateNarrationState(final NarrationElementOutput output) {
       output.add(NarratedElementType.TITLE, this.getTitle());
-      if (this.displayMode.showRestrictedPrompt) {
-         output.add(NarratedElementType.USAGE, (Component)CommonComponents.joinForNarration(USAGE_TEXT, RESTRICTED_NARRATION_TEXT));
+      if (this.displayMode.restrictedPrompt != null) {
+         output.add(NarratedElementType.USAGE, (Component)CommonComponents.joinForNarration(USAGE_TEXT, this.displayMode.restrictedPrompt.narration()));
       } else {
          output.add(NarratedElementType.USAGE, USAGE_TEXT);
       }

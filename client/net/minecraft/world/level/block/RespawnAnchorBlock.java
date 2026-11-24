@@ -80,7 +80,7 @@ public class RespawnAnchorBlock extends Block {
                ServerPlayer.RespawnConfig newRespawnConfig = new ServerPlayer.RespawnConfig(LevelData.RespawnData.of(serverLevel.dimension(), pos, 0.0F, 0.0F), false);
                if (respawnConfig == null || !respawnConfig.isSamePosition(newRespawnConfig)) {
                   serverPlayer.setRespawnPosition(newRespawnConfig, true);
-                  serverLevel.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  serverLevel.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS);
                   return InteractionResult.SUCCESS_SERVER;
                }
             }
@@ -144,7 +144,7 @@ public class RespawnAnchorBlock extends Block {
       BlockState newState = (BlockState)state.setValue(CHARGE, (Integer)state.getValue(CHARGE) + 1);
       level.setBlockAndUpdate(pos, newState);
       level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(sourceEntity, newState));
-      level.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      level.playSound((Entity)null, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS);
    }
 
    public void animateTick(final BlockState state, final Level level, final BlockPos pos, final RandomSource random) {

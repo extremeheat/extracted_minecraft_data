@@ -151,7 +151,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       BlockState state = (BlockState)((BlockState)this.defaultBlockState().setValue(PERSISTENT, true)).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
       return updateDistance(state, context.getLevel(), context.getClickedPos());
    }

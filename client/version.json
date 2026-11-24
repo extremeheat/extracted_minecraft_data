@@ -1,16 +1,16 @@
 {
-    "id": "26.4-snapshot-10",
-    "name": "26.4 Snapshot 10",
-    "world_version": 5130,
+    "id": "26.4-pre-1",
+    "name": "26.4 Pre-Release 1",
+    "world_version": 5131,
     "series_id": "main",
-    "protocol_version": 1073742172,
+    "protocol_version": 1073742173,
     "pack_version": {
         "resource_major": 104,
         "resource_minor": 0,
         "data_major": 128,
-        "data_minor": 0
+        "data_minor": 1
     },
-    "build_time": "2026-11-17T15:59:58+00:00",
+    "build_time": "2026-11-24T12:46:26+00:00",
     "java_component": "java-runtime-epsilon",
     "java_version": 25,
     "stable": false,

@@ -31,6 +31,7 @@ public class ItemModelGenerator implements UnbakedModel {
    private static final CuboidFace.UVs NORTH_FACE_UVS = new CuboidFace.UVs(16.0F, 0.0F, 0.0F, 16.0F);
    private static final float UV_SHRINK = 0.01F;
    private static final float NORTH_AND_SOUTH_FACE_INSET = 0.01F;
+   private static final float LAYER_OFFSET = 0.001F;
 
    public ItemModelGenerator() {
       super();
@@ -80,20 +81,23 @@ public class ItemModelGenerator implements UnbakedModel {
       }
    }
 
-   private static void bakeExtrudedSprite(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final BakedQuad.MaterialInfo materialInfo) {
+   private static void bakeExtrudedSprite(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final BakedQuad.MaterialInfo materialInfo, final int layerIndex) {
       Vector3f from = new Vector3f(0.0F, 0.0F, 7.51F);
       Vector3f to = new Vector3f(16.0F, 16.0F, 8.49F);
       builder.addUnculledFace(FaceBakery.bakeQuad(interner, from, to, SOUTH_FACE_UVS, Quadrant.R0, materialInfo, Direction.SOUTH, modelState, (CuboidRotation)null));
       builder.addUnculledFace(FaceBakery.bakeQuad(interner, from, to, NORTH_FACE_UVS, Quadrant.R0, materialInfo, Direction.NORTH, modelState, (CuboidRotation)null));
-      bakeSideFaces(builder, interner, modelState, materialInfo);
+      bakeSideFaces(builder, interner, modelState, materialInfo, layerIndex);
    }
 
-   private static void bakeSideFaces(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final BakedQuad.MaterialInfo materialInfo) {
+   private static void bakeSideFaces(final QuadCollection.Builder builder, final ModelBaker.Interner interner, final ModelState modelState, final BakedQuad.MaterialInfo materialInfo, final int layerIndex) {
       SpriteContents sprite = materialInfo.sprite().contents();
       float xScale = 16.0F / (float)sprite.width();
       float yScale = 16.0F / (float)sprite.height();
       Vector3f from = new Vector3f();
       Vector3f to = new Vector3f();
+      float layerOffset = 0.001F * (float)layerIndex;
+      float minZ = 7.5F - layerOffset;
+      float maxZ = 8.5F + layerOffset;
 
       for(SideFace sideFace : getSideFaces(sprite)) {
          SideDirection sideDirection = sideFace.facing();
@@ -135,24 +139,28 @@ public class ItemModelGenerator implements UnbakedModel {
          endX *= xScale;
          startY *= yScale;
          endY *= yScale;
+         startX -= (float)sideDirection.direction.getStepX() * layerOffset;
+         endX -= (float)sideDirection.direction.getStepX() * layerOffset;
+         startY -= (float)sideDirection.direction.getStepY() * layerOffset;
+         endY -= (float)sideDirection.direction.getStepY() * layerOffset;
          startY = 16.0F - startY;
          endY = 16.0F - endY;
          switch (sideDirection.ordinal()) {
             case 0:
-               from.set(startX, startY, 7.5F);
-               to.set(endX, startY, 8.5F);
+               from.set(startX, startY, minZ);
+               to.set(endX, startY, maxZ);
                break;
             case 1:
-               from.set(startX, endY, 7.5F);
-               to.set(endX, endY, 8.5F);
+               from.set(startX, endY, minZ);
+               to.set(endX, endY, maxZ);
                break;
             case 2:
-               from.set(startX, startY, 7.5F);
-               to.set(startX, endY, 8.5F);
+               from.set(startX, startY, minZ);
+               to.set(startX, endY, maxZ);
                break;
             case 3:
-               from.set(endX, startY, 7.5F);
-               to.set(endX, endY, 8.5F);
+               from.set(endX, startY, minZ);
+               to.set(endX, endY, maxZ);
                break;
             default:
                throw new UnsupportedOperationException();
@@ -316,7 +324,7 @@ public class ItemModelGenerator implements UnbakedModel {
       public QuadCollection compute(final ModelBaker modelBakery) {
          QuadCollection.Builder builder = new QuadCollection.Builder();
          BakedQuad.MaterialInfo materialInfo = modelBakery.interner().materialInfo(BakedQuad.MaterialInfo.of(this.material, this.material.sprite().transparency(), this.layerIndex, (Direction)null, 0));
-         ItemModelGenerator.bakeExtrudedSprite(builder, modelBakery.interner(), this.modelState, materialInfo);
+         ItemModelGenerator.bakeExtrudedSprite(builder, modelBakery.interner(), this.modelState, materialInfo, this.layerIndex);
          return builder.build();
       }
    }

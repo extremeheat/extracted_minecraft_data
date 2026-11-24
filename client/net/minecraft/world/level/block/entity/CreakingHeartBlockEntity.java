@@ -116,7 +116,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                         if (creaking != null) {
                            entity.setCreakingInfo(creaking);
                            creaking.makeSound(SoundEvents.CREAKING_SPAWN);
-                           level.playSound((Entity)null, (BlockPos)entity.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+                           level.playSound((Entity)null, (BlockPos)entity.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS);
                         }
                      }
 
@@ -237,7 +237,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
                   for(int i = 0; i < numberOfClumps; ++i) {
                      this.spreadResin(serverLevel).ifPresent((blockPos) -> {
-                        this.level.playSound((Entity)null, (BlockPos)blockPos, (Holder)((Holder)((Optional)SoundEvents.RESIN.placeSound()).orElseThrow()), SoundSource.BLOCKS, 1.0F, 1.0F);
+                        this.level.playSound((Entity)null, (BlockPos)blockPos, (Holder)((Holder)((Optional)SoundEvents.RESIN.placeSound()).orElseThrow()), SoundSource.BLOCKS);
                         this.level.gameEvent(GameEvent.BLOCK_PLACE, blockPos, GameEvent.Context.of(this.getBlockState()));
                      });
                   }

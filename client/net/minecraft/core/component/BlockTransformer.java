@@ -24,7 +24,6 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -79,14 +78,29 @@ public record BlockTransformer(List<BlockTransformData> transforms) {
 
                   if (itemInHand.isStackable()) {
                      itemInHand.consume(transformData.consumeOnUse ? 1 : 0, player);
-                  } else if (player != null) {
-                     itemInHand.hurtAndBreak(transformData.itemDamagePerUse, player, (EquipmentSlot)context.getHand().asEquipmentSlot());
+                  } else if (level instanceof ServerLevel) {
+                     ServerLevel serverLevel = (ServerLevel)level;
+                     int var10001 = transformData.itemDamagePerUse;
+                     ServerPlayer var10003;
+                     if (player instanceof ServerPlayer) {
+                        ServerPlayer p = (ServerPlayer)player;
+                        var10003 = p;
+                     } else {
+                        var10003 = null;
+                     }
+
+                     itemInHand.hurtAndBreak(var10001, serverLevel, var10003, (brokenItem) -> {
+                        if (player != null) {
+                           player.onEquippedItemBroken(brokenItem, context.getHand().asEquipmentSlot());
+                        }
+
+                     });
                   }
 
                   level.setBlock(pos, updatedShape, 11);
                   Holder<SoundEvent> sound = (Holder)transformData.sound.orElse((Object)null);
                   if (sound != null) {
-                     level.playSound(player, (BlockPos)pos, sound.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
+                     level.playSound(player, (BlockPos)pos, sound.value(), SoundSource.BLOCKS);
                   }
 
                   transformData.particle.send(level, player, pos);

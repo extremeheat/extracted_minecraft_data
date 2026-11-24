@@ -169,7 +169,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          this.nextAttackTickCount = SpellcasterIllager.this.tickCount + this.getCastingInterval();
          SoundEvent spellPrepareSound = this.getSpellPrepareSound();
          if (spellPrepareSound != null) {
-            SpellcasterIllager.this.playSound(spellPrepareSound, 1.0F, 1.0F);
+            SpellcasterIllager.this.playSound(spellPrepareSound);
          }
 
          SpellcasterIllager.this.setIsCastingSpell(this.getSpell());
@@ -179,7 +179,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          --this.attackWarmupDelay;
          if (this.attackWarmupDelay == 0) {
             this.performSpellCasting();
-            SpellcasterIllager.this.playSound(SpellcasterIllager.this.getCastingSoundEvent(), 1.0F, 1.0F);
+            SpellcasterIllager.this.playSound(SpellcasterIllager.this.getCastingSoundEvent());
          }
 
       }

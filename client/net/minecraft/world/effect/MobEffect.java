@@ -97,7 +97,12 @@ public class MobEffect implements FeatureElement {
    }
 
    public void onEffectAdded(final LivingEntity mob, final int amplifier) {
-      this.soundOnAdded.ifPresent((soundEvent) -> mob.level().playSound((Entity)null, mob.getX(), mob.getY(), mob.getZ(), soundEvent, mob.getSoundSource(), 1.0F, 1.0F));
+      this.soundOnAdded.ifPresent((soundEvent) -> {
+         if (!mob.isSilent()) {
+            mob.level().playSound((Entity)null, mob.getX(), mob.getY(), mob.getZ(), soundEvent, mob.getSoundSource());
+         }
+
+      });
    }
 
    public void onMobRemoved(final ServerLevel level, final LivingEntity mob, final int amplifier, final Entity.RemovalReason reason) {

@@ -67,7 +67,6 @@ public class SocialInteractionsScreen extends Screen {
    private final StringWidget titleWidget;
    private final FriendsListFilter friendsListFilter;
    private final FriendsListOrder friendsListOrder;
-   private int playerCount;
 
    public SocialInteractionsScreen() {
       this((Screen)null);
@@ -118,7 +117,7 @@ public class SocialInteractionsScreen extends Screen {
       this.layout.addToContents(contentAndTabs, LayoutSettings::alignHorizontallyCenter);
       this.layout.visitWidgets((x$0) -> this.addRenderableWidget(x$0));
       this.showPage();
-      this.updateServerLabel();
+      this.initializeTitleWidget();
       this.repositionElements();
    }
 
@@ -152,10 +151,6 @@ public class SocialInteractionsScreen extends Screen {
       this.blockedTab.setHeight(tabHeight);
       this.layout.arrangeElements();
       this.tabNavigationBar.arrangeElements(this.width);
-   }
-
-   public void tick() {
-      this.updateServerLabel();
    }
 
    public void update(final DeltaTracker deltaTracker) {
@@ -267,33 +262,35 @@ public class SocialInteractionsScreen extends Screen {
 
    }
 
-   private void updateServerLabel() {
-      int playerCount = this.minecraft.getConnection().getOnlinePlayers().size();
-      if (this.playerCount != playerCount) {
-         if (this.minecraft.isLocalServer()) {
-            String serverName = this.minecraft.getSingleplayerServer().getMotd();
-            this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", serverName));
+   private void initializeTitleWidget() {
+      if (this.minecraft.isLocalServer()) {
+         String serverName = this.minecraft.getSingleplayerServer().getMotd();
+         this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", serverName));
+      } else {
+         ServerData currentServer = this.minecraft.getCurrentServer();
+         if (currentServer != null) {
+            this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", currentServer.name));
          } else {
-            ServerData currentServer = this.minecraft.getCurrentServer();
-            if (currentServer != null) {
-               this.titleWidget.setMessage(Component.translatable("gui.player_interactions.title.full", currentServer.name));
-            } else {
-               this.titleWidget.setMessage(TITLE);
-            }
+            this.titleWidget.setMessage(TITLE);
          }
-
-         this.allTabButton.setMessage(Component.translatable("gui.player_interactions.tab_all", playerCount - 1));
-         this.playerCount = playerCount;
       }
 
+      this.updateAllTabCount();
+   }
+
+   private void updateAllTabCount() {
+      this.allTabButton.setMessage(Component.translatable("gui.player_interactions.tab_all", this.socialInteractionsPlayerList.countAllPlayersExceptMe()));
    }
 
    public void onAddPlayer(final PlayerInfo info) {
       this.socialInteractionsPlayerList.addPlayer(info, this.page);
+      this.contentLayout.arrangeElements();
+      this.updateAllTabCount();
    }
 
    public void onRemovePlayer(final UUID id) {
       this.socialInteractionsPlayerList.removePlayer(id);
+      this.updateAllTabCount();
    }
 
    static {

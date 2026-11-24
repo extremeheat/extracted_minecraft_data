@@ -68,6 +68,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
@@ -645,7 +646,7 @@ public class Rabbit extends Animal {
                } else {
                   level.setBlock(cropsPos, (BlockState)blockState.setValue(CarrotBlock.AGE, carrotAge - 1), 2);
                   level.gameEvent(GameEvent.BLOCK_CHANGE, cropsPos, GameEvent.Context.of((Entity)this.rabbit));
-                  level.levelEvent(2001, cropsPos, Block.getId(blockState));
+                  LevelEvent.playParticlesAndSoundDestroyBlock(this.rabbit, level, cropsPos, blockState);
                }
 
                this.rabbit.moreCarrotTicks = 40;

@@ -92,7 +92,7 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
       LevelReader level = context.getLevel();
       BlockPos pos = context.getClickedPos();
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       BlockPos northPos = pos.north();
       BlockPos eastPos = pos.east();
       BlockPos southPos = pos.south();

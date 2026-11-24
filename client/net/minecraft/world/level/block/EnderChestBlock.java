@@ -59,7 +59,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+      FluidState replacedFluidState = context.getClickedFluidState();
       return (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite())).setValue(WATERLOGGED, replacedFluidState.isSourceOfType(Fluids.WATER));
    }
 

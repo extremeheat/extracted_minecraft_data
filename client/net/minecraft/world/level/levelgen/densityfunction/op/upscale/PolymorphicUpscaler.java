@@ -4,12 +4,12 @@ import java.lang.invoke.MethodHandles;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityVolume;
 
-public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mode modeY, UpscaleFunction.Mode modeZ, int sampleCountX, int sampleCountY, int sampleCountZ, int sampleStrideY, int sampleStrideX, int sampleStrideZ, int cellSizeX, int cellSizeY, int cellSizeZ, float cellSizeXInv, float cellSizeYInv, Upscaler.Coefficients[] coefficientsX, Upscaler.Coefficients[] coefficientsY, Upscaler.Coefficients[] coefficientsZ) implements Upscaler {
+public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mode modeY, UpscaleFunction.Mode modeZ, int sampleCountX, int sampleCountY, int sampleCountZ, int sampleStrideY, int sampleStrideZ, int sampleStrideX, int cellSizeX, int cellSizeY, int cellSizeZ, float cellSizeYInv, float cellSizeZInv, Upscaler.Coefficients[] coefficientsX, Upscaler.Coefficients[] coefficientsY, Upscaler.Coefficients[] coefficientsZ) implements Upscaler {
    public PolymorphicUpscaler(final Upscaler.Parameters parameters) {
       int sampleCountX = parameters.modeX().sampleCount();
       int sampleCountY = parameters.modeY().sampleCount();
       int sampleCountZ = parameters.modeZ().sampleCount();
-      this(parameters.modeX(), parameters.modeY(), parameters.modeZ(), sampleCountX, sampleCountY, sampleCountZ, 1, sampleCountY, sampleCountX * sampleCountY, parameters.cellSizeX(), parameters.cellSizeY(), parameters.cellSizeZ(), 1.0F / (float)parameters.cellSizeX(), 1.0F / (float)parameters.cellSizeY(), Upscaler.Coefficients.computeTable(parameters.cellSizeX(), parameters.modeX()), Upscaler.Coefficients.computeTable(parameters.cellSizeY(), parameters.modeY()), Upscaler.Coefficients.computeTable(parameters.cellSizeZ(), parameters.modeZ()));
+      this(parameters.modeX(), parameters.modeY(), parameters.modeZ(), sampleCountX, sampleCountY, sampleCountZ, 1, sampleCountY, sampleCountZ * sampleCountY, parameters.cellSizeX(), parameters.cellSizeY(), parameters.cellSizeZ(), 1.0F / (float)parameters.cellSizeY(), 1.0F / (float)parameters.cellSizeZ(), Upscaler.Coefficients.computeTable(parameters.cellSizeX(), parameters.modeX()), Upscaler.Coefficients.computeTable(parameters.cellSizeY(), parameters.modeY()), Upscaler.Coefficients.computeTable(parameters.cellSizeZ(), parameters.modeZ()));
    }
 
    public PolymorphicUpscaler {
@@ -32,11 +32,11 @@ public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mo
             for(int cellX = 0; cellX < x.cellOutputCount(); ++cellX) {
                int cellOutputX = x.minCellOutput() + cellX * this.cellSizeX;
 
-               for(int sampleOffsetZ = 0; sampleOffsetZ < this.sampleCountZ; ++sampleOffsetZ) {
-                  int sampleZ = Math.min(cellZ + sampleOffsetZ, cellVolume.sizeZ() - 1);
+               for(int sampleOffsetX = 0; sampleOffsetX < this.sampleCountX; ++sampleOffsetX) {
+                  int sampleX = Math.min(cellX + sampleOffsetX, cellVolume.sizeX() - 1);
 
-                  for(int sampleOffsetX = 0; sampleOffsetX < this.sampleCountX; ++sampleOffsetX) {
-                     int sampleX = Math.min(cellX + sampleOffsetX, cellVolume.sizeX() - 1);
+                  for(int sampleOffsetZ = 0; sampleOffsetZ < this.sampleCountZ; ++sampleOffsetZ) {
+                     int sampleZ = Math.min(cellZ + sampleOffsetZ, cellVolume.sizeZ() - 1);
 
                      for(int sampleOffsetY = 0; sampleOffsetY < this.sampleCountY; ++sampleOffsetY) {
                         int sampleY = Math.min(sampleOffsetY, cellVolume.sizeY() - 1);
@@ -53,11 +53,11 @@ public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mo
                   int newSampleOffsetY = this.sampleCountY - 1;
                   int newSampleY = Math.min(cellY + newSampleOffsetY, cellVolume.sizeY() - 1);
 
-                  for(int sampleOffsetZ = 0; sampleOffsetZ < this.sampleCountZ; ++sampleOffsetZ) {
-                     int sampleZ = Math.min(cellZ + sampleOffsetZ, cellVolume.sizeZ() - 1);
+                  for(int sampleOffsetX = 0; sampleOffsetX < this.sampleCountX; ++sampleOffsetX) {
+                     int sampleX = Math.min(cellX + sampleOffsetX, cellVolume.sizeX() - 1);
 
-                     for(int sampleOffsetX = 0; sampleOffsetX < this.sampleCountX; ++sampleOffsetX) {
-                        int sampleX = Math.min(cellX + sampleOffsetX, cellVolume.sizeX() - 1);
+                     for(int sampleOffsetZ = 0; sampleOffsetZ < this.sampleCountZ; ++sampleOffsetZ) {
+                        int sampleZ = Math.min(cellZ + sampleOffsetZ, cellVolume.sizeZ() - 1);
                         int sampleColumnIndex = sampleOffsetX * this.sampleStrideX + sampleOffsetZ * this.sampleStrideZ;
 
                         for(int sampleOffsetY = 1; sampleOffsetY < this.sampleCountY; ++sampleOffsetY) {
@@ -91,41 +91,41 @@ public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mo
       int strideZ = outputVolume.strideZ();
       int outputIndex = outputVolume.indexUnchecked(cellOutputX + x0, cellOutputY + y0, cellOutputZ + z0);
 
-      for(int z = z0; z <= z1; ++z) {
-         Upscaler.Coefficients coefficientsZ = this.coefficientsZ[z];
+      for(int x = x0; x <= x1; ++x) {
+         Upscaler.Coefficients coefficientsX = this.coefficientsX[x];
 
-         for(int i = 0; i < this.sampleStrideZ; ++i) {
-            scratchSamplesZ[i] = coefficientsZ.multiply(samples, i, this.sampleStrideZ);
+         for(int i = 0; i < this.sampleStrideX; ++i) {
+            scratchSamplesX[i] = coefficientsX.multiply(samples, i, this.sampleStrideX);
          }
 
-         this.fillCellXy(outputBuffer, scratchSamplesZ, scratchSamplesX, x0, x1, y0, y1, outputIndex, strideX);
-         outputIndex += strideZ;
+         this.fillCellZy(outputBuffer, scratchSamplesX, scratchSamplesZ, z0, z1, y0, y1, outputIndex, strideZ);
+         outputIndex += strideX;
       }
 
    }
 
-   private void fillCellXy(final DensityBuffer outputBuffer, final float[] samples, final float[] scratchSamplesX, final int x0, final int x1, final int y0, final int y1, int outputIndex, final int strideX) {
-      if (this.modeX == UpscaleFunction.Mode.INTERPOLATE_LINEAR && this.modeY == UpscaleFunction.Mode.NEAREST_NEIGHBOR) {
+   private void fillCellZy(final DensityBuffer outputBuffer, final float[] samples, final float[] scratchSamplesZ, final int z0, final int z1, final int y0, final int y1, int outputIndex, final int strideZ) {
+      if (this.modeZ == UpscaleFunction.Mode.INTERPOLATE_LINEAR && this.modeY == UpscaleFunction.Mode.NEAREST_NEIGHBOR) {
          float v0 = samples[0];
          float v1 = samples[1];
-         float valueStep = (v1 - v0) * this.cellSizeXInv;
+         float valueStep = (v1 - v0) * this.cellSizeZInv;
 
-         for(int x = x0; x <= x1; ++x) {
-            scratchSamplesX[0] = v0 + valueStep * (float)x;
-            this.fillCellY(outputBuffer, scratchSamplesX, y0, y1, outputIndex);
-            outputIndex += strideX;
+         for(int z = z0; z <= z1; ++z) {
+            scratchSamplesZ[0] = v0 + valueStep * (float)z;
+            this.fillCellY(outputBuffer, scratchSamplesZ, y0, y1, outputIndex);
+            outputIndex += strideZ;
          }
 
       } else {
-         for(int x = x0; x <= x1; ++x) {
-            Upscaler.Coefficients coefficientsX = this.coefficientsX[x];
+         for(int z = z0; z <= z1; ++z) {
+            Upscaler.Coefficients coefficientsZ = this.coefficientsZ[z];
 
-            for(int i = 0; i < this.sampleStrideX; ++i) {
-               scratchSamplesX[i] = coefficientsX.multiply(samples, i, this.sampleStrideX);
+            for(int i = 0; i < this.sampleStrideZ; ++i) {
+               scratchSamplesZ[i] = coefficientsZ.multiply(samples, i, this.sampleStrideZ);
             }
 
-            this.fillCellY(outputBuffer, scratchSamplesX, y0, y1, outputIndex);
-            outputIndex += strideX;
+            this.fillCellY(outputBuffer, scratchSamplesZ, y0, y1, outputIndex);
+            outputIndex += strideZ;
          }
 
       }
@@ -161,21 +161,21 @@ public record PolymorphicUpscaler(UpscaleFunction.Mode modeX, UpscaleFunction.Mo
          int var10002 = cellBuffer.size();
          throw new IllegalArgumentException("Buffer had wrong size: " + var10002 + " for " + this.sampleCountX + "x" + this.sampleCountY + "x" + this.sampleCountZ + " samples");
       } else {
-         Upscaler.Coefficients coefficientsZ = this.coefficientsZ[zInCell];
-         float[] samplesZ = new float[this.sampleStrideZ];
-
-         for(int i = 0; i < this.sampleStrideZ; ++i) {
-            samplesZ[i] = coefficientsZ.multiply(cellBuffer.asArrayUnsafe(), i, this.sampleStrideZ);
-         }
-
          Upscaler.Coefficients coefficientsX = this.coefficientsX[xInCell];
          float[] samplesX = new float[this.sampleStrideX];
 
          for(int i = 0; i < this.sampleStrideX; ++i) {
-            samplesX[i] = coefficientsX.multiply(samplesZ, i, this.sampleStrideX);
+            samplesX[i] = coefficientsX.multiply(cellBuffer.asArrayUnsafe(), i, this.sampleStrideX);
          }
 
-         return this.coefficientsY[yInCell].multiply(samplesX, 0, this.sampleStrideY);
+         Upscaler.Coefficients coefficientsZ = this.coefficientsZ[zInCell];
+         float[] samplesZ = new float[this.sampleStrideZ];
+
+         for(int i = 0; i < this.sampleStrideZ; ++i) {
+            samplesZ[i] = coefficientsZ.multiply(samplesX, i, this.sampleStrideZ);
+         }
+
+         return this.coefficientsY[yInCell].multiply(samplesZ, 0, this.sampleStrideY);
       }
    }
 

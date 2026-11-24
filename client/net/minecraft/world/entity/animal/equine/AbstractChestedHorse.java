@@ -5,6 +5,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -176,8 +177,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return Leashable.createQuadLeashOffsets(this, 0.04, 0.41, 0.18, 0.73);
    }
 
-   public void playChestEquipsSound() {
-      this.playSound(SoundEvents.DONKEY_CHEST, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+   public SoundEvent getChestEquipSound() {
+      return SoundEvents.DONKEY_CHEST;
+   }
+
+   public final void playChestEquipsSound() {
+      this.playSound(this.getChestEquipSound(), 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
    }
 
    public int getInventoryColumns() {

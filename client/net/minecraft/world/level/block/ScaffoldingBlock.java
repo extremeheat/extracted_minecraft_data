@@ -4,6 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.damagesource.FellFromLocation;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -116,6 +118,10 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
 
    protected FluidState getFluidState(final BlockState state) {
       return (Boolean)state.getValue(WATERLOGGED) ? Fluids.WATER.getSource() : super.getFluidState(state);
+   }
+
+   protected FellFromLocation getFellFromLocation(final BlockState state, final Level level, final BlockPos pos, final LivingEntity mob) {
+      return FellFromLocation.SCAFFOLDING;
    }
 
    private boolean isBottom(final BlockGetter level, final BlockPos pos, final int distance) {

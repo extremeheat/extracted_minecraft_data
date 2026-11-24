@@ -373,7 +373,7 @@ public class Shulker extends AbstractGolem implements Enemy {
                if (attachmentDirection != null && !this.level().getBlockState(target.relative(attachmentDirection)).is(BlockTags.SHULKER_DOES_NOT_TELEPORT_TO)) {
                   this.unRide();
                   this.setAttachFace(attachmentDirection);
-                  this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
+                  this.playSound(SoundEvents.SHULKER_TELEPORT);
                   this.setPos((double)target.getX() + 0.5, (double)target.getY(), (double)target.getZ() + 0.5);
                   level.gameEvent(GameEvent.TELEPORT, oldPos, GameEvent.Context.of((Entity)this));
                   int packedDiff = BlockUtil.packDifferenceInPosition(oldPos, this.blockPosition(), 8, 8, 8);
@@ -470,10 +470,10 @@ public class Shulker extends AbstractGolem implements Enemy {
          this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER_ID);
          if (amount == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
-            this.playSound(SoundEvents.SHULKER_CLOSE, 1.0F, 1.0F);
+            this.playSound(SoundEvents.SHULKER_CLOSE);
             this.gameEvent(GameEvent.CONTAINER_CLOSE);
          } else {
-            this.playSound(SoundEvents.SHULKER_OPEN, 1.0F, 1.0F);
+            this.playSound(SoundEvents.SHULKER_OPEN);
             this.gameEvent(GameEvent.CONTAINER_OPEN);
          }
       }

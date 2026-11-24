@@ -62,11 +62,11 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    public BlockState getStateForPlacement(final BlockPlaceContext context) {
-      BlockState state = context.getLevel().getBlockState(context.getClickedPos());
+      BlockState state = context.getClickedBlockState();
       if (state.is(this)) {
          return (BlockState)state.cycle(CANDLES);
       } else {
-         FluidState replacedFluidState = context.getLevel().getFluidState(context.getClickedPos());
+         FluidState replacedFluidState = context.getClickedFluidState();
          boolean isWaterSource = replacedFluidState.isSourceOfType(Fluids.WATER);
          return (BlockState)super.getStateForPlacement(context).setValue(WATERLOGGED, isWaterSource);
       }

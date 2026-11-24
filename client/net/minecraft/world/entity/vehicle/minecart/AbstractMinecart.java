@@ -341,8 +341,12 @@ public abstract class AbstractMinecart extends VehicleEntity {
             this.onRails = false;
          }
       } else {
+         Vec3 oldPosition = this.position();
          super.move(moverType, delta);
          this.applyEffectsFromBlocks();
+         BlockPos effectPos = this.getOnPosLegacy();
+         BlockState effectState = this.level().getBlockState(effectPos);
+         this.updateFallDistanceAndCheckFallDamage(this.position().y - oldPosition.y, this.onGround(), effectState, effectPos);
       }
 
    }
@@ -355,10 +359,6 @@ public abstract class AbstractMinecart extends VehicleEntity {
          this.clearMovementThisTick();
       }
 
-   }
-
-   protected void updateFallDistanceAndCheckFallDamage(final double movementY, final boolean onGround, final BlockState state, final BlockPos pos) {
-      super.updateFallDistanceAndCheckFallDamage(this.position().y - this.oldPosition().y, onGround, state, pos);
    }
 
    public boolean isOnRails() {
