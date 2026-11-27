@@ -68,6 +68,7 @@ public class VanillaBlockTagsProvider extends TagsProvider<Block> {
       this.tag(BlockTags.BEACON_BASE_BLOCKS).add(BlockItemIds.NETHERITE_BLOCK, BlockItemIds.EMERALD_BLOCK, BlockItemIds.DIAMOND_BLOCK, BlockItemIds.GOLD_BLOCK, BlockItemIds.IRON_BLOCK);
       this.tag(BlockTags.SOUL_SPEED_BLOCKS).add(BlockItemIds.SOUL_SAND, BlockItemIds.SOUL_SOIL);
       this.tag(BlockTags.WALL_POST_OVERRIDE).add(BlockItemIds.TORCH, BlockItemIds.SOUL_TORCH, BlockItemIds.REDSTONE_TORCH, BlockItemIds.COPPER_TORCH, BlockItemIds.TRIPWIRE).addTag(BlockTags.SIGNS).addTag(BlockTags.BANNERS).addTag(BlockTags.PRESSURE_PLATES).add(BlockItemIds.CACTUS_FLOWER).add(BlockItemIds.BROWN_MUSHROOM, BlockItemIds.RED_MUSHROOM);
+      this.tag(BlockTags.WALL_SIDE_SHAPE_OVERRIDE).add(BlockItemIds.HONEY_BLOCK);
       this.tag(BlockTags.CLIMBABLE).add(BlockItemIds.LADDER, BlockItemIds.VINE, BlockItemIds.SCAFFOLDING, BlockItemIds.WEEPING_VINES).add(BlockIds.WEEPING_VINES_PLANT).add(BlockItemIds.TWISTING_VINES).add(BlockIds.TWISTING_VINES_PLANT).add(BlockItemIds.GLOW_BERRY_CROP).add(BlockIds.CAVE_VINES_PLANT);
       this.tag(BlockTags.FALL_DAMAGE_RESETTING).addTag(BlockTags.CLIMBABLE).add(BlockItemIds.SWEET_BERRY_CROP, BlockItemIds.COBWEB);
       this.tag(BlockTags.PIGLIN_REPELLENTS).add(BlockIds.SOUL_FIRE).add(BlockItemIds.SOUL_TORCH).add(BlockItemIds.SOUL_LANTERN).add(BlockIds.SOUL_WALL_TORCH).add(BlockItemIds.SOUL_CAMPFIRE);

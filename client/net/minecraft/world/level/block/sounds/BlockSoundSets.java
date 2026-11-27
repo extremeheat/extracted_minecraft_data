@@ -281,7 +281,7 @@ public class BlockSoundSets {
       context.register(CINNABAR, new BlockSoundSet(SoundEvents.CINNABAR));
       context.register(SHELF_MUSHROOM, new BlockSoundSet(SoundEvents.SHELF_MUSHROOM));
       context.register(POPLAR_LEAVES, new BlockSoundSet(SoundEvents.POPLAR_LEAVES));
-      context.register(STRAW_BED, new BlockSoundSet(SoundEvents.STRAW_BED));
+      context.register(STRAW_BED, new BlockSoundSet(SoundEvents.STRAW_BED.withBreak(Optional.of(Holder.direct(SoundEvents.STRAW_BED_BREAK_LEAVE)))));
       context.register(RED_SHRUB, new BlockSoundSet(SoundEvents.RED_SHRUB));
       context.register(ICE, new BlockSoundSet(SoundEvents.ICE));
       context.register(BLUE_ICE, new BlockSoundSet(SoundEvents.BLUE_ICE));

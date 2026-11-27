@@ -35,10 +35,10 @@ public class EffectCommands {
    private static final DynamicCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED = new DynamicCommandExceptionType((name) -> Component.translatableEscape("commands.effect.clear.specific.failed.single", name));
    private static final DynamicCommandExceptionType ERROR_CLEAR_SPECIFIC_FAILED_MULTIPLE = new DynamicCommandExceptionType((entityCount) -> Component.translatableEscape("commands.effect.clear.specific.failed.multiple", entityCount));
    private static final SimpleCommandExceptionType ERROR_NO_EFFECTS = new SimpleCommandExceptionType(Component.translatable("commands.effect.no_effects"));
-   private static final CommandResponseTracker.Messages<LivingEntity> RESPONSE_GIVE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((entity, effectCount) -> Component.translatable("commands.effect.give.success.single", effectCount, entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, effectCount) -> Component.translatable("commands.effect.give.success.multiple", effectCount, entityCount)));
+   private static final CommandResponseTracker.Messages<Entity> RESPONSE_GIVE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((entity, effectCount) -> Component.translatable("commands.effect.give.success.single", effectCount, entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, effectCount) -> Component.translatable("commands.effect.give.success.multiple", effectCount, entityCount)));
    private static final CommandResponseTracker.Messages<Entity> RESPONSE_CLEAR_ALL;
    private static final CommandResponseTracker.Messages<Entity> RESPONSE_CLEAR_SINGLE;
-   private static final CommandResponseTracker.DispatchWithArg<CommandSyntaxException, LivingEntity, Integer> ERROR_DISPATCH_GIVE;
+   private static final CommandResponseTracker.DispatchWithArg<CommandSyntaxException, Entity, Integer> ERROR_DISPATCH_GIVE;
    private static final CommandResponseTracker.Dispatch<CommandSyntaxException, Entity> ERROR_DISPATCH_CLEAR;
 
    public EffectCommands() {
@@ -55,13 +55,16 @@ public class EffectCommands {
       if (effectCount == 0) {
          throw ERROR_NO_EFFECTS.create();
       } else {
-         CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
+         CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
 
          for(Entity entity : entities) {
+            int addedEffects = 0;
             if (entity instanceof LivingEntity) {
                LivingEntity livingEntity = (LivingEntity)entity;
-               tracker.track(livingEntity, addEffects(effects, livingEntity, source.getEntity(), seconds, amplifier, particles));
+               addedEffects = addEffects(effects, livingEntity, source.getEntity(), seconds, amplifier, particles);
             }
+
+            tracker.track(entity, addedEffects);
          }
 
          if (tracker.totalValue() == 0) {
@@ -99,12 +102,15 @@ public class EffectCommands {
    }
 
    private static int clearEffects(final CommandSourceStack source, final Collection<? extends Entity> entities) throws CommandSyntaxException {
-      CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
+      CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
 
       for(Entity entity : entities) {
+         boolean allRemoved = false;
          if (entity instanceof LivingEntity livingEntity) {
-            tracker.track(livingEntity, livingEntity.removeAllEffects());
+            allRemoved = livingEntity.removeAllEffects();
          }
+
+         tracker.track(entity, allRemoved);
       }
 
       return tracker.sendFeedback(source, true, RESPONSE_CLEAR_ALL);
@@ -116,13 +122,16 @@ public class EffectCommands {
       if (effectCount == 0) {
          throw ERROR_NO_EFFECTS.create();
       } else {
-         CommandResponseTracker<LivingEntity> tracker = CommandResponseTracker.<LivingEntity>create();
+         CommandResponseTracker<Entity> tracker = CommandResponseTracker.<Entity>create();
 
          for(Entity entity : entities) {
+            int removedEffects = 0;
             if (entity instanceof LivingEntity) {
                LivingEntity livingEntity = (LivingEntity)entity;
-               tracker.track(livingEntity, removeEffects(effects, livingEntity));
+               removedEffects = removeEffects(effects, livingEntity);
             }
+
+            tracker.track(entity, removedEffects);
          }
 
          if (tracker.totalValue() == 0) {
@@ -156,7 +165,7 @@ public class EffectCommands {
    static {
       RESPONSE_CLEAR_ALL = CommandResponseTracker.messages((SimpleCommandExceptionType)ERROR_CLEAR_EVERYTHING_FAILED, (CommandResponseTracker.SingleHandler)((entity, var1) -> Component.translatable("commands.effect.clear.everything.success.single", entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, var1) -> Component.translatable("commands.effect.clear.everything.success.multiple", entityCount)));
       RESPONSE_CLEAR_SINGLE = CommandResponseTracker.messages((CommandResponseTracker.SingleHandler)((entity, effectCount) -> Component.translatable("commands.effect.clear.specific.success.single", effectCount, entity.getDisplayName())), (CommandResponseTracker.MultipleHandler)((entityCount, effectCount) -> Component.translatable("commands.effect.clear.specific.success.multiple", effectCount, entityCount)));
-      ERROR_DISPATCH_GIVE = new CommandResponseTracker.DispatchWithArg<CommandSyntaxException, LivingEntity, Integer>((entity, var1, effectCount) -> ERROR_GIVE_FAILED.create(effectCount, entity.getDisplayName()), (entityCount, var1, effectCount) -> ERROR_GIVE_FAILED_MULTIPLE.create(effectCount, entityCount));
+      ERROR_DISPATCH_GIVE = new CommandResponseTracker.DispatchWithArg<CommandSyntaxException, Entity, Integer>((entity, var1, effectCount) -> ERROR_GIVE_FAILED.create(effectCount, entity.getDisplayName()), (entityCount, var1, effectCount) -> ERROR_GIVE_FAILED_MULTIPLE.create(effectCount, entityCount));
       ERROR_DISPATCH_CLEAR = new CommandResponseTracker.Dispatch<CommandSyntaxException, Entity>((entity, var1) -> ERROR_CLEAR_SPECIFIC_FAILED.create(entity.getDisplayName()), (entityCount, var1) -> ERROR_CLEAR_SPECIFIC_FAILED_MULTIPLE.create(entityCount));
    }
 }

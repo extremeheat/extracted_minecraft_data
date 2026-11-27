@@ -120,22 +120,22 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean mayReplace;
          boolean shiftKeyDown;
          boolean var10000;
-         label101: {
+         label105: {
             blockState = level.getBlockState(pos);
             block = blockState.getBlock();
             mayReplace = blockState.canBeReplaced(this.content);
             shiftKeyDown = user != null && user.isShiftKeyDown();
             if (!mayReplace) {
-               label98: {
+               label102: {
                   if (block instanceof LiquidBlockContainer) {
                      LiquidBlockContainer container = (LiquidBlockContainer)block;
                      if (container.canPlaceLiquid(user, level, pos, blockState, this.content.defaultFluidState())) {
-                        break label98;
+                        break label102;
                      }
                   }
 
                   var10000 = false;
-                  break label101;
+                  break label105;
                }
             }
 
@@ -146,17 +146,21 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          boolean canPlaceFluidInsideBlock = blockState.isAir() || placeLiquid && (!shiftKeyDown || hitResult == null);
          if (canPlaceFluidInsideBlock) {
             if ((Boolean)level.environmentAttributes().getValue(EnvironmentAttributes.WATER_EVAPORATES, pos) && this.content == Fluids.WATER) {
-               int x = pos.getX();
-               int y = pos.getY();
-               int z = pos.getZ();
-               RandomSource random = level.getRandom();
-               level.playSound(user, (BlockPos)pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
-               if (level instanceof ServerLevel) {
-                  ServerLevel serverLevel = (ServerLevel)level;
-                  serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, (double)x, (double)y, (double)z, 8, 1.0, 1.0, 1.0, 0.0, ClientboundLevelParticlesPacket.RandomizationType.ALTERNATIVE);
-               }
+               if (level.isInValidBounds(pos)) {
+                  int x = pos.getX();
+                  int y = pos.getY();
+                  int z = pos.getZ();
+                  RandomSource random = level.getRandom();
+                  level.playSound(user, (BlockPos)pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
+                  if (level instanceof ServerLevel) {
+                     ServerLevel serverLevel = (ServerLevel)level;
+                     serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, (double)x, (double)y, (double)z, 8, 1.0, 1.0, 1.0, 0.0, ClientboundLevelParticlesPacket.RandomizationType.ALTERNATIVE);
+                  }
 
-               return true;
+                  return true;
+               } else {
+                  return false;
+               }
             } else {
                if (block instanceof LiquidBlockContainer) {
                   LiquidBlockContainer container = (LiquidBlockContainer)block;

@@ -215,15 +215,15 @@ public class AvatarRenderer<AvatarlikeEntity extends Avatar & ClientAvatarEntity
       state.capeFlap += Mth.sin((double)(walkDistance * 6.0F)) * 32.0F * pow;
    }
 
-   public void renderRightHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final boolean hasSleeve) {
-      this.renderHand(poseStack, submitNodeCollector, lightCoords, skinTexture, (this.model).rightArm, hasSleeve);
+   public void submitRightHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final boolean hasSleeve) {
+      this.submitHand(poseStack, submitNodeCollector, lightCoords, skinTexture, (this.model).rightArm, hasSleeve);
    }
 
-   public void renderLeftHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final boolean hasSleeve) {
-      this.renderHand(poseStack, submitNodeCollector, lightCoords, skinTexture, (this.model).leftArm, hasSleeve);
+   public void submitLeftHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final boolean hasSleeve) {
+      this.submitHand(poseStack, submitNodeCollector, lightCoords, skinTexture, (this.model).leftArm, hasSleeve);
    }
 
-   private void renderHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final ModelPart arm, final boolean hasSleeve) {
+   private void submitHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final Identifier skinTexture, final ModelPart arm, final boolean hasSleeve) {
       PlayerModel model = (PlayerModel)this.getModel();
       arm.resetPose();
       arm.visible = true;

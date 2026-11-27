@@ -1,5 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -15,8 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 
 public class RandomizedIntStateProvider implements BlockStateProvider {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((i) -> i.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((c) -> c.source), Codec.STRING.fieldOf("property").forGetter((c) -> c.propertyName), IntProviders.CODEC.fieldOf("values").forGetter((c) -> c.values)).apply(i, RandomizedIntStateProvider::new));
    private final Holder<BlockStateProvider> source;
    private final String propertyName;
@@ -57,6 +60,13 @@ public class RandomizedIntStateProvider implements BlockStateProvider {
          IntegerProperty property = findProperty(unmodifiedState, this.propertyName);
          if (property == null) {
             return unmodifiedState;
+         }
+
+         for(int i = this.values.minInclusive(); i <= this.values.maxInclusive(); ++i) {
+            if (property.getInternalIndex(i) == -1) {
+               LOGGER.error("Tried to randomize int for property {} that does not support value {} in randomized range {}", new Object[]{this.propertyName, i, this.values});
+               return unmodifiedState;
+            }
          }
 
          this.property = property;

@@ -23,7 +23,7 @@ public class IceBallItem extends Item implements ProjectileItem {
 
    public InteractionResult use(final Level level, final Player player, final InteractionHand hand) {
       ItemStack itemStack = player.getItemInHand(hand);
-      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ICE_BALL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+      level.playSound((Entity)null, player.getX(), player.getY(), player.getZ(), SoundEvents.ICE_BALL_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
       if (level instanceof ServerLevel serverLevel) {
          Projectile.spawnProjectileFromRotation(IceBall::new, serverLevel, itemStack, player, 0.0F, 1.5F, 1.0F);
       }

@@ -379,7 +379,11 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
          Reference2IntMap.Entry<ResourceKey<Recipe<?>>> entry = (Reference2IntMap.Entry)var4.next();
          level.recipeAccess().byKey((ResourceKey)entry.getKey()).ifPresent((recipe) -> {
             recipesToAward.add(recipe);
-            createExperience(level, position, entry.getIntValue(), ((AbstractCookingRecipe)recipe.value()).experience());
+            Recipe patt0$temp = recipe.value();
+            if (patt0$temp instanceof AbstractCookingRecipe cookingRecipe) {
+               createExperience(level, position, entry.getIntValue(), cookingRecipe.experience());
+            }
+
          });
       }
 

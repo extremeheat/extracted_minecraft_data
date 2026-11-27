@@ -108,6 +108,7 @@ public final class BlockTags {
    public static final TagKey<Block> BEACON_BASE_BLOCKS;
    public static final TagKey<Block> SOUL_SPEED_BLOCKS;
    public static final TagKey<Block> WALL_POST_OVERRIDE;
+   public static final TagKey<Block> WALL_SIDE_SHAPE_OVERRIDE;
    public static final TagKey<Block> CLIMBABLE;
    public static final TagKey<Block> FALL_DAMAGE_RESETTING;
    public static final TagKey<Block> HOGLIN_REPELLENTS;
@@ -420,6 +421,7 @@ public final class BlockTags {
       BEACON_BASE_BLOCKS = create("beacon_base_blocks");
       SOUL_SPEED_BLOCKS = create("soul_speed_blocks");
       WALL_POST_OVERRIDE = create("wall_post_override");
+      WALL_SIDE_SHAPE_OVERRIDE = create("wall_side_shape_override");
       CLIMBABLE = create("climbable");
       FALL_DAMAGE_RESETTING = create("fall_damage_resetting");
       HOGLIN_REPELLENTS = create("hoglin_repellents");

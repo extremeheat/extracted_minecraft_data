@@ -83,7 +83,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    private void notifyItemChangedInJukebox(final boolean wasInserted) {
       if (this.level != null && this.level.getBlockState(this.getBlockPos()) == this.getBlockState()) {
          this.level.setBlock(this.getBlockPos(), (BlockState)this.getBlockState().setValue(JukeboxBlock.HAS_RECORD, wasInserted), 2);
-         if (!isInPlaylistMode(this.level, this.getBlockPos())) {
+         if (!wasInserted || !isInPlaylistMode(this.level, this.getBlockPos())) {
             this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.getBlockPos(), GameEvent.Context.of(this.getBlockState()));
          }
 

@@ -159,7 +159,7 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    }
 
    private static boolean isSpeleothemWithDirection(final BlockState blockState, final Direction tipDirection) {
-      return blockState.is(BlockTags.SPELEOTHEMS) && blockState.getValue(TIP_DIRECTION) == tipDirection;
+      return blockState.is(BlockTags.SPELEOTHEMS) && blockState.getBlock() instanceof SpeleothemBlock && blockState.getValue(TIP_DIRECTION) == tipDirection;
    }
 
    protected void onProjectileHit(final Level level, final BlockState state, final BlockHitResult blockHit, final Projectile projectile) {
@@ -210,11 +210,11 @@ public abstract class SpeleothemBlock extends Block implements SimpleWaterlogged
    }
 
    protected static boolean isTip(final BlockState state, final boolean includeMergedTip) {
-      if (!state.is(BlockTags.SPELEOTHEMS)) {
-         return false;
-      } else {
+      if (state.is(BlockTags.SPELEOTHEMS) && state.getBlock() instanceof SpeleothemBlock) {
          SpeleothemThickness thickness = (SpeleothemThickness)state.getValue(THICKNESS);
          return thickness == SpeleothemThickness.TIP || includeMergedTip && thickness == SpeleothemThickness.TIP_MERGE;
+      } else {
+         return false;
       }
    }
 

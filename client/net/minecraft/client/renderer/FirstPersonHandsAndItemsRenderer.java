@@ -23,6 +23,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.SwingAnimationType;
+import org.jspecify.annotations.Nullable;
 
 public class FirstPersonHandsAndItemsRenderer {
    private static final RenderType MAP_BACKGROUND = RenderTypes.text(Identifier.withDefaultNamespace("textures/map/map_background.png"));
@@ -111,32 +113,32 @@ public class FirstPersonHandsAndItemsRenderer {
       return tilt;
    }
 
-   private void renderPlayerHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm, final PlayerRenderState playerState) {
+   private void submitPlayerHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm, final PlayerRenderState playerState) {
       AvatarRenderState avatarRenderState = playerState.avatarRenderState;
       if (avatarRenderState != null) {
          AvatarRenderer<?> avatarRenderer = this.minecraft.getEntityRenderDispatcher().getRenderer(avatarRenderState);
          Identifier skinTexture = avatarRenderState.skin.body().texturePath();
          if (arm == HumanoidArm.RIGHT) {
-            avatarRenderer.renderRightHand(poseStack, submitNodeCollector, lightCoords, skinTexture, avatarRenderState.showRightSleeve);
+            avatarRenderer.submitRightHand(poseStack, submitNodeCollector, lightCoords, skinTexture, avatarRenderState.showRightSleeve);
          } else {
-            avatarRenderer.renderLeftHand(poseStack, submitNodeCollector, lightCoords, skinTexture, avatarRenderState.showLeftSleeve);
+            avatarRenderer.submitLeftHand(poseStack, submitNodeCollector, lightCoords, skinTexture, avatarRenderState.showLeftSleeve);
          }
 
       }
    }
 
-   private void renderMapHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm, final PlayerRenderState playerState) {
+   private void submitMapHand(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final HumanoidArm arm, final PlayerRenderState playerState) {
       poseStack.pushPose();
       float invert = arm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
       poseStack.rotateDegrees(Axis.YP, 92.0F);
       poseStack.rotateDegrees(Axis.XP, 45.0F);
       poseStack.rotateDegrees(Axis.ZP, invert * -41.0F);
       poseStack.translate(invert * 0.3F, -1.1F, 0.45F);
-      this.renderPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
+      this.submitPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
       poseStack.popPose();
    }
 
-   private void renderOneHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final HumanoidArm arm, final float attackValue, final ItemStack map, final PlayerRenderState playerState, final FirstPersonHandsAndItemsRenderState state) {
+   private void submitOneHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final InteractionHand hand, final HumanoidArm arm, final float attackValue, final PlayerRenderState playerState, final FirstPersonHandsAndItemsRenderState state) {
       float invert = arm == HumanoidArm.RIGHT ? 1.0F : -1.0F;
       poseStack.translate(invert * 0.125F, -0.125F, 0.0F);
       AvatarRenderState avatarRenderState = playerState.avatarRenderState;
@@ -144,51 +146,94 @@ public class FirstPersonHandsAndItemsRenderer {
          if (!avatarRenderState.isInvisible) {
             poseStack.pushPose();
             poseStack.rotateDegrees(Axis.ZP, invert * 10.0F);
-            this.renderPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attackValue, arm, playerState);
+            this.submitPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attackValue, hand, arm, playerState);
             poseStack.popPose();
          }
 
          poseStack.pushPose();
          poseStack.translate(invert * 0.51F, -0.08F + inverseArmHeight * -1.2F, -0.75F);
-         float sqrtAttackValue = Mth.sqrt(attackValue);
-         float xSwing = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-         float xSwingPosition = -0.5F * xSwing;
-         float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
-         float zSwingPosition = -0.3F * Mth.sin((double)(attackValue * 3.1415927F));
-         poseStack.translate(invert * xSwingPosition, ySwingPosition - 0.3F * xSwing, zSwingPosition);
-         poseStack.rotateDegrees(Axis.XP, xSwing * -45.0F);
-         poseStack.rotateDegrees(Axis.YP, invert * xSwing * -30.0F);
-         this.renderMap(poseStack, submitNodeCollector, lightCoords, map, arm == avatarRenderState.mainArm, state);
+         LivingEntity.SwingDescription currentSwing = avatarRenderState.currentSwing;
+         if (currentSwing != null && currentSwing.hand() == hand) {
+            switch (currentSwing.animation().type()) {
+               case WHACK:
+                  float sqrtAttackValue = Mth.sqrt(attackValue);
+                  float xSwing = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+                  float xSwingPosition = -0.5F * xSwing;
+                  float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
+                  float zSwingPosition = -0.3F * Mth.sin((double)(attackValue * 3.1415927F));
+                  poseStack.translate(invert * xSwingPosition, ySwingPosition - 0.3F * xSwing, zSwingPosition);
+                  poseStack.rotateDegrees(Axis.XP, xSwing * -45.0F);
+                  poseStack.rotateDegrees(Axis.YP, invert * xSwing * -30.0F);
+                  break;
+               case STAB:
+                  SpearAnimations.firstPersonAttack(attackValue, poseStack, (int)invert, -0.3, true);
+               case NONE:
+            }
+         }
+
+         this.submitMap(poseStack, submitNodeCollector, lightCoords, arm == avatarRenderState.mainArm, state);
          poseStack.popPose();
       }
    }
 
-   private void renderTwoHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float xRot, final float inverseArmHeight, final float attackValue, final PlayerRenderState playerState, final FirstPersonHandsAndItemsRenderState state) {
+   private void submitTwoHandedMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float xRot, final float inverseArmHeight, final float attackValue, final PlayerRenderState playerState, final FirstPersonHandsAndItemsRenderState state) {
       float sqrtAttackValue = Mth.sqrt(attackValue);
-      float ySwingPosition = -0.2F * Mth.sin((double)(attackValue * 3.1415927F));
-      float zSwingPosition = -0.4F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-      poseStack.translate(0.0F, -ySwingPosition / 2.0F, zSwingPosition);
-      float mapTilt = this.calculateMapTilt(xRot);
-      poseStack.translate(0.0F, 0.04F + inverseArmHeight * -1.2F + mapTilt * -0.5F, -0.72F);
-      poseStack.rotateDegrees(Axis.XP, mapTilt * -85.0F);
+      LivingEntity.SwingDescription currentSwing = playerState.avatarRenderState.currentSwing;
+      boolean hasSwung;
+      if (currentSwing != null) {
+         SwingAnimationType type = currentSwing.animation().type();
+         boolean var10000;
+         switch (type) {
+            case WHACK:
+               float ySwingPosition = -0.2F * Mth.sin((double)(attackValue * 3.1415927F));
+               float zSwingPosition = -0.4F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+               poseStack.translate(0.0F, -ySwingPosition / 2.0F, zSwingPosition);
+               var10000 = true;
+               break;
+            case STAB:
+               SpearAnimations.firstPersonAttack(attackValue, poseStack, 1, 0.0, false);
+               var10000 = true;
+               break;
+            case NONE:
+               var10000 = false;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         hasSwung = var10000;
+      } else {
+         hasSwung = false;
+      }
+
+      this.applyTwoHandedMapTilt(poseStack, xRot, inverseArmHeight);
       AvatarRenderState avatarRenderState = playerState.avatarRenderState;
       if (avatarRenderState != null) {
          if (!avatarRenderState.isInvisible) {
             poseStack.pushPose();
             poseStack.rotateDegrees(Axis.YP, 90.0F);
-            this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.RIGHT, playerState);
-            this.renderMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.LEFT, playerState);
+            this.submitMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.RIGHT, playerState);
+            this.submitMapHand(poseStack, submitNodeCollector, lightCoords, HumanoidArm.LEFT, playerState);
             poseStack.popPose();
          }
 
-         float xzSwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-         poseStack.rotateDegrees(Axis.XP, xzSwingRotation * 20.0F);
+         if (hasSwung) {
+            float xzSwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+            poseStack.rotateDegrees(Axis.XP, xzSwingRotation * 20.0F);
+         }
+
          poseStack.scale(2.0F, 2.0F, 2.0F);
-         this.renderMap(poseStack, submitNodeCollector, lightCoords, state.mainHandItem, true, state);
+         this.submitMap(poseStack, submitNodeCollector, lightCoords, true, state);
       }
    }
 
-   private void renderMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final ItemStack itemStack, final boolean mainHand, final FirstPersonHandsAndItemsRenderState state) {
+   private void applyTwoHandedMapTilt(final PoseStack poseStack, final float xRot, final float inverseArmHeight) {
+      float mapTilt = this.calculateMapTilt(xRot);
+      poseStack.translate(0.0F, 0.04F + inverseArmHeight * -1.2F + mapTilt * -0.5F, -0.72F);
+      poseStack.rotateDegrees(Axis.XP, mapTilt * -85.0F);
+   }
+
+   private void submitMap(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final boolean mainHand, final FirstPersonHandsAndItemsRenderState state) {
       poseStack.rotateDegrees(Axis.YP, 180.0F);
       poseStack.rotateDegrees(Axis.ZP, 180.0F);
       poseStack.scale(0.38F, 0.38F, 0.38F);
@@ -204,30 +249,55 @@ public class FirstPersonHandsAndItemsRenderer {
          buffer.addVertex(pose, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(lightCoords);
       });
       if (hasMapData) {
-         this.minecraft.getMapRenderer().render(mapRenderState, poseStack, submitNodeCollector, false, lightCoords);
+         this.minecraft.getMapRenderer().submit(mapRenderState, poseStack, submitNodeCollector, false, lightCoords);
       }
 
    }
 
-   private void renderPlayerArm(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final float attackValue, final HumanoidArm arm, final PlayerRenderState playerState) {
+   private void submitPlayerArm(final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final int lightCoords, final float inverseArmHeight, final float attackValue, final InteractionHand hand, final HumanoidArm arm, final PlayerRenderState playerState) {
       boolean isRightArm = arm != HumanoidArm.LEFT;
       float invert = isRightArm ? 1.0F : -1.0F;
-      float sqrtAttackValue = Mth.sqrt(attackValue);
-      float xSwingPosition = -0.3F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-      float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
-      float zSwingPosition = -0.4F * Mth.sin((double)(attackValue * 3.1415927F));
-      poseStack.translate(invert * (xSwingPosition + 0.64000005F), ySwingPosition + -0.6F + inverseArmHeight * -0.6F, zSwingPosition + -0.71999997F);
-      poseStack.rotateDegrees(Axis.YP, invert * 45.0F);
-      float zSwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
-      float ySwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
-      poseStack.rotateDegrees(Axis.YP, invert * ySwingRotation * 70.0F);
-      poseStack.rotateDegrees(Axis.ZP, invert * zSwingRotation * -20.0F);
+      LivingEntity.SwingDescription currentSwing = playerState.avatarRenderState.currentSwing;
+      if (currentSwing != null && currentSwing.hand() == hand) {
+         this.applyArmSwing(poseStack, inverseArmHeight, attackValue, invert, currentSwing.animation().type());
+      } else {
+         this.positionArmPreSwing(poseStack, inverseArmHeight, 0.0F, 0.0F, invert);
+      }
+
       poseStack.translate(invert * -1.0F, 3.6F, 3.5F);
       poseStack.rotateDegrees(Axis.ZP, invert * 120.0F);
       poseStack.rotateDegrees(Axis.XP, 200.0F);
       poseStack.rotateDegrees(Axis.YP, invert * -135.0F);
       poseStack.translate(invert * 5.6F, 0.0F, 0.0F);
-      this.renderPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
+      this.submitPlayerHand(poseStack, submitNodeCollector, lightCoords, arm, playerState);
+   }
+
+   private void applyArmSwing(final PoseStack poseStack, final float inverseArmHeight, final float attackValue, final float invert, final SwingAnimationType swingAnimationType) {
+      switch (swingAnimationType) {
+         case WHACK:
+            float sqrtAttackValue = Mth.sqrt(attackValue);
+            this.positionArmPreSwing(poseStack, inverseArmHeight, attackValue, sqrtAttackValue, invert);
+            float zSwingRotation = Mth.sin((double)(attackValue * attackValue * 3.1415927F));
+            float ySwingRotation = Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+            poseStack.rotateDegrees(Axis.YP, invert * ySwingRotation * 70.0F);
+            poseStack.rotateDegrees(Axis.ZP, invert * zSwingRotation * -20.0F);
+            break;
+         case STAB:
+            this.positionArmPreSwing(poseStack, inverseArmHeight, 0.0F, 0.0F, invert);
+            SpearAnimations.firstPersonAttack(attackValue, poseStack, (int)invert);
+            break;
+         case NONE:
+            this.positionArmPreSwing(poseStack, inverseArmHeight, 0.0F, 0.0F, invert);
+      }
+
+   }
+
+   private void positionArmPreSwing(final PoseStack poseStack, final float inverseArmHeight, final float attackValue, final float sqrtAttackValue, final float invert) {
+      float xSwingPosition = -0.3F * Mth.sin((double)(sqrtAttackValue * 3.1415927F));
+      float ySwingPosition = 0.4F * Mth.sin((double)(sqrtAttackValue * 6.2831855F));
+      float zSwingPosition = -0.4F * Mth.sin((double)(attackValue * 3.1415927F));
+      poseStack.translate(invert * (xSwingPosition + 0.64000005F), ySwingPosition + -0.6F + inverseArmHeight * -0.6F, zSwingPosition + -0.71999997F);
+      poseStack.rotateDegrees(Axis.YP, invert * 45.0F);
    }
 
    private void applyEatTransform(final PoseStack poseStack, final float partialTicks, final HumanoidArm arm, final float useItemRemainingTicks, final int useDuration) {
@@ -321,13 +391,13 @@ public class FirstPersonHandsAndItemsRenderer {
             poseStack.pushPose();
             if (itemStack.isEmpty()) {
                if (isMainHand && !avatarRenderState.isInvisible) {
-                  this.renderPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attack, arm, playerState);
+                  this.submitPlayerArm(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, attack, hand, arm, playerState);
                }
             } else if (itemStack.has(DataComponents.MAP_ID)) {
                if (isMainHand && state.offHandItem.isEmpty()) {
-                  this.renderTwoHandedMap(poseStack, submitNodeCollector, lightCoords, xRot, inverseArmHeight, attack, playerState, state);
+                  this.submitTwoHandedMap(poseStack, submitNodeCollector, lightCoords, xRot, inverseArmHeight, attack, playerState, state);
                } else {
-                  this.renderOneHandedMap(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, arm, attack, itemStack, playerState, state);
+                  this.submitOneHandedMap(poseStack, submitNodeCollector, lightCoords, inverseArmHeight, hand, arm, attack, playerState, state);
                }
             } else if (itemStack.is(Items.CROSSBOW)) {
                this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
@@ -356,7 +426,7 @@ public class FirstPersonHandsAndItemsRenderer {
                   poseStack.scale(1.0F, 1.0F, 1.0F + power * 0.2F);
                   poseStack.rotateDegrees(Axis.YN, (float)invert * 45.0F);
                } else {
-                  this.swingArm(attack, poseStack, invert, arm);
+                  this.applyItemSwingAnimation(hand, attack, poseStack, avatarRenderState.currentSwing, invert, arm);
                   if (charged && attack < 0.001F && isMainHand) {
                      poseStack.translate((float)invert * -0.641864F, 0.0F, 0.0F);
                      poseStack.rotateDegrees(Axis.YP, (float)invert * 10.0F);
@@ -439,7 +509,7 @@ public class FirstPersonHandsAndItemsRenderer {
                         this.applyBrushTransform(poseStack, partialTicks, arm, (float)state.useItemRemainingTicks);
                         break;
                      case BUNDLE:
-                        this.swingArm(attack, poseStack, invert, arm);
+                        this.swingArmWithItem(attack, poseStack, invert, arm);
                         break;
                      case SPEAR:
                         poseStack.translate((float)invert * 0.56F, -0.52F, -0.72F);
@@ -453,19 +523,7 @@ public class FirstPersonHandsAndItemsRenderer {
                   poseStack.rotateDegrees(Axis.ZP, (float)invert * -85.0F);
                } else {
                   this.applyItemArmTransform(poseStack, arm, inverseArmHeight);
-                  LivingEntity.SwingDescription currentSwing = avatarRenderState.currentSwing;
-                  if (currentSwing != null && hand == currentSwing.hand()) {
-                     switch (currentSwing.animation().type()) {
-                        case NONE:
-                        default:
-                           break;
-                        case WHACK:
-                           this.swingArm(attack, poseStack, invert, arm);
-                           break;
-                        case STAB:
-                           SpearAnimations.firstPersonAttack(attack, poseStack, invert, arm);
-                     }
-                  }
+                  this.applyItemSwingAnimation(hand, attack, poseStack, avatarRenderState.currentSwing, invert, arm);
                }
 
                (isMainHand ? state.mainHandRenderState : state.offHandRenderState).submit(poseStack, submitNodeCollector, lightCoords, OverlayTexture.NO_OVERLAY, 0);
@@ -476,7 +534,21 @@ public class FirstPersonHandsAndItemsRenderer {
       }
    }
 
-   private void swingArm(final float animation, final PoseStack poseStack, final int invert, final HumanoidArm arm) {
+   private void applyItemSwingAnimation(final InteractionHand hand, final float attack, final PoseStack poseStack, final LivingEntity.@Nullable SwingDescription currentSwing, final int invert, final HumanoidArm arm) {
+      if (currentSwing != null && hand == currentSwing.hand()) {
+         switch (currentSwing.animation().type()) {
+            case WHACK:
+               this.swingArmWithItem(attack, poseStack, invert, arm);
+               break;
+            case STAB:
+               SpearAnimations.firstPersonAttack(attack, poseStack, invert);
+            case NONE:
+         }
+      }
+
+   }
+
+   private void swingArmWithItem(final float animation, final PoseStack poseStack, final int invert, final HumanoidArm arm) {
       float xSwingPosition = -0.4F * Mth.sin((double)(Mth.sqrt(animation) * 3.1415927F));
       float ySwingPosition = 0.2F * Mth.sin((double)(Mth.sqrt(animation) * 6.2831855F));
       float zSwingPosition = -0.2F * Mth.sin((double)(animation * 3.1415927F));

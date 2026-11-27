@@ -69,7 +69,6 @@ public class PlayerAdvancements {
       this.playerSavePath = playerSavePath;
       this.player = player;
       this.tree = manager.tree();
-      int defaultVersion = 1343;
       this.codec = DataFixTypes.ADVANCEMENTS.<Data>wrapCodec(PlayerAdvancements.Data.CODEC, dataFixer, 1343);
       this.load(manager);
    }

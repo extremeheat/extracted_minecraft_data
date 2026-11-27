@@ -70,8 +70,11 @@ public abstract class ThrowableBallProjectile extends ThrowableItemProjectile {
       if (!this.level().isClientSide()) {
          this.level().broadcastEntityEvent(this, (byte)3);
          Vec3 hitLocation = hitResult.getLocation();
-         if (this.getHitSound() != null) {
-            this.level().playSound((Entity)null, hitLocation.x, hitLocation.y, hitLocation.z, this.getHitSound(), SoundSource.NEUTRAL, 0.5F, 0.4F / (this.level().getRandom().nextFloat() * 0.4F + 0.8F));
+         if (!this.isSilent()) {
+            SoundEvent hitSound = this.getHitSound();
+            if (hitSound != null) {
+               this.level().playSound((Entity)null, hitLocation.x, hitLocation.y, hitLocation.z, hitSound, SoundSource.NEUTRAL, 0.5F, 0.4F / (this.level().getRandom().nextFloat() * 0.4F + 0.8F));
+            }
          }
 
          this.discard();

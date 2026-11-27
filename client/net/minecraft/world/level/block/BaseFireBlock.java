@@ -159,7 +159,7 @@ public abstract class BaseFireBlock extends Block {
       if (!state.isAir()) {
          return false;
       } else {
-         return getState(level, pos).canSurvive(level, pos) || isPortal(level, pos, forwardDirection);
+         return level.isInValidBounds(pos) && getState(level, pos).canSurvive(level, pos) || isPortal(level, pos, forwardDirection);
       }
    }
 

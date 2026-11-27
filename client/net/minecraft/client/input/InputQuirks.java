@@ -10,7 +10,7 @@ public class InputQuirks {
    private static final boolean ON_WINDOWS;
    private static final boolean ON_OSX;
    public static final boolean REPLACE_CTRL_KEY_WITH_CMD_KEY;
-   public static final int EDIT_SHORTCUT_KEY_MODIFIER;
+   public static final @InputWithModifiers.Modifiers int EDIT_SHORTCUT_KEY_MODIFIER;
    public static final boolean EMULATE_RIGHT_CLICK_WITH_CTRL_KEY;
    public static final boolean RESTORE_KEY_STATE_AFTER_MOUSE_GRAB;
    private static final Map<String, String> KEYBOARD_DISPLAY_OVERRIDES;

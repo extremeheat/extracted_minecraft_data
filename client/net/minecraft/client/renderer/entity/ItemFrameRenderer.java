@@ -83,7 +83,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          poseStack.translate(-64.0F, -64.0F, 0.0F);
          poseStack.translate(0.0F, 0.0F, -1.0F);
          int lightCoords = this.getLightCoords(state.isGlowFrame, 15728850, state.lightCoords);
-         this.mapRenderer.render(state.mapRenderState, poseStack, submitNodeCollector, true, lightCoords);
+         this.mapRenderer.submit(state.mapRenderState, poseStack, submitNodeCollector, true, lightCoords);
       } else if (!state.item.isEmpty()) {
          poseStack.rotateDegrees(Axis.ZP, (float)state.rotation * 360.0F / 8.0F);
          int lightVal = this.getLightCoords(state.isGlowFrame, 15728880, state.lightCoords);

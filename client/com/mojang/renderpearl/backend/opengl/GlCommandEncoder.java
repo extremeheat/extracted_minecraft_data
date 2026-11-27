@@ -376,7 +376,7 @@ class GlCommandEncoder implements CommandEncoderBackend, UncheckedAutoCloseable 
          bufferMask |= 1024;
       }
 
-      this.device.directStateAccess().blitFrameBuffers(this.readFbo, this.drawFbo, sourceX, sourceY, width, height, destX, destY, width, height, bufferMask, 9728);
+      this.device.directStateAccess().blitFrameBuffers(this.readFbo, this.drawFbo, sourceX, sourceY, sourceX + width, sourceY + height, destX, destY, destX + width, destY + height, bufferMask, 9728);
       int error = GL33C.glGetError();
       if (error != 0) {
          String var10002 = source.getLabel();

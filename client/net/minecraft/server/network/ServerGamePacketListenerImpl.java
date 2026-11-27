@@ -190,6 +190,8 @@ import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.FireChargeItem;
+import net.minecraft.world.item.FlintAndSteelItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -1352,16 +1354,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          return false;
       } else {
          boolean var10000;
-         label21: {
+         label26: {
             Item item = itemStack.getItem();
             if (!(item instanceof BlockItem)) {
-               if (!(item instanceof BucketItem)) {
-                  break label21;
-               }
+               label24: {
+                  if (item instanceof BucketItem) {
+                     BucketItem bucket = (BucketItem)item;
+                     if (bucket.getContent() != Fluids.EMPTY) {
+                        break label24;
+                     }
+                  }
 
-               BucketItem bucket = (BucketItem)item;
-               if (bucket.getContent() == Fluids.EMPTY) {
-                  break label21;
+                  if (!(item instanceof FlintAndSteelItem) && !(item instanceof FireChargeItem)) {
+                     break label26;
+                  }
                }
             }
 

@@ -32,7 +32,7 @@ public class MapRenderer {
       this.mapTextureManager = mapTextureManager;
    }
 
-   public void render(final MapRenderState mapRenderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final boolean showOnlyFrame, final int lightCoords) {
+   public void submit(final MapRenderState mapRenderState, final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final boolean showOnlyFrame, final int lightCoords) {
       submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(mapRenderState.texture), (pose, buffer) -> {
          buffer.addVertex(pose, 0.0F, 128.0F, -0.01F).setColor(-1).setUv(0.0F, 1.0F).setLight(lightCoords);
          buffer.addVertex(pose, 128.0F, 128.0F, -0.01F).setColor(-1).setUv(1.0F, 1.0F).setLight(lightCoords);

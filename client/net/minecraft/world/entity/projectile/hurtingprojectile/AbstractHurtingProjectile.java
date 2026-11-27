@@ -66,31 +66,51 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    public void tick() {
       Entity owner = this.getOwner();
       this.applyInertia();
-      if (this.level().isClientSide() || (owner == null || !owner.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
-         HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
-         Vec3 newPosition;
-         if (hitResult.getType() != HitResult.Type.MISS) {
-            newPosition = hitResult.getLocation();
-         } else {
-            newPosition = this.position().add(this.getDeltaMovement());
+      if (!this.level().isClientSide()) {
+         if (owner != null && owner.isRemoved() || !this.level().hasChunkAt(this.blockPosition())) {
+            this.discard();
+            return;
          }
 
-         ProjectileUtil.rotateTowardsMovement(this, 0.2F);
-         this.setPos(newPosition);
-         this.applyEffectsFromBlocks();
-         super.tick();
-         if (this.shouldBurn()) {
-            this.igniteForSeconds(1.0F);
+         if (this.killIfTooHigh()) {
+            return;
          }
-
-         if (hitResult.getType() != HitResult.Type.MISS && this.isAlive()) {
-            this.hitTargetOrDeflectSelf(hitResult);
-         }
-
-         this.createParticleTrail();
-      } else {
-         this.discard();
       }
+
+      HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
+      Vec3 newPosition;
+      if (hitResult.getType() != HitResult.Type.MISS) {
+         newPosition = hitResult.getLocation();
+      } else {
+         newPosition = this.position().add(this.getDeltaMovement());
+      }
+
+      ProjectileUtil.rotateTowardsMovement(this, 0.2F);
+      this.setPos(newPosition);
+      this.applyEffectsFromBlocks();
+      super.tick();
+      if (this.shouldBurn()) {
+         this.igniteForSeconds(1.0F);
+      }
+
+      if (hitResult.getType() != HitResult.Type.MISS && this.isAlive()) {
+         this.hitTargetOrDeflectSelf(hitResult);
+      }
+
+      this.createParticleTrail();
+   }
+
+   private boolean killIfTooHigh() {
+      if (this.getBlockY() > this.level().getMaxY() + 30) {
+         this.killFromHeight();
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   public void killFromHeight() {
+      this.discard();
    }
 
    private void applyInertia() {

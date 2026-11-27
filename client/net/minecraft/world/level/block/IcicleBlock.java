@@ -54,7 +54,7 @@ public class IcicleBlock extends SpeleothemBlock {
       }
    }
 
-   protected int getStalactiteLandingSound() {
+   protected @LevelEvent.Value int getStalactiteLandingSound() {
       return 1055;
    }
 

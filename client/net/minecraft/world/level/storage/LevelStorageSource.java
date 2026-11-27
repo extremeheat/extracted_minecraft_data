@@ -192,7 +192,9 @@ public class LevelStorageSource {
          return DataResult.error(e::getMessage);
       }
 
-      return savedDataType.codec().parse(registryAccess.createSerializationContext(NbtOps.INSTANCE), fileContents.getCompoundOrEmpty("data"));
+      int dataVersion = NbtUtils.getDataVersion(fileContents, 1343);
+      CompoundTag fixedContents = savedDataType.dataFixType().updateToCurrentVersion(DataFixers.getDataFixer(), fileContents, dataVersion);
+      return savedDataType.codec().parse(registryAccess.createSerializationContext(NbtOps.INSTANCE), fixedContents.getCompoundOrEmpty("data"));
    }
 
    public static void writeGameRules(final WorldData worldData, final Path worldFolder, final GameRules gameRules) throws IOException {

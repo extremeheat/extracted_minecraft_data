@@ -661,7 +661,7 @@ public class SulfurCube extends AbstractCubeMob implements Bucketable, Shearable
    }
 
    public boolean readyForShearing() {
-      return this.hasBodyItem();
+      return this.hasBodyItem() && !this.isPrimed();
    }
 
    public boolean canPickUpLoot() {

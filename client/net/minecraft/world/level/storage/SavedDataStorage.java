@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 
 public class SavedDataStorage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final int LEGACY_DATA_VERSION = 1343;
    private final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap();
    private final DataFixer fixerUpper;
    private final HolderGetter.Provider registries;

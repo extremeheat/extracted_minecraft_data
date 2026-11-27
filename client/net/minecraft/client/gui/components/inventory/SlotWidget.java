@@ -19,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
@@ -185,8 +186,13 @@ public class SlotWidget extends AbstractWidget {
 
    protected @Nullable Component createNarrationUsage() {
       ItemStack carried = this.minecraft.player.containerMenu.getCarried();
+      ItemStack slotItem = this.slot.getItem();
       String usageKey = "narration.slot.usage." + (this.isFocused() ? "focused." : "hovered.");
-      if (carried.isEmpty() && this.slot.hasItem() && this.slot.mayPickup(this.minecraft.player)) {
+      if (carried.getItem() instanceof BundleItem && !slotItem.isEmpty()) {
+         return Component.translatable(usageKey + "store", getItemNarration(slotItem), carried.getHoverName());
+      } else if (slotItem.getItem() instanceof BundleItem && !carried.isEmpty()) {
+         return Component.translatable(usageKey + "store", getItemNarration(carried), slotItem.getHoverName());
+      } else if (carried.isEmpty() && this.slot.hasItem() && this.slot.mayPickup(this.minecraft.player)) {
          return Component.translatable(usageKey + "pick_up");
       } else {
          return !carried.isEmpty() && this.slot.mayPlace(carried) ? Component.translatable(usageKey + "place", getItemNarration(carried)) : null;

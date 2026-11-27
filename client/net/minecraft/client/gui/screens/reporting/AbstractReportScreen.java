@@ -192,6 +192,11 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       }
    }
 
+   public void added() {
+      super.added();
+      this.closedIntentionally = false;
+   }
+
    public void removed() {
       if (!this.closedIntentionally) {
          this.closedIntentionally = true;

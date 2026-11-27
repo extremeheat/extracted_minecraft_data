@@ -26,8 +26,13 @@ public class ItemBasedSteering {
    }
 
    public void onSynced() {
-      this.boosting = true;
-      this.boostTime = 0;
+      if (this.boostTimeTotal() > 0) {
+         this.boosting = true;
+         this.boostTime = 0;
+      } else {
+         this.boosting = false;
+      }
+
    }
 
    public boolean boost(final RandomSource random) {
@@ -44,6 +49,7 @@ public class ItemBasedSteering {
    public void tickBoost() {
       if (this.boosting && this.boostTime++ > this.boostTimeTotal()) {
          this.boosting = false;
+         this.setBoostTimeTotal(0);
       }
 
    }
@@ -71,6 +77,6 @@ public class ItemBasedSteering {
       ValueInput data = input.childOrEmpty("item_based_steering");
       this.boosting = data.getBooleanOr("boosting", false);
       this.boostTime = data.getIntOr("boost_time", 0);
-      this.setBoostTimeTotal(data.getIntOr("boost_time_total", 0));
+      this.setBoostTimeTotal(!this.boosting ? 0 : data.getIntOr("boost_time_total", 0));
    }
 }

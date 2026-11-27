@@ -102,13 +102,20 @@ public class SpearAnimations {
       }
    }
 
-   public static void firstPersonAttack(final float attack, final PoseStack poseStack, final int invert, final HumanoidArm arm) {
+   public static void firstPersonAttack(final float attack, final PoseStack poseStack, final int invert) {
+      firstPersonAttack(attack, poseStack, invert, 0.0, true);
+   }
+
+   public static void firstPersonAttack(final float attack, final PoseStack poseStack, final int invert, final double translation, final boolean rotate) {
       float startingAmount = Ease.inOutSine(progress(attack, 0.0F, 0.05F));
       float middleAmount = Ease.outBack(progress(attack, 0.05F, 0.2F));
       float endingAmount = Ease.inOutExpo(progress(attack, 0.4F, 1.0F));
-      poseStack.translate((float)invert * 0.1F * (startingAmount - middleAmount), -0.075F * (startingAmount - endingAmount), 0.65F * (startingAmount - middleAmount));
-      poseStack.rotateDegrees(Axis.XP, -70.0F * (startingAmount - endingAmount));
-      poseStack.translate(0.0, 0.0, -0.25 * (double)(endingAmount - middleAmount));
+      poseStack.translate((double)((float)invert * 0.1F * (startingAmount - middleAmount)), (double)(-0.075F * (startingAmount - endingAmount)) + translation, (double)(0.65F * (startingAmount - middleAmount)));
+      if (rotate) {
+         poseStack.rotateDegrees(Axis.XP, -70.0F * (startingAmount - endingAmount));
+      }
+
+      poseStack.translate(0.0, -translation, -0.25 * (double)(endingAmount - middleAmount));
    }
 
    private static record UseParams(float raiseProgress, float raiseProgressStart, float raiseProgressMiddle, float raiseProgressEnd, float swayProgress, float lowerProgress, float raiseBackProgress, float swayIntensity, float swayScaleSlow, float swayScaleFast) {
